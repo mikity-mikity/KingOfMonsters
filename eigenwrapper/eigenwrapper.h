@@ -41,8 +41,8 @@ namespace kingghidorah {
 		cublasHandle_t cublas_handle[MAXDEVICE];
 		double* __mgM[MAXDEVICE];
 		double* __mgrhs[MAXDEVICE];
-		double* __mgM2=0;
-		double* __mgrhs2=0;
+		double* __mgM2 = 0;
+		double* __mgrhs2 = 0;
 		double* __mgC[MAXDEVICE];
 		double* __work[MAXDEVICE];
 		int work_size[MAXDEVICE];
@@ -75,7 +75,7 @@ namespace kingghidorah {
 		double* work_M2();
 		double* work_rhs2();
 		double* work_C(int i);
-		double* work(int N,int i);
+		double* work(int N, int i);
 		int& count();
 		int& fastest();
 		void dispose();
@@ -85,7 +85,7 @@ namespace kingghidorah {
 		double** array_d_work();
 		int* devicelist();
 	};
-	
+
 	class _myPermutation {
 	public:
 		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -109,9 +109,9 @@ namespace kingghidorah {
 		std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor>> _mat;
 		Eigen::MatrixXd mats;
 		Eigen::MatrixXd _dmat;
-		
+
 		vector<Eigen::VectorXd> coeff;
-		int _nt=0;
+		int _nt = 0;
 		int _mt = 0;
 		int _dat_count = 0;
 		//bool e_init = false;
@@ -140,7 +140,7 @@ namespace kingghidorah {
 		void _permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm);
 		void _shrink(int M);
 		void _permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm, Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm2);
-		void _shrink(int M,int N);
+		void _shrink(int M, int N);
 		Eigen::VectorXd get_coeff(int ii);
 		int rows();
 		int _rows();
@@ -165,8 +165,8 @@ namespace kingghidorah {
 		std::string _ofAtA(_mySparse* A);
 		void ofAtB(_mySparse* B);
 		void _ofAtB(_mySparse* B, _mySparse* C);
-		Eigen::VectorXd _ofBtAB(_mySparse* B,double* ptr,int N, _mySparse* C);
-		void _ofAtB_gpu(kingghidorah::cuda* cuda,_mySparse* B, _mySparse* C);
+		Eigen::VectorXd _ofBtAB(_mySparse* B, double* ptr, int N, _mySparse* C);
+		void _ofAtB_gpu(kingghidorah::cuda* cuda, _mySparse* B, _mySparse* C);
 		Eigen::VectorXd Atb(double* ptr, int N);
 		Eigen::VectorXd _Atb(double* ptr, int N);
 		void merge();
@@ -175,8 +175,8 @@ namespace kingghidorah {
 		void computeLLT(Eigen::LLT<Eigen::MatrixXd>* LLT);
 		int nonzeros();
 		void Clear();
-		void setmat(Eigen::SparseMatrix<double> mat,int ii);
-		void setmat(const Eigen::MatrixXd &mat);
+		void setmat(Eigen::SparseMatrix<double> mat, int ii);
+		void setmat(const Eigen::MatrixXd& mat);
 		void setmiddlecolum(Eigen::SparseMatrix<double> f, int start, int end);
 		Eigen::VectorXd solve0(double* rhs, int N);
 		Eigen::VectorXd _solve0(double* rhs, int N);
@@ -188,11 +188,12 @@ namespace kingghidorah {
 		void _solveI_gpu(kingghidorah::cuda* cuda, _mySparse* ret);
 		void _solveI_gpu_omp(kingghidorah::cuda* cuda, _mySparse* ret);
 		void _solve0_gpu_mg(kingghidorah::cuda* cuda, _mySparse* rhs, _mySparse* ret);
-		void _solveI_gpu_mg(kingghidorah::cuda* cuda,_mySparse* ret);
+		void _solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse* ret);
 		Eigen::VectorXd __solve0(double* rhs, int N);
 		Eigen::MatrixXd inv();
 		Eigen::MatrixXd solve0(_mySparse* rhs);
 		void minus(_mySparse* m);
+		void _freeze();
 		void clearcoeff();
 		void addsmallidentity(double salt);
 		void begin_construct();

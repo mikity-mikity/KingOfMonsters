@@ -17,7 +17,7 @@
 #include "eigen-3.4.0/Eigen/Dense"
 #include "eigen-3.4.0/Eigen/SparseQR"
 #include "eigen-3.4.0/Eigen/SparseLU"
-#include "eigen-3.4.0/Eigen/SparseCholesky"	
+#include "eigen-3.4.0/Eigen/SparseCholesky"
 #define EIGEN_NO_DEBUG
 #define EIGEN_NO_STATIC_ASSERT
 */
@@ -25,16 +25,19 @@
 #include <vector>
 using namespace std::chrono;
 #include"eigenwrapper.h"
+#include "eigen-3.4.0/Eigen/Dense"
 using namespace std;
 int main() {
     {
 
-        int N = 2000;
-
+        int N = 2;
+        double* c;
         double* m;
         cuInit(0);
         cudaSetDevice(0);
+        c = (double*)malloc(sizeof(double) * N * N);
         cudaMallocHost((void**)&m, sizeof(double) * N * N);
+        Eigen::MatrixXd f(N, N);
         for (int i = 0; i < N; i++)
         {
             for (int j = 0; j < N; j++)
@@ -43,7 +46,7 @@ int main() {
             }
         }
 #pragma omp parallel for
-        for (int tt = 0; tt < 6; tt++)
+        for (int tt = 0; tt < 2; tt++)
         {
             cudaSetDevice(tt % 2);
             double* m_gpu;
@@ -53,23 +56,43 @@ int main() {
             auto end = high_resolution_clock::now();
             auto duration = end - start;
             std::chrono::milliseconds d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
-            std::cout << d.count() << "ms" << std::endl;
+            std::cout << "host->device" << d.count() << "ms" << std::endl;
+
+            start = high_resolution_clock::now();
+            cudaMemcpy(m, m_gpu, sizeof(double) * N * N, cudaMemcpyDeviceToHost);
+            cudaDeviceSynchronize();
+            end = high_resolution_clock::now();
+            duration = end - start;
+            d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+            std::cout << "device->host" << d.count() << "ms" << std::endl;
+
             cudaFree(m_gpu);
         }
+        auto start = high_resolution_clock::now();
+        memcpy(f.data(), m, sizeof(double) * N * N);
+        auto end = high_resolution_clock::now();
+        auto duration = end - start;
+        std::chrono::milliseconds d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+        std::cout << d.count() << "ms" << std::endl;
+
         cudaFreeHost(m);
+        free(c);
         std::cin.get();
 
 
     }
+
+
+
     int n = 1;
     int s = 1;
     int M = 2000;
     int N = 2000;
-    
+
     for (int t = 0; t < 2; t++)
     {
         kingghidorah::cuda cuda(M);
-        std::cout << kingghidorah::_mySparse::_testopenmp() << std::endl;
+        //std::cout << kingghidorah::_mySparse::_testopenmp() << std::endl;
 
         kingghidorah::_mySparse mat;
         mat.resize(M, N);
@@ -77,7 +100,7 @@ int main() {
         mat._resize(M, N);
         for (int i = 0; i < M; i++)
         {
-            mat.adddat(i, i, i + 5+i%4);
+            mat.adddat(i, i, 4);
         }
         mat.merge();
         mat.clearcoeff();
@@ -104,9 +127,9 @@ int main() {
         std::chrono::milliseconds d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
         std::cout << "regular"<<d.count() << "ms" << std::endl;
 
-        start = high_resolution_clock::now(); 
+        start = high_resolution_clock::now();
 #pragma omp parallel for
-            
+
         for (int i = 0; i < N; i++)
         {
             for (int j = 0; j < N; j++)
@@ -130,7 +153,7 @@ int main() {
         kingghidorah::_mySparse mat3;
         mat3.resize(M, M);
         mat2._OfDuplicate(&mat);
-        
+
         std::cout << cuda.valid() << std::endl;
         std::cout << "count:" << cuda.count() << std::endl;
         std::cout << "fastest" << cuda.fastest() << std::endl;
@@ -143,7 +166,7 @@ int main() {
         auto start = high_resolution_clock::now();
         mat._solveI_gpu(&cuda, &ret);
         auto end = high_resolution_clock::now();
-        auto duration = end-start;
+        auto duration = end - start;
         auto d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
         std::cout << d.count() << "ms" << std::endl;
         for (int i = 0; i < 2; i++)std::cout << ret._at(i, i) << std::endl;
@@ -153,12 +176,12 @@ int main() {
             mat._solveI_gpu_omp(&cuda, &ret);
             std::cout << "MG" << std::endl;
             end = high_resolution_clock::now();
-            duration = end-start;
+            duration = end - start;
             std::chrono::milliseconds d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
             std::cout << d.count() << "ms" << std::endl;
             for (int i = 0; i < 2; i++)std::cout << ret._at(i, i) << std::endl;
         }
-        
+
         //cuda.dispose();
         std::cin.get();
     }

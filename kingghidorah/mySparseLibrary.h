@@ -433,6 +433,17 @@ namespace kingghidorah {
 			ptr = nullptr;
 			return ret;
 		}
+		array<double>^ __solve0(array<double>^ rhs) {
+			pin_ptr<double> ptr = &rhs[0];
+
+			Eigen::VectorXd _ret = dat->__solve0(ptr, rhs->Length);
+
+			array<double>^ ret = gcnew array<double>(_ret.rows());
+			System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
+
+			ptr = nullptr;
+			return ret;
+		}
 		array<double>^ _solve0_gpu_mg(myCuda^ gpu, array<double>^ rhs) {
 			pin_ptr<double> ptr = &rhs[0];
 

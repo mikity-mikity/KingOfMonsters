@@ -25,16 +25,19 @@
 #include <vector>
 using namespace std::chrono;
 #include"eigenwrapper.h"
+#include "eigen-3.4.0/Eigen/Dense"
 using namespace std;
 int main() {
     {
 
-        int N = 2000;
-
+        int N = 2;
+        double* c;
         double* m;
         cuInit(0);
         cudaSetDevice(0);
+        c=(double*)malloc(sizeof(double) * N * N);
         cudaMallocHost((void**)&m, sizeof(double) * N * N);
+        Eigen::MatrixXd f(N, N);
         for (int i = 0; i < N; i++)
         {
             for (int j = 0; j < N; j++)
@@ -43,7 +46,7 @@ int main() {
             }
         }
 #pragma omp parallel for
-        for (int tt = 0; tt < 6; tt++)
+        for (int tt = 0; tt < 2; tt++)
         {
             cudaSetDevice(tt % 2);
             double* m_gpu;
@@ -53,14 +56,34 @@ int main() {
             auto end = high_resolution_clock::now();
             auto duration = end - start;
             std::chrono::milliseconds d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
-            std::cout << d.count() << "ms" << std::endl;
+            std::cout << "host->device"<<d.count() << "ms" << std::endl;
+
+            start = high_resolution_clock::now();
+            cudaMemcpy( m, m_gpu, sizeof(double) * N * N, cudaMemcpyDeviceToHost);
+            cudaDeviceSynchronize();
+            end = high_resolution_clock::now();
+            duration = end - start;
+            d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+            std::cout << "device->host"<<d.count() << "ms" << std::endl;
+
             cudaFree(m_gpu);
         }
+        auto start = high_resolution_clock::now();
+        memcpy(f.data(), m, sizeof(double) * N * N);
+        auto end = high_resolution_clock::now();
+        auto duration = end - start;
+        std::chrono::milliseconds d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+        std::cout << d.count() << "ms" << std::endl;
+
         cudaFreeHost(m);
+        free(c);
         std::cin.get();
 
 
     }
+
+
+
     int n = 1;
     int s = 1;
     int M = 2000;
@@ -77,7 +100,7 @@ int main() {
         mat._resize(M, N);
         for (int i = 0; i < M; i++)
         {
-            mat.adddat(i, i, i + 5 + i % 4);
+            mat.adddat(i, i, 4);
         }
         mat.merge();
         mat.clearcoeff();
