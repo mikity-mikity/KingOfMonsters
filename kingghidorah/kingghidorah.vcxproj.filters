@@ -24,6 +24,18 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="eigenwrapper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="kingghidorah_C.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="kingghidorah_S.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mySparseLibrary.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="kingghidorah.cpp">
