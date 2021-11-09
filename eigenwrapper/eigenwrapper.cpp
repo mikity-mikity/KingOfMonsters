@@ -2114,13 +2114,16 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 
 		cudaMemset(work, 0, work_size * sizeof(double));
 		
-
-		//start = std::chrono::high_resolution_clock::now();
+		auto end = high_resolution_clock::now();
+		auto duration = end - start;
+		auto d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+		std::cout << tt<<"omp:memcpy" << d.count() << "ms" << std::endl;
+		start = std::chrono::high_resolution_clock::now();
 		cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, work, work_size, devInfo_on_gpu);
-		//end = high_resolution_clock::now();
-		//duration = end - start;
-		//d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
-		//std::cout << "omp:Dpotri" << d.count() << "ms" << std::endl;
+		end = high_resolution_clock::now();
+		duration = end - start;
+		d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+		std::cout << tt << "omp:Dpotrf" << d.count() << "ms" << std::endl;
 
 		/*int devInfo_on_cpu = 0;
 		cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
@@ -2129,7 +2132,7 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 			ret->_dmat(0, 0) = 34;
 			//return;
 		}*/
-
+		start = std::chrono::high_resolution_clock::now();
 		//cudaMemset(work, 0, work_size2 * sizeof(double));
 		cusolverDnDpotrs(solver, CUBLAS_FILL_MODE_LOWER, N, E-S,gpu_matrix, N, gpu_rhs, N, devInfo_on_gpu);
 		/*cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
@@ -2137,6 +2140,11 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 			ret->_dmat(0, 0) = 12;
 			//return;
 		}*/
+		end = high_resolution_clock::now();
+		duration = end - start;
+		d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+		std::cout << tt << "omp:Dpotri" << d.count() << "ms" << std::endl;
+		start = std::chrono::high_resolution_clock::now();
 
 		cudaMemcpy(tmp2+(S)*N, gpu_rhs, (E-S) * N * sizeof(double), cudaMemcpyDeviceToHost);
 		//cudaFree(work);
@@ -2145,10 +2153,10 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 		cudaStreamDestroy(stream2);
 		//ret->_dmat.triangularView<Eigen::Upper>() = ret->_dmat.triangularView<Eigen::Lower>();
 
-		auto end = high_resolution_clock::now();
-		auto duration = end - start;
-		std::chrono::milliseconds d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
-		std::cout << "omp:Dpotrf" << d.count() << "ms" << std::endl;
+		end = high_resolution_clock::now();
+		duration = end - start;
+		d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+		std::cout << "omp:memcpy back" << d.count() << "ms" << std::endl;
 		//cudaFree(devInfo_on_gpu);
 
 
