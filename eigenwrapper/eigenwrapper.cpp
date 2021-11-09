@@ -99,8 +99,8 @@ kingghidorah::cuda::cuda(int N) {
 		cudaMalloc(&__mgrhs[ii], sizeof(double) * _N * _N);
 		cudaMalloc(&__mgC[ii], sizeof(double) * _N * _N);
 	}
-	cudaHostAlloc(&__mgM2, sizeof(double) * _N * _N, cudaHostAllocDefault);
-	cudaHostAlloc(&__mgrhs2, sizeof(double) * _N * _N, cudaHostAllocDefault);
+	cudaMallocHost(&__mgM2, sizeof(double) * _N * _N);
+	cudaMallocHost(&__mgrhs2, sizeof(double) * _N * _N);
 
 
 	speed.resize(count());
@@ -2072,19 +2072,34 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 	}
 	double* tmp=cuda->work_M2();
 	double* tmp2=cuda->work_rhs2();
+	auto _start = high_resolution_clock::now();
 	//cudaHostAlloc(&tmp, sizeof(double) * N * N, cudaHostAllocDefault);
 	memcpy(tmp, this->_dmat.data(), N * N * sizeof(double));
 	//cudaHostAlloc(&tmp2, sizeof(double) * N * N, cudaHostAllocDefault);
 	memcpy(tmp2, I.data(), N * N * sizeof(double));
+	auto _end = high_resolution_clock::now();
+	auto _duration = _end - _start;
+	auto _d = std::chrono::duration_cast<std::chrono::milliseconds>(_duration);
+	std::cout << "single: host->host" << _d.count() << "ms" << std::endl;
+	_start = high_resolution_clock::now();
 	for (int tt = 0; tt < cuda->count(); tt++)
 	{
 		cudaSetDevice(tt);
 		cudaStream_t stream1 = streams[tt];
 		double* gpu_matrix = cuda->work_M(tt);
-		cudaMemcpyAsync(gpu_matrix, tmp, N * N * sizeof(double), cudaMemcpyHostToDevice,stream1);
+		auto stream = streams[tt];
+#pragma omp parallel for
+		for (int i = 0; i < N; i++)
+		{
+			cudaMemcpy(gpu_matrix+i*N, tmp+i*N, N * sizeof(double), cudaMemcpyHostToDevice);
+		}
 	}
 	int ff = omp_get_max_threads();
 	omp_set_num_threads(cuda->count());
+	_end = high_resolution_clock::now();
+	_duration = _end - _start;
+	_d = std::chrono::duration_cast<std::chrono::milliseconds>(_duration);
+	std::cout << "single: memcpy host -> device" << _d.count() << "ms" << std::endl;
 #pragma omp parallel for
 	for (int tt = 0; tt < ss; tt++)
 	{
@@ -2109,7 +2124,6 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 
 		cudaMemcpy(gpu_rhs, tmp2+S*N, (E-S) * N * sizeof(double), cudaMemcpyHostToDevice);
 		//cudaStreamSynchronize(stream1);
-		//cudaStreamSynchronize(stream2);
 		int work_size = 0;
 		
 		// --- CUDA CHOLESKY initialization
@@ -2128,6 +2142,7 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 		auto d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
 		std::cout << tt<<"omp:memcpy" << d.count() << "ms" << std::endl;
 		start = std::chrono::high_resolution_clock::now();
+
 		cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, work, work_size, devInfo_on_gpu);
 		end = high_resolution_clock::now();
 		duration = end - start;
@@ -2153,24 +2168,35 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 		duration = end - start;
 		d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
 		std::cout << tt << "omp:Dpotri" << d.count() << "ms" << std::endl;
-		start = std::chrono::high_resolution_clock::now();
-
-		cudaMemcpy(tmp2+(S)*N, gpu_rhs, (E-S) * N * sizeof(double), cudaMemcpyDeviceToHost);
+		
+	}
+	for (int tt = 0; tt < cuda->count(); tt++)
+	{
+		int S = (tt * N) / ss;
+		int E = ((tt + 1) * N) / ss;
+		auto start = std::chrono::high_resolution_clock::now();
+		cudaSetDevice(tt);
+		double* gpu_rhs = cuda->work_rhs(tt);
+		auto stream = streams[tt];
+		cudaMemcpyAsync(tmp2 + (S)*N, gpu_rhs, (E - S) * N * sizeof(double), cudaMemcpyDeviceToHost);
 		//cudaFree(work);
 		//cudaStreamSynchronize(stream);
 
 
 		//ret->_dmat.triangularView<Eigen::Upper>() = ret->_dmat.triangularView<Eigen::Lower>();
 
-		end = high_resolution_clock::now();
-		duration = end - start;
-		d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
-		std::cout << "omp:memcpy back" << d.count() << "ms" << std::endl;
+		auto end = high_resolution_clock::now();
+		auto duration = end - start;
+		auto d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+		std::cout << "single:memcpy back" << d.count() << "ms" << std::endl;
 		//cudaFree(devInfo_on_gpu);
-
-
 	}
-	cudaMemcpy(ret->_dmat.data(),tmp2, N * N * sizeof(double),cudaMemcpyHostToHost);
+	_start = std::chrono::high_resolution_clock::now();
+	memcpy(ret->_dmat.data(),tmp2, N * N * sizeof(double));
+    _end = high_resolution_clock::now();
+	_duration = _end - _start;
+	_d = std::chrono::duration_cast<std::chrono::milliseconds>(_duration);
+	std::cout << "host->host memcpy" << _d.count() << "ms" << std::endl;
 	//cudaFreeHost(tmp);
 	//cudaFreeHost(tmp2);
 
