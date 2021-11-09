@@ -27,6 +27,40 @@ using namespace std::chrono;
 #include"eigenwrapper.h"
 using namespace std;
 int main() {
+    {
+
+        int N = 2000;
+
+        double* m;
+        cuInit(0);
+        cudaSetDevice(0);
+        cudaMallocHost((void**)&m, sizeof(double) * N * N);
+        for (int i = 0; i < N; i++)
+        {
+            for (int j = 0; j < N; j++)
+            {
+                m[i * N + j] = 1;
+            }
+        }
+#pragma omp parallel for
+        for (int tt = 0; tt < 6; tt++)
+        {
+            cudaSetDevice(tt % 2);
+            double* m_gpu;
+            cudaMalloc((void**)&m_gpu, sizeof(double) * N * N);
+            auto start = high_resolution_clock::now();
+            cudaMemcpy(m_gpu, m, sizeof(double) * N * N, cudaMemcpyHostToDevice);
+            auto end = high_resolution_clock::now();
+            auto duration = end - start;
+            std::chrono::milliseconds d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+            std::cout << d.count() << "ms" << std::endl;
+            cudaFree(m_gpu);
+        }
+        cudaFreeHost(m);
+        std::cin.get();
+
+
+    }
     int n = 1;
     int s = 1;
     int M = 2000;
