@@ -13,6 +13,8 @@
 #include <fstream>
 
 kingghidorah::cuda::cuda(int N) {
+	omp_set_dynamic(false);
+	omp_set_num_threads(16);
 	prevT_A = 0;
 	prevN = 0;
 	prevwn = 0;
@@ -1345,8 +1347,8 @@ Eigen::VectorXd kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, d
 	cudaMemcpy(gpu_rhs, rhs, N * sizeof(double), cudaMemcpyHostToDevice);
 	
 	int work_size = 0;
-	int* devInfo_on_gpu;
-	cudaMalloc(&devInfo_on_gpu, sizeof(int));
+	int* devInfo_on_gpu = cuda->info(0);
+	//cudaMalloc(&devInfo_on_gpu, sizeof(int));
 
 	// --- CUDA CHOLESKY initialization
 	cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, &work_size);
@@ -1382,7 +1384,7 @@ Eigen::VectorXd kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, d
 	
 	//cudaFree(work);
 	
-	cudaFree(devInfo_on_gpu);
+	//cudaFree(devInfo_on_gpu);
 	
 	cudaDeviceSynchronize();
 	return x;
@@ -2062,11 +2064,11 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 	std::cout << "cuda-count:" << ss << std::endl;
 	//omp_set_num_threads(cuda->count());
 	
-	//std::vector<cudaStream_t> streams(cuda->count());
+	std::vector<cudaStream_t> streams(cuda->count());
 	for (int i = 0; i < cuda->count(); i++)
 	{
-		//cudaSetDevice(i);
-		//cudaStreamCreate(&streams[i]);
+		cudaSetDevice(i);
+		cudaStreamCreate(&streams[i]);
 	}
 	double* tmp=cuda->work_M2();
 	double* tmp2=cuda->work_rhs2();
@@ -2074,6 +2076,15 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 	memcpy(tmp, this->_dmat.data(), N * N * sizeof(double));
 	//cudaHostAlloc(&tmp2, sizeof(double) * N * N, cudaHostAllocDefault);
 	memcpy(tmp2, I.data(), N * N * sizeof(double));
+	for (int tt = 0; tt < cuda->count(); tt++)
+	{
+		cudaSetDevice(tt);
+		cudaStream_t stream1 = streams[tt];
+		double* gpu_matrix = cuda->work_M(tt);
+		cudaMemcpyAsync(gpu_matrix, tmp, N * N * sizeof(double), cudaMemcpyHostToDevice,stream1);
+	}
+	int ff = omp_get_max_threads();
+	omp_set_num_threads(cuda->count());
 #pragma omp parallel for
 	for (int tt = 0; tt < ss; tt++)
 	{
@@ -2087,18 +2098,16 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 		//std::cout << omp_get_thread_num() << "-" << tt << std::endl;
 		double* gpu_matrix = cuda->work_M(device);
 		double* gpu_rhs = cuda->work_rhs(device);
-		cudaStream_t stream1;
-		cudaStream_t stream2;
+		cudaStream_t stream1 = streams[device];
 		int* devInfo_on_gpu = cuda->info(device);
 		//cudaMalloc(&devInfo_on_gpu, sizeof(int));
-		cudaStreamCreate(&stream1);
-		cudaStreamCreate(&stream2);
+		//cudaStreamCreate(&stream1);
+		//cudaStreamCreate(&stream2);
 		//cudaMemcpy(gpu_matrix, cpu_matrix, N * N * sizeof(double), cudaMemcpyHostToDevice);
 		
 
-		cudaMemcpyAsync(gpu_matrix, tmp, N * N * sizeof(double), cudaMemcpyHostToDevice,stream1);
 
-		cudaMemcpyAsync(gpu_rhs, tmp2+S*N, (E-S) * N * sizeof(double), cudaMemcpyHostToDevice,stream2);
+		cudaMemcpy(gpu_rhs, tmp2+S*N, (E-S) * N * sizeof(double), cudaMemcpyHostToDevice);
 		//cudaStreamSynchronize(stream1);
 		//cudaStreamSynchronize(stream2);
 		int work_size = 0;
@@ -2141,22 +2150,27 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 		cudaMemcpy(tmp2+(S)*N, gpu_rhs, (E-S) * N * sizeof(double), cudaMemcpyDeviceToHost);
 		//cudaFree(work);
 		//cudaStreamSynchronize(stream);
-		cudaStreamDestroy(stream1);
-		cudaStreamDestroy(stream2);
+
+
 		//ret->_dmat.triangularView<Eigen::Upper>() = ret->_dmat.triangularView<Eigen::Lower>();
 
 		auto end = high_resolution_clock::now();
 		auto duration = end - start;
 		std::chrono::milliseconds d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
-		std::cout << "omp:Dpotrf" << d.count() << "ms" << std::endl;
+		//std::cout << "omp:Dpotrf" << d.count() << "ms" << std::endl;
 		//cudaFree(devInfo_on_gpu);
 
 
 	}
+	omp_set_num_threads(ff);
 	cudaMemcpy(ret->_dmat.data(),tmp2, N * N * sizeof(double),cudaMemcpyHostToHost);
 	//cudaFreeHost(tmp);
 	//cudaFreeHost(tmp2);
-
+	for (int i = 0; i < cuda->count(); i++)
+	{
+		cudaSetDevice(i);
+		cudaStreamDestroy(streams[i]);
+	}
 #pragma omp parallel for
 		for (int i = 0; i < N; i++)
 		{
