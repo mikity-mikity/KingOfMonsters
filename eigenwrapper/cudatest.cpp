@@ -49,9 +49,47 @@ int main() {
         mat.clearcoeff();
         double rhs[2000];
         for (int i = 0; i < N; i++)rhs[i] = 1;
+        Eigen::MatrixXd f(N, N);
+        f.setIdentity();
+        Eigen::MatrixXd g(N, N);
+        /*auto start = high_resolution_clock::now();
+        for (int i = 0; i < N; i++)
+        {
+            for (int j = 0; j < N; j++)
+            {
+                double val = 0;
+                for (int k = 0; k < N; k++)
+                {
+                    val += f(i, k) * f(j, k);
+                }
+                g(i, j) = val;
+            }
+        }
+        auto end = high_resolution_clock::now();
+        auto duration = end - start;
+        std::chrono::milliseconds d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+        std::cout << "regular"<<d.count() << "ms" << std::endl;
 
-        auto start = high_resolution_clock::now();
-
+        start = high_resolution_clock::now(); 
+#pragma omp parallel for
+            
+        for (int i = 0; i < N; i++)
+        {
+            for (int j = 0; j < N; j++)
+            {
+                double val = 0;
+                for (int k = 0; k < N; k++)
+                {
+                    val += f(i, k) * f(j, k);
+                }
+                    g(i, j) = val;
+            }
+        }
+        end = high_resolution_clock::now();
+        duration = end - start;
+        d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+        std::cout << "omp"<<d.count() << "ms" << std::endl;
+        */
         int NT = mat.ofAtA(&mat);
 
         kingghidorah::_mySparse mat2;
@@ -63,18 +101,27 @@ int main() {
         std::cout << "count:" << cuda.count() << std::endl;
         std::cout << "fastest" << cuda.fastest() << std::endl;
         std::cout << cuda.device_name() << std::endl;
-        auto now = std::chrono::high_resolution_clock::now();
         std::vector<double> x(N);
         for (int i = 0; i < N; i++)x[i] = 1;
         std::cout << "DN" << std::endl;
         kingghidorah::_mySparse ret;
         ret.resize(N, N);
+        auto start = high_resolution_clock::now();
         mat._solveI_gpu(&cuda, &ret);
+        auto end = high_resolution_clock::now();
+        auto duration = end-start;
+        auto d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+        std::cout << d.count() << "ms" << std::endl;
         for (int i = 0; i < 2; i++)std::cout << ret._at(i, i) << std::endl;
         for (int i = 0; i < 2; i++)
         {
+            start = high_resolution_clock::now();
             mat._solveI_gpu_omp(&cuda, &ret);
             std::cout << "MG" << std::endl;
+            end = high_resolution_clock::now();
+            duration = end-start;
+            std::chrono::milliseconds d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+            std::cout << d.count() << "ms" << std::endl;
             for (int i = 0; i < 2; i++)std::cout << ret._at(i, i) << std::endl;
         }
         

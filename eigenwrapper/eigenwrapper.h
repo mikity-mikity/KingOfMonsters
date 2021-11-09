@@ -7,7 +7,7 @@
 #include "eigen-3.4.0/Eigen/SparseQR"
 #include "eigen-3.4.0/Eigen/SparseLU"
 #include "eigen-3.4.0/Eigen/SparseCholesky"	
-#include  <cuda_runtime.h>
+#include <cuda_runtime.h>
 #include <device_launch_paraMeters.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -21,7 +21,7 @@
 //#define EIGEN_DONT_PARALLELIZE
 //#define EIGEN_DONT_ALIGN
 
-#define MAXDEVICE 10
+#define MAXDEVICE 4
 using namespace std::chrono;
 using std::vector;
 using std::string;
@@ -37,19 +37,23 @@ namespace kingghidorah {
 		bool initialized;
 		int _count = 0;
 		int _fastest = 0;
+		cusolverDnHandle_t solver_handle[MAXDEVICE];
+		cublasHandle_t cublas_handle[MAXDEVICE];
 		double* __mgM[MAXDEVICE];
 		double* __mgrhs[MAXDEVICE];
+		double* __mgM2=0;
+		double* __mgrhs2=0;
 		double* __mgC[MAXDEVICE];
 		double* __work[MAXDEVICE];
 		int work_size[MAXDEVICE];
 		double* _array_d_A[MAXDEVICE];
 		double* _array_d_B[MAXDEVICE];
 		double* _array_d_work[MAXDEVICE];
+		int* __info[MAXDEVICE];
 		int _deviceList[MAXDEVICE];
 		//double* _L=0;
 		std::vector<int> speed;
-		cusolverDnHandle_t solver_handle[MAXDEVICE];
-		cublasHandle_t cublas_handle[MAXDEVICE];
+
 		cusolverMgHandle_t mg_solver = 0;
 
 
@@ -65,8 +69,11 @@ namespace kingghidorah {
 		//double* L();
 		bool valid();
 		std::string device_name();
+		int* info(int i);
 		double* work_M(int i);
 		double* work_rhs(int i);
+		double* work_M2();
+		double* work_rhs2();
 		double* work_C(int i);
 		double* work(int N,int i);
 		int& count();

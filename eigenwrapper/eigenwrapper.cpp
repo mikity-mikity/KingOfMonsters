@@ -23,14 +23,14 @@ kingghidorah::cuda::cuda(int N) {
 	auto err=cuDeviceGetCount(&_count);
 	//mg_solver = 0;
 	//cusolverMgCreate(&mg_solver);
-	/*if (_count > 0)
+	if (_count > 0)
 	{
 		for (int i = 0; i < _count; i++)_deviceList[i] = i;
 	}
 	if (_count > 1)
 	{
 		assert(0 == enablePeerAccess(_count, _deviceList));
-	}*/
+	}
 
 	
 
@@ -75,6 +75,8 @@ kingghidorah::cuda::cuda(int N) {
 	if (!initialized || failed)return;
 
 
+	__mgM2 = 0;
+	__mgrhs2 = 0;
 
 	for (int i = 0; i < MAXDEVICE; i++)
 	{
@@ -83,6 +85,7 @@ kingghidorah::cuda::cuda(int N) {
 		__mgC[i] = 0;
 		__work[i] = 0;
 		work_size[i] = 0;
+		__info[i] = 0;
 	}
 	_fastest = 0;
 
@@ -94,6 +97,8 @@ kingghidorah::cuda::cuda(int N) {
 		cudaMalloc(&__mgrhs[ii], sizeof(double) * _N * _N);
 		cudaMalloc(&__mgC[ii], sizeof(double) * _N * _N);
 	}
+	cudaHostAlloc(&__mgM2, sizeof(double) * _N * _N, cudaHostAllocDefault);
+	cudaHostAlloc(&__mgrhs2, sizeof(double) * _N * _N, cudaHostAllocDefault);
 
 
 	speed.resize(count());
@@ -127,6 +132,7 @@ kingghidorah::cuda::cuda(int N) {
 		}
 	}
 	_fastest = std::distance(speed.begin(), std::min_element(speed.begin(), speed.end()));
+	//_fastest = 1;
 	for (int ii = 0; ii < count(); ii++)
 	{
 		cudaSetDevice(ii);
@@ -134,13 +140,18 @@ kingghidorah::cuda::cuda(int N) {
 		cudaFree(__mgrhs[ii]);
 		cudaFree(__mgC[ii]);
 	}
+	cudaFreeHost(__mgM2);
+	cudaFreeHost(__mgrhs2);
 	for (int ii = 0; ii < count(); ii++)
 	{
 		cudaSetDevice(ii);
-		cudaMalloc(&__mgM[ii], sizeof(double) *N * N);
-		cudaMalloc(&__mgrhs[ii], sizeof(double) * N * N);
+		cudaMalloc(&__mgM[ii], sizeof(double)* N* N);
+		cudaMalloc(&__mgrhs[ii], sizeof(double)* N* N);
 		cudaMalloc(&__mgC[ii], sizeof(double) * N * N);
+		cudaMalloc(&__info[ii], sizeof(int) * 10);
 	}
+	cudaHostAlloc(&__mgM2, sizeof(double)* N* N, cudaHostAllocDefault);
+	cudaHostAlloc(&__mgrhs2, sizeof(double)* N* N, cudaHostAllocDefault);
 	for(int i=0;i<MAXDEVICE;i++)
 	{
 		_array_d_A[i] = 0;// = new double* [count()];
@@ -221,7 +232,16 @@ void kingghidorah::cuda::dispose() {
 			_array_d_B[i] = 0;
 			_array_d_work[i] = 0;
 		}
-
+		if (__mgM2 != 0)
+		{
+			cudaFree(__mgM2);
+		}
+		if (__mgrhs2 != 0)
+		{
+			cudaFree(__mgrhs2);
+		}
+		__mgM2 = 0;
+		__mgrhs2 = 0;
 		for (int i = 0; i < count(); i++)
 		{
 			cudaSetDevice(i);
@@ -241,6 +261,11 @@ void kingghidorah::cuda::dispose() {
 			{
 				cudaFree(__work[i]);
 			}
+			if (__info[i] != 0)
+			{
+				cudaFree(__info[i]);
+			}
+			__info[i] = 0;
 			__mgM[i] = 0;
 			__mgrhs[i] = 0;
 			__mgC[i] = 0;
@@ -264,7 +289,9 @@ void kingghidorah::cuda::dispose() {
 cusolverMgHandle_t kingghidorah::cuda::mgsolver() {
 	return mg_solver;
 }
-
+int* kingghidorah::cuda::info(int i) {
+	return __info[i];
+}
 kingghidorah::cuda::~cuda() {
 
 	dispose();
@@ -274,6 +301,12 @@ double* kingghidorah::cuda::work_M(int i) {
 }
 double* kingghidorah::cuda::work_rhs(int i) {
 	return __mgrhs[i];
+}
+double* kingghidorah::cuda::work_M2() {
+	return __mgM2;
+}
+double* kingghidorah::cuda::work_rhs2() {
+	return __mgrhs2;
 }
 double* kingghidorah::cuda::work_C(int i) {
 	return __mgC[i];
@@ -2025,24 +2058,49 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 	
 	//cholesky5(this->_dmat.data(), cuda->L(), N);
 	//double* cpu_matrix = cuda->L();
-	int ss = cuda->count() * 4;
+	int ss = cuda->count();
+	std::cout << "cuda-count:" << ss << std::endl;
+	//omp_set_num_threads(cuda->count());
+	
+	//std::vector<cudaStream_t> streams(cuda->count());
+	for (int i = 0; i < cuda->count(); i++)
+	{
+		//cudaSetDevice(i);
+		//cudaStreamCreate(&streams[i]);
+	}
+	double* tmp=cuda->work_M2();
+	double* tmp2=cuda->work_rhs2();
+	//cudaHostAlloc(&tmp, sizeof(double) * N * N, cudaHostAllocDefault);
+	memcpy(tmp, this->_dmat.data(), N * N * sizeof(double));
+	//cudaHostAlloc(&tmp2, sizeof(double) * N * N, cudaHostAllocDefault);
+	memcpy(tmp2, I.data(), N * N * sizeof(double));
 #pragma omp parallel for
 	for (int tt = 0; tt < ss; tt++)
 	{
+		auto start = high_resolution_clock::now();
 		int S = (tt * N) / ss;
 		int E = ((tt+1) * N) /ss;
-		auto solver = cuda->solver(tt);
-		auto blas = cuda->blas(tt);
-		cudaSetDevice(tt);
-		double* gpu_matrix = cuda->work_M(tt);
-		double* gpu_rhs = cuda->work_rhs(tt);
-		
+		int device = omp_get_thread_num();
+		auto solver = cuda->solver(device);
+		auto blas = cuda->blas(device);
+		cudaSetDevice(device);
+		//std::cout << omp_get_thread_num() << "-" << tt << std::endl;
+		double* gpu_matrix = cuda->work_M(device);
+		double* gpu_rhs = cuda->work_rhs(device);
+		cudaStream_t stream1;
+		cudaStream_t stream2;
+		int* devInfo_on_gpu = cuda->info(device);
+		//cudaMalloc(&devInfo_on_gpu, sizeof(int));
+		cudaStreamCreate(&stream1);
+		cudaStreamCreate(&stream2);
 		//cudaMemcpy(gpu_matrix, cpu_matrix, N * N * sizeof(double), cudaMemcpyHostToDevice);
-		cudaMemcpy(gpu_matrix, this->_dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
+		
 
-		cudaMemcpy(gpu_rhs, I.data()+S*N, (E-S) * N * sizeof(double), cudaMemcpyHostToDevice);
-		int* devInfo_on_gpu;
-		cudaMalloc(&devInfo_on_gpu, sizeof(int));
+		cudaMemcpyAsync(gpu_matrix, tmp, N * N * sizeof(double), cudaMemcpyHostToDevice,stream1);
+
+		cudaMemcpyAsync(gpu_rhs, tmp2+S*N, (E-S) * N * sizeof(double), cudaMemcpyHostToDevice,stream2);
+		//cudaStreamSynchronize(stream1);
+		//cudaStreamSynchronize(stream2);
 		int work_size = 0;
 		
 		// --- CUDA CHOLESKY initialization
@@ -2055,29 +2113,50 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 		double* work = cuda->work(work_size, tt);
 
 		cudaMemset(work, 0, work_size * sizeof(double));
-		auto now = std::chrono::high_resolution_clock::now();
-		cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, work, work_size, devInfo_on_gpu);
+		
 
-		int devInfo_on_cpu = 0;
+		//start = std::chrono::high_resolution_clock::now();
+		cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, work, work_size, devInfo_on_gpu);
+		//end = high_resolution_clock::now();
+		//duration = end - start;
+		//d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+		//std::cout << "omp:Dpotri" << d.count() << "ms" << std::endl;
+
+		/*int devInfo_on_cpu = 0;
 		cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
 
 		if (0 != devInfo_on_cpu) {
 			ret->_dmat(0, 0) = 34;
 			//return;
-		}
+		}*/
 
 		//cudaMemset(work, 0, work_size2 * sizeof(double));
 		cusolverDnDpotrs(solver, CUBLAS_FILL_MODE_LOWER, N, E-S,gpu_matrix, N, gpu_rhs, N, devInfo_on_gpu);
-		cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
+		/*cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
 		if (devInfo_on_cpu != 0) {
 			ret->_dmat(0, 0) = 12;
 			//return;
-		}
-		cudaMemcpy(ret->_dmat.data()+(S)*N, gpu_rhs, (E-S) * N * sizeof(double), cudaMemcpyDeviceToHost);
+		}*/
+
+		cudaMemcpy(tmp2+(S)*N, gpu_rhs, (E-S) * N * sizeof(double), cudaMemcpyDeviceToHost);
 		//cudaFree(work);
-		cudaFree(devInfo_on_gpu);
+		//cudaStreamSynchronize(stream);
+		cudaStreamDestroy(stream1);
+		cudaStreamDestroy(stream2);
 		//ret->_dmat.triangularView<Eigen::Upper>() = ret->_dmat.triangularView<Eigen::Lower>();
+
+		auto end = high_resolution_clock::now();
+		auto duration = end - start;
+		std::chrono::milliseconds d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+		std::cout << "omp:Dpotrf" << d.count() << "ms" << std::endl;
+		//cudaFree(devInfo_on_gpu);
+
+
 	}
+	cudaMemcpy(ret->_dmat.data(),tmp2, N * N * sizeof(double),cudaMemcpyHostToHost);
+	//cudaFreeHost(tmp);
+	//cudaFreeHost(tmp2);
+
 #pragma omp parallel for
 		for (int i = 0; i < N; i++)
 		{
@@ -2101,11 +2180,16 @@ void kingghidorah::_mySparse::_solveI_gpu(kingghidorah::cuda* cuda,  _mySparse* 
 	ret->_dmat.setZero();
 	int job = 0;
 
+
+	double* tmp = cuda->work_M2();
+	memcpy(tmp, this->_dmat.data(), N * N * sizeof(double));
+
+
 	cudaSetDevice(cuda->fastest());
 	double* gpu_matrix = cuda->work_M(cuda->fastest());
-	cudaMemcpy(gpu_matrix, this->_dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
-	int* devInfo_on_gpu;
-	cudaMalloc(&devInfo_on_gpu, sizeof(int));
+	cudaMemcpy(gpu_matrix, tmp, N * N * sizeof(double), cudaMemcpyHostToDevice);
+	int* devInfo_on_gpu=cuda->info(cuda->fastest());
+	//cudaMalloc(&devInfo_on_gpu, sizeof(int));
 	int work_size = 0;
 	int work_size1 = 0;
 	int work_size2 = 0;
@@ -2119,27 +2203,40 @@ void kingghidorah::_mySparse::_solveI_gpu(kingghidorah::cuda* cuda,  _mySparse* 
 	double* work = cuda->work(work_size,cuda->fastest());
 
 	cudaMemset(work, 0, work_size1*sizeof(double));
-	auto now = std::chrono::high_resolution_clock::now();
+	auto start = std::chrono::high_resolution_clock::now();
 	cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, work, work_size1, devInfo_on_gpu);
+	
+	auto end = high_resolution_clock::now();
+	auto duration = end - start;
+	std::chrono::milliseconds d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+	std::cout << "regular:Dpotrf:" << d.count() << "ms" << std::endl;
+
 	int devInfo_on_cpu = 0;
-	cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
+	/*cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
 
 	if (0 != devInfo_on_cpu) {
 		ret->_dmat(0, 0) = 34;
 		return;
-	}
+	}*/
 
 	cudaMemset(work, 0, work_size2 * sizeof(double));
+	start = std::chrono::high_resolution_clock::now();
 	cusolverDnDpotri(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N,work, work_size2, devInfo_on_gpu);
-	cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
+	end = high_resolution_clock::now();
+	duration = end - start;
+	d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+	std::cout << "regular:Dpotri:" << d.count() << "ms" << std::endl;
+
+	/*cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
 	if (devInfo_on_cpu != 0) {
 		ret->_dmat(0, 0) = 12;
 		return;
-	}
+	}*/
 	cudaMemcpy(ret->_dmat.data(), gpu_matrix, N * N * sizeof(double), cudaMemcpyDeviceToHost);
 	//cudaFree(work);
-	cudaFree(devInfo_on_gpu);
+	//cudaFree(devInfo_on_gpu);
 	//ret->_dmat.triangularView<Eigen::Upper>() = ret->_dmat.triangularView<Eigen::Lower>();
+	//memcpy(tmp, ret->_dmat.data(), N * N * sizeof(double));
 #pragma omp parallel for
 	for (int i = 0; i < N; i++)
 	{
