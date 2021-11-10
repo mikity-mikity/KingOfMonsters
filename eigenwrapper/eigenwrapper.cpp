@@ -2087,12 +2087,12 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 	//cudaMalloc(&devInfo_on_gpu, sizeof(int));
 	int work_size = 0;
 	int work_size1 = 0;
-	//int work_size2 = 0;
+	int work_size2 = 0;
 
 	// --- CUDA CHOLESKY initialization
 	cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, &work_size1);
-	//cusolverDnDpotri_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, &work_size2);
-	work_size = work_size1;/// std::max(work_size1, work_size2);
+	cusolverDnDpotri_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, &work_size2);
+	work_size = std::max(work_size1, work_size2);
 	// --- CUDA POTRF execution	
 	//cudaMalloc(&work, work_size * sizeof(double));
 	double* work = cuda->work(work_size, cuda->fastest());
@@ -2114,13 +2114,13 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 		return;
 	}*/
 
-	//cudaMemset(work, 0, work_size2 * sizeof(double));
-	//start = std::chrono::high_resolution_clock::now();
-	//cusolverDnDpotri(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, work, work_size2, devInfo_on_gpu);
-	//end = high_resolution_clock::now();
-	//duration = end - start;
-	//d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
-	//std::cout << "regular:Dpotri:" << d.count() << "ms" << std::endl;
+	cudaMemset(work, 0, work_size2 * sizeof(double));
+	start = std::chrono::high_resolution_clock::now();
+	cusolverDnDpotri(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, work, work_size2, devInfo_on_gpu);
+	end = high_resolution_clock::now();
+	duration = end - start;
+	d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+	std::cout << "regular:Dpotri:" << d.count() << "ms" << std::endl;
 
 	/*cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
 	if (devInfo_on_cpu != 0) {
@@ -2138,8 +2138,13 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 	std::cout << ret->_dmat(0, 1) << std::endl;
 	std::cout << ret->_dmat(1, 1) << std::endl;
 	I.setIdentity(N, N);
-	Eigen::MatrixXd x = ret->_dmat.triangularView<Eigen::Lower>().solve(I);
-	x = ret->_dmat.triangularView<Eigen::Lower>().transpose().solve(x);
+
+	auto t= ret->_dmat.sparseView(1.0, 0.0000000001).triangularView<Eigen::Lower>();
+
+	//igen::MatrixXd _dd = ret->_dmat.transpose();
+	auto _t= ret->_dmat.transpose().sparseView(1.0, 0.0000000001).triangularView<Eigen::Lower>();
+	Eigen::MatrixXd x = t.solve(I);
+	x = _t.solve(x);
 	ret->_dmat = x;
 
 #pragma omp parallel for
