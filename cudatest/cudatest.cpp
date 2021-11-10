@@ -164,10 +164,16 @@ int main() {
         kingghidorah::_mySparse ret;
         ret.resize(N, N);
         auto start = high_resolution_clock::now();
-        mat._solveI_gpu(&cuda, &ret);
+        mat._solveI(&ret);
         auto end = high_resolution_clock::now();
         auto duration = end - start;
         auto d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+        std::cout << d.count() << "ms" << std::endl;
+        start = high_resolution_clock::now();
+        mat._solveI_gpu(&cuda, &ret);
+        end = high_resolution_clock::now();
+        duration = end - start;
+        d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
         std::cout << d.count() << "ms" << std::endl;
         for (int i = 0; i < 2; i++)std::cout << ret._at(i, i) << std::endl;
         for (int i = 0; i < 2; i++)

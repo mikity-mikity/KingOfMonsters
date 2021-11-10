@@ -2122,8 +2122,9 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 	std::cout << ret->_dmat(0, 1) << std::endl;
 	std::cout << ret->_dmat(1, 1) << std::endl;
 	I.setIdentity(N, N);
-	Eigen::MatrixXd x = ret->_dmat.triangularView<Eigen::Lower>().solve(I);
-	x = ret->_dmat.triangularView<Eigen::Lower>().transpose().solve(x);
+	auto t = ret->_dmat.sparseView(1.0, 0.0000000001).triangularView<Eigen::Lower>();
+	Eigen::MatrixXd x = t.solve(I);
+	x = t.solve(x);
 	ret->_dmat = x;
 
 #pragma omp parallel for
