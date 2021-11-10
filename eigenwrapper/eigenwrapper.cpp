@@ -437,6 +437,7 @@ Eigen::VectorXd kingghidorah::_mySparse::Vector(double* ptr1, int N1) {
 }
 void kingghidorah::_mySparse::plus(_mySparse* m, double sc) {
 	this->_dmat = this->_dmat + m->_dmat * sc;
+	this->_mat[0] = this->_mat[0] + m->_mat[0] * sc;
 }
 void kingghidorah::_mySparse::setmat(Eigen::SparseMatrix<double> mat, int ii) {
 	this->_mat[ii] = mat;
@@ -781,9 +782,10 @@ int kingghidorah::_mySparse::ofAtA(_mySparse* A)
 	}
 	this->_mat[0].setZero();
 	for (int i = 0; i < mt; i++) {
-		this->_dmat += e[i];
+		this->_mat[0] += e[i];
 	}
-	this->_mat[0] = this->_dmat.sparseView(1.0, 0.0000000000001);
+	//this->_mat[0] = this->_dmat.sparseView(1.0, 0.0000000000001);
+	this->_dmat = this->_mat[0];
 	//this->_dmat = this->_mat[0];
 	return _nt;
 }
@@ -1029,15 +1031,6 @@ Eigen::VectorXd kingghidorah::_mySparse::solve0(double* rhs, int N) {
 	return x;
 }
 
-Eigen::VectorXd kingghidorah::_mySparse::_solve0(double* rhs, int N) {
-	Eigen::SimplicialLLT<Eigen::SparseMatrix<double>> LLT;
-	LLT.compute(_mat[0]);
-	Eigen::Map<Eigen::VectorXd> b(rhs, N);
-	Eigen::VectorXd x(_mat[0].cols());
-	x.setZero();
-	x = LLT.solve(b);
-	return x;
-}
 Eigen::VectorXd kingghidorah::_mySparse::_solve0_gpu_mg(kingghidorah::cuda* cuda, double* rhs, int N) {
 	this->_freeze();
 	Eigen::VectorXd x(N);
@@ -2327,11 +2320,20 @@ void kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, _mySparse* m
 	}
 }
 
+Eigen::VectorXd kingghidorah::_mySparse::_solve0(double* rhs, int N) {
+	Eigen::SimplicialLLT<Eigen::SparseMatrix<double>> LLT;
+	LLT.compute(_mat[0]);
+	Eigen::Map<Eigen::VectorXd> b(rhs, N);
+	Eigen::VectorXd x(_mat[0].rows());
+	x.setZero();
+	x = LLT.solve(b);
+	return x;
+}
 Eigen::VectorXd kingghidorah::_mySparse::__solve0(double* rhs, int N) {
 	Eigen::LLT<Eigen::MatrixXd> LLT;
 	LLT.compute(_dmat);
 	Eigen::Map<Eigen::VectorXd> b(rhs, N);
-	Eigen::VectorXd x(_dmat.cols());
+	Eigen::VectorXd x(_dmat.rows());
 	x.setZero();
 	x = LLT.solve(b);
 	return x;
@@ -2360,7 +2362,7 @@ void kingghidorah::_mySparse::minus(_mySparse* m) {
 	this->_freeze();
 
 	_dmat = _dmat - m->_dmat;
-	_mat[0] = _dmat.sparseView(1.0, 0.00000000001);
+	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);
 }
 void kingghidorah::_mySparse::clearcoeff() {
 	for (int ii = 0; ii < _nt; ii++)
@@ -2368,10 +2370,12 @@ void kingghidorah::_mySparse::clearcoeff() {
 		this->coeff[ii] = Eigen::VectorXd::Ones(this->_mat[ii].rows());
 	}
 }
+Eigen::SparseMatrix<double> id;
 void kingghidorah::_mySparse::addsmallidentity(double salt) {
-	Eigen::SparseMatrix<double> id(this->_dmat.rows(), this->_dmat.cols());
+	id.resize(this->_dmat.rows(), this->_dmat.cols());
 	id.setIdentity();
 	this->_dmat += (id * salt);
+	this->_mat[0] += (id * salt);
 }
 /*int main()
 {
