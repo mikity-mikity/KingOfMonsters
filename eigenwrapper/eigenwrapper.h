@@ -125,7 +125,8 @@ namespace kingghidorah {
 	public:
 		_mySparse();
 		~_mySparse();
-		void freeze();
+		void freeze(bool _do);
+		void _freeze();
 		double L2Norm(double* ptr1, int N1, double* ptr2, int N2);
 		Eigen::VectorXd Vector(double* ptr1, int N1);
 		void plus(_mySparse* m, double sc);
@@ -137,8 +138,8 @@ namespace kingghidorah {
 		std::string info();
 		void permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm);
 		void shrink(int M);
-		void _permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm);
-		void _shrink(int M);
+		void _permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm,bool sparse,bool dense);
+		void _shrink(int M,bool sparse,bool dense);
 		void _permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm, Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm2);
 		void _shrink(int M, int N);
 		Eigen::VectorXd get_coeff(int ii);
@@ -193,7 +194,6 @@ namespace kingghidorah {
 		Eigen::MatrixXd inv();
 		Eigen::MatrixXd solve0(_mySparse* rhs);
 		void minus(_mySparse* m);
-		void _freeze();
 		void clearcoeff();
 		void addsmallidentity(double salt);
 		void begin_construct();

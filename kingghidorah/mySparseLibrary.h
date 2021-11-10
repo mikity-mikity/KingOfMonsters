@@ -259,8 +259,8 @@ namespace kingghidorah {
 			dat->init(m->rows(), m->cols());
 			this->dat->_OfDuplicate(m->dat);
 		}
-		void freeze() {
-			this->dat->freeze();
+		void freeze(bool _do) {
+			this->dat->freeze(_do);
 		}
 		mySparse^ Duplicate()
 		{
@@ -325,13 +325,13 @@ namespace kingghidorah {
 		{
 			dat->permute(p->p->perm);
 		}
-		void _shrink(int M)
+		void _shrink(int M,bool sparse,bool dense)
 		{
-			dat->_shrink(M);
+			dat->_shrink(M,sparse,dense);
 		}
-		void _permute(myPermutation^ p)
+		void _permute(myPermutation^ p, bool sparse, bool dense)
 		{
-			dat->_permute(p->p->perm);
+			dat->_permute(p->p->perm, sparse, dense);
 		}
 		void _shrink(int M, int N)
 		{
