@@ -2353,7 +2353,9 @@ Eigen::MatrixXd kingghidorah::_mySparse::solve0(_mySparse* rhs)
 
 void kingghidorah::_mySparse::minus(_mySparse* m) {
 	this->_freeze();
+
 	_dmat = _dmat - m->_dmat;
+	_mat[0] = _dmat.sparseView(1.0, 0.00000000001);
 }
 void kingghidorah::_mySparse::clearcoeff() {
 	for (int ii = 0; ii < _nt; ii++)
