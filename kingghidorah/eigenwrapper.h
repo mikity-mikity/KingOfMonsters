@@ -129,7 +129,7 @@ namespace kingghidorah {
 		void _freeze();
 		double L2Norm(double* ptr1, int N1, double* ptr2, int N2);
 		Eigen::VectorXd Vector(double* ptr1, int N1);
-		void plus(_mySparse* m, double sc);
+		void plus(_mySparse* m, double sc, bool dense, bool sparse);
 		double at(int i, int ii);
 		double _at(int i);
 		double _at(int i, int j);
@@ -195,7 +195,7 @@ namespace kingghidorah {
 		Eigen::MatrixXd solve0(_mySparse* rhs);
 		void minus(_mySparse* m);
 		void clearcoeff();
-		void addsmallidentity(double salt);
+		void addsmallidentity(double salt, bool sparse, bool dense);
 		void begin_construct();
 		void end_construct(int c);
 		int numBlocks();

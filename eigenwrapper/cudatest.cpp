@@ -86,8 +86,8 @@ int main() {
 
     int n = 1;
     int s = 1;
-    int M = 2000;
-    int N = 2000;
+    int M = 2;
+    int N = 2;
 
     for (int t = 0; t < 2; t++)
     {
@@ -98,10 +98,10 @@ int main() {
         mat.resize(M, N);
         //kingghidorah::_mySparse ret;
         mat._resize(M, N);
-        for (int i = 0; i < M; i++)
-        {
-            mat.adddat(i, i, 4);
-        }
+        mat.adddat(0, 0, 2);
+        mat.adddat(0, 1, 1);
+        mat.adddat(1, 0, 1);
+        mat.adddat(1, 1, 4);
         mat.merge();
         mat.clearcoeff();
         double rhs[2000];
@@ -164,12 +164,15 @@ int main() {
         kingghidorah::_mySparse ret;
         ret.resize(N, N);
         auto start = high_resolution_clock::now();
-        mat._solveI_gpu(&cuda, &ret);
+        mat._solveI_gpu(&cuda,&ret);
         auto end = high_resolution_clock::now();
         auto duration = end - start;
         auto d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
         std::cout << d.count() << "ms" << std::endl;
-        for (int i = 0; i < 2; i++)std::cout << ret._at(i, i) << std::endl;
+        std::cout << ret._at(0, 0) << std::endl;
+        std::cout << ret._at(0, 1) << std::endl;
+        std::cout << ret._at(1, 0) << std::endl;
+        std::cout << ret._at(1, 1) << std::endl;
         for (int i = 0; i < 2; i++)
         {
             start = high_resolution_clock::now();
@@ -179,7 +182,10 @@ int main() {
             duration = end - start;
             std::chrono::milliseconds d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
             std::cout << d.count() << "ms" << std::endl;
-            for (int i = 0; i < 2; i++)std::cout << ret._at(i, i) << std::endl;
+            std::cout << ret._at(0, 0) << std::endl;
+            std::cout << ret._at(0, 1) << std::endl;
+            std::cout << ret._at(1, 0) << std::endl;
+            std::cout << ret._at(1, 1) << std::endl;
         }
 
         //cuda.dispose();

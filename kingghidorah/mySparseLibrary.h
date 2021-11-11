@@ -561,11 +561,11 @@ namespace kingghidorah {
 			System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
 			return ret;
 		}
-		void plus(mySparse^ m, double a) {
-			this->dat->plus(m->dat, a);
+		void plus(mySparse^ m, double a,bool dense,bool sparse) {
+			this->dat->plus(m->dat, a,dense,sparse);
 		}
-		void addsmallidentity(double salt) {
-			this->dat->addsmallidentity(salt);
+		void addsmallidentity(double salt,bool sparse,bool dense) {
+			this->dat->addsmallidentity(salt,sparse,dense);
 		}
 		void Clear() {
 			this->dat->Clear();
