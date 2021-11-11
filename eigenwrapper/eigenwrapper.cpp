@@ -2129,17 +2129,19 @@ void cholesky2(double* A, double* L,int n) {
 void initidentiy(kingghidorah::cuda* cuda,int N) {
 	double _a = 0;
 	double _b = 1;
+	I.setIdentity(N, N);
 #pragma omp parallel for
 	for (int ii = 0; ii < cuda->count(); ii++)
 	{
 		cudaSetDevice(ii);
 		double* gpu_rhs = cuda->work_rhs(ii);
 		auto stream = streams[ii];
-		cudaMemsetAsync(gpu_rhs,0, N * N * sizeof(double),stream);
-		for (int i = 0; i < N; i++)
-		{
-			cudaMemcpyAsync(gpu_rhs + (i+i*N), &_b, 1*sizeof(double), cudaMemcpyHostToDevice,stream);
-		}
+		cudaMemcpyAsync(gpu_rhs, I.data(), sizeof(double) * N * N, cudaMemcpyDeviceToHost, stream);
+		//cudaMemsetAsync(gpu_rhs,0, N * N * sizeof(double),stream);
+		//for (int i = 0; i < N; i++)
+		//{
+		//	cudaMemcpyAsync(gpu_rhs + (i+i*N), &_b, 1*sizeof(double), cudaMemcpyHostToDevice,stream);
+		//}
 	}
 
 }
@@ -2237,6 +2239,8 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 		cudaSetDevice(i);
 		cudaDeviceSynchronize();
 	}
+	int job = 0;
+	int ss = N / 20;
 #pragma omp parallel for
 	for (int ii = 0; ii < nn; ii++)
 	{
@@ -2254,18 +2258,22 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 		int devInfo_on_cpu = 0;
 		int _S = ii * N / nn;
 		int _E = (ii+1) * N / nn;
-		cudaStreamSynchronize(stream);
-//#pragma omp parallel for
-		for (int jj = 0; jj < 3; jj++)
+		while (true)
 		{
-			int S = _S + (_E - _S) * jj / 3;
-			int E = _S + (_E - _S) * (jj+1) / 3;
+			int S = 0;
+			int E = 0;
+#pragma critical
+			{
+				S = job;
+				E = job + ss;
+				if (E > N)E = N;
+				job = E;
+			}
+			if (S >= N)break;
 			//cudaStream_t _stream;
 			//cudaStreamCreate(&_stream);
-			cusolverDnSetStream(solver, __streams[ii][jj]);
 			cusolverDnDpotrs(solver, CUBLAS_FILL_MODE_LOWER, N, E - S, gpu_matrix, N, gpu_rhs + S * N, N, devInfo_on_gpu);
-			cudaMemcpyAsync(ret->_dmat.data() + S * N, gpu_rhs + S * N, (E - S) * N * sizeof(double), cudaMemcpyDeviceToHost, __streams[ii][jj]);
-			//cudaStreamDestroy(_stream);
+			cudaMemcpyAsync(ret->_dmat.data() + S * N, gpu_rhs + S * N, (E - S) * N * sizeof(double), cudaMemcpyDeviceToHost, stream);
 		}
 		cusolverDnSetStream(solver,streams[ii]);
 	}
