@@ -464,8 +464,8 @@ void kingghidorah::_mySparse::plus(_mySparse* m, double sc,bool dense,bool spars
 	this->_mat[0] = this->_mat[0] + m->_mat[0] * sc;
 	if (dense)
 	{
-		this->_mat[0] = this->_mat[0] + m->_mat[0] * sc;
-		this->_dmat = this->_mat[0];// this->_dmat + m->_dmat * sc;
+		//this->_mat[0] = this->_mat[0] + m->_mat[0] * sc;
+		this->_dmat += m->_mat[0] * sc;
 	}
 }
 void kingghidorah::_mySparse::setmat(Eigen::SparseMatrix<double> mat, int ii) {
@@ -760,12 +760,9 @@ void kingghidorah::_mySparse::OfDuplicate(_mySparse* mat)
 }
 void kingghidorah::_mySparse::_OfDuplicate(_mySparse* mat)
 {
-	if (mat->_mat.size() > 0)
-	{
-		if(this->_mat.size()==0)
-			this->_mat.resize(1);
-		this->_mat[0] = mat->_mat[0];
-	}
+	if (this->_mat.size() == 0)
+	this->_mat.resize(1);
+	this->_mat[0] = mat->_mat[0];
 	//this->_dmat = this->_mat[0];// mat->_dmat;
 }
 void kingghidorah::_mySparse::ofDat()
@@ -791,7 +788,7 @@ int kingghidorah::_mySparse::numBlocks()
 }
 std::vector<Eigen::SparseMatrix<double>> e;
 //std::vector<Eigen::MatrixXd> e;
-int kingghidorah::_mySparse::ofAtA(_mySparse* A)
+int kingghidorah::_mySparse::ofAtA(_mySparse* A,bool sparse)
 {
 	int nn = A->cols();
 	this->_dmat.setZero(nn, nn);
@@ -820,12 +817,18 @@ int kingghidorah::_mySparse::ofAtA(_mySparse* A)
 		}
 	}
 	this->_mat[0].setZero();
-	for (int i = 0; i < mt; i++) {
-		this->_dmat += e[i];
+	if (sparse) {
+		for (int i = 0; i < mt; i++) {
+			this->_mat[0] += e[i];
+		}
+		//this->_dmat = this->_mat[0];
 	}
-	this->_mat[0] = this->_dmat.sparseView(1.0, 0.0000000000001);
-	//this->_dmat = this->_mat[0];
-	//this->_dmat = this->_mat[0];
+	else {
+		for (int i = 0; i < mt; i++) {
+			this->_dmat += e[i];
+		}
+	}
+	//this->_mat[0] = this->_dmat.sparseView(1.0, 0.0000000000001);
 	return _nt;
 }
 void kingghidorah::_mySparse::_freeze() {
@@ -980,7 +983,7 @@ Eigen::VectorXd kingghidorah::_mySparse::_ofBtAB(_mySparse* B, double* ptr, int 
 	return D * b;
 }
 
-void kingghidorah::_mySparse::ofAtB(_mySparse* B)
+void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 {
 
 	int nn = this->cols();
@@ -990,7 +993,7 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B)
 	int mt = omp_get_max_threads();
 
 	_mt = mt;
-	if(mt>e.size())
+	if (mt > e.size())
 		e.resize(mt);
 	for (int i = 0; i < mt; i++) {
 		e[i].resize(nn, mm);
@@ -1008,17 +1011,20 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B)
 		}
 	}
 	if (_mat.size() == 0)_mat.resize(1);
-	this->_mat[0].resize(nn,mm);
+	this->_mat[0].resize(nn, mm);
 	this->_mat[0].setZero();
 
-	for (int i = 0; i < mt; i++) {
-		this->_dmat += e[i];
+	if (sparse)
+	{
+		for (int i = 0; i < mt; i++) {
+			this->_mat[0] += e[i];
+		}
 	}
-	/*for (int i = 0; i < mt; i++) {
-		this->_dmat += e[i];
-		this->_mat[0] += e[i];
-	}*/
-	this->_mat[0] = this->_dmat.sparseView(1.0, 0.0000000000001);
+	else {
+		for (int i = 0; i < mt; i++) {
+			this->_dmat += e[i];
+		}
+	}
 	//this->_dmat = this->_mat[0];
 }
 
@@ -1403,7 +1409,7 @@ Eigen::VectorXd kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, d
 	cudaMemcpyAsync(gpu_rhs, rhs, N * sizeof(double), cudaMemcpyHostToDevice, stream);
 
 	int work_size = 0;
-	int* devInfo_on_gpu = cuda->info(0);
+	int* devInfo_on_gpu = cuda->info(device);
 	//cudaMalloc(&devInfo_on_gpu, sizeof(int));
 
 	// --- CUDA CHOLESKY initialization
@@ -2137,6 +2143,15 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 	int nn = cuda->count();
 	initidentiy(cuda, N);
 	ret->_dmat.setZero();
+	std::vector< std::vector<cudaStream_t>> __streams(nn);
+	for (int ii = 0; ii < nn; ii++)
+	{
+		__streams[ii].resize(3);
+		cudaSetDevice(ii);
+		cudaStreamCreate(&__streams[ii][0]);
+		cudaStreamCreate(&__streams[ii][1]);
+		cudaStreamCreate(&__streams[ii][2]);
+	}
 #pragma omp parallel for
 	for (int ii = 0; ii < nn; ii++)
 	{
@@ -2148,7 +2163,7 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 		cudaSetDevice(ii);
 		auto stream=streams[ii];
 		//cudaStreamCreate(&stream);
-		//cusolverDnSetStream(solver, stream);
+		
 
 		double* gpu_matrix = cuda->work_M(ii);
 		double* gpu_rhs = cuda->work_rhs(ii);
@@ -2164,6 +2179,7 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 
 		cudaMemsetAsync(work, 0, work_size * sizeof(double), stream);
 		auto start = std::chrono::high_resolution_clock::now();
+		cusolverDnSetStream(solver, stream);
 		cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, work, work_size, devInfo_on_gpu);
 
 		auto end = high_resolution_clock::now();
@@ -2172,10 +2188,10 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 		std::cout << "regular:Dpotrf:" << d.count() << "ms" << std::endl;
 
 		int devInfo_on_cpu = 0;
-		//cudaStreamSynchronize(stream);
 		start = std::chrono::high_resolution_clock::now();
 		int _S = ii * N / nn;
 		int _E = (ii+1) * N / nn;
+		cudaStreamSynchronize(stream);
 //#pragma omp parallel for
 		for (int jj = 0; jj < 1; jj++)
 		{
@@ -2183,11 +2199,12 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 			int E = _S + (_E - _S) * (jj+1) / 1;
 			//cudaStream_t _stream;
 			//cudaStreamCreate(&_stream);
-			//cusolverDnSetStream(solver, _stream);
+			cusolverDnSetStream(solver, __streams[ii][jj]);
 			cusolverDnDpotrs(solver, CUBLAS_FILL_MODE_LOWER, N, E - S, gpu_matrix, N, gpu_rhs + S * N, N, devInfo_on_gpu);
-			cudaMemcpyAsync(ret->_dmat.data() + S * N, gpu_rhs + S * N, (E - S) * N * sizeof(double), cudaMemcpyDeviceToHost, stream);
+			cudaMemcpyAsync(ret->_dmat.data() + S * N, gpu_rhs + S * N, (E - S) * N * sizeof(double), cudaMemcpyDeviceToHost, __streams[ii][jj]);
 			//cudaStreamDestroy(_stream);
 		}
+		cusolverDnSetStream(solver,streams[ii]);
 		//cudaStreamDestroy(stream);
 		end = high_resolution_clock::now();
 		duration = end - start;
@@ -2197,6 +2214,14 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 
 	}
 	cudaDeviceSynchronize();
+	for (int ii = 0; ii < nn; ii++)
+	{
+		cudaSetDevice(ii);
+		cudaStreamDestroy(__streams[ii][0]);
+		cudaStreamDestroy(__streams[ii][1]);
+		cudaStreamDestroy(__streams[ii][2]);
+	}
+
 	/*
 #pragma omp parallel for
 	for (int i = 0; i < N; i++)

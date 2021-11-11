@@ -341,16 +341,16 @@ namespace kingghidorah {
 		{
 			dat->_permute(p->p->perm, q->p->perm);
 		}
-		int ofAtA(mySparse^ m) {
-			return dat->ofAtA(m->dat);
+		int ofAtA(mySparse^ m,bool sparse) {
+			return dat->ofAtA(m->dat,sparse);
 		}
 		System::String^ _ofAtA(mySparse^ m) {
 			auto str=dat->_ofAtA(m->dat);
 			auto ret = gcnew System::String(str.c_str());
 			return ret;
 		}
-		void ofAtB(mySparse^ m) {
-			dat->ofAtB(m->dat);
+		void ofAtB(mySparse^ m,bool sparse) {
+			dat->ofAtB(m->dat,sparse);
 		}
 		void _ofAtB(mySparse^ A, mySparse^ B)
 		{

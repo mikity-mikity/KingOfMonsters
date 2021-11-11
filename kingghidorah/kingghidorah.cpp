@@ -20,7 +20,7 @@ void main()
     mat->merge();
     mat->clearcoeff();
     if (parallel)
-        mat->ofAtA(mat);
+        mat->ofAtA(mat,true);
     else
         mat->_ofAtA(mat);
     std::cout<<mat->_at(0, 0) << std::endl;
@@ -47,7 +47,7 @@ void main()
     std::cout << mat->num_elem(3) << std::endl;
     mat->freezecoeff();
     if (parallel)
-        mat->ofAtA(mat);
+        mat->ofAtA(mat,true);
     else
         mat->_ofAtA(mat);
     std::cout<<mat->_at(0, 0) << std::endl;

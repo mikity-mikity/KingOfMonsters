@@ -147,7 +147,7 @@ int main() {
         d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
         std::cout << "omp"<<d.count() << "ms" << std::endl;
         */
-        int NT = mat.ofAtA(&mat);
+        int NT = mat.ofAtA(&mat,true);
 
         kingghidorah::_mySparse mat2;
         kingghidorah::_mySparse mat3;

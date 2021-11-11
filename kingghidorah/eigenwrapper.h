@@ -162,9 +162,9 @@ namespace kingghidorah {
 		void _OfDuplicate(_mySparse* mat);
 		void ofDat();
 		void freezecoeff();
-		int ofAtA(_mySparse* A);
+		int ofAtA(_mySparse* A, bool sparse);
 		std::string _ofAtA(_mySparse* A);
-		void ofAtB(_mySparse* B);
+		void ofAtB(_mySparse* B, bool sparse);
 		void _ofAtB(_mySparse* B, _mySparse* C);
 		Eigen::VectorXd _ofBtAB(_mySparse* B, double* ptr, int N, _mySparse* C);
 		void _ofAtB_gpu(kingghidorah::cuda* cuda, _mySparse* B, _mySparse* C);
