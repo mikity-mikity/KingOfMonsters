@@ -522,7 +522,7 @@ void kingghidorah::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic, 
 	if(sparse)
 	if (_mat.size() >= 1)
 	{
-		if (_mat[0].rows() == _dmat.rows() && _mat[0].cols() == _dmat.cols())
+		//if (_mat[0].rows() == _dmat.rows() && _mat[0].cols() == _dmat.cols())
 		{
 			_mat[0] = perm * (_mat[0]) * pt;
 		}
@@ -2136,12 +2136,12 @@ void initidentiy(kingghidorah::cuda* cuda,int N) {
 		cudaSetDevice(ii);
 		double* gpu_rhs = cuda->work_rhs(ii);
 		auto stream = streams[ii];
-		cudaMemcpyAsync(gpu_rhs, I.data(), sizeof(double) * N * N, cudaMemcpyDeviceToHost, stream);
-		//cudaMemsetAsync(gpu_rhs,0, N * N * sizeof(double),stream);
-		//for (int i = 0; i < N; i++)
-		//{
-		//	cudaMemcpyAsync(gpu_rhs + (i+i*N), &_b, 1*sizeof(double), cudaMemcpyHostToDevice,stream);
-		//}
+		cudaMemcpyAsync(gpu_rhs, I.data(), sizeof(double) * N * N, cudaMemcpyHostToDevice, stream);
+		/*cudaMemsetAsync(gpu_rhs, 0, N * N * sizeof(double), stream);
+		for (int i = 0; i < N; i++)
+		{
+			cudaMemcpyAsync(gpu_rhs + (i+i*N), &_b, 1*sizeof(double), cudaMemcpyHostToDevice,stream);
+		}*/
 	}
 
 }
@@ -2241,6 +2241,7 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 	}
 	int job = 0;
 	int ss = N / 20;
+	if (ss == 0) ss = 1;
 #pragma omp parallel for
 	for (int ii = 0; ii < nn; ii++)
 	{
@@ -2256,13 +2257,13 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 
 
 		int devInfo_on_cpu = 0;
-		int _S = ii * N / nn;
-		int _E = (ii+1) * N / nn;
+		//int _S = ii * N / nn;
+		//int _E = (ii+1) * N / nn;
 		while (true)
 		{
 			int S = 0;
 			int E = 0;
-#pragma critical
+#pragma omp critical
 			{
 				S = job;
 				E = job + ss;
@@ -2275,7 +2276,7 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 			cusolverDnDpotrs(solver, CUBLAS_FILL_MODE_LOWER, N, E - S, gpu_matrix, N, gpu_rhs + S * N, N, devInfo_on_gpu);
 			cudaMemcpyAsync(ret->_dmat.data() + S * N, gpu_rhs + S * N, (E - S) * N * sizeof(double), cudaMemcpyDeviceToHost, stream);
 		}
-		cusolverDnSetStream(solver,streams[ii]);
+		//cusolverDnSetStream(solver,streams[ii]);
 	}
 	cudaDeviceSynchronize();
 	for (int ii = 0; ii < nn; ii++)
