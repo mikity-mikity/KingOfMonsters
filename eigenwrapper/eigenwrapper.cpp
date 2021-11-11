@@ -2299,7 +2299,8 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 	*/
 
 }
-void kingghidorah::_mySparse::_solveI_gpu(kingghidorah::cuda* cuda, _mySparse* ret)
+
+/*void kingghidorah::_mySparse::_solveI_gpu(kingghidorah::cuda* cuda, _mySparse* ret)
 {
 	this->_freeze();
 
@@ -2307,7 +2308,7 @@ void kingghidorah::_mySparse::_solveI_gpu(kingghidorah::cuda* cuda, _mySparse* r
 
 	ret->_dmat.resize(N, N);
 	ret->_dmat.setZero();
-	initidentiy(cuda, N);
+	//initidentiy(cuda, N);
 	if (!cuda->valid())return;
 	
 		int ii = cuda->fastest();
@@ -2332,53 +2333,136 @@ void kingghidorah::_mySparse::_solveI_gpu(kingghidorah::cuda* cuda, _mySparse* r
 		int work_size2 = 0;
 
 		// --- CUDA CHOLESKY initialization
-		cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, &work_size1);
-		//cusolverDnDpotri_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, &work_size2);
-		work_size = work_size1;// std::max(work_size1, work_size2);
+		cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_UPPER, N, gpu_matrix, N, &work_size1);
+		cusolverDnHandle_t newsolver;
+		cusolverDnCreate(&newsolver);
+		cusolverDnDpotri_bufferSize(newsolver, CUBLAS_FILL_MODE_UPPER, N, gpu_matrix, N, &work_size2);
+
+		work_size = std::max(work_size1, work_size2);
 		// --- CUDA POTRF execution	
 		double* work = cuda->work(work_size, ii);
 
 		cudaMemsetAsync(work, 0, work_size1 * sizeof(double), stream);
 		auto start = std::chrono::high_resolution_clock::now();
-		cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, work, work_size1, devInfo_on_gpu);
+		cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_UPPER, N, gpu_matrix, N, work, work_size1, devInfo_on_gpu);
 		int devInfo_on_cpu = 0;
-		cudaMemcpyAsync(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int) * 1, cudaMemcpyDeviceToHost,stream);
-		if (devInfo_on_cpu != 0)
-		{
-			ret->_dmat.data()[0] = devInfo_on_cpu;
-			return;
-		}
+		//cudaMemcpyAsync(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int) * 1, cudaMemcpyDeviceToHost,stream);
+
 		auto end = high_resolution_clock::now();
 		auto duration = end - start;
 		std::chrono::milliseconds d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
 		std::cout << "regular:Dpotrf___AAA___:" << d.count() << "ms" << std::endl;
 
-		//cudaStreamSynchronize(stream);
+		cudaStreamSynchronize(stream);
 		//cudaDeviceSynchronize(); 
 		//start = std::chrono::high_resolution_clock::now();
-		cusolverDnDpotrs(solver, CUBLAS_FILL_MODE_LOWER, N,N, gpu_matrix, N, gpu_rhs,N, devInfo_on_gpu);
-		cudaMemcpyAsync(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int) * 1, cudaMemcpyDeviceToHost,stream);
-		if (devInfo_on_cpu != 0)
+		cudaMemsetAsync(work, 0, work_size2 * sizeof(double), stream);
+		cudaDeviceSynchronize();
+
+		cudaStream_t stream2;
+		cudaStreamCreate(&stream2);
+		cusolverDnSetStream(newsolver, stream2);
+		auto err = cusolverDnDpotri(newsolver, CUBLAS_FILL_MODE_UPPER, N, gpu_matrix, N, work,work_size2, devInfo_on_gpu);
+		cusolverDnDestroy(newsolver);
+		cudaStreamDestroy(stream2);
+		cudaMemcpyAsync(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int) * 1, cudaMemcpyDeviceToHost, stream);
+		//if (devInfo_on_cpu != 0)
 		{
 			ret->_dmat.data()[0] = devInfo_on_cpu;
+			ret->_dmat.data()[1] = devInfo_on_cpu;
+			ret->_dmat.data()[2] = err;
+			ret->_dmat.data()[3] = err;
 			return;
 		}
-		cudaMemcpyAsync(ret->_dmat.data(), gpu_rhs, N * N * sizeof(double), cudaMemcpyDeviceToHost, stream);
+		cudaMemcpyAsync(ret->_dmat.data(), gpu_matrix, N * N * sizeof(double), cudaMemcpyDeviceToHost, stream);
 		//cudaStreamDestroy(_stream);
 	
 		//cudaStreamDestroy(stream);
 
 	cudaDeviceSynchronize();
 	
-/*#pragma omp parallel for
+#pragma omp parallel for
 	for (int i = 0; i < N; i++)
 	{
 		for (int j = 0; j < i; j++)
 		{
-			ret->_dmat(j, i) = ret->_dmat(i, j);
+			//ret->_dmat(i, j) = ret->_dmat(j, i);
 		}
-	}*/
+	}
 	
+}*/
+
+void kingghidorah::_mySparse::_solveI_gpu(kingghidorah::cuda* cuda, _mySparse* ret)
+{
+	this->_freeze();
+
+	int N = this->_dmat.cols();
+
+	ret->_dmat.resize(N, N);
+	ret->_dmat.setZero();
+	initidentiy(cuda, N);
+	if (!cuda->valid())return;
+
+	int ii = cuda->fastest();
+	auto solver = cuda->solver(ii);
+	auto blas = cuda->blas(ii);
+	//Eigen::Map<Eigen::VectorXd> b(rhs, N);
+	int job = 0;
+
+	cudaSetDevice(ii);
+	auto stream = streams[ii];
+	cusolverDnSetStream(solver, stream);
+	//cudaStreamCreate(&stream);
+	//cusolverDnSetStream(solver, stream);
+
+	double* gpu_matrix = cuda->work_M(ii);
+	double* gpu_rhs = cuda->work_rhs(ii);
+	cudaMemcpyAsync(gpu_matrix, this->_dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice, stream);
+	int* devInfo_on_gpu = cuda->info(ii);
+
+	int work_size = 0;
+	int work_size1 = 0;
+	int work_size2 = 0;
+
+	// --- CUDA CHOLESKY initialization
+	cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, &work_size1);
+	//cusolverDnDpotri_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, &work_size2);
+	work_size = work_size1;// std::max(work_size1, work_size2);
+	// --- CUDA POTRF execution	
+	double* work = cuda->work(work_size, ii);
+
+	cudaMemsetAsync(work, 0, work_size1 * sizeof(double), stream);
+	auto start = std::chrono::high_resolution_clock::now();
+	cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, work, work_size1, devInfo_on_gpu);
+	int devInfo_on_cpu = 0;
+	cudaMemcpyAsync(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int) * 1, cudaMemcpyDeviceToHost, stream);
+	if (devInfo_on_cpu != 0)
+	{
+		ret->_dmat.data()[0] = devInfo_on_cpu;
+		return;
+	}
+	auto end = high_resolution_clock::now();
+	auto duration = end - start;
+	std::chrono::milliseconds d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+	std::cout << "regular:Dpotrf___AAA___:" << d.count() << "ms" << std::endl;
+
+	//cudaStreamSynchronize(stream);
+	//cudaDeviceSynchronize(); 
+	//start = std::chrono::high_resolution_clock::now();
+	cusolverDnDpotrs(solver, CUBLAS_FILL_MODE_LOWER, N, N, gpu_matrix, N, gpu_rhs, N, devInfo_on_gpu);
+	cudaMemcpyAsync(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int) * 1, cudaMemcpyDeviceToHost, stream);
+	if (devInfo_on_cpu != 0)
+	{
+		ret->_dmat.data()[0] = devInfo_on_cpu;
+		return;
+	}
+	cudaMemcpyAsync(ret->_dmat.data(), gpu_rhs, N * N * sizeof(double), cudaMemcpyDeviceToHost, stream);
+	//cudaStreamDestroy(_stream);
+
+	//cudaStreamDestroy(stream);
+
+	cudaDeviceSynchronize();
+
 }
 void kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, _mySparse* mat, _mySparse* ret)
 {
