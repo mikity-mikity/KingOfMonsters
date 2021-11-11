@@ -19,7 +19,7 @@
 #include <chrono>
 #include <vector>
 //#define EIGEN_DONT_PARALLELIZE
-//#define EIGEN_DONT_ALIGN
+#define EIGEN_DONT_ALIGN
 
 #define MAXDEVICE 4
 using namespace std::chrono;
@@ -31,7 +31,7 @@ using std::string;
 namespace kingghidorah {
 	class cuda {
 	private:
-
+		bool _canpeer = false;
 		std::vector<std::string> rank;
 		bool failed;
 		bool initialized;
@@ -68,6 +68,7 @@ namespace kingghidorah {
 		cusolverMgHandle_t mgsolver();
 		//double* L();
 		bool valid();
+		bool canpeer();
 		std::string device_name();
 		int* info(int i);
 		double* work_M(int i);

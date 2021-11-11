@@ -7,11 +7,11 @@
 #define IDX1F(i) ((i)-1)
 #endif /* IDX1F */
 
-static int enablePeerAccess(const int nbGpus, const int* deviceList)
+static bool enablePeerAccess(const int nbGpus, const int* deviceList)
 {
     int currentDevice = 0;
     cudaGetDevice(&currentDevice);
-
+    bool _canaccesspeer = true;
     /* Remark: access granted by this cudaDeviceEnablePeerAccess is unidirectional */
     /* Rows and columns represents a connectivity matrix between GPUs in the system */
     for (int row = 0; row < nbGpus; row++) {
@@ -26,13 +26,16 @@ static int enablePeerAccess(const int nbGpus, const int* deviceList)
                     printf("\t Enable peer access from gpu %d to gpu %d\n", row, col);
                     cudaStat2 = cudaDeviceEnablePeerAccess(col, 0);
                 }
+                else {
+                    _canaccesspeer = false;
+                }
                 assert(cudaStat1 == cudaSuccess);
                 assert(cudaStat2 == cudaSuccess);
             }
         }
     }
     cudaSetDevice(currentDevice);
-    return 0;
+    return _canaccesspeer;
 }
 
 static int workspaceFree(
