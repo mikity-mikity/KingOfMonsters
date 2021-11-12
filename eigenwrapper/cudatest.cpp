@@ -33,56 +33,67 @@ int main() {
         int N = 2;
         double* c;
         double* m;
+        double* e;
         cuInit(0);
         cudaSetDevice(0);
         c = (double*)malloc(sizeof(double) * N * N);
         cudaMallocHost((void**)&m, sizeof(double) * N * N);
+        cudaMallocHost((void**)&e, sizeof(double) * N * N);
         Eigen::MatrixXd f(N, N);
-        for (int i = 0; i < N; i++)
-        {
-            for (int j = 0; j < N; j++)
-            {
-                m[i * N + j] = 1;
-            }
-        }
-#pragma omp parallel for
-        for (int tt = 0; tt < 2; tt++)
-        {
-            cudaSetDevice(tt % 2);
-            double* m_gpu;
-            cudaMalloc((void**)&m_gpu, sizeof(double) * N * N);
-            auto start = high_resolution_clock::now();
-            cudaMemcpy(m_gpu, m, sizeof(double) * N * N, cudaMemcpyHostToDevice);
-            auto end = high_resolution_clock::now();
-            auto duration = end - start;
-            std::chrono::milliseconds d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
-            std::cout << "host->device" << d.count() << "ms" << std::endl;
+        m[0] = 1;
+        m[1] = 1;
+        m[2] = 1;
+        m[3] = 3;
 
-            start = high_resolution_clock::now();
-            cudaMemcpy(m, m_gpu, sizeof(double) * N * N, cudaMemcpyDeviceToHost);
-            cudaDeviceSynchronize();
-            end = high_resolution_clock::now();
-            duration = end - start;
-            d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
-            std::cout << "device->host" << d.count() << "ms" << std::endl;
 
-            cudaFree(m_gpu);
-        }
-        auto start = high_resolution_clock::now();
         memcpy(f.data(), m, sizeof(double) * N * N);
-        auto end = high_resolution_clock::now();
-        auto duration = end - start;
-        std::chrono::milliseconds d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
-        std::cout << d.count() << "ms" << std::endl;
+        std::cout << f << std::endl;
+//#pragma omp parallel for
+        cudaStream_t stream;
+        cudaStreamCreate(&stream);
+        cudaSetDevice(0);
+        double* m_gpu;
+        cudaMallocAsync((void**)&m_gpu, sizeof(double) * N * N,stream);
+
+        cudaMemcpyAsync(m_gpu, m, sizeof(double) * N * N, cudaMemcpyHostToDevice,stream);
+        double* work;
+        int work_size;
+        int work_size1=0;
+        int work_size2=0;
+        cusolverDnHandle_t solver;
+        cusolverDnCreate(&solver);
+        cusolverDnSetStream(solver,stream);
+        cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, &work_size1);
+        cusolverDnDpotri_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, &work_size2);
+        work_size = std::max(work_size1, work_size2);
+        cudaMallocAsync(&work, sizeof(double)*work_size,stream);
+        cudaMemsetAsync(work, 0, sizeof(double) * work_size1,stream);
+        int *devInfo;
+        cudaMallocAsync(&devInfo, sizeof(int),stream);
+        cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, work, work_size1, devInfo);
+        cudaMemsetAsync(work, 0, sizeof(double) * work_size2,stream);
+        cusolverDnDpotri(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, work, work_size2, devInfo);
+
+
+        cudaMemcpyAsync(e, m_gpu, sizeof(double) * N * N, cudaMemcpyDeviceToHost,stream);
+        cudaDeviceSynchronize();
+
+        cudaFreeAsync(work,stream);
+        cudaFreeAsync(m_gpu, stream);
+        cudaFreeAsync(devInfo, stream);
+
+        memcpy(f.data(), e, sizeof(double) * N * N);
+        std::cout << f << std::endl;
 
         cudaFreeHost(m);
+        cudaFreeHost(e);
         free(c);
         std::cin.get();
 
 
     }
 
-
+    /*
 
     int n = 1;
     int s = 1;
@@ -109,44 +120,7 @@ int main() {
         Eigen::MatrixXd f(N, N);
         f.setIdentity();
         Eigen::MatrixXd g(N, N);
-        /*auto start = high_resolution_clock::now();
-        for (int i = 0; i < N; i++)
-        {
-            for (int j = 0; j < N; j++)
-            {
-                double val = 0;
-                for (int k = 0; k < N; k++)
-                {
-                    val += f(i, k) * f(j, k);
-                }
-                g(i, j) = val;
-            }
-        }
-        auto end = high_resolution_clock::now();
-        auto duration = end - start;
-        std::chrono::milliseconds d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
-        std::cout << "regular"<<d.count() << "ms" << std::endl;
-
-        start = high_resolution_clock::now();
-#pragma omp parallel for
-
-        for (int i = 0; i < N; i++)
-        {
-            for (int j = 0; j < N; j++)
-            {
-                double val = 0;
-                for (int k = 0; k < N; k++)
-                {
-                    val += f(i, k) * f(j, k);
-                }
-                    g(i, j) = val;
-            }
-        }
-        end = high_resolution_clock::now();
-        duration = end - start;
-        d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
-        std::cout << "omp"<<d.count() << "ms" << std::endl;
-        */
+        
         int NT = mat.ofAtA(&mat,true);
 
         kingghidorah::_mySparse mat2;
@@ -190,6 +164,7 @@ int main() {
 
         //cuda.dispose();
         std::cin.get();
-    }
+    }*/
+    //std::cin.get();
 
 }

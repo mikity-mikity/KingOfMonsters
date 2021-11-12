@@ -19,7 +19,7 @@
 #include <chrono>
 #include <vector>
 //#define EIGEN_DONT_PARALLELIZE
-#define EIGEN_DONT_ALIGN
+//#define EIGEN_DONT_ALIGN
 
 #define MAXDEVICE 4
 using namespace std::chrono;
