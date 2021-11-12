@@ -2337,11 +2337,11 @@ void kingghidorah::_mySparse::_solveI_gpu(kingghidorah::cuda* cuda, _mySparse* r
 		cudaMemset(work, 0, sizeof(double) * work_size1);
 		int* devInfo = cuda->info(ii);
 		cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, work, work_size1, devInfo);
-		double* work2;
-		cudaMalloc(&work2, sizeof(double) * work_size2);
+		double* work2 = cuda->work_rhs(ii);
+		//cudaMalloc(&work2, sizeof(double) * work_size2);
 		cudaMemset(work2, 0, sizeof(double) * work_size2);
 		cusolverDnDpotri(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, work2, work_size2, devInfo);
-		cudaFree(work2);
+		//cudaFree(work2);
 
 		cudaMemcpy(ret->_dmat.data(), m_gpu, sizeof(double) * N * N, cudaMemcpyDeviceToHost);
 		cudaDeviceSynchronize();
