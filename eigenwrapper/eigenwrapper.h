@@ -27,7 +27,7 @@ using std::vector;
 using std::string;
 
 //#define EIGEN_MALLOC_ALREADY_ALIGNED  0
-
+void kernel(double* A, double* work, int N,cudaStream_t stream);
 namespace kingghidorah {
 	class cuda {
 	private:

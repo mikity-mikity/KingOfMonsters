@@ -14,6 +14,7 @@
 int previdentiyN = 0;
 //std::vector<cudaStream_t> streams;
 Eigen::MatrixXd I;
+
 kingghidorah::cuda::cuda(int N) {
 	I.resize(0, 0);
 	omp_set_dynamic(false);
@@ -323,6 +324,7 @@ void kingghidorah::cuda::dispose() {
 			//cusolverMgDestroy(mg_solver);
 		}
 		mg_solver = 0;
+		cudaDeviceReset();
 	}
 	initialized = false;
 }

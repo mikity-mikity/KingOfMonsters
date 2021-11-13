@@ -74,7 +74,7 @@ int main() {
             cudaMallocAsync((void**)&gpu_work[ii], sizeof(double) * N * N, streams[ii]);
         }
 
-        for (int ii = 1; ii <2; ii++)
+        for (int ii = 0; ii <_count; ii++)
         {
             auto _start = std::chrono::high_resolution_clock::now();
             cudaSetDevice(ii);
@@ -85,13 +85,20 @@ int main() {
             double* work = gpu_work[ii];
             int work_size1 = 0;
             int work_size2 = 0;
-            cusolverDnDpotrf_bufferSize(solver[ii], CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, &work_size1);
-            cudaMemsetAsync(work, 0, sizeof(double) * work_size1, stream);
+            cusolverDnDpotrf_bufferSize(solver[ii], CUBLAS_FILL_MODE_UPPER, N, m_gpu, N, &work_size1);
+            cudaMemsetAsync(work, 0, sizeof(double) * N*N, stream);
             int* devInfo;
             cudaMallocAsync(&devInfo, sizeof(int), stream);
-            cusolverDnDpotrf(solver[ii], CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, work, work_size1, devInfo);
-
-            cudaMemcpyAsync(e, m_gpu, sizeof(double) * N * N, cudaMemcpyDeviceToHost, stream);
+            cusolverDnSetStream(solver[ii], stream);
+            if (ii == 0)
+            {
+                cusolverDnDpotrf(solver[ii], CUBLAS_FILL_MODE_UPPER, N, m_gpu, N, work, work_size1, devInfo);
+                cudaMemcpyAsync(e, m_gpu, sizeof(double) * N * N, cudaMemcpyDeviceToHost, stream);
+            }
+            else {
+                kernel(m_gpu, work, N, stream);
+                cudaMemcpyAsync(e, work, sizeof(double) * N * N, cudaMemcpyDeviceToHost, stream);
+            }
             cudaDeviceSynchronize();
             cudaFreeAsync(devInfo, stream);
 
@@ -102,7 +109,7 @@ int main() {
             std::cout << "potrf"<<std::chrono::duration_cast<std::chrono::milliseconds>(_end - _start).count() << "ms" << std::endl;
         }
 
-
+        /*
         auto start = std::chrono::high_resolution_clock::now();
 #pragma omp parallel for
         for (int ii = 0; ii < _count; ii++)
@@ -138,17 +145,23 @@ int main() {
         auto end = std::chrono::high_resolution_clock::now();
 
         std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
+        */
         for (int i = 0; i < _count; i++)
         {
             cudaStreamDestroy(streams[i]);
             cusolverDnDestroy(solver[i]);
-
         }
         cudaFreeHost(m);
         cudaFreeHost(e);
         free(c);
         delete[] gpu_matrix;
         delete[] gpu_work;
+
+        for (int i = 0; i < _count; i++)
+        {
+            cudaSetDevice(i);
+            cudaDeviceReset();
+        }
         std::cin.get();
 
 
