@@ -191,7 +191,7 @@ namespace kingghidorah {
 		void _solve0_gpu(kingghidorah::cuda* cuda, _mySparse* rhs, _mySparse* ret);
 		void _solveI(_mySparse* ret);
 		void _solveI_gpu(kingghidorah::cuda* cuda, _mySparse* ret);
-		void _solveI_gpu_omp(kingghidorah::cuda* cuda, _mySparse* ret);
+		std::string _solveI_gpu_omp(kingghidorah::cuda* cuda, _mySparse* ret);
 		void _solve0_gpu_mg(kingghidorah::cuda* cuda, _mySparse* rhs, _mySparse* ret);
 		void _solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse* ret);
 		Eigen::VectorXd __solve0(double* rhs, int N);

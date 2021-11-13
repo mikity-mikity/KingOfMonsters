@@ -2156,31 +2156,33 @@ void cholesky2(double* A, double* L,int n) {
 void initidentiy(kingghidorah::cuda* cuda,int N) {
 	double _a = 0;
 	double _b = 1;
-	I.setIdentity(N, N);
-#pragma omp parallel for
-	for (int ii = 0; ii < cuda->count(); ii++)
+	if (I.cols() != N || I.rows() != N)
 	{
-		cudaSetDevice(ii);
-		double* gpu_rhs = cuda->work_rhs(ii);
-		auto stream = cuda->__streams(ii,0);
-		cudaMemcpyAsync(gpu_rhs, I.data(), sizeof(double) * N * N, cudaMemcpyHostToDevice,stream);
-		/*cudaMemsetAsync(gpu_rhs, 0, N * N * sizeof(double), stream);
-		for (int i = 0; i < N; i++)
+		I.setIdentity(N, N);
+#pragma omp parallel for
+		for (int ii = 0; ii < cuda->count(); ii++)
 		{
-			cudaMemcpyAsync(gpu_rhs + (i+i*N), &_b, 1*sizeof(double), cudaMemcpyHostToDevice,stream);
-		}*/
+			cudaSetDevice(ii);
+			double* gpu_rhs = cuda->work_C(ii);
+			auto stream = cuda->__streams(ii, 0);
+			cudaMemcpyAsync(gpu_rhs, I.data(), sizeof(double) * N * N, cudaMemcpyHostToDevice, stream);
+			/*cudaMemsetAsync(gpu_rhs, 0, N * N * sizeof(double), stream);
+			for (int i = 0; i < N; i++)
+			{
+				cudaMemcpyAsync(gpu_rhs + (i+i*N), &_b, 1*sizeof(double), cudaMemcpyHostToDevice,stream);
+			}*/
+		}
 	}
-
 }
-void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySparse* ret)
+std::string kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySparse* ret)
 {
 	this->_freeze();
-
+	std::stringstream sss;
 	int N = this->_dmat.cols();
 
 	ret->_dmat.resize(N, N);
 
-	if (!cuda->valid())return;
+	if (!cuda->valid())return "";
 	int nn = cuda->count();
 	initidentiy(cuda, N);
 	ret->_dmat.setZero();
@@ -2194,7 +2196,7 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 			cudaSetDevice(cuda->fastest());
 			//auto stream = streams[cuda->fastest()];
 			double* gpu_matrix = cuda->work_M(cuda->fastest());
-			double* gpu_rhs = cuda->work_rhs(cuda->fastest());
+
 			cudaMemcpy(gpu_matrix, this->_dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
 			int* devInfo_on_gpu = cuda->info(cuda->fastest());
 
@@ -2227,7 +2229,6 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 		cudaSetDevice(cuda->fastest());
 		//auto stream = streams[cuda->fastest()];
 		double* gpu_matrix = cuda->work_M(cuda->fastest());
-		double* gpu_rhs = cuda->work_rhs(cuda->fastest());
 		cudaMemcpyAsync(gpu_matrix, this->_dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice,cuda->__streams(cuda->fastest(),0));
 		int* devInfo_on_gpu = cuda->info(cuda->fastest());
 
@@ -2253,7 +2254,7 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 			cudaStreamSynchronize(_streamX);
 			//cudaDeviceSynchronize();
 
-			//#pragma omp parallel for
+//#pragma omp parallel for
 			for (int ii = 0; ii < nn; ii++)
 			{
 				if (ii != cuda->fastest())
@@ -2266,54 +2267,76 @@ void kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySpars
 		}
 		//cudaStreamDestroy(_stream);
 	}
-	for (int i = 0; i < nn; i++)
-	{
-		cudaSetDevice(i);
-		cudaDeviceSynchronize();
-	}
+
 	int job = 0;
-	int ss = N / cuda->count()/4;
+	int ss = N / cuda->count()/8;
 	if (ss == 0) ss = 1;
 	int ee = cuda->count() * 4;
+	std::vector<int>count(nn);
 #pragma omp parallel for
 	for (int ii = 0; ii < nn; ii++)
 	{
 		auto solver = cuda->solver(ii);
 		
 		cudaSetDevice(ii);
+		cudaDeviceSynchronize();
 		//auto stream=streams[ii];
 		//cusolverDnSetStream(solver, stream);
 
 		double* gpu_matrix = cuda->work_M(ii);
-		double* gpu_rhs = cuda->work_rhs(ii);
+		double* gpu_rhs = cuda->work_C(ii);
 		int* devInfo_on_gpu = cuda->info(ii);
 
 
 		int devInfo_on_cpu = 0;
-		int _S = ii * N / nn;
-		int _E = (ii+1) * N / nn;
+		//int _S = 0;
+		//int _E = 0;
+		
 
 
-//#pragma omp parallel for
-		for(int kk=0;kk<4;kk++)
+		bool exit = false;
+		while (true)
 		{
+			for (int kk = 0; kk < 4; kk++)
+			{
+				int S = 0;
+				int E = 0;
 
-			int S = _S + (_E - _S) * kk / 4;
-			int E = _S + (_E - _S) * (kk+1) / 4;
-			cudaStream_t _stream=cuda->__streams(ii,kk);
+#pragma critical
+				{
+					S = job;
+					E = S + ss;
+					if (E > N)E = N;
+					job = E;
+				}
+				if (S >= N) {
+					exit = true;
+					break;
+				}
+				count[ii]++;
+				//int S = _S + (_E - _S) * kk / 4;
+				//int E = _S + (_E - _S) * (kk+1) / 4;
+				cudaStream_t _stream = cuda->__streams(ii, kk);
 
-			cusolverDnSetStream(solver, _stream);
+				cusolverDnSetStream(solver, _stream);
 
-			cusolverDnDpotrs(solver, CUBLAS_FILL_MODE_LOWER, N,E - S, gpu_matrix, N, gpu_rhs + S * N, N, devInfo_on_gpu);
-			cudaMemcpyAsync(ret->_dmat.data()  + S * N, gpu_rhs  + S * N  , (E - S)  * N * sizeof(double), cudaMemcpyDeviceToHost, _stream);
+				cusolverDnDpotrs(solver, CUBLAS_FILL_MODE_LOWER, N, E - S, gpu_matrix, N, gpu_rhs + S * N, N, devInfo_on_gpu);
+				cudaMemcpyAsync(ret->_dmat.data() + S * N, gpu_rhs + S * N, (E - S) * N * sizeof(double), cudaMemcpyDeviceToHost, _stream);
+			}
+			if (exit)break;
 		}
 
 		//cusolverDnDestroy(_solver);
 		//cusolverDnSetStream(solver,streams[ii]);
 	}
 	cudaDeviceSynchronize();
-
-
+	sss << "jobs taken: ";
+	for (int i = 0; i < nn; i++)
+	{
+		sss << i<<"-" << count[i] << "  ";
+	}
+	sss << std::endl;
+	return sss.str();
 	/*
 #pragma omp parallel for
 	for (int i = 0; i < N; i++)

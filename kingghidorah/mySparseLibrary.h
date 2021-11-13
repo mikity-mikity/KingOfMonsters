@@ -494,9 +494,10 @@ namespace kingghidorah {
 			this->dat->_solveI_gpu(gpu->cuda(), ret->dat);
 			return ret;
 		}
-		mySparse^ solveI_gpu_omp(myCuda^ gpu, mySparse^ ret) {
-			this->dat->_solveI_gpu_omp(gpu->cuda(), ret->dat);
-			return ret;
+		System::String^ solveI_gpu_omp(myCuda^ gpu, mySparse^ ret) {
+			std::string ss=this->dat->_solveI_gpu_omp(gpu->cuda(), ret->dat);
+			auto ee = gcnew System::String(ss.c_str());
+			return ee;
 		}
 		mySparse^ solveI_gpu_mg(myCuda^ gpu, mySparse^ ret) {
 			this->dat->_solveI_gpu_mg(gpu->cuda(), ret->dat);
