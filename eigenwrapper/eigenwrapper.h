@@ -56,6 +56,7 @@ namespace kingghidorah {
 
 		cusolverMgHandle_t mg_solver = 0;
 
+		std::vector< std::vector<cudaStream_t>> _streams;
 
 	public:
 		int prevT_A = 0;
@@ -77,9 +78,11 @@ namespace kingghidorah {
 		double* work_rhs2();
 		double* work_C(int i);
 		double* work(int N, int i);
+		double* work(int N, int i,cudaStream_t stream);
 		int& count();
 		int& fastest();
 		void dispose();
+		cudaStream_t& __streams(int i, int j);
 		bool canpeeraccess(int i, int j);
 		double** array_d_A();
 		double** array_d_B();

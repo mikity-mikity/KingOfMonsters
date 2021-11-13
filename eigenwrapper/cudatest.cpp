@@ -30,7 +30,7 @@ using namespace std;
 int main() {
     {
 
-        int N = 2;
+        int N = 2000;
         double* c;
         double* m;
         double* e;
@@ -40,54 +40,115 @@ int main() {
         cudaMallocHost((void**)&m, sizeof(double) * N * N);
         cudaMallocHost((void**)&e, sizeof(double) * N * N);
         Eigen::MatrixXd f(N, N);
-        m[0] = 1;
-        m[1] = 1;
-        m[2] = 1;
-        m[3] = 3;
 
-
+        for (int i = 0; i < N; i++)
+        {
+            for (int j = i - 2; j < i + 3; j++)
+            {
+                if (j >= 0 && j < N)m[i * N + j] =1;
+            }
+            m[i * N + i] = 3;
+        }
         memcpy(f.data(), m, sizeof(double) * N * N);
-        std::cout << f << std::endl;
-//#pragma omp parallel for
-        cudaStream_t stream;
-        cudaStreamCreate(&stream);
-        cudaSetDevice(0);
-        double* m_gpu;
-        cudaMallocAsync((void**)&m_gpu, sizeof(double) * N * N,stream);
+        std::cout << f.topLeftCorner(4,4) << std::endl << std::endl;
+        int _count = 0;
+        cudaGetDeviceCount(&_count);
+        double** gpu_matrix = new double* [_count];
+        double** gpu_work = new double* [_count];
+        cudaStream_t* streams = new cudaStream_t[_count];
+        cusolverDnHandle_t* solver=new cusolverDnHandle_t[_count];
+        for (int i = 0; i < _count; i++)
+        {
+            cudaSetDevice(i);
+            cusolverDnCreate(&solver[i]);
+            cusolverDnSetStream(solver[i], streams[i]);
 
-        cudaMemcpyAsync(m_gpu, m, sizeof(double) * N * N, cudaMemcpyHostToDevice,stream);
-        double* work;
-        int work_size;
-        int work_size1=0;
-        int work_size2=0;
-        cusolverDnHandle_t solver;
-        cusolverDnCreate(&solver);
-        cusolverDnSetStream(solver,stream);
-        cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, &work_size1);
-        cusolverDnDpotri_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, &work_size2);
-        work_size = std::max(work_size1, work_size2);
-        cudaMallocAsync(&work, sizeof(double)*work_size,stream);
-        cudaMemsetAsync(work, 0, sizeof(double) * work_size1,stream);
-        int *devInfo;
-        cudaMallocAsync(&devInfo, sizeof(int),stream);
-        cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, work, work_size1, devInfo);
-        cudaMemsetAsync(work, 0, sizeof(double) * work_size2,stream);
-        cusolverDnDpotri(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, work, work_size2, devInfo);
+        }
+#pragma omp parallel for
+        for (int ii = 0; ii < _count; ii++)
+        {
+            cudaSetDevice(ii);
+            cudaStreamCreate(&streams[ii]);
+            cudaMallocAsync((void**)&gpu_matrix[ii], sizeof(double) * N * N, streams[ii]);
+            cudaMemcpyAsync(gpu_matrix[ii], m, sizeof(double) * N * N, cudaMemcpyHostToDevice, streams[ii]);
+            cudaMallocAsync((void**)&gpu_work[ii], sizeof(double) * N * N, streams[ii]);
+        }
+
+        for (int ii = 1; ii <2; ii++)
+        {
+            auto _start = std::chrono::high_resolution_clock::now();
+            cudaSetDevice(ii);
+            cudaStream_t stream = streams[ii];
+            double* m_gpu = gpu_matrix[ii];
+
+            cudaMemcpyAsync(m_gpu, m, sizeof(double) * N * N, cudaMemcpyHostToDevice, stream);
+            double* work = gpu_work[ii];
+            int work_size1 = 0;
+            int work_size2 = 0;
+            cusolverDnDpotrf_bufferSize(solver[ii], CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, &work_size1);
+            cudaMemsetAsync(work, 0, sizeof(double) * work_size1, stream);
+            int* devInfo;
+            cudaMallocAsync(&devInfo, sizeof(int), stream);
+            cusolverDnDpotrf(solver[ii], CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, work, work_size1, devInfo);
+
+            cudaMemcpyAsync(e, m_gpu, sizeof(double) * N * N, cudaMemcpyDeviceToHost, stream);
+            cudaDeviceSynchronize();
+            cudaFreeAsync(devInfo, stream);
+
+            memcpy(f.data(), e, sizeof(double) * N * N);
+            std::cout << f.topLeftCorner(4, 4) << std::endl << std::endl;
+
+            auto _end = std::chrono::high_resolution_clock::now();
+            std::cout << "potrf"<<std::chrono::duration_cast<std::chrono::milliseconds>(_end - _start).count() << "ms" << std::endl;
+        }
 
 
-        cudaMemcpyAsync(e, m_gpu, sizeof(double) * N * N, cudaMemcpyDeviceToHost,stream);
-        cudaDeviceSynchronize();
+        auto start = std::chrono::high_resolution_clock::now();
+#pragma omp parallel for
+        for (int ii = 0; ii < _count; ii++)
+        {
+            auto _start = std::chrono::high_resolution_clock::now();
+            cudaSetDevice(ii);
+            cudaStream_t stream=streams[ii];
+            double* m_gpu=gpu_matrix[ii];
 
-        cudaFreeAsync(work,stream);
-        cudaFreeAsync(m_gpu, stream);
-        cudaFreeAsync(devInfo, stream);
+            cudaMemcpyAsync(m_gpu, e, sizeof(double) * N * N, cudaMemcpyHostToDevice, stream);
+            double* work=gpu_work[ii];
+            int work_size2 = 0;
+            cusolverDnDpotri_bufferSize(solver[ii], CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, &work_size2);
+            int* devInfo;
+            cudaMallocAsync(&devInfo, sizeof(int), stream);
+            cudaMemsetAsync(work, 0, sizeof(double) * work_size2, stream);
+            
+            cusolverDnDpotri(solver[ii], CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, work, work_size2, devInfo);
+            cudaMemcpyAsync(e, m_gpu, sizeof(double) * N * N, cudaMemcpyDeviceToHost, stream);
+            cudaDeviceSynchronize();
 
-        memcpy(f.data(), e, sizeof(double) * N * N);
-        std::cout << f << std::endl;
+            cudaFreeAsync(work, stream);
+            cudaFreeAsync(m_gpu, stream);
+            cudaFreeAsync(devInfo, stream);
 
+            memcpy(f.data(), e, sizeof(double) * N * N);
+            auto _end = std::chrono::high_resolution_clock::now();
+            std::cout << f.topLeftCorner(4,4)<< std::endl << std::endl;
+
+
+            std::cout << "potri"<<std::chrono::duration_cast<std::chrono::milliseconds>(_end - _start).count() << "ms" << std::endl;
+        }
+        auto end = std::chrono::high_resolution_clock::now();
+
+        std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
+        for (int i = 0; i < _count; i++)
+        {
+            cudaStreamDestroy(streams[i]);
+            cusolverDnDestroy(solver[i]);
+
+        }
         cudaFreeHost(m);
         cudaFreeHost(e);
         free(c);
+        delete[] gpu_matrix;
+        delete[] gpu_work;
         std::cin.get();
 
 
