@@ -931,24 +931,25 @@ int kingghidorah::_mySparse::ofAtA(_mySparse* A,bool sparse)
 {
 	int nn = A->cols();
 	int mt = omp_get_max_threads();
-	_mt = mt;
+	_mt = mt*1;
 
-	if (e.size() < mt)
+	if (e.size() < _mt)
 	{
-		e.resize(mt);
+		e.resize(_mt);
 	}
-	for (int i = 0; i < mt; i++) {
+	for (int i = 0; i < _mt; i++) {
 		e[i].resize(nn, nn);
 		e[i].setZero();
+		e[i].reserve(nn * nn / 10);
 	}
 #pragma omp parallel for
-	for (int _ii = 0; _ii < mt; _ii++)
+	for (int _ii = 0; _ii < _mt; _ii++)
 	{
 		int S = 0;
 		int E = 0;
 		auto _e = e[_ii];
-		S = _ii * _nt / mt;
-		E = (_ii + 1) * _nt / mt;
+		S = _ii * _nt / _mt;
+		E = (_ii + 1) * _nt / _mt;
 		for (int ii = S; ii < E; ii++)
 		{
 			e[_ii] += (A->_mat[ii].transpose() * coeff[ii].asDiagonal() * A->_mat[ii]);
@@ -958,14 +959,14 @@ int kingghidorah::_mySparse::ofAtA(_mySparse* A,bool sparse)
 		if (this->_mat.size() == 0)this->_mat.resize(1);
 		this->_mat[0].resize(nn, nn);
 		this->_mat[0].setZero();
-		for (int i = 0; i < mt; i++) {
+		for (int i = 0; i < _mt; i++) {
 			this->_mat[0] += e[i];
 		}
 		//this->_dmat = this->_mat[0];
 	}
 	else {
 		this->_dmat.setZero(nn, nn);
-		for (int i = 0; i < mt; i++) {
+		for (int i = 0; i < _mt; i++) {
 			this->_dmat += e[i];
 		}
 	}
@@ -1128,18 +1129,20 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 	this->_dmat.setZero();
 	int mt = omp_get_max_threads();
 
-	_mt = mt;
-	if (mt > e.size())
-		e.resize(mt);
-	for (int i = 0; i < mt; i++) {
+	_mt = mt*1;
+	
+	if (_mt > e.size())
+		e.resize(_mt);
+	for (int i = 0; i < _mt; i++) {
 		e[i].resize(nn, mm);
 		e[i].setZero();
+		e[i].reserve(nn * mm / 10);
 	}
 #pragma omp parallel for
-	for (int _ii = 0; _ii < mt; _ii++)
+	for (int _ii = 0; _ii < _mt; _ii++)
 	{
-		int S = _ii * _nt / mt;
-		int E = (_ii + 1) * _nt / mt;
+		int S = _ii * _nt / _mt;
+		int E = (_ii + 1) * _nt / _mt;
 
 		for (int ii = S; ii < E; ii++)
 		{
@@ -1152,12 +1155,12 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 
 	if (sparse)
 	{
-		for (int i = 0; i < mt; i++) {
+		for (int i = 0; i < _mt; i++) {
 			this->_mat[0] += e[i];
 		}
 	}
 	else {
-		for (int i = 0; i < mt; i++) {
+		for (int i = 0; i < _mt; i++) {
 			this->_dmat += e[i];
 		}
 	}
