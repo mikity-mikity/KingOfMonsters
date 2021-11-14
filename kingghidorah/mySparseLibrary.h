@@ -444,17 +444,7 @@ namespace kingghidorah {
 			ptr = nullptr;
 			return ret;
 		}
-		array<double>^ _solve0_gpu_mg(myCuda^ gpu, array<double>^ rhs) {
-			pin_ptr<double> ptr = &rhs[0];
-
-			Eigen::VectorXd _ret = dat->_solve0_gpu_mg(gpu->cuda(), ptr, rhs->Length);
-
-			array<double>^ ret = gcnew array<double>(_ret.rows());
-			System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
-
-			ptr = nullptr;
-			return ret;
-		}
+		
 		array<double>^ _solve0_gpu(myCuda^ gpu, array<double>^ rhs, int device) {
 			pin_ptr<double> ptr = &rhs[0];
 
@@ -478,10 +468,7 @@ namespace kingghidorah {
 
 			return ret;
 		}
-		mySparse^ solve0_gpu_mg(myCuda^ gpu, mySparse^ rhs, mySparse^ ret) {
-			this->dat->_solve0_gpu_mg(gpu->cuda(), rhs->dat, ret->dat);
-			return ret;
-		}
+		
 		mySparse^ solve0_gpu(myCuda^ gpu, mySparse^ rhs, mySparse^ ret) {
 			this->dat->_solve0_gpu(gpu->cuda(), rhs->dat, ret->dat);
 			return ret;
@@ -495,7 +482,12 @@ namespace kingghidorah {
 			return ret;
 		}
 		System::String^ solveI_gpu_omp(myCuda^ gpu, mySparse^ ret) {
-			std::string ss=this->dat->_solveI_gpu_omp(gpu->cuda(), ret->dat);
+			std::string ss = this->dat->_solveI_gpu_omp(gpu->cuda(), ret->dat);
+			auto ee = gcnew System::String(ss.c_str());
+			return ee;
+		}
+		System::String^ solveI_gpu_single(myCuda^ gpu, mySparse^ ret) {
+			std::string ss = this->dat->_solveI_gpu_single(gpu->cuda(), ret->dat);
 			auto ee = gcnew System::String(ss.c_str());
 			return ee;
 		}

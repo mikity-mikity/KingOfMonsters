@@ -14,7 +14,7 @@
 int previdentiyN = 0;
 //std::vector<cudaStream_t> streams;
 Eigen::MatrixXd I;
-
+#define STRTREAMCOUNT 2
 kingghidorah::cuda::cuda(int N) {
 	I.resize(0, 0);
 	omp_set_dynamic(false);
@@ -39,21 +39,28 @@ kingghidorah::cuda::cuda(int N) {
 	else {
 		_canpeer = false;
 	}
+	solver_handle.resize(_count);
 	_streams.resize(_count);
 	for (int ii = 0; ii < _count; ii++)
 	{
-		_streams[ii].resize(4);
+		solver_handle[ii].resize(STRTREAMCOUNT);
+		_streams[ii].resize(STRTREAMCOUNT);
 		cudaSetDevice(ii);
-		cudaStreamCreate(&_streams[ii][0]);
-		cudaStreamCreate(&_streams[ii][1]);
-		cudaStreamCreate(&_streams[ii][2]);
-		cudaStreamCreate(&_streams[ii][3]);
+		for(int kk=0;kk< STRTREAMCOUNT;kk++)
+		cudaStreamCreate(&_streams[ii][kk]);
 	}
 
 	//std::cout << err << "yay" << std::endl;
+	for (int i = 0; i < _count; i++)
+	{
+		for (int j = 0; j < STRTREAMCOUNT; j++)
+		{
+			solver_handle[i][j] = 0;
+		}
+	}
+
 	for (int i = 0; i < MAXDEVICE; i++)
 	{
-		solver_handle[i] = 0;
 		cublas_handle[i] = 0;
 	}
 
@@ -61,7 +68,9 @@ kingghidorah::cuda::cuda(int N) {
 	for (int ii = 0; ii < count(); ii++)
 	{
 		cudaSetDevice(ii);
-		auto status = cusolverDnCreate(&solver_handle[ii]);
+		cusolverStatus_t status;
+		for(int j=0;j<STRTREAMCOUNT;j++)
+			status = cusolverDnCreate(&solver_handle[ii][j]);
 		auto status2 = cublasCreate(&cublas_handle[ii]);
 
 		if (status == cusolverStatus_t::CUSOLVER_STATUS_SUCCESS)
@@ -72,7 +81,8 @@ kingghidorah::cuda::cuda(int N) {
 		else {
 			initialized = false;
 			failed = true;
-			solver_handle[ii] = 0;
+			for(int j=0;j<STRTREAMCOUNT;j++)
+			solver_handle[ii][j] = 0;
 			return;
 		}
 		if (status2 == cublasStatus_t::CUBLAS_STATUS_SUCCESS)
@@ -192,10 +202,82 @@ kingghidorah::cuda::cuda(int N) {
 			_deviceList); //seem like cannot be called twice. So call this only once here.
 	}
 	else */ {
-	/*cusolverStatus_t status = cusolverMgDeviceSelect(
-		mg_solver,
-		_count,
-		_deviceList);*/ //seem like cannot be called twice. So call this only once here.
+		cusolverMgCreate(&mg_solver);
+		cusolverStatus_t status = cusolverMgDeviceSelect(
+			mg_solver,
+			_count,
+			_deviceList); //seem like cannot be called twice. So call this only once here.
+
+
+		assert(CUSOLVER_STATUS_SUCCESS == status);
+		{
+			auto status = cusolverMgCreateDeviceGrid(&(gridA), 1, _count, _deviceList, mapping);
+			assert(CUSOLVER_STATUS_SUCCESS == status);
+		}
+		const int IA = 1;
+		const int JA = 1;
+		const int T_A = N;// / nbGpus;
+		const int lda = N;
+		int NRHS = N;
+		status = cusolverMgCreateMatrixDesc(
+			&descrA,
+			N,
+			N,
+			N,
+			T_A,
+			CUDA_R_64F,
+			gridA);
+		assert(CUSOLVER_STATUS_SUCCESS == status);
+		createMat<double>(
+			_count,
+			_deviceList,
+			N,
+			T_A,
+			lda,
+			array_d_A()
+			);
+		int64_t lwork_potrf = 0;
+		int64_t lwork_potri = 0;
+
+		status = cusolverMgPotrf_bufferSize(
+			mg_solver,
+			CUBLAS_FILL_MODE_LOWER,
+			N,
+			(void**)array_d_A(),
+			IA,
+			JA,
+			descrA,
+			CUDA_R_64F,
+			&lwork_potrf);
+		assert(CUSOLVER_STATUS_SUCCESS == status);
+
+
+
+		status = cusolverMgPotri_bufferSize(
+			mg_solver,
+			CUBLAS_FILL_MODE_LOWER,
+			N,
+			(void**)array_d_A(),
+			IA,
+			JA,
+			descrA,
+			CUDA_R_64F,
+			&lwork_potri);
+		assert(CUSOLVER_STATUS_SUCCESS == status);
+		prevT_A = T_A;
+		prevN = N;
+		int lwork = (lwork_potrf > lwork_potri) ? lwork_potrf : lwork_potri;
+		double** _array_d_work = array_d_work();
+		//if (prevwn < lwork)
+		{
+			workspaceAlloc(
+				_count,
+				_deviceList,
+				sizeof(double) * lwork,
+				(void**)_array_d_work
+			);
+			prevwn = lwork;
+		}
 	}
 	//_L = new double[N * N];
 	/*if (CUSOLVER_STATUS_SUCCESS != status)
@@ -205,6 +287,7 @@ kingghidorah::cuda::cuda(int N) {
 		return;
 	}*/
 }
+
 
 int* kingghidorah::cuda::devicelist()
 {
@@ -243,13 +326,25 @@ cudaStream_t& kingghidorah::cuda::__streams(int i, int j)
 void kingghidorah::cuda::dispose() {
 	if (valid())
 	{
+		if (prevwn != 0)
+		{
+			workspaceFree(_count, _deviceList, (void**)array_d_work());
+			prevwn = 0;
+		}
+		if (prevN != 0)
+		{
+			destroyMat(
+				_count,
+				_deviceList,
+				prevN,
+				prevT_A,
+				(void**)array_d_A());
+		}
 		for (int ii = 0; ii < _count; ii++)
 		{
 			cudaSetDevice(ii);
-			cudaStreamDestroy(_streams[ii][0]);
-			cudaStreamDestroy(_streams[ii][1]);
-			cudaStreamDestroy(_streams[ii][2]);
-			cudaStreamDestroy(_streams[ii][3]);
+			for(int kk=0;kk< STRTREAMCOUNT;kk++)
+			cudaStreamDestroy(_streams[ii][kk]);
 		}
 		previdentiyN = 0;
 		/*if (_L != 0)
@@ -312,16 +407,19 @@ void kingghidorah::cuda::dispose() {
 			__mgC[i] = 0;
 			__work[i] = 0;
 			work_size[i] = 0;
-			if (solver_handle[i] != 0)
-				cusolverDnDestroy(solver_handle[i]);
-			solver_handle[i] = 0;
+			for(int j=0;j<STRTREAMCOUNT;j++)
+			if (solver_handle[i][j] != 0)
+			{
+				cusolverDnDestroy(solver_handle[i][j]);
+				solver_handle[i][j] = 0;
+			}
 			if (cublas_handle != 0)
 				cublasDestroy(cublas_handle[i]);
 			cublas_handle[i] = 0;
 		}
 		if (mg_solver != 0)
 		{
-			//cusolverMgDestroy(mg_solver);
+			cusolverMgDestroy(mg_solver);
 		}
 		mg_solver = 0;
 		cudaDeviceReset();
@@ -423,8 +521,8 @@ string  kingghidorah::cuda::device_name() {
 	}
 	return "invalid";
 }
-cusolverDnHandle_t& kingghidorah::cuda::solver(int ii) {
-	return solver_handle[ii];
+cusolverDnHandle_t& kingghidorah::cuda::solver(int ii,int kk) {
+	return solver_handle[ii][kk];
 }
 cublasHandle_t& kingghidorah::cuda::blas(int ii) {
 	return cublas_handle[ii];
@@ -1121,307 +1219,7 @@ Eigen::VectorXd kingghidorah::_mySparse::solve0(double* rhs, int N) {
 	return x;
 }
 
-Eigen::VectorXd kingghidorah::_mySparse::_solve0_gpu_mg(kingghidorah::cuda* cuda, double* rhs, int N) {
-	this->_freeze();
-	Eigen::VectorXd x(N);
-	x.setZero();
 
-
-	if (!cuda->valid())
-	{
-		x(0) = 10;
-		return x;
-	}
-	cusolverStatus_t status;
-	auto solver = cuda->mgsolver();
-	int nbGpus = cuda->count();
-	int* deviceList = cuda->devicelist();
-
-	const int NRHS = 1;
-
-	const int IA = 1;
-	const int JA = 1;
-	const int T_A = std::max(1, N / nbGpus / 3);
-	const int lda = N;
-
-
-	const int IB = 1;
-	const int JB = 1;
-	const int T_B = std::max(1, NRHS / nbGpus / 3);
-	const int ldb = N;
-
-
-	int  info = 0;
-
-	cudaLibMgMatrixDesc_t descrA;
-	cudaLibMgMatrixDesc_t descrB;
-	cudaLibMgGrid_t gridA;
-	cudaLibMgGrid_t gridB;
-	cusolverMgGridMapping_t mapping = CUDALIBMG_GRID_MAPPING_COL_MAJOR;
-
-	//double** array_d_A=0;
-	//double** array_d_B=0;
-
-	int64_t lwork_potrf = 0;
-	int64_t lwork_potrs = 0;
-	int64_t lwork = 0;
-	//double** array_d_work = NULL;
-	printf("step 1\n");
-
-
-	status = cusolverMgCreateDeviceGrid(&gridA, 1, nbGpus, deviceList, mapping);
-	if (CUSOLVER_STATUS_SUCCESS != status)
-	{
-		x[0] = 13;
-		return x;
-	}
-	status = cusolverMgCreateDeviceGrid(&gridB, 1, nbGpus, deviceList, mapping);
-	if (CUSOLVER_STATUS_SUCCESS != status)
-	{
-		x[0] = 14;
-		return x;
-	}
-	printf("step 2\n");
-
-	status = cusolverMgCreateMatrixDesc(
-		&descrA,
-		N,
-		N,
-		N,
-		T_A,
-		CUDA_R_64F,
-		gridA);
-	if (CUSOLVER_STATUS_SUCCESS != status)
-	{
-		x[0] = 15;
-		return x;
-	}
-	status = cusolverMgCreateMatrixDesc(
-		&descrB,
-		N,
-		1,
-		N,
-		T_B,
-		CUDA_R_64F,
-		gridB);
-	printf("step 3\n");
-	if (CUSOLVER_STATUS_SUCCESS != status)
-	{
-		x[0] = 16;
-		return x;
-	}
-	double** array_d_A = cuda->array_d_A();
-	double** array_d_B = cuda->array_d_B();
-
-	createMat<double>(
-		nbGpus,
-		deviceList,
-		N,
-		T_A,
-		lda,
-		array_d_A
-		);
-	createMat<double>(
-		nbGpus,
-		deviceList,
-		1,
-		T_B,
-		ldb,
-		array_d_B
-		);
-	printf("step 3\n");
-	memcpyH2D<double>(
-		nbGpus,
-		deviceList,
-		N,
-		N,
-
-		this->_dmat.data(),
-		lda,
-
-		N,
-		T_A,
-		lda,
-		array_d_A,
-		IA,
-		JA
-		);
-	printf("step 4\n");
-
-	memcpyH2D<double>(
-		nbGpus,
-		deviceList,
-		N,
-		NRHS,
-
-		rhs,
-		ldb,
-
-		1,
-		T_B,
-		ldb,
-		array_d_B,
-		IB,
-		JB
-		);
-
-	printf("step 5\n");
-
-	status = cusolverMgPotrf_bufferSize(
-		solver,
-		CUBLAS_FILL_MODE_LOWER,
-		N,
-		(void**)array_d_A,
-		IA, //base-1
-		JA,//base-1
-		descrA,
-		CUDA_R_64F,
-		&lwork_potrf);
-	assert(CUSOLVER_STATUS_SUCCESS == status);
-
-	printf("step 6\n");
-
-
-	status = cusolverMgPotrs_bufferSize(
-		solver,
-		CUBLAS_FILL_MODE_LOWER,
-		N,
-		NRHS,
-		(void**)array_d_A,
-		IA,
-		JA,
-		descrA,
-		(void**)array_d_B,
-		IB,
-		JB,
-		descrB,
-		CUDA_R_64F,
-		&lwork_potrs);
-	assert(CUSOLVER_STATUS_SUCCESS == status);
-	printf("step 7\n");
-
-	lwork = (lwork_potrf > lwork_potrs) ? lwork_potrf : lwork_potrs;
-	printf("\tallocate device workspace, lwork = %lld \n", (long long)lwork);
-	printf("step 8\n");
-
-	double** array_d_work = cuda->array_d_work();//(double**)malloc(sizeof(double*)* nbGpus);
-	//assert(NULL != array_d_work);
-	printf("step 9\n");
-
-
-	workspaceAlloc(
-		nbGpus,
-		deviceList,
-		sizeof(double) * lwork,
-		(void**)array_d_work
-	);
-	printf("step 10\n");
-
-	auto cudaStat = cudaDeviceSynchronize();
-	assert(cudaSuccess == cudaStat);
-	printf("step 11\n");
-	auto now = std::chrono::high_resolution_clock::now();
-	status = cusolverMgPotrf(
-		solver,
-		CUBLAS_FILL_MODE_LOWER,
-		N,
-		(void**)array_d_A,
-		IA,
-		JA,
-		descrA,
-		CUDA_R_64F,
-		(void**)array_d_work,
-		lwork,
-		&info
-	);
-	printf("step 12\n");
-	//if(CUSOLVER_STATUS_SUCCESS != status)assert(CUSOLVER_STATUS_SUCCESS);
-	assert(CUSOLVER_STATUS_SUCCESS == status);
-	cudaStat = cudaDeviceSynchronize();
-	assert(cudaSuccess == cudaStat);
-	assert(0 == info);
-	printf("step 13\n");
-
-
-
-	status = cusolverMgPotrs(
-		solver,
-		CUBLAS_FILL_MODE_LOWER,
-		N,
-		NRHS,
-		(void**)array_d_A,
-		IA,
-		JA,
-		descrA,
-		(void**)array_d_B,
-		IB,
-		JB,
-		descrB,
-		CUDA_R_64F,
-		(void**)array_d_work,
-		lwork,
-		&info
-	);
-	printf("step 14\n");
-	auto end = std::chrono::high_resolution_clock::now();
-	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - now);
-	std::cout << "Mg" << duration.count() << "ms" << std::endl;
-
-	assert(CUSOLVER_STATUS_SUCCESS == status);
-	cudaStat = cudaDeviceSynchronize();
-	assert(cudaSuccess == cudaStat);
-	assert(0 == info);
-
-	printf("step 15\n");
-	for (int i = 0; i < 4; i++)printf("%.3f\n", x(i));
-	memcpyD2H<double>(
-		nbGpus,
-		deviceList,
-		N,
-		1,
-
-		1,
-		T_B,
-		ldb,
-		array_d_B,
-		IB,
-		JB,
-
-		x.data(),
-		ldb
-		);
-	printf("step 16\n");
-
-	for (int i = 0; i < 4; i++)printf("%.3f\n", x(i));
-	destroyMat(
-		nbGpus,
-		deviceList,
-		N,
-		T_A,
-		(void**)array_d_A);
-	printf("step 17\n");
-
-	destroyMat(
-		nbGpus,
-		deviceList,
-		1,
-		T_B,
-		(void**)array_d_B);
-	printf("step 18\n");
-
-	workspaceFree(nbGpus, deviceList, (void**)array_d_work);
-	printf("step 19\n");
-
-
-	//if (NULL != array_d_A) free(array_d_A);
-	//if (NULL != array_d_B) free(array_d_B);
-
-	//if (NULL != array_d_work) free(array_d_work);
-
-
-
-	return x;
-}
 Eigen::VectorXd kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, double* rhs, int N, int device) {
 	Eigen::VectorXd x(N);
 	this->_freeze();
@@ -1432,7 +1230,7 @@ Eigen::VectorXd kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, d
 		return x;
 	}
 	cudaSetDevice(device);
-	auto solver = cuda->solver(device);
+	auto solver = cuda->solver(device,0);
 	auto blas = cuda->blas(device);
 	//auto stream=streams[device];
 	//cudaStreamCreate(&stream);
@@ -1516,300 +1314,15 @@ Eigen::MatrixXd kingghidorah::_mySparse::_solve0(_myLLT* LLT, _mySparse* mat)
 	}
 	return ret.transpose();
 }
-void kingghidorah::_mySparse::_solve0_gpu_mg(kingghidorah::cuda* cuda, _mySparse* mat, _mySparse* ret)
-{
-	int nn = mat->_dmat.cols();
-	int N = this->_dmat.cols();
-	int NRHS = nn;
-	//Eigen::MatrixXd x(N,nn);
-	if (ret->_dmat.cols() != nn || ret->_dmat.rows() != N)
-	{
-		ret->_dmat.resize(N, nn);
-	}
-	if (!cuda->valid())return;
-	ret->_dmat.setZero();
-
-
-	cusolverMgHandle_t solver = cuda->mgsolver();
-	//auto status = cusolverMgCreate(&solver);
-
-	int nbGpus = cuda->count();
-	//std::vector<int> _deviceList(nbGpus);
-	//for (int i = 0; i < nbGpus; i++)_deviceList[i] = i;
-	int* deviceList = cuda->devicelist();
-	enablePeerAccess(nbGpus, deviceList);
-
-	const int IA = 1;
-	const int JA = 1;
-	const int T_A = N;// / nbGpus;
-	const int lda = N;
-
-
-	const int IB = 1;
-	const int JB = 1;
-	const int T_B = NRHS / nbGpus;
-	const int ldb = N;
-
-
-	int  info = 0;
-
-	cudaLibMgMatrixDesc_t descrA;
-	cudaLibMgMatrixDesc_t descrB;
-	cudaLibMgGrid_t gridA;
-	cudaLibMgGrid_t gridB;
-	cusolverMgGridMapping_t mapping = CUDALIBMG_GRID_MAPPING_COL_MAJOR;
-
-	double** array_d_A = cuda->array_d_A();
-	double** array_d_B = cuda->array_d_B();
-
-	int64_t lwork_potrf = 0;
-	int64_t lwork_potrs = 0;
-	int64_t lwork = 0;
-	double** array_d_work = cuda->array_d_work();
-	auto status = cusolverMgDeviceSelect(
-		solver,
-		nbGpus,
-		deviceList);
-	assert(CUSOLVER_STATUS_SUCCESS == status);
-	/*int canAccessPeer = 0;
-	if (nbGpus > 1)
-	{
-		assert(0 == enablePeerAccess(nbGpus, deviceList));
-	}*/
-	/*if (nbGpus == 4)
-	{
-		status = cusolverMgCreateDeviceGrid(&gridA, 2, 2, deviceList, mapping);
-		assert(CUSOLVER_STATUS_SUCCESS == status);
-		status = cusolverMgCreateDeviceGrid(&gridB, 2,2, deviceList, mapping);
-		assert(CUSOLVER_STATUS_SUCCESS == status);
-	}
-	else */ {
-		status = cusolverMgCreateDeviceGrid(&gridA, 1, nbGpus, deviceList, mapping);
-		assert(CUSOLVER_STATUS_SUCCESS == status);
-		status = cusolverMgCreateDeviceGrid(&gridB, 1, nbGpus, deviceList, mapping);
-		assert(CUSOLVER_STATUS_SUCCESS == status);
-	}
-	status = cusolverMgCreateMatrixDesc(
-		&descrA,
-		N,
-		N,
-		N,
-		T_A,
-		CUDA_R_64F,
-		gridA);
-	assert(CUSOLVER_STATUS_SUCCESS == status);
-
-	status = cusolverMgCreateMatrixDesc(
-		&descrB,
-		N,
-		NRHS,
-		N,
-		T_B,
-		CUDA_R_64F,
-		gridB);
-	assert(CUSOLVER_STATUS_SUCCESS == status);
-
-	/*array_d_A = (double**)malloc(sizeof(double*) * nbGpus);
-	assert(NULL != array_d_A);
-	array_d_B = (double**)malloc(sizeof(double*) * nbGpus);
-	assert(NULL != array_d_B);
-	*/
-	createMat<double>(
-		nbGpus,
-		deviceList,
-		N,
-		T_A,
-		lda,
-		array_d_A
-		);
-	createMat<double>(
-		nbGpus,
-		deviceList,
-		NRHS,
-		T_B,
-		ldb,
-		array_d_B
-		);
-	memcpyH2D<double>(
-		nbGpus,
-		deviceList,
-		N,
-		N,
-
-		this->_dmat.data(),
-		lda,
-
-		N,
-		T_A,
-		lda,
-		array_d_A,
-		IA,
-		JA
-		);
-	memcpyH2D<double>(
-		nbGpus,
-		deviceList,
-		N,
-		NRHS,
-
-		mat->_dmat.data(),
-		ldb,
-
-		NRHS,
-		T_B,
-		ldb,
-		array_d_B,
-		IB,
-		JB
-		);
-
-
-	status = cusolverMgPotrf_bufferSize(
-		solver,
-		CUBLAS_FILL_MODE_LOWER,
-		N,
-		(void**)array_d_A,
-		IA,
-		JA,
-		descrA,
-		CUDA_R_64F,
-		&lwork_potrf);
-	assert(CUSOLVER_STATUS_SUCCESS == status);
-
-
-
-	status = cusolverMgPotrs_bufferSize(
-		solver,
-		CUBLAS_FILL_MODE_LOWER,
-		N,
-		NRHS,
-		(void**)array_d_A,
-		IA,
-		JA,
-		descrA,
-		(void**)array_d_B,
-		IB,
-		JB,
-		descrB,
-		CUDA_R_64F,
-		&lwork_potrs);
-	assert(CUSOLVER_STATUS_SUCCESS == status);
-
-	lwork = (lwork_potrf > lwork_potrs) ? lwork_potrf : lwork_potrs;
-	printf("\tallocate device workspace, lwork = %lld \n", (long long)lwork);
-
-	//array_d_work = (double**)malloc(sizeof(double*) * nbGpus);
-	assert(NULL != array_d_work);
-
-	workspaceAlloc(
-		nbGpus,
-		deviceList,
-		sizeof(double) * lwork,
-		(void**)array_d_work
-	);
-	auto cudaStat = cudaDeviceSynchronize();
-	assert(cudaSuccess == cudaStat);
-	auto now = std::chrono::high_resolution_clock::now();
-	status = cusolverMgPotrf(
-		solver,
-		CUBLAS_FILL_MODE_LOWER,
-		N,
-		(void**)array_d_A,
-		IA,
-		JA,
-		descrA,
-		CUDA_R_64F,
-		(void**)array_d_work,
-		lwork,
-		&info
-	);
-	assert(CUSOLVER_STATUS_SUCCESS == status);
-	cudaStat = cudaDeviceSynchronize();
-	assert(cudaSuccess == cudaStat);
-	assert(0 == info);
-
-
-
-	status = cusolverMgPotrs(
-		solver,
-		CUBLAS_FILL_MODE_LOWER,
-		N,
-		NRHS,
-		(void**)array_d_A,
-		IA,
-		JA,
-		descrA,
-		(void**)array_d_B,
-		IB,
-		JB,
-		descrB,
-		CUDA_R_64F,
-		(void**)array_d_work,
-		lwork,
-		&info
-	);
-	auto end = std::chrono::high_resolution_clock::now();
-	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - now);
-	std::cout << "Mg" << duration.count() << "ms" << std::endl;
-
-	assert(CUSOLVER_STATUS_SUCCESS == status);
-	cudaStat = cudaDeviceSynchronize();
-	assert(cudaSuccess == cudaStat);
-	assert(0 == info);
-
-	printf("step 11: solution vector B \n");
-	memcpyD2H<double>(
-		nbGpus,
-		deviceList,
-		N,
-		NRHS,
-
-		NRHS,
-		T_B,
-		ldb,
-		array_d_B,
-		IB,
-		JB,
-
-		ret->_dmat.data(),
-		ldb
-		);
-
-	destroyMat(
-		nbGpus,
-		deviceList,
-		N,
-		T_A,
-		(void**)array_d_A);
-	destroyMat(
-		nbGpus,
-		deviceList,
-		1,
-		T_B,
-		(void**)array_d_B);
-
-	workspaceFree(nbGpus, deviceList, (void**)array_d_work);
-
-
-	//if (NULL != array_d_A) free(array_d_A);
-	//if (NULL != array_d_B) free(array_d_B);
-	//if (NULL != array_d_work) free(array_d_work);
-
-}
 
 void kingghidorah::_mySparse::_solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse* ret)
 {
-	this->_freeze();
-
 	int N = this->_dmat.cols();
 	//Eigen::MatrixXd x(N,nn);
-	if (ret->_dmat.cols() != N || ret->_dmat.rows() != N)
-	{
-		ret->_dmat.resize(N, N);
-	}
+	ret->_dmat.resize(N, N);
 	if (!cuda->valid())return;
 	ret->_dmat.setZero();
-
+	cudaSetDevice(cuda->fastest());
 
 	cusolverMgHandle_t solver = cuda->mgsolver();
 	//auto status = cusolverMgCreate(&solver);
@@ -1827,11 +1340,11 @@ void kingghidorah::_mySparse::_solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse
 
 	int  info = 0;
 
-	cudaLibMgMatrixDesc_t descrA;
+	cudaLibMgMatrixDesc_t descrA=cuda->descrA;
 
-	cudaLibMgGrid_t gridA;
+	cudaLibMgGrid_t gridA=cuda->gridA;
 
-	cusolverMgGridMapping_t mapping = CUDALIBMG_GRID_MAPPING_COL_MAJOR;
+	cusolverMgGridMapping_t mapping = cuda->mapping;
 
 	double** array_d_A = cuda->array_d_A();
 
@@ -1847,17 +1360,10 @@ void kingghidorah::_mySparse::_solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse
 	assert(CUSOLVER_STATUS_SUCCESS == status);
 	{
 	}*///always fails
-	auto status = cusolverMgCreateDeviceGrid(&gridA, 1, nbGpus, deviceList, mapping);
+	//auto status = cusolverMgCreateDeviceGrid(&gridA, 1, nbGpus, deviceList, mapping);
 	assert(CUSOLVER_STATUS_SUCCESS == status);
 
-	status = cusolverMgCreateMatrixDesc(
-		&descrA,
-		N,
-		N,
-		N,
-		T_A,
-		CUDA_R_64F,
-		gridA);
+
 	assert(CUSOLVER_STATUS_SUCCESS == status);
 
 
@@ -1867,7 +1373,7 @@ void kingghidorah::_mySparse::_solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse
 	array_d_B = (double**)malloc(sizeof(double*) * nbGpus);
 	assert(NULL != array_d_B);
 	*/
-	if (cuda->prevN < N || cuda->prevT_A < T_A)
+	/*if (cuda->prevN < N || cuda->prevT_A < T_A)
 	{
 		if (cuda->prevN != 0)
 			destroyMat(
@@ -1877,18 +1383,11 @@ void kingghidorah::_mySparse::_solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse
 				cuda->prevT_A,
 				(void**)array_d_A);
 
-		createMat<double>(
-			nbGpus,
-			deviceList,
-			N,
-			T_A,
-			lda,
-			array_d_A
-			);
+	
 
 		cuda->prevN = N;
 		cuda->prevT_A = T_A;
-	}
+	}*/
 	memcpyH2D<double>(
 		nbGpus,
 		deviceList,
@@ -1907,53 +1406,11 @@ void kingghidorah::_mySparse::_solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse
 		);
 
 
-	status = cusolverMgPotrf_bufferSize(
-		solver,
-		CUBLAS_FILL_MODE_LOWER,
-		N,
-		(void**)array_d_A,
-		IA,
-		JA,
-		descrA,
-		CUDA_R_64F,
-		&lwork_potrf);
-	assert(CUSOLVER_STATUS_SUCCESS == status);
-
-
-
-	status = cusolverMgPotri_bufferSize(
-		solver,
-		CUBLAS_FILL_MODE_LOWER,
-		N,
-		(void**)array_d_A,
-		IA,
-		JA,
-		descrA,
-		CUDA_R_64F,
-		&lwork_potri);
-	assert(CUSOLVER_STATUS_SUCCESS == status);
-
-	lwork = (lwork_potrf > lwork_potri) ? lwork_potrf : lwork_potri;
-	printf("\tallocate device workspace, lwork = %lld \n", (long long)lwork);
-	double** array_d_work = cuda->array_d_work();
-	//array_d_work = (double**)malloc(sizeof(double*) * nbGpus);
-	assert(NULL != array_d_work);
-	if (cuda->prevwn < lwork)
-	{
-		if (cuda->prevwn != 0)
-			workspaceFree(nbGpus, deviceList, (void**)array_d_work);
-		workspaceAlloc(
-			nbGpus,
-			deviceList,
-			sizeof(double) * lwork,
-			(void**)array_d_work
-		);
-		cuda->prevwn = lwork;
-	}
+	
 	auto cudaStat = cudaDeviceSynchronize();
 	assert(cudaSuccess == cudaStat);
 	auto now = std::chrono::high_resolution_clock::now();
-	status = cusolverMgPotrf(
+	auto status = cusolverMgPotrf(
 		solver,
 		CUBLAS_FILL_MODE_LOWER,
 		N,
@@ -1962,7 +1419,7 @@ void kingghidorah::_mySparse::_solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse
 		JA,
 		descrA,
 		CUDA_R_64F,
-		(void**)array_d_work,
+		(void**)cuda->array_d_work(),
 		lwork,
 		&info
 	);
@@ -1999,7 +1456,7 @@ void kingghidorah::_mySparse::_solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse
 		JA,
 		descrA,
 		CUDA_R_64F,
-		(void**)array_d_work,
+		(void**)cuda->array_d_work(),
 		lwork,
 		&info
 	);
@@ -2173,6 +1630,74 @@ void initidentiy(kingghidorah::cuda* cuda,int N) {
 		}
 	}
 }
+std::string kingghidorah::_mySparse::_solveI_gpu_single(kingghidorah::cuda* cuda, _mySparse* ret)
+{
+	this->_freeze();
+	std::stringstream sss;
+	int N = this->_dmat.cols();
+
+	ret->_dmat.resize(N, N);
+
+	if (!cuda->valid())return "";
+	int nn = cuda->count();
+	initidentiy(cuda, N);
+	ret->_dmat.setZero();
+
+
+	
+
+		auto solver = cuda->solver(cuda->fastest(),0);
+
+		cudaSetDevice(cuda->fastest());
+		//auto stream = streams[cuda->fastest()];
+		double* gpu_matrix = cuda->work_M(cuda->fastest());
+		cudaMemcpy(gpu_matrix, this->_dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
+		int* devInfo_on_gpu = cuda->info(cuda->fastest());
+
+		int work_size = 0;
+
+		// --- CUDA CHOLESKY initialization
+		cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, &work_size);
+		// --- CUDA POTRF execution	
+		double* work = cuda->work(work_size,cuda->fastest());
+
+		cudaMemset(work, 0, work_size * sizeof(double));
+		//cusolverDnSetStream(solver, stream);
+		cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, work, work_size, devInfo_on_gpu);
+		cudaDeviceSynchronize();
+	
+
+
+
+		double* gpu_rhs = cuda->work_C(cuda->fastest());
+
+
+		int devInfo_on_cpu = 0;
+		//int _S = 0;
+		//int _E = 0;
+
+		/*for (int kk = 0; kk < 16; kk++)
+		{
+			cudaStreamSynchronize(cuda->__streams(cuda->fastest(), kk));
+		}*/
+		bool exit = false;
+#pragma omp parallel for
+	for (int kk = 0; kk < STRTREAMCOUNT; kk++)
+	{
+		int S = kk * N / STRTREAMCOUNT;
+		int E = (kk + 1) * N / STRTREAMCOUNT;
+		cudaStream_t _stream = cuda->__streams(cuda->fastest(), kk);
+		cusolverDnHandle_t _solver = cuda->solver(cuda->fastest(), kk);
+		cusolverDnSetStream(_solver, _stream);
+
+		cusolverDnDpotrs(_solver, CUBLAS_FILL_MODE_LOWER, N, E - S, gpu_matrix, N, gpu_rhs + S * N, N, devInfo_on_gpu);
+		cudaMemcpyAsync(ret->_dmat.data() + S * N, gpu_rhs + S * N, (E - S) * N * sizeof(double), cudaMemcpyDeviceToHost, _stream);
+	}
+
+	cudaDeviceSynchronize();
+	return sss.str();
+
+}
 std::string kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySparse* ret)
 {
 	this->_freeze();
@@ -2190,45 +1715,13 @@ std::string kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _
 	if (cuda->canpeer())
 	{
 
-			auto solver = cuda->solver(cuda->fastest());
-
-			cudaSetDevice(cuda->fastest());
-			//auto stream = streams[cuda->fastest()];
-			double* gpu_matrix = cuda->work_M(cuda->fastest());
-			double* gpu_rhs = cuda->work_C(cuda->fastest());
-			cudaMemcpy(gpu_matrix, this->_dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
-			int* devInfo_on_gpu = cuda->info(cuda->fastest());
-
-			int work_size = 0;
-
-			// --- CUDA CHOLESKY initialization
-			cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, &work_size);
-			// --- CUDA POTRF execution	
-			double* work = cuda->work(work_size, cuda->fastest());
-
-			cudaMemset(work, 0, work_size * sizeof(double));
-			//cusolverDnSetStream(solver, stream);
-			cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, work, work_size, devInfo_on_gpu);
-			cudaDeviceSynchronize();
-#pragma omp parallel for
-			for (int ii = 0; ii < nn; ii++)
-			{
-				if (ii != cuda->fastest())
-				{
-					cudaStream_t _stream= cuda->__streams(ii, 0);
-					//cudaStreamCreate(&_stream);
-					cudaMemcpyAsync(cuda->work_M(ii), gpu_matrix, N * N * sizeof(double), cudaMemcpyDeviceToDevice,_stream);
-					//cudaStreamDestroy(_stream);
-				}
-			}
-	}
-	else {
-		auto solver = cuda->solver(cuda->fastest());
+		auto solver = cuda->solver(cuda->fastest(), 0);
 
 		cudaSetDevice(cuda->fastest());
 		//auto stream = streams[cuda->fastest()];
 		double* gpu_matrix = cuda->work_M(cuda->fastest());
-		cudaMemcpyAsync(gpu_matrix, this->_dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice,cuda->__streams(cuda->fastest(),0));
+		double* gpu_rhs = cuda->work_C(cuda->fastest());
+		cudaMemcpy(gpu_matrix, this->_dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
 		int* devInfo_on_gpu = cuda->info(cuda->fastest());
 
 		int work_size = 0;
@@ -2236,31 +1729,64 @@ std::string kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _
 		// --- CUDA CHOLESKY initialization
 		cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, &work_size);
 		// --- CUDA POTRF execution	
-		double* work = cuda->work(work_size, cuda->fastest(),cuda->__streams(cuda->fastest(), 1));
+		double* work = cuda->work(work_size, cuda->fastest());
 
-		cudaMemsetAsync(work, 0, work_size * sizeof(double), cuda->__streams(cuda->fastest(), 1));
+		cudaMemset(work, 0, work_size * sizeof(double));
 		//cusolverDnSetStream(solver, stream);
 		cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, work, work_size, devInfo_on_gpu);
 		cudaDeviceSynchronize();
 #pragma omp parallel for
-		for (int ss = 0; ss < 4; ss++)
+		for (int ii = 0; ii < nn; ii++)
+		{
+			if (ii != cuda->fastest())
+			{
+				cudaStream_t _stream = cuda->__streams(ii, 0);
+				//cudaStreamCreate(&_stream);
+				cudaMemcpyAsync(cuda->work_M(ii), gpu_matrix, N * N * sizeof(double), cudaMemcpyDeviceToDevice, _stream);
+				//cudaStreamDestroy(_stream);
+			}
+		}
+	}
+	else {
+		auto solver = cuda->solver(cuda->fastest(), 0);
+
+		cudaSetDevice(cuda->fastest());
+		//auto stream = streams[cuda->fastest()];
+		double* gpu_matrix = cuda->work_M(cuda->fastest());
+		// --- CUDA CHOLESKY initialization
+		int work_size = 0;
+		cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, &work_size);
+		cudaMemcpyAsync(gpu_matrix, this->_dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice, cuda->__streams(cuda->fastest(), 0));
+		int* devInfo_on_gpu = cuda->info(cuda->fastest());
+
+
+		// --- CUDA POTRF execution	
+		double* work = cuda->work(work_size, cuda->fastest(), cuda->__streams(cuda->fastest(), 1));
+
+		cudaMemsetAsync(work, 0, work_size * sizeof(double), cuda->__streams(cuda->fastest(), 1));
+		cuStreamSynchronize(cuda->__streams(cuda->fastest(), 0));
+		cuStreamSynchronize(cuda->__streams(cuda->fastest(), 1));
+		cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, work, work_size, devInfo_on_gpu);
+		cudaDeviceSynchronize();
+#pragma omp parallel for
+		for (int ss = 0; ss < STRTREAMCOUNT; ss++)
 		{
 			cudaSetDevice(cuda->fastest());
-			int S =  ss* N / 4;
-			int E = (ss + 1)* N / 4;
-			cudaStream_t _streamX=cuda->__streams(cuda->fastest(),ss);
-			cudaMemcpyAsync(ret->_dmat.data()+S*N, gpu_matrix + S * N, sizeof(double) * N * (E-S), cudaMemcpyDeviceToHost,_streamX);
+			int S = ss * N / STRTREAMCOUNT;
+			int E = (ss + 1) * N / STRTREAMCOUNT;
+			cudaStream_t _streamX = cuda->__streams(cuda->fastest(), ss);
+			cudaMemcpyAsync(ret->_dmat.data() + S * N, gpu_matrix + S * N, sizeof(double) * N * (E - S), cudaMemcpyDeviceToHost, _streamX);
 			cudaStreamSynchronize(_streamX);
 			//cudaDeviceSynchronize();
 
-//#pragma omp parallel for
+#pragma omp parallel for
 			for (int ii = 0; ii < nn; ii++)
 			{
 				if (ii != cuda->fastest())
 				{
 					cudaSetDevice(ii);
-					cudaStream_t _stream=cuda->__streams(ii,ss);
-					cudaMemcpyAsync(cuda->work_M(ii) + S * N, ret->_dmat.data() + S * N, sizeof(double) * N * (E-S), cudaMemcpyHostToDevice, _stream);
+					cudaStream_t _stream = cuda->__streams(ii, ss);
+					cudaMemcpyAsync(cuda->work_M(ii) + S * N, ret->_dmat.data() + S * N, sizeof(double) * N * (E - S), cudaMemcpyHostToDevice, _stream);
 				}
 			}
 		}
@@ -2268,14 +1794,18 @@ std::string kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _
 	}
 
 	int job = 0;
-	int ss = N / cuda->count()/8;
+	int ss = N / cuda->count() / STRTREAMCOUNT/4;
 	if (ss == 0) ss = 1;
-	int ee = cuda->count() * 4;
+	for (int i = 0; i < nn; i++)
+	{
+		cudaSetDevice(i);
+		cudaDeviceSynchronize();
+	}
 	std::vector<int>count(nn);
 #pragma omp parallel for
 	for (int ii = 0; ii < nn; ii++)
 	{
-		auto solver = cuda->solver(ii);
+		auto solver = cuda->solver(ii,0);
 		
 		cudaSetDevice(ii);
 		//auto stream=streams[ii];
@@ -2285,20 +1815,13 @@ std::string kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _
 		double* gpu_rhs = cuda->work_C(ii);
 		int* devInfo_on_gpu = cuda->info(ii);
 
-
 		int devInfo_on_cpu = 0;
-		//int _S = 0;
-		//int _E = 0;
-		
 
-		cudaStreamSynchronize(cuda->__streams(ii, 0));
-		cudaStreamSynchronize(cuda->__streams(ii, 1));
-		cudaStreamSynchronize(cuda->__streams(ii, 2));
-		cudaStreamSynchronize(cuda->__streams(ii, 3));
 		bool exit = false;
 		while (true)
 		{
-			for (int kk = 0; kk < 4; kk++)
+#pragma omp parallel for
+			for (int kk = 0; kk < STRTREAMCOUNT; kk++)
 			{
 				int S = 0;
 				int E = 0;
@@ -2318,10 +1841,10 @@ std::string kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _
 				//int S = _S + (_E - _S) * kk / 4;
 				//int E = _S + (_E - _S) * (kk+1) / 4;
 				cudaStream_t _stream = cuda->__streams(ii, kk);
+				auto _solver = cuda->solver(ii, kk);
+				cusolverDnSetStream(_solver, _stream);
 
-				cusolverDnSetStream(solver, _stream);
-
-				cusolverDnDpotrs(solver, CUBLAS_FILL_MODE_LOWER, N, E - S, gpu_matrix, N, gpu_rhs + S * N, N, devInfo_on_gpu);
+				cusolverDnDpotrs(_solver, CUBLAS_FILL_MODE_LOWER, N, E - S, gpu_matrix, N, gpu_rhs + S * N, N, devInfo_on_gpu);
 				cudaMemcpyAsync(ret->_dmat.data() + S * N, gpu_rhs + S * N, (E - S) * N * sizeof(double), cudaMemcpyDeviceToHost, _stream);
 			}
 			if (exit)break;
@@ -2363,7 +1886,7 @@ void kingghidorah::_mySparse::_solveI_gpu(kingghidorah::cuda* cuda, _mySparse* r
 	if (!cuda->valid())return;
 	
 		int ii = cuda->fastest();
-		auto solver = cuda->solver(ii);
+		auto solver = cuda->solver(ii,0);
 		//cudaStream_t stream = streams[ii];
 		//cusolverDnSetStream(solver, stream);
 		cudaSetDevice(ii);
@@ -2486,7 +2009,7 @@ void kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, _mySparse* m
 		ret->_dmat.resize(N, nn);
 	}
 	if (!cuda->valid())return;
-	auto solver = cuda->solver(cuda->fastest());
+	auto solver = cuda->solver(cuda->fastest(),0);
 	auto blas = cuda->blas(cuda->fastest());
 	//Eigen::Map<Eigen::VectorXd> b(rhs, N);
 	ret->_dmat.setZero();
@@ -2524,7 +2047,7 @@ void kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, _mySparse* m
 #pragma omp parallel for
 	for (int i = 0; i < cuda->count(); i++) {
 		cudaSetDevice(i);
-		auto solver = cuda->solver(i);
+		auto solver = cuda->solver(i,0);
 		auto blas = cuda->blas(i);
 		double* _gpu_matrix = cuda->work_M(i);
 		double* gpu_rhs = cuda->work_rhs(i);

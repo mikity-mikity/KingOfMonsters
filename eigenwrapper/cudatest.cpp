@@ -104,6 +104,7 @@ int main() {
 
             memcpy(f.data(), e, sizeof(double) * N * N);
             std::cout << f.topLeftCorner(4, 4) << std::endl << std::endl;
+            std::cout << f.bottomRightCorner(4, 4) << std::endl << std::endl;
 
             auto _end = std::chrono::high_resolution_clock::now();
             std::cout << "potrf"<<std::chrono::duration_cast<std::chrono::milliseconds>(_end - _start).count() << "ms" << std::endl;

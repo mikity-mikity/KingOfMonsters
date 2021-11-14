@@ -27,7 +27,7 @@ using std::vector;
 using std::string;
 
 //#define EIGEN_MALLOC_ALREADY_ALIGNED  0
-
+void kernel(double* A, double* work, int N, cudaStream_t stream);
 namespace kingghidorah {
 	class cuda {
 	private:
@@ -37,7 +37,7 @@ namespace kingghidorah {
 		bool initialized;
 		int _count = 0;
 		int _fastest = 0;
-		cusolverDnHandle_t solver_handle[MAXDEVICE];
+		std::vector<std::vector<cusolverDnHandle_t>> solver_handle;
 		cublasHandle_t cublas_handle[MAXDEVICE];
 		double* __mgM[MAXDEVICE];
 		double* __mgrhs[MAXDEVICE];
@@ -59,12 +59,16 @@ namespace kingghidorah {
 		std::vector< std::vector<cudaStream_t>> _streams;
 
 	public:
+		cudaLibMgMatrixDesc_t descrA;
+		cudaLibMgGrid_t gridA;
+		cusolverMgGridMapping_t mapping = CUDALIBMG_GRID_MAPPING_COL_MAJOR;
+
 		int prevT_A = 0;
 		int prevN = 0;
 		int prevwn = 0;
 		cuda(int N);
 		~cuda();
-		cusolverDnHandle_t& solver(int ii);
+		cusolverDnHandle_t& solver(int ii, int kk);
 		cublasHandle_t& blas(int ii);
 		cusolverMgHandle_t mgsolver();
 		//double* L();
@@ -186,13 +190,13 @@ namespace kingghidorah {
 		Eigen::VectorXd solve0(double* rhs, int N);
 		Eigen::VectorXd _solve0(double* rhs, int N);
 		Eigen::VectorXd _solve0_gpu(kingghidorah::cuda* cuda, double* rhs, int N, int device);
-		Eigen::VectorXd _solve0_gpu_mg(kingghidorah::cuda* cuda, double* rhs, int N);
 		Eigen::MatrixXd _solve0(_myLLT* LLT, _mySparse* rhs);
 		void _solve0_gpu(kingghidorah::cuda* cuda, _mySparse* rhs, _mySparse* ret);
 		void _solveI(_mySparse* ret);
 		void _solveI_gpu(kingghidorah::cuda* cuda, _mySparse* ret);
 		std::string _solveI_gpu_omp(kingghidorah::cuda* cuda, _mySparse* ret);
-		void _solve0_gpu_mg(kingghidorah::cuda* cuda, _mySparse* rhs, _mySparse* ret);
+		std::string _solveI_gpu_single(kingghidorah::cuda* cuda, _mySparse* ret);
+
 		void _solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse* ret);
 		Eigen::VectorXd __solve0(double* rhs, int N);
 		Eigen::MatrixXd inv();
