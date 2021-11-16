@@ -14,7 +14,7 @@
 int previdentiyN = 0;
 //std::vector<cudaStream_t> streams;
 Eigen::MatrixXd I;
-#define STRTREAMCOUNT 2
+#define STRTREAMCOUNT 4
 kingghidorah::cuda::cuda(int N) {
 	I.resize(0, 0);
 	omp_set_dynamic(false);
