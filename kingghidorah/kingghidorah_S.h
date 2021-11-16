@@ -9,6 +9,7 @@ using namespace System;
 //using namespace Alea::Parallel;
 using std::vector;
 using std::string;
+#include "mySparseLibrary.h"
 namespace kingghidorah {
 	
 	public class _buffer {
@@ -2437,28 +2438,28 @@ public:
 	{
 		__mem->set_z(z);
 	}
-	void update_z_phi(int nNode, array<double>^ Z, array<double>^ phi) {
+	void update_z_phi(int nNode, kingghidorah::myDoubleArray^ Z, kingghidorah::myDoubleArray^ phi) {
 		if (Z != nullptr)
 		{
 			for (int i = 0; i < nNode; i++) {
-				__mem->set_buf_z(i, Z[i]);
+				__mem->set_buf_z(i, (*Z->_arr)(i));
 			}
 		}
 		if (phi != nullptr)
 		{
 			for (int i = 0; i < nNode; i++) {
-				__mem->set_buf_phi(i, phi[i]);
+				__mem->set_buf_phi(i, (*phi->_arr)(i));
 			}
 		}
 	}
-	void update3(int nNode, array<double>^ node, array<double>^ def,bool ignoreZ) {
+	void update3(int nNode, kingghidorah::myDoubleArray^ node, array<double>^ def,bool ignoreZ) {
 		if (node != nullptr) {
 			for (int i = 0; i < nNode; i++) {
 				int e = i * 3;
-				__mem->set_node(i, 0, node[e + 0]);
-				__mem->set_node(i, 1, node[e + 1]);
+				__mem->set_node(i, 0, (*node->_arr)(e + 0));
+				__mem->set_node(i, 1, (*node->_arr)(e + 1));
 				if (!ignoreZ) {
-					__mem->set_node(i, 2, node[e + 2]);
+					__mem->set_node(i, 2, (*node->_arr)(e + 2));
 				}
 				else{
 					__mem->set_node(i, 2, 0);
@@ -2480,7 +2481,7 @@ public:
 			}
 		}
 	}
-	void update3(int nNode, array<double>^ node, array<double>^ def) {
+	void update3(int nNode, kingghidorah::myDoubleArray^ node, array<double>^ def) {
 		update3(nNode, node, def, false);
 	}
 	void update(int nNode, int uDim, int vDim) {

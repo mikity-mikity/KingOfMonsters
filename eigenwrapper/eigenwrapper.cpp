@@ -14,7 +14,7 @@
 int previdentiyN = 0;
 //std::vector<cudaStream_t> streams;
 Eigen::MatrixXd I;
-#define STRTREAMCOUNT 4
+#define STRTREAMCOUNT 2
 kingghidorah::cuda::cuda(int N) {
 	I.resize(0, 0);
 	omp_set_dynamic(false);
@@ -693,8 +693,8 @@ void kingghidorah::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic, 
 			int start = i;
 			int end = i + S;
 			if (end > nn)end = nn;
-			_dmat.middleRows(start, end - start) = _dmat.middleRows(start, end - start) * pt;
-
+			//_dmat.middleRows(start, end - start) = _dmat.middleRows(start, end - start) * pt;
+			perm.transpose().applyThisOnTheRight(_dmat.middleRows(start, end - start));
 		}
 
 #pragma omp parallel for
@@ -703,7 +703,8 @@ void kingghidorah::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic, 
 			int start = i;
 			int end = i + S;
 			if (end > nn)end = nn;
-			_dmat.middleCols(start, end - start) = perm * _dmat.middleCols(start, end - start);
+			//_dmat.middleCols(start, end - start) = perm * _dmat.middleCols(start, end - start);
+			perm.applyThisOnTheLeft(_dmat.middleCols(start, end - start));
 		}
 	}
 	/*_dmat.applyOnTheLeft(perm);

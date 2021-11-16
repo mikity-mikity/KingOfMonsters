@@ -1048,29 +1048,29 @@ namespace kingghidorah {
 		{
 			__mem->set_z(z);
 		}
-		void update_z_phi(int nNode, array<double>^ Z, array<double>^ phi) {
+		void update_z_phi(int nNode, kingghidorah::myDoubleArray ^ Z, kingghidorah::myDoubleArray^ phi) {
 			if (Z != nullptr)
 			{
 				for (int i = 0; i < nNode; i++) {
-					__mem->set_buf_z(i, Z[i]);
+					__mem->set_buf_z(i, (*Z->_arr)(i));
 				}
 			}
 			if (phi != nullptr)
 			{
 				for (int i = 0; i < nNode; i++) {
 					int e = i;
-					__mem->set_buf_phi(i, phi[e]);
+					__mem->set_buf_phi(i, (*phi->_arr)(e));
 				}
 			}
 		}
-		void update3(int nNode, array<double>^ node, array<double>^ def,bool ignorez) {
+		void update3(int nNode, kingghidorah::myDoubleArray^ node, array<double>^ def,bool ignorez) {
 			if (node != nullptr) {
 				for (int i = 0; i < nNode; i++) {
 					int e = i * 3;
-					__mem->set_node(i, 0, node[e + 0]);
-					__mem->set_node(i, 1, node[e + 1]);
+					__mem->set_node(i, 0, (*node->_arr)(e + 0));
+					__mem->set_node(i, 1, (*node->_arr)(e + 1));
 					if (!ignorez) {
-						__mem->set_node(i, 2, node[e + 2]);
+						__mem->set_node(i, 2, (*node->_arr)(e + 2));
 					}
 					else {
 						__mem->set_node(i, 2, 0);
@@ -1092,7 +1092,7 @@ namespace kingghidorah {
 				}
 			}
 		}
-		void update3(int nNode, array<double>^ node, array<double>^ def) {
+		void update3(int nNode, kingghidorah::myDoubleArray^ node, array<double>^ def) {
 			update3(nNode, node, def, false);
 		}
 		void update(int nNode, int Dim) {

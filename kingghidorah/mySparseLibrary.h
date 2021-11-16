@@ -24,6 +24,7 @@ namespace kingghidorah {
 			//_arr = new double[N];
 			_arr = new Eigen::VectorXd(N);
 			_N = N;
+			_arr->setZero();
 		}
 		/*inline double* data()
 		{
@@ -31,6 +32,10 @@ namespace kingghidorah {
 		}*/
 		inline int size() {
 			return _N;
+		}
+		void copyfrom(array<double>^ arr,int N)
+		{
+			System::Runtime::InteropServices::Marshal::Copy( arr,0, (System::IntPtr)_arr->data(), N);
 		}
 		void minus() {
 			*_arr = -(*_arr);
