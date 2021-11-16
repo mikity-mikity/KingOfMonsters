@@ -115,9 +115,11 @@ namespace kingghidorah {
 		vector<vector<double>> _coeff;
 	private:
 		std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor>> _mat;
-		Eigen::MatrixXd mats;
+		//Eigen::MatrixXd mats;
 		Eigen::MatrixXd _dmat;
+		//double* __dmat;
 
+		int __c = 0, __r = 0;
 		vector<Eigen::VectorXd> coeff;
 		int _nt = 0;
 		int _mt = 0;
@@ -133,10 +135,10 @@ namespace kingghidorah {
 	public:
 		_mySparse();
 		~_mySparse();
-		void freeze(bool _do);
+		//void freeze(bool _do);
 		void _freeze();
 		double L2Norm(double* ptr1, int N1, double* ptr2, int N2);
-		Eigen::VectorXd Vector(double* ptr1, int N1);
+		void Vector(Eigen::VectorXd* ptr1, int N1, Eigen::VectorXd* ptr2);
 		void plus(_mySparse* m, double sc, bool dense, bool sparse);
 		double at(int i, int ii);
 		double _at(int i);
@@ -173,10 +175,11 @@ namespace kingghidorah {
 		int ofAtA(_mySparse* A, bool sparse);
 		std::string _ofAtA(_mySparse* A);
 		void ofAtB(_mySparse* B, bool sparse);
-		void _ofAtB(_mySparse* B, _mySparse* C);
+		//void _ofAtB(_mySparse* B, _mySparse* C);
 		Eigen::VectorXd _ofBtAB(_mySparse* B, double* ptr, int N, _mySparse* C);
-		void _ofAtB_gpu(kingghidorah::cuda* cuda, _mySparse* B, _mySparse* C);
+		//void _ofAtB_gpu(kingghidorah::cuda* cuda, _mySparse* B, _mySparse* C);
 		Eigen::VectorXd Atb(double* ptr, int N);
+		void Atb(double* ptr, int N, Eigen::VectorXd* ret);
 		Eigen::VectorXd _Atb(double* ptr, int N);
 		void merge();
 		void computeQR();
@@ -188,8 +191,8 @@ namespace kingghidorah {
 		void setmat(const Eigen::MatrixXd& mat);
 		void setmiddlecolum(Eigen::SparseMatrix<double> f, int start, int end);
 		Eigen::VectorXd solve0(double* rhs, int N);
-		Eigen::VectorXd _solve0(double* rhs, int N);
-		Eigen::VectorXd _solve0_gpu(kingghidorah::cuda* cuda, double* rhs, int N, int device);
+		void _solve0(double* rhs, int N, double* ret);
+		void _solve0_gpu(kingghidorah::cuda* cuda, double* rhs, int N, double* ret, int device);
 		Eigen::MatrixXd _solve0(_myLLT* LLT, _mySparse* rhs);
 		void _solve0_gpu(kingghidorah::cuda* cuda, _mySparse* rhs, _mySparse* ret);
 		void _solveI(_mySparse* ret);
