@@ -745,7 +745,7 @@ void kingghidorah::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic, 
 
 	if (_mat.size() >= 1)
 	{
-		//if (_mat[0].rows() == _dmat.rows() && _mat[0].cols() == _dmat.cols())
+		if (_mat[0].rows() == _dmat.rows() && _mat[0].cols() == _dmat.cols())
 		{
 			_mat[0] = perm * (_mat[0]) * pt;
 		}
@@ -775,7 +775,7 @@ void kingghidorah::_mySparse::_shrink(int M, int N)
 {
 	if (_mat.size() >= 1)
 	{
-		//if (_mat[0].rows() == _dmat.rows() && _mat[0].cols() == _dmat.cols())
+		if (_mat[0].rows() == _dmat.rows() && _mat[0].cols() == _dmat.cols())
 		{
 			_mat[0].conservativeResize(M, N);
 		}
@@ -1131,11 +1131,14 @@ std::string kingghidorah::_mySparse::info()
 Eigen::VectorXd kingghidorah::_mySparse::_ofBtAB(_mySparse* B, double* ptr, int N, _mySparse* C)
 {
 	static Eigen::MatrixXd D;
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(__dmat, __r, __c);
-	int nn = B->_mat[0].cols();
-	int kk = _dmat.cols();
-	C->_resize(nn, nn);
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat2(C->__dmat, nn, nn);
+	//std::stringstream sss;
+	//sss << B->_mat[0].rows() << "," << B->_mat[0].cols() << "," << this->_dmat.rows() << "," << this->_dmat.cols() << std::endl;
+
+	//auto ff = B->_mat[0].transpose() * this->_dmat * B->_mat[0];
+	//C->_dmat = ff;
+	//return;
+	int nn = B->_dmat.cols();
+	int kk = this->_dmat.cols();
 
 	//C->_dmat.resize(nn, nn);
 
