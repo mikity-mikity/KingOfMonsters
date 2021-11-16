@@ -149,14 +149,13 @@ kingghidorah::cuda::cuda(int N) {
 						m.adddat(i, j, i);
 				}
 			}
-			double* rhs;
-			rhs = new double[_N];
+			Eigen::VectorXd rhs(_N);
 			for (int i = 0; i < _N; i++)rhs[i] = i;
 			m.ofDat();
 			m.clearcoeff();
 			m._ofAtA(&m);
-			m._solve0_gpu(this, rhs, _N, ii);
-			delete[] rhs;
+			Eigen::VectorXd ret(_N);
+			m._solve0_gpu(this, &rhs,&ret,ii);
 			auto stop = high_resolution_clock::now();
 			auto duration = duration_cast<microseconds>(stop - start);
 			speed[ii] = duration.count();
@@ -589,14 +588,18 @@ void kingghidorah::_mySparse::freeze(bool _do) {
 			this->_dmat += this->_mat[ii];
 		}
 }
-double kingghidorah::_mySparse::L2Norm(double* ptr1, int N1, double* ptr2, int N2) {
-	auto a = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(ptr1, N1);
-	auto b = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(ptr2, N2);
-	return a.transpose() * this->_mat[0] * b;
+double kingghidorah::_mySparse::L2Norm(Eigen::VectorXd*a, Eigen::VectorXd* b) {
+	return (*a).transpose() * this->_mat[0] * (*b);
 }
 Eigen::VectorXd kingghidorah::_mySparse::Vector(double* ptr1, int N1) {
 	auto a = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(ptr1, N1);
 	return this->_mat[0] * a;
+}
+Eigen::VectorXd kingghidorah::_mySparse::Vector(Eigen::VectorXd* vec) {
+	return this->_mat[0] * *vec;
+}
+void kingghidorah::_mySparse::Vector(Eigen::VectorXd* vec, Eigen::VectorXd *ret) {
+	*ret=this->_mat[0] * *vec;
 }
 void kingghidorah::_mySparse::plus(_mySparse* m, double sc,bool dense,bool sparse) {
 	if(sparse)
@@ -1079,7 +1082,7 @@ void kingghidorah::_mySparse::_ofAtB(_mySparse* B, _mySparse* C)
 	if (C->_mat.size() == 0)C->_mat.resize(1);
 	C->_mat[0] = C->_dmat.sparseView(1.0, 0.0000000000001);
 }
-Eigen::VectorXd kingghidorah::_mySparse::_ofBtAB(_mySparse* B, double* ptr, int N, _mySparse* C)
+void kingghidorah::_mySparse::_ofBtAB(_mySparse* B,Eigen::VectorXd *b,_mySparse* C,Eigen::VectorXd* ret)
 {
 	static Eigen::MatrixXd D;
 
@@ -1116,8 +1119,8 @@ Eigen::VectorXd kingghidorah::_mySparse::_ofBtAB(_mySparse* B, double* ptr, int 
 		if (E >= nn)E = nn;
 		C->_dmat.middleCols(S, E - S) = D * right.middleCols(S, E - S);
 	}
-	Eigen::Map<Eigen::VectorXd> b(ptr, N);
-	return D * b;
+	//Eigen::Map<Eigen::VectorXd> b(ptr, N);
+	*ret = D * *b;
 }
 
 void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
@@ -1166,7 +1169,20 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 	}
 	//this->_dmat = this->_mat[0];
 }
-
+void kingghidorah::_mySparse::Atb(double* ptr, int N,Eigen::VectorXd *c)
+{
+	c->resize(this->cols());
+	c->setZero();
+	int offset = 0;
+	for (int ii = 0; ii < _nt; ii++)
+	{
+		int ee = coeff[ii].rows();
+		Eigen::Map<Eigen::VectorXd> b(ptr + offset, ee);
+		*c += _mat[ii].transpose() * coeff[ii].asDiagonal() * b;
+		offset += ee;
+	}
+	//return ret;
+}
 Eigen::VectorXd kingghidorah::_mySparse::Atb(double* ptr, int N)
 {
 	Eigen::VectorXd ret(this->cols());
@@ -1212,25 +1228,25 @@ int kingghidorah::_mySparse::nonzeros() {
 	}
 	return _ret;
 }
-Eigen::VectorXd kingghidorah::_mySparse::solve0(double* rhs, int N) {
+void kingghidorah::_mySparse::solve0(Eigen::VectorXd* rhs,Eigen::VectorXd *ret) {
 	Eigen::PartialPivLU<Eigen::MatrixXd> lu;
 	lu.compute(_dmat);
-	Eigen::Map<Eigen::VectorXd> b(rhs, N);
-	Eigen::VectorXd x(_dmat.cols());
-	x.setZero();
-	x = lu.solve(b);
-	return x;
+	//Eigen::Map<Eigen::VectorXd> b(rhs, N);
+	ret->conservativeResize(_dmat.cols());
+	//Eigen::VectorXd x(_dmat.cols());
+	//x.setZero();
+	*ret = lu.solve(*rhs);
 }
 
 
-Eigen::VectorXd kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, double* rhs, int N, int device) {
-	Eigen::VectorXd x(N);
+void kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, Eigen::VectorXd *rhs, Eigen::VectorXd *ret,int device) {
+	Eigen::VectorXd x = *ret;
 	this->_freeze();
-
+	int N = rhs->rows();
 	if (!cuda->valid())
 	{
 		x(0) = 10;
-		return x;
+		return;
 	}
 	cudaSetDevice(device);
 	auto solver = cuda->solver(device,0);
@@ -1245,7 +1261,7 @@ Eigen::VectorXd kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, d
 	double* gpu_rhs = cuda->work_rhs(device);
 	double* gpu_matrix = cuda->work_M(device);
 	cudaMemcpy(gpu_matrix, this->_dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
-	cudaMemcpy(gpu_rhs, rhs, N * sizeof(double), cudaMemcpyHostToDevice);
+	cudaMemcpy(gpu_rhs, rhs->data(), N * sizeof(double), cudaMemcpyHostToDevice);
 
 	int work_size = 0;
 	int* devInfo_on_gpu = cuda->info(device);
@@ -1265,7 +1281,7 @@ Eigen::VectorXd kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, d
 
 	if (0 != devInfo_on_cpu) {
 		x(0) = devInfo_on_cpu;
-		return x;
+		return;
 	}
 
 
@@ -1278,10 +1294,10 @@ Eigen::VectorXd kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, d
 
 	if (devInfo_on_cpu != 0) {
 		x(0) = 24;
-		return x;
+		return;
 	}
 
-	cudaMemcpy(x.data(), gpu_rhs, sizeof(double) * N, cudaMemcpyDeviceToHost);
+	cudaMemcpy(ret->data(), gpu_rhs, sizeof(double) * N, cudaMemcpyDeviceToHost);
 
 	//cudaFree(work);
 
@@ -1289,7 +1305,7 @@ Eigen::VectorXd kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, d
 
 	cudaDeviceSynchronize();
 	//cudaStreamDestroy(stream);
-	return x;
+	return;
 }
 Eigen::MatrixXd kingghidorah::_mySparse::_solve0(_myLLT* LLT, _mySparse* mat)
 {
@@ -2092,24 +2108,25 @@ void kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, _mySparse* m
 	}
 }
 
-Eigen::VectorXd kingghidorah::_mySparse::_solve0(double* rhs, int N) {
+void kingghidorah::_mySparse::_solve0(Eigen::VectorXd* rhs,Eigen::VectorXd *ret) {
 	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);
 	Eigen::SimplicialLLT<Eigen::SparseMatrix<double>> LLT;
 	LLT.compute(_mat[0]);
-	Eigen::Map<Eigen::VectorXd> b(rhs, N);
-	Eigen::VectorXd x(_mat[0].rows());
-	x.setZero();
-	x = LLT.solve(b);
-	return x;
+	//Eigen::Map<Eigen::VectorXd> b(rhs, N);
+	ret->conservativeResize(_mat[0].rows());
+	ret->setZero();
+	//Eigen::VectorXd x(_mat[0].rows());
+	//x.setZero();
+	*ret = LLT.solve(*rhs);
+	//return x;
 }
-Eigen::VectorXd kingghidorah::_mySparse::__solve0(double* rhs, int N) {
+void kingghidorah::_mySparse::__solve0(Eigen::VectorXd* rhs, Eigen::VectorXd *ret) {
 	Eigen::LLT<Eigen::MatrixXd> LLT;
 	LLT.compute(_dmat);
-	Eigen::Map<Eigen::VectorXd> b(rhs, N);
-	Eigen::VectorXd x(_dmat.rows());
-	x.setZero();
-	x = LLT.solve(b);
-	return x;
+	//Eigen::Map<Eigen::VectorXd> b(rhs, N);
+	ret->resize(_dmat.rows());
+	ret->setZero();
+	*ret = LLT.solve(*rhs);
 }
 Eigen::MatrixXd kingghidorah::_mySparse::inv() {
 	Eigen::PartialPivLU<Eigen::MatrixXd> lu;
