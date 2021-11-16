@@ -13,10 +13,7 @@
 #include <fstream>
 int previdentiyN = 0;
 //std::vector<cudaStream_t> streams;
-Eigen::MatrixXd I;
-#define STRTREAMCOUNT 2
 kingghidorah::cuda::cuda(int N) {
-	I.resize(0, 0);
 	omp_set_dynamic(false);
 	omp_set_num_threads(16);
 	prevT_A = 0;
@@ -1603,7 +1600,7 @@ void kingghidorah::_mySparse::_solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse
 	//if (NULL != array_d_work) free(array_d_work);
 
 }
-
+Eigen::MatrixXd I;
 void kingghidorah::_mySparse::_solveI(_mySparse* ret)
 {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(__dmat, __r, __c);
@@ -1718,21 +1715,21 @@ void cholesky2(double* A, double* L,int n) {
 void initidentiy(kingghidorah::cuda* cuda,int N) {
 	double _a = 0;
 	double _b = 1;
-	//if (I.cols() != N || I.rows() != N)
+	if (I.cols() != N || I.rows() != N)
 	{
-		//I.setIdentity(N, N);
+		I.setIdentity(N, N);
 #pragma omp parallel for
 		for (int ii = 0; ii < cuda->count(); ii++)
 		{
 			cudaSetDevice(ii);
 			double* gpu_rhs = cuda->work_C(ii);
 			auto stream = cuda->__streams(ii, 0);
-			//cudaMemcpyAsync(gpu_rhs, I.data(), sizeof(double) * N * N, cudaMemcpyHostToDevice, stream);
-			cudaMemsetAsync(gpu_rhs, 0, N * N * sizeof(double), stream);
+			cudaMemcpyAsync(gpu_rhs, I.data(), sizeof(double) * N * N, cudaMemcpyHostToDevice, stream);
+			/*cudaMemsetAsync(gpu_rhs, 0, N * N * sizeof(double), stream);
 			for (int i = 0; i < N; i++)
 			{
 				cudaMemcpyAsync(gpu_rhs + (i+i*N), &_b, 1*sizeof(double), cudaMemcpyHostToDevice,stream);
-			}
+			}*/
 		}
 	}
 }
@@ -1835,12 +1832,12 @@ std::string kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _
 
 		auto solver = cuda->solver(cuda->fastest(), 0);
 
-		cudaSetDevice(cuda->fastest());
-		//auto stream = streams[cuda->fastest()];
-		double* gpu_matrix = cuda->work_M(cuda->fastest());
-		double* gpu_rhs = cuda->work_C(cuda->fastest());
-		cudaMemcpy(gpu_matrix, _dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
-		int* devInfo_on_gpu = cuda->info(cuda->fastest());
+			cudaSetDevice(cuda->fastest());
+			//auto stream = streams[cuda->fastest()];
+			double* gpu_matrix = cuda->work_M(cuda->fastest());
+
+			cudaMemcpy(gpu_matrix, this->_dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
+			int* devInfo_on_gpu = cuda->info(cuda->fastest());
 
 		int work_size = 0;
 
@@ -1928,6 +1925,7 @@ std::string kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _
 		auto solver = cuda->solver(ii,0);
 		
 		cudaSetDevice(ii);
+		cudaDeviceSynchronize();
 		//auto stream=streams[ii];
 		//cusolverDnSetStream(solver, stream);
 
@@ -1936,6 +1934,7 @@ std::string kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _
 		int* devInfo_on_gpu = cuda->info(ii);
 
 		int devInfo_on_cpu = 0;
+
 
 		bool exit = false;
 		while (true)
