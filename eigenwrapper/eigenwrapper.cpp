@@ -13,7 +13,10 @@
 #include <fstream>
 int previdentiyN = 0;
 //std::vector<cudaStream_t> streams;
+Eigen::MatrixXd I;
+#define STRTREAMCOUNT 2
 kingghidorah::cuda::cuda(int N) {
+	I.resize(0, 0);
 	omp_set_dynamic(false);
 	omp_set_num_threads(16);
 	prevT_A = 0;
@@ -148,14 +151,12 @@ kingghidorah::cuda::cuda(int N) {
 			}
 			double* rhs;
 			rhs = new double[_N];
-			double* ret = new double[_N];
 			for (int i = 0; i < _N; i++)rhs[i] = i;
 			m.ofDat();
 			m.clearcoeff();
 			m._ofAtA(&m);
-			m._solve0_gpu(this, rhs, _N, ret,ii);
+			m._solve0_gpu(this, rhs, _N, ii);
 			delete[] rhs;
-			delete[] ret;
 			auto stop = high_resolution_clock::now();
 			auto duration = duration_cast<microseconds>(stop - start);
 			speed[ii] = duration.count();
@@ -539,9 +540,6 @@ kingghidorah::_mySparse::_mySparse()
 }
 kingghidorah::_mySparse::~_mySparse()
 {
-	if (__c * __r!= 0) {
-		//cudaFreeHost(__dmat);
-	}
 	//delete _smat;
 }
 
@@ -578,7 +576,7 @@ std::string kingghidorah::_mySparse::_testopenmp()
 	}
 	return ss.str();
 }
-/*void kingghidorah::_mySparse::freeze(bool _do) {
+void kingghidorah::_mySparse::freeze(bool _do) {
 	this->_dmat.setZero(this->rows(), this->cols());
 	if(_do)
 	for (int ii = 0; ii < _nt; ii++)
@@ -590,32 +588,30 @@ std::string kingghidorah::_mySparse::_testopenmp()
 		{
 			this->_dmat += this->_mat[ii];
 		}
-}*/
+}
 double kingghidorah::_mySparse::L2Norm(double* ptr1, int N1, double* ptr2, int N2) {
-	auto a = Eigen::Map<Eigen::VectorXd, Eigen::Aligned128>(ptr1, N1);
-	auto b = Eigen::Map<Eigen::VectorXd, Eigen::Aligned128>(ptr2, N2);
+	auto a = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(ptr1, N1);
+	auto b = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(ptr2, N2);
 	return a.transpose() * this->_mat[0] * b;
 }
-void kingghidorah::_mySparse::Vector(Eigen::VectorXd *ptr1, int N1, Eigen::VectorXd* ptr2) {
-	//auto a = Eigen::Map<Eigen::VectorXd, Eigen::Aligned128>(ptr1, N1);
-	//auto b = Eigen::Map<Eigen::VectorXd, Eigen::Aligned128>(ptr1, N1);
-	(*ptr2)=this->_mat[0] * (*ptr1);
+Eigen::VectorXd kingghidorah::_mySparse::Vector(double* ptr1, int N1) {
+	auto a = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(ptr1, N1);
+	return this->_mat[0] * a;
 }
 void kingghidorah::_mySparse::plus(_mySparse* m, double sc,bool dense,bool sparse) {
-	if (sparse)
-		this->_mat[0] = this->_mat[0] + m->_mat[0] * sc;
+	if(sparse)
+	this->_mat[0] = this->_mat[0] + m->_mat[0] * sc;
 	if (dense)
 	{
-		//Eigen::Map<Eigen::MatrixXd,Eigen::Aligned128> _dmat(this->__dmat, __c, __r);
-		_dmat += m->_mat[0] * sc;
+		//this->_mat[0] = this->_mat[0] + m->_mat[0] * sc;
+		this->_dmat += m->_mat[0] * sc;
 	}
 }
 void kingghidorah::_mySparse::setmat(Eigen::SparseMatrix<double> mat, int ii) {
 	this->_mat[ii] = mat;
 }
 void kingghidorah::_mySparse::setmat(const Eigen::MatrixXd& mat) {
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(this->__dmat, __c, __r);
-	_dmat = mat;
+	this->_dmat = mat;
 }
 double kingghidorah::_mySparse::at(int i, int ii) {
 	return this->_mat[ii].data().value(i);
@@ -625,44 +621,28 @@ int kingghidorah::_mySparse::num_elem(int ii)
 	return this->_mat[ii].data().size();
 }
 double kingghidorah::_mySparse::_at(int i) {
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(this->__dmat, __c, __r);
-	return _dmat.data()[i];
+	return this->_dmat.data()[i];
 }
 double kingghidorah::_mySparse::_at(int i, int j) {
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(this->__dmat, __c, __r);
-	return _dmat(i, j);
+	return this->_dmat(i, j);
 }
 int kingghidorah::_mySparse::cols() {
 	return _mat[0].cols();
 }
 void kingghidorah::_mySparse::_resize(int n, int m) {
-	if (n < __c && m < __r) {
-		__c = n;
-		__r = m;
-	}
-	else {
-		//if (__r * __c != 0)cudaFreeHost(__dmat);
-		__c = n;
-		__r = m;
-		//cudaMallocHost(&__dmat, sizeof(double) * __c * __r*1.5);
-
-	}
-	this->_dmat.conservativeResize(n, m);
+	this->_dmat.resize(n, m);
 }
 void kingghidorah::_mySparse::setmiddlecolum(Eigen::SparseMatrix<double> f, int start, int end) {
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(this->__dmat, __c, __r);
-	_dmat.middleCols(start, end - start) = f;
+	this->_dmat.middleCols(start, end - start) = f;
 }
 void kingghidorah::_mySparse::permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm)
 {
 	for (int ii = 0; ii < _nt; ii++)
-	{
-		perm.transpose().applyThisOnTheRight(_mat[ii]);
-	}
+		_mat[ii] = _mat[ii] * perm.transpose();
 }
 void kingghidorah::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm,bool sparse,bool dense)
 {
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(this->__dmat, __c, __r);
+
 	int nn = _dmat.rows();
 	int numthreads = 0;
 	numthreads = omp_get_max_threads();
@@ -673,9 +653,7 @@ void kingghidorah::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic, 
 	{
 		//if (_mat[0].rows() == _dmat.rows() && _mat[0].cols() == _dmat.cols())
 		{
-			//_mat[0] = 
-			perm.applyThisOnTheLeft(_mat[0]);
-			perm.transpose().applyThisOnTheRight(_mat[0]);
+			_mat[0] = perm * (_mat[0]) * pt;
 		}
 	}
 	if (dense)
@@ -686,8 +664,7 @@ void kingghidorah::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic, 
 			int start = i;
 			int end = i + S;
 			if (end > nn)end = nn;
-			//_dmat.middleRows(start, end - start) = ;//
-			perm.transpose().applyThisOnTheRight(_dmat.middleRows(start, end - start));
+			_dmat.middleRows(start, end - start) = _dmat.middleRows(start, end - start) * pt;
 
 		}
 
@@ -697,8 +674,7 @@ void kingghidorah::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic, 
 			int start = i;
 			int end = i + S;
 			if (end > nn)end = nn;
-			//_dmat.middleCols(start, end - start) = ;
-			perm.applyThisOnTheLeft(_dmat.middleCols(start, end - start));
+			_dmat.middleCols(start, end - start) = perm * _dmat.middleCols(start, end - start);
 		}
 	}
 	/*_dmat.applyOnTheLeft(perm);
@@ -723,20 +699,11 @@ void kingghidorah::_mySparse::_shrink(int M,bool sparse,bool dense)
 	}
 	if (dense)
 	{
-		//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(this->__dmat, __c, __r);
-		//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat2(this->__dmat, M, M);
-		/*for (int i = 0; i < M; i++)
-		{
-			_dmat2.col(i) = _dmat.block(0, i, M, 1);
-		}*/
 		_dmat.conservativeResize(M, M);
-		__c = M;
-		__r = M;
 	}
 }
 void kingghidorah::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm, Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm2)
 {
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(this->__dmat, __c, __r);
 	int nn = _dmat.rows();
 	int numthreads = omp_get_max_threads();
 
@@ -745,7 +712,7 @@ void kingghidorah::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic, 
 
 	if (_mat.size() >= 1)
 	{
-		if (_mat[0].rows() == _dmat.rows() && _mat[0].cols() == _dmat.cols())
+		//if (_mat[0].rows() == _dmat.rows() && _mat[0].cols() == _dmat.cols())
 		{
 			_mat[0] = perm * (_mat[0]) * pt;
 		}
@@ -775,7 +742,7 @@ void kingghidorah::_mySparse::_shrink(int M, int N)
 {
 	if (_mat.size() >= 1)
 	{
-		if (_mat[0].rows() == _dmat.rows() && _mat[0].cols() == _dmat.cols())
+		//if (_mat[0].rows() == _dmat.rows() && _mat[0].cols() == _dmat.cols())
 		{
 			_mat[0].conservativeResize(M, N);
 		}
@@ -791,10 +758,10 @@ int kingghidorah::_mySparse::rows() {
 	return _ret;
 }
 int kingghidorah::_mySparse::_rows() {
-	return __r;
+	return _dmat.rows();
 }
 int kingghidorah::_mySparse::_cols() {
-	return __c;
+	return _dmat.cols();
 }
 int kingghidorah::_mySparse::__rows() {
 	int _ret = 0;
@@ -815,7 +782,7 @@ void kingghidorah::_mySparse::Clear() {
 
 	if (this->coeff.size() != _nt)this->coeff.resize(_nt);
 	if (this->_mat.size() != _nt)this->_mat.resize(_nt);
-#pragma omp parallel for
+
 	for (int ii = 0; ii < _nt; ii++)
 	{
 		this->coeff[ii].setZero();
@@ -828,7 +795,6 @@ void kingghidorah::_mySparse::init(int n, int m)
 	this->_nt = 1;
 
 	resize(n, m);
-	_resize(n, m);
 }
 int kingghidorah::_mySparse::resize(int n, int m) {
 	this->_nt = this->dat.size();
@@ -952,7 +918,7 @@ void kingghidorah::_mySparse::freezecoeff() {
 #pragma omp parallel for
 	for (int ii = 0; ii < _nt; ii++)
 	{
-		coeff[ii] = Eigen::Map<Eigen::VectorXd, Eigen::Aligned128>(_coeff[ii].data(), _coeff[ii].size());
+		coeff[ii] = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(_coeff[ii].data(), _coeff[ii].size());
 	}
 }
 int kingghidorah::_mySparse::numBlocks()
@@ -965,36 +931,25 @@ int kingghidorah::_mySparse::ofAtA(_mySparse* A,bool sparse)
 {
 	int nn = A->cols();
 	int mt = omp_get_max_threads();
-	_mt = mt;
+	_mt = mt*1;
 
-	if (e.size() < mt)
+	if (e.size() < _mt)
 	{
-		e.resize(mt);
+		e.resize(_mt);
 	}
-	for (int i = 0; i < mt; i++) {
+	for (int i = 0; i < _mt; i++) {
 		e[i].resize(nn, nn);
 		e[i].setZero();
+		e[i].reserve(nn * nn / 10);
 	}
-	this->_resize(nn, nn);
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(this->__dmat, nn, nn);
-	//Eigen::MatrixXd ___dmat(nn, nn);
-//#pragma omp parallel sections
-//	{
-//#pragma omp section
-		{
-			//memset(this->__dmat, 0, sizeof(double) * nn * nn);
-			if (!sparse)_dmat.setZero();
-		}
-//#pragma omp section
-	//	{
 #pragma omp parallel for
-	for (int _ii = 0; _ii < mt; _ii++)
+	for (int _ii = 0; _ii < _mt; _ii++)
 	{
 		int S = 0;
 		int E = 0;
 		auto _e = e[_ii];
-		S = _ii * _nt / mt;
-		E = (_ii + 1) * _nt / mt;
+		S = _ii * _nt / _mt;
+		E = (_ii + 1) * _nt / _mt;
 		for (int ii = S; ii < E; ii++)
 		{
 			e[_ii] += (A->_mat[ii].transpose() * coeff[ii].asDiagonal() * A->_mat[ii]);
@@ -1004,18 +959,17 @@ int kingghidorah::_mySparse::ofAtA(_mySparse* A,bool sparse)
 		if (this->_mat.size() == 0)this->_mat.resize(1);
 		this->_mat[0].resize(nn, nn);
 		this->_mat[0].setZero();
-		for (int i = 0; i < mt; i++) {
+		for (int i = 0; i < _mt; i++) {
 			this->_mat[0] += e[i];
 		}
 		//this->_dmat = this->_mat[0];
 	}
 	else {
 		this->_dmat.setZero(nn, nn);
-		for (int i = 0; i < mt; i++) {
+		for (int i = 0; i < _mt; i++) {
 			this->_dmat += e[i];
 		}
 	}
-	//_dmat = ___dmat;
 	//this->_mat[0] = this->_dmat.sparseView(1.0, 0.0000000000001);
 	return _nt;
 }
@@ -1033,16 +987,13 @@ std::string kingghidorah::_mySparse::_ofAtA(_mySparse* A)
 		ss << A->_mat[ii].rows() << "," << A->_mat[ii].cols() << "," << coeff[ii].size() << std::endl;
 	}
 #endif
-	this->_resize(A->cols(), A->cols());
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(__dmat, A->cols(), A->cols());
-	__c = A->cols();
-	__r = A->cols();
-	//this->_dmat.resize(A->cols(), A->cols());
-	_dmat.setZero();
+
+	this->_dmat.resize(A->cols(), A->cols());
+	this->_dmat.setZero();
 	for (int ii = 0; ii < _nt; ii++)
 	{
 		auto _ret = (A->_mat[ii].transpose() * coeff[ii].asDiagonal() * A->_mat[ii]);
-		_dmat += _ret;
+		this->_dmat += _ret;
 	}
 	return ss.str();
 }
@@ -1051,7 +1002,7 @@ std::string kingghidorah::_mySparse::info()
 	return "viennacl has been abandoned";
 }
 
-/*void kingghidorah::_mySparse::_ofAtB_gpu(cuda* cuda, _mySparse* B, _mySparse* C)
+void kingghidorah::_mySparse::_ofAtB_gpu(cuda* cuda, _mySparse* B, _mySparse* C)
 {
 	this->freeze(true);
 	B->freeze(false);
@@ -1100,8 +1051,8 @@ std::string kingghidorah::_mySparse::info()
 	}
 	if (C->_mat.size() == 0)C->_mat.resize(1);
 	C->_mat[0] = C->_dmat.sparseView(1.0, 0.0000000000001);
-}*/
-/*void kingghidorah::_mySparse::_ofAtB(_mySparse* B, _mySparse* C)
+}
+void kingghidorah::_mySparse::_ofAtB(_mySparse* B, _mySparse* C)
 {
 	this->freeze(true);
 	B->freeze(false);
@@ -1127,48 +1078,34 @@ std::string kingghidorah::_mySparse::info()
 	}
 	if (C->_mat.size() == 0)C->_mat.resize(1);
 	C->_mat[0] = C->_dmat.sparseView(1.0, 0.0000000000001);
-}*/
+}
 Eigen::VectorXd kingghidorah::_mySparse::_ofBtAB(_mySparse* B, double* ptr, int N, _mySparse* C)
 {
 	static Eigen::MatrixXd D;
-	//std::stringstream sss;
-	//sss << B->_mat[0].rows() << "," << B->_mat[0].cols() << "," << this->_dmat.rows() << "," << this->_dmat.cols() << std::endl;
 
-	//auto ff = B->_mat[0].transpose() * this->_dmat * B->_mat[0];
-	//C->_dmat = ff;
-	//return;
-	int nn = B->_dmat.cols();
+	int nn = B->_mat[0].cols();
 	int kk = this->_dmat.cols();
 
-	//C->_dmat.resize(nn, nn);
+	C->_dmat.resize(nn, nn);
+	C->_dmat.setZero();
 
 	int mt = omp_get_max_threads();
 
 	auto left = B->_mat[0].transpose();
-	auto mid = _dmat;
+	auto mid = this->_dmat;
 	auto right = B->_mat[0];
 
 	D.resize(nn, kk);
+	D.setZero();
 	int ss = kk / mt / 2;
-#pragma omp sections
-	{
-#pragma omp section
-		{
-			//_dmat2.setZero();
-			C->_dmat.setZero();
-			D.setZero();
-		}
-#pragma omp section
-		{
+
 #pragma omp parallel for
-			for (int ii = 0; ii < kk; ii += ss)
-			{
-				int S = ii;
-				int E = ii + ss;
-				if (E >= kk)E = kk;
-				D.middleCols(S, E - S) = left * mid.middleCols(S, E - S);
-			}
-		}
+	for (int ii = 0; ii < kk; ii += ss)
+	{
+		int S = ii;
+		int E = ii + ss;
+		if (E >= kk)E = kk;
+		D.middleCols(S, E - S) = left * mid.middleCols(S, E - S);
 	}
 	ss = nn / mt / 2;
 #pragma omp parallel for
@@ -1179,7 +1116,7 @@ Eigen::VectorXd kingghidorah::_mySparse::_ofBtAB(_mySparse* B, double* ptr, int 
 		if (E >= nn)E = nn;
 		C->_dmat.middleCols(S, E - S) = D * right.middleCols(S, E - S);
 	}
-	Eigen::Map<Eigen::VectorXd, Eigen::Aligned128> b(ptr, N);
+	Eigen::Map<Eigen::VectorXd> b(ptr, N);
 	return D * b;
 }
 
@@ -1188,24 +1125,24 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 
 	int nn = this->cols();
 	int mm = B->cols();
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(__dmat, nn,mm);
-	__r = nn;
-	__c = mm;
-	//this->_dmat.resize(nn, mm);
+	this->_dmat.resize(nn, mm);
+	this->_dmat.setZero();
 	int mt = omp_get_max_threads();
 
-	_mt = mt;
-	if (mt > e.size())
-		e.resize(mt);
-	for (int i = 0; i < mt; i++) {
+	_mt = mt*1;
+	
+	if (_mt > e.size())
+		e.resize(_mt);
+	for (int i = 0; i < _mt; i++) {
 		e[i].resize(nn, mm);
 		e[i].setZero();
+		e[i].reserve(nn * mm / 10);
 	}
 #pragma omp parallel for
-	for (int _ii = 0; _ii < mt; _ii++)
+	for (int _ii = 0; _ii < _mt; _ii++)
 	{
-		int S = _ii * _nt / mt;
-		int E = (_ii + 1) * _nt / mt;
+		int S = _ii * _nt / _mt;
+		int E = (_ii + 1) * _nt / _mt;
 
 		for (int ii = S; ii < E; ii++)
 		{
@@ -1218,12 +1155,12 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 
 	if (sparse)
 	{
-		for (int i = 0; i < mt; i++) {
+		for (int i = 0; i < _mt; i++) {
 			this->_mat[0] += e[i];
 		}
 	}
 	else {
-		for (int i = 0; i < mt; i++) {
+		for (int i = 0; i < _mt; i++) {
 			this->_dmat += e[i];
 		}
 	}
@@ -1238,32 +1175,16 @@ Eigen::VectorXd kingghidorah::_mySparse::Atb(double* ptr, int N)
 	for (int ii = 0; ii < _nt; ii++)
 	{
 		int ee = coeff[ii].rows();
-		Eigen::Map<Eigen::VectorXd, Eigen::Aligned128> b(ptr + offset, ee);
+		Eigen::Map<Eigen::VectorXd> b(ptr + offset, ee);
 		ret += _mat[ii].transpose() * coeff[ii].asDiagonal() * b;
 		offset += ee;
 	}
 	return ret;
 }
-void kingghidorah::_mySparse::Atb(double* ptr, int N,Eigen::VectorXd *ret)
-{
-	//static Eigen::VectorXd ret;
-	//auto ret = Eigen::Map<Eigen::VectorXd, Eigen::Aligned128>(_ret, this->cols());
-	ret->setZero();
-	int offset = 0;
-	for (int ii = 0; ii < _nt; ii++)
-	{
-		int ee = coeff[ii].rows();
-		Eigen::Map<Eigen::VectorXd> b(ptr + offset, ee);
-		(*ret) += _mat[ii].transpose() * coeff[ii].asDiagonal() * b;
-		offset += ee;
-	}
-}
-
 Eigen::VectorXd kingghidorah::_mySparse::_Atb(double* ptr, int N)
 {
-	Eigen::Map<Eigen::VectorXd, Eigen::Aligned128> b(ptr, N);
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(__dmat, __r,__c);
-	return _dmat.transpose() * b;
+	Eigen::Map<Eigen::VectorXd> b(ptr, N);
+	return this->_dmat.transpose() * b;
 }
 void kingghidorah::_mySparse::merge()
 {
@@ -1272,18 +1193,15 @@ void kingghidorah::_mySparse::merge()
 void kingghidorah::_mySparse::computeQR()
 {
 	Eigen::HouseholderQR<Eigen::MatrixXd> qr;
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(__dmat, __r, __c);
 	qr.compute(_dmat);
 }
 void kingghidorah::_mySparse::computeLU()
 {
 	Eigen::PartialPivLU<Eigen::MatrixXd> lu;
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(__dmat, __r, __c);
 	lu.compute(_dmat);
 }
 void kingghidorah::_mySparse::computeLLT(Eigen::LLT<Eigen::MatrixXd>* _LLT)
 {
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(__dmat, __r, __c);
 	_LLT->compute(_dmat);
 }
 int kingghidorah::_mySparse::nonzeros() {
@@ -1296,25 +1214,23 @@ int kingghidorah::_mySparse::nonzeros() {
 }
 Eigen::VectorXd kingghidorah::_mySparse::solve0(double* rhs, int N) {
 	Eigen::PartialPivLU<Eigen::MatrixXd> lu;
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(__dmat, __r, __c);
 	lu.compute(_dmat);
-	Eigen::Map<Eigen::VectorXd, Eigen::Aligned128> b(rhs, N);
+	Eigen::Map<Eigen::VectorXd> b(rhs, N);
 	Eigen::VectorXd x(_dmat.cols());
 	x.setZero();
 	x = lu.solve(b);
 	return x;
 }
 
-void kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, double* rhs, int N, double *ret,int device) {
-	//Eigen::VectorXd x(N);
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(__dmat, __r, __c);
-	Eigen::Map<Eigen::VectorXd, Eigen::Aligned128> x(ret, N);
+
+Eigen::VectorXd kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, double* rhs, int N, int device) {
+	Eigen::VectorXd x(N);
 	this->_freeze();
 
 	if (!cuda->valid())
 	{
 		x(0) = 10;
-		return;
+		return x;
 	}
 	cudaSetDevice(device);
 	auto solver = cuda->solver(device,0);
@@ -1328,7 +1244,7 @@ void kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, double* rhs,
 
 	double* gpu_rhs = cuda->work_rhs(device);
 	double* gpu_matrix = cuda->work_M(device);
-	cudaMemcpy(gpu_matrix, _dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
+	cudaMemcpy(gpu_matrix, this->_dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
 	cudaMemcpy(gpu_rhs, rhs, N * sizeof(double), cudaMemcpyHostToDevice);
 
 	int work_size = 0;
@@ -1349,7 +1265,7 @@ void kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, double* rhs,
 
 	if (0 != devInfo_on_cpu) {
 		x(0) = devInfo_on_cpu;
-		return;
+		return x;
 	}
 
 
@@ -1362,7 +1278,7 @@ void kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, double* rhs,
 
 	if (devInfo_on_cpu != 0) {
 		x(0) = 24;
-		return;
+		return x;
 	}
 
 	cudaMemcpy(x.data(), gpu_rhs, sizeof(double) * N, cudaMemcpyDeviceToHost);
@@ -1372,15 +1288,13 @@ void kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, double* rhs,
 	//cudaFree(devInfo_on_gpu);
 
 	cudaDeviceSynchronize();
-
+	//cudaStreamDestroy(stream);
+	return x;
 }
 Eigen::MatrixXd kingghidorah::_mySparse::_solve0(_myLLT* LLT, _mySparse* mat)
 {
 	//this function assumes that LLT decomposition has been done already
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(__dmat, __r, __c);
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat2(mat->__dmat, __r, __c);
-
-	Eigen::MatrixXd ret(_dmat.cols(),_dmat.rows());
+	Eigen::MatrixXd ret(mat->_dmat.cols(), this->_dmat.rows());
 	int nn = mat->cols();
 	int numthreads = 0;
 #pragma omp parallel
@@ -1398,7 +1312,6 @@ Eigen::MatrixXd kingghidorah::_mySparse::_solve0(_myLLT* LLT, _mySparse* mat)
 		int start = i;
 		int end = i + S;
 		if (end > nn)end = nn;
-		//ret.middleRows(start, end - start) = LLT->LLT->solve(_dmat2.middleCols(start, end - start)).transpose();
 		ret.middleRows(start, end - start) = LLT->LLT->solve(mat->_dmat.middleCols(start, end - start)).transpose();
 
 	}
@@ -1407,16 +1320,10 @@ Eigen::MatrixXd kingghidorah::_mySparse::_solve0(_myLLT* LLT, _mySparse* mat)
 
 void kingghidorah::_mySparse::_solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse* ret)
 {
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(__dmat, __r, __c);
-	int N = _dmat.cols();
+	int N = this->_dmat.cols();
 	//Eigen::MatrixXd x(N,nn);
-	ret->__c = N;
-	ret->__r = N;
-	//ret->_dmat.resize(N, N);
+	ret->_dmat.resize(N, N);
 	if (!cuda->valid())return;
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat2(ret->__dmat, N, N);
-
-	//_dmat2.setZero();
 	ret->_dmat.setZero();
 	cudaSetDevice(cuda->fastest());
 
@@ -1457,10 +1364,10 @@ void kingghidorah::_mySparse::_solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse
 	{
 	}*///always fails
 	//auto status = cusolverMgCreateDeviceGrid(&gridA, 1, nbGpus, deviceList, mapping);
-	//assert(CUSOLVER_STATUS_SUCCESS == status);
+	assert(CUSOLVER_STATUS_SUCCESS == status);
 
 
-	//assert(CUSOLVER_STATUS_SUCCESS == status);
+	assert(CUSOLVER_STATUS_SUCCESS == status);
 
 
 
@@ -1490,8 +1397,7 @@ void kingghidorah::_mySparse::_solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse
 		N,
 		N,
 
-		//__dmat,
-		_dmat.data(),
+		this->_dmat.data(),
 		lda,
 
 		N,
@@ -1534,7 +1440,6 @@ void kingghidorah::_mySparse::_solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse
 		assert(CUSOLVER_STATUS_IRS_INTERNAL_ERROR != status);
 		assert(CUSOLVER_STATUS_IRS_MATRIX_SINGULAR != status);
 		assert(CUSOLVER_STATUS_IRS_NOT_SUPPORTED != status);
-		//_dmat2(0, 0) = info;
 		ret->_dmat(0, 0) = info;
 		return;
 	}
@@ -1581,7 +1486,6 @@ void kingghidorah::_mySparse::_solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse
 		IA,
 		JA,
 
-		//ret->__dmat,
 		ret->_dmat.data(),
 		lda
 		);
@@ -1592,7 +1496,6 @@ void kingghidorah::_mySparse::_solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse
 	{
 		for (int j = 0; j < i; j++)
 		{
-			//_dmat2(j, i) = _dmat2(i, j);
 			ret->_dmat(j, i) = ret->_dmat(i, j);
 		}
 	}
@@ -1603,19 +1506,14 @@ void kingghidorah::_mySparse::_solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse
 	//if (NULL != array_d_work) free(array_d_work);
 
 }
-Eigen::MatrixXd I;
+
 void kingghidorah::_mySparse::_solveI(_mySparse* ret)
 {
-	//Eigen::Map<Eigen::MatrixXd> _dmat(__dmat, __r, __c);
-
 	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);	
 	Eigen::SimplicialLLT<Eigen::SparseMatrix<double>> llt;
 	llt.compute(this->_mat[0]);
 	int nn = this->_mat[0].rows();
-	//ret->_dmat.resize(nn, nn);
-	ret->__c = nn;
-	ret->__r = nn;
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat2(ret->__dmat, nn, nn);
+	ret->_dmat.resize(nn, nn);
 	if (I.rows() != nn || I.cols() != nn)
 	{
 		I.resize(nn, nn);
@@ -1628,7 +1526,6 @@ void kingghidorah::_mySparse::_solveI(_mySparse* ret)
 	{
 		int S = i * nn / ee;
 		int E = (i + 1) * nn / ee;
-		//_dmat2.middleCols(S, E - S) = llt.solve(I.middleCols(S, E - S));
 		ret->_dmat.middleCols(S, E - S) = llt.solve(I.middleCols(S, E - S));
 	}
 }
@@ -1718,21 +1615,21 @@ void cholesky2(double* A, double* L,int n) {
 void initidentiy(kingghidorah::cuda* cuda,int N) {
 	double _a = 0;
 	double _b = 1;
-	if (I.cols() != N || I.rows() != N)
+	//if (I.cols() != N || I.rows() != N)
 	{
-		I.setIdentity(N, N);
+		//I.setIdentity(N, N);
 #pragma omp parallel for
 		for (int ii = 0; ii < cuda->count(); ii++)
 		{
 			cudaSetDevice(ii);
 			double* gpu_rhs = cuda->work_C(ii);
 			auto stream = cuda->__streams(ii, 0);
-			cudaMemcpyAsync(gpu_rhs, I.data(), sizeof(double) * N * N, cudaMemcpyHostToDevice, stream);
-			/*cudaMemsetAsync(gpu_rhs, 0, N * N * sizeof(double), stream);
+			//cudaMemcpyAsync(gpu_rhs, I.data(), sizeof(double) * N * N, cudaMemcpyHostToDevice, stream);
+			cudaMemsetAsync(gpu_rhs, 0, N * N * sizeof(double), stream);
 			for (int i = 0; i < N; i++)
 			{
 				cudaMemcpyAsync(gpu_rhs + (i+i*N), &_b, 1*sizeof(double), cudaMemcpyHostToDevice,stream);
-			}*/
+			}
 		}
 	}
 }
@@ -1740,19 +1637,13 @@ std::string kingghidorah::_mySparse::_solveI_gpu_single(kingghidorah::cuda* cuda
 {
 	this->_freeze();
 	std::stringstream sss;
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(__dmat, __r, __c);
+	int N = this->_dmat.cols();
 
-	int N = _dmat.cols();
-
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat2(ret->__dmat, N, N);
-	ret->__r = N;
-	ret->__c = N;
-	//ret->_dmat.resize(N, N);
+	ret->_dmat.resize(N, N);
 
 	if (!cuda->valid())return "";
 	int nn = cuda->count();
 	initidentiy(cuda, N);
-	//_dmat2.setZero();
 	ret->_dmat.setZero();
 
 
@@ -1763,7 +1654,7 @@ std::string kingghidorah::_mySparse::_solveI_gpu_single(kingghidorah::cuda* cuda
 		cudaSetDevice(cuda->fastest());
 		//auto stream = streams[cuda->fastest()];
 		double* gpu_matrix = cuda->work_M(cuda->fastest());
-		cudaMemcpy(gpu_matrix, _dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
+		cudaMemcpy(gpu_matrix, this->_dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
 		int* devInfo_on_gpu = cuda->info(cuda->fastest());
 
 		int work_size = 0;
@@ -1803,7 +1694,6 @@ std::string kingghidorah::_mySparse::_solveI_gpu_single(kingghidorah::cuda* cuda
 		cusolverDnSetStream(_solver, _stream);
 
 		cusolverDnDpotrs(_solver, CUBLAS_FILL_MODE_LOWER, N, E - S, gpu_matrix, N, gpu_rhs + S * N, N, devInfo_on_gpu);
-		//cudaMemcpyAsync(ret->__dmat + S * N, gpu_rhs + S * N, (E - S) * N * sizeof(double), cudaMemcpyDeviceToHost, _stream);
 		cudaMemcpyAsync(ret->_dmat.data() + S * N, gpu_rhs + S * N, (E - S) * N * sizeof(double), cudaMemcpyDeviceToHost, _stream);
 	}
 
@@ -1815,18 +1705,13 @@ std::string kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _
 {
 	this->_freeze();
 	std::stringstream sss;
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(__dmat, __r, __c);
+	int N = this->_dmat.cols();
 
-	int N = _dmat.cols();
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat2(ret->__dmat,N, N);
-	ret->__r = N;
-	ret->__c = N;
-	//ret->_dmat.resize(N, N);
+	ret->_dmat.resize(N, N);
 
 	if (!cuda->valid())return "";
 	int nn = cuda->count();
 	initidentiy(cuda, N);
-	//_dmat2.setZero();
 	ret->_dmat.setZero();
 
 
@@ -1835,12 +1720,12 @@ std::string kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _
 
 		auto solver = cuda->solver(cuda->fastest(), 0);
 
-			cudaSetDevice(cuda->fastest());
-			//auto stream = streams[cuda->fastest()];
-			double* gpu_matrix = cuda->work_M(cuda->fastest());
-
-			cudaMemcpy(gpu_matrix, this->_dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
-			int* devInfo_on_gpu = cuda->info(cuda->fastest());
+		cudaSetDevice(cuda->fastest());
+		//auto stream = streams[cuda->fastest()];
+		double* gpu_matrix = cuda->work_M(cuda->fastest());
+		double* gpu_rhs = cuda->work_C(cuda->fastest());
+		cudaMemcpy(gpu_matrix, this->_dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
+		int* devInfo_on_gpu = cuda->info(cuda->fastest());
 
 		int work_size = 0;
 
@@ -1874,7 +1759,7 @@ std::string kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _
 		// --- CUDA CHOLESKY initialization
 		int work_size = 0;
 		cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, &work_size);
-		cudaMemcpyAsync(gpu_matrix, _dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice, cuda->__streams(cuda->fastest(), 0));
+		cudaMemcpyAsync(gpu_matrix, this->_dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice, cuda->__streams(cuda->fastest(), 0));
 		int* devInfo_on_gpu = cuda->info(cuda->fastest());
 
 
@@ -1893,7 +1778,6 @@ std::string kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _
 			int S = ss * N / STRTREAMCOUNT;
 			int E = (ss + 1) * N / STRTREAMCOUNT;
 			cudaStream_t _streamX = cuda->__streams(cuda->fastest(), ss);
-			//cudaMemcpyAsync(ret->__dmat + S * N, gpu_matrix + S * N, sizeof(double) * N * (E - S), cudaMemcpyDeviceToHost, _streamX);
 			cudaMemcpyAsync(ret->_dmat.data() + S * N, gpu_matrix + S * N, sizeof(double) * N * (E - S), cudaMemcpyDeviceToHost, _streamX);
 			cudaStreamSynchronize(_streamX);
 			//cudaDeviceSynchronize();
@@ -1905,7 +1789,6 @@ std::string kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _
 				{
 					cudaSetDevice(ii);
 					cudaStream_t _stream = cuda->__streams(ii, ss);
-					//cudaMemcpyAsync(cuda->work_M(ii) + S * N, ret->__dmat + S * N, sizeof(double) * N * (E - S), cudaMemcpyHostToDevice, _stream);
 					cudaMemcpyAsync(cuda->work_M(ii) + S * N, ret->_dmat.data() + S * N, sizeof(double) * N * (E - S), cudaMemcpyHostToDevice, _stream);
 				}
 			}
@@ -1928,7 +1811,6 @@ std::string kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _
 		auto solver = cuda->solver(ii,0);
 		
 		cudaSetDevice(ii);
-		cudaDeviceSynchronize();
 		//auto stream=streams[ii];
 		//cusolverDnSetStream(solver, stream);
 
@@ -1937,7 +1819,6 @@ std::string kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _
 		int* devInfo_on_gpu = cuda->info(ii);
 
 		int devInfo_on_cpu = 0;
-
 
 		bool exit = false;
 		while (true)
@@ -1967,8 +1848,7 @@ std::string kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _
 				cusolverDnSetStream(_solver, _stream);
 
 				cusolverDnDpotrs(_solver, CUBLAS_FILL_MODE_LOWER, N, E - S, gpu_matrix, N, gpu_rhs + S * N, N, devInfo_on_gpu);
-				//cudaMemcpyAsync(ret->__dmat + S * N, gpu_rhs + S * N, (E - S) * N * sizeof(double), cudaMemcpyDeviceToHost, _stream);
-				cudaMemcpyAsync(ret->_dmat.data() + S * N, gpu_rhs + S * N, (E - S)* N * sizeof(double), cudaMemcpyDeviceToHost, _stream);
+				cudaMemcpyAsync(ret->_dmat.data() + S * N, gpu_rhs + S * N, (E - S) * N * sizeof(double), cudaMemcpyDeviceToHost, _stream);
 			}
 			if (exit)break;
 		}
@@ -2000,15 +1880,10 @@ std::string kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _
 void kingghidorah::_mySparse::_solveI_gpu(kingghidorah::cuda* cuda, _mySparse* ret)
 {
 	this->_freeze();
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(__dmat, __r, __c);
 
-	int N = _dmat.cols();
+	int N = this->_dmat.cols();
 
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat2(ret->__dmat, N, N);
-	ret->__r = N;
-	ret->__c = N;
-	//ret->_dmat.resize(N, N);
-	//_dmat2.setZero();
+	ret->_dmat.resize(N, N);
 	ret->_dmat.setZero();
 	//initidentiy(cuda, N);
 	if (!cuda->valid())return;
@@ -2040,7 +1915,6 @@ void kingghidorah::_mySparse::_solveI_gpu(kingghidorah::cuda* cuda, _mySparse* r
 		cusolverDnDpotri(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, work2, work_size2, devInfo);
 		//cudaFree(work2);
 
-		//cudaMemcpy(ret->__dmat, m_gpu, sizeof(double) * N * N, cudaMemcpyDeviceToHost);
 		cudaMemcpy(ret->_dmat.data(), m_gpu, sizeof(double) * N * N, cudaMemcpyDeviceToHost);
 		cudaDeviceSynchronize();
 
@@ -2050,7 +1924,6 @@ void kingghidorah::_mySparse::_solveI_gpu(kingghidorah::cuda* cuda, _mySparse* r
 	{
 		for (int j = 0; j < i; j++)
 		{
-			//_dmat2(j, i) = _dmat2(i, j);
 			ret->_dmat(j, i) = ret->_dmat(i, j);
 		}
 	}
@@ -2131,31 +2004,23 @@ void kingghidorah::_mySparse::_solveI_gpu(kingghidorah::cuda* cuda, _mySparse* r
 }*/
 void kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, _mySparse* mat, _mySparse* ret)
 {
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(__dmat, __r, __c);
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat2(mat->__dmat, mat->__r, mat->__c);
-	//int nn = _dmat2.cols();
 	int nn = mat->_dmat.cols();
-	int N = _dmat.cols();
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat3(ret->__dmat, N, nn);
-
+	int N = this->_dmat.cols();
 	//Eigen::MatrixXd x(N,nn);
-	/*if (ret->_dmat.cols() != nn || ret->_dmat.rows() != N)
+	if (ret->_dmat.cols() != nn || ret->_dmat.rows() != N)
 	{
 		ret->_dmat.resize(N, nn);
-	}*/
-	ret->__r = N;
-	ret->__c = nn;
+	}
 	if (!cuda->valid())return;
 	auto solver = cuda->solver(cuda->fastest(),0);
 	auto blas = cuda->blas(cuda->fastest());
 	//Eigen::Map<Eigen::VectorXd> b(rhs, N);
-	//_dmat3.setZero();
 	ret->_dmat.setZero();
 	int job = 0;
 
 	cudaSetDevice(cuda->fastest());
 	double* gpu_matrix = cuda->work_M(cuda->fastest());
-	cudaMemcpy(gpu_matrix, _dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
+	cudaMemcpy(gpu_matrix, this->_dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
 	int* devInfo_on_gpu;
 	cudaMalloc(&devInfo_on_gpu, sizeof(int));
 	double* work;
@@ -2172,11 +2037,10 @@ void kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, _mySparse* m
 	cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
 
 	if (0 != devInfo_on_cpu) {
-		//_dmat3(0, 0) = 2;
 		ret->_dmat(0, 0) = 2;
 		return;
 	}
-	cudaMemcpy(_dmat.data(), gpu_matrix, N * N * sizeof(double), cudaMemcpyDeviceToHost);
+	cudaMemcpy(this->_dmat.data(), gpu_matrix, N * N * sizeof(double), cudaMemcpyDeviceToHost);
 	cudaFree(work);
 	cudaFree(devInfo_on_gpu);
 	bool exit = false;
@@ -2190,8 +2054,7 @@ void kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, _mySparse* m
 		auto blas = cuda->blas(i);
 		double* _gpu_matrix = cuda->work_M(i);
 		double* gpu_rhs = cuda->work_rhs(i);
-		cudaMemcpy(_gpu_matrix, _dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
-		//cudaMemcpy(gpu_rhs, _dmat2.data(), N * nn * sizeof(double), cudaMemcpyHostToDevice);
+		cudaMemcpy(_gpu_matrix, this->_dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
 		cudaMemcpy(gpu_rhs, mat->_dmat.data(), N * nn * sizeof(double), cudaMemcpyHostToDevice);
 		int* _devInfo_on_gpu = 0;
 		int _devInfo_on_cpu = 0;
@@ -2214,7 +2077,6 @@ void kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, _mySparse* m
 				exit = true;
 				break;
 			}
-			//cudaMemcpy(_dmat3.data() + nextjob * N, gpu_rhs + nextjob * N, sizeof(double) * N * (end - start), cudaMemcpyDeviceToHost);
 			cudaMemcpy(ret->_dmat.data() + nextjob * N, gpu_rhs + nextjob * N, sizeof(double) * N * (end - start), cudaMemcpyDeviceToHost);
 		}
 		cudaFree(_devInfo_on_gpu);
@@ -2225,28 +2087,25 @@ void kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, _mySparse* m
 
 	if (exit)
 	{
-		//_dmat3(0, 0) = 4;
 		ret->_dmat(0, 0) = 4;
 		return;
 	}
 }
 
-void kingghidorah::_mySparse::_solve0(double* rhs, int N,double *ret) {
+Eigen::VectorXd kingghidorah::_mySparse::_solve0(double* rhs, int N) {
 	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);
 	Eigen::SimplicialLLT<Eigen::SparseMatrix<double>> LLT;
 	LLT.compute(_mat[0]);
-	Eigen::Map<Eigen::VectorXd, Eigen::Aligned128> b(rhs, N);
-	//Eigen::VectorXd x(_mat[0].rows());
-	Eigen::Map<Eigen::VectorXd, Eigen::Aligned128> x(ret, _mat[0].rows());
+	Eigen::Map<Eigen::VectorXd> b(rhs, N);
+	Eigen::VectorXd x(_mat[0].rows());
 	x.setZero();
 	x = LLT.solve(b);
+	return x;
 }
 Eigen::VectorXd kingghidorah::_mySparse::__solve0(double* rhs, int N) {
 	Eigen::LLT<Eigen::MatrixXd> LLT;
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(__dmat, __r, __c);
-
 	LLT.compute(_dmat);
-	Eigen::Map<Eigen::VectorXd, Eigen::Aligned128> b(rhs, N);
+	Eigen::Map<Eigen::VectorXd> b(rhs, N);
 	Eigen::VectorXd x(_dmat.rows());
 	x.setZero();
 	x = LLT.solve(b);
@@ -2254,8 +2113,6 @@ Eigen::VectorXd kingghidorah::_mySparse::__solve0(double* rhs, int N) {
 }
 Eigen::MatrixXd kingghidorah::_mySparse::inv() {
 	Eigen::PartialPivLU<Eigen::MatrixXd> lu;
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(__dmat, __r, __c);
-
 	lu.compute(_dmat);
 	Eigen::MatrixXd I(_dmat.rows(), _dmat.cols());
 	I.setIdentity();
@@ -2265,14 +2122,8 @@ Eigen::MatrixXd kingghidorah::_mySparse::inv() {
 Eigen::MatrixXd kingghidorah::_mySparse::solve0(_mySparse* rhs)
 {
 	Eigen::PartialPivLU<Eigen::MatrixXd> lu;
-
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(__dmat, __r, __c);
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat2(rhs->__dmat, rhs->__r, rhs->__c);
-
 	//_mat.makeCompressed();
 	lu.compute(_dmat);
-	//Eigen::MatrixXd _x(_dmat.rows(), _dmat2.cols());
-	//_x = lu.solve(_dmat2);
 	Eigen::MatrixXd _x(_dmat.rows(), rhs->_dmat.cols());
 	_x = lu.solve(rhs->_dmat);
 
@@ -2282,10 +2133,7 @@ Eigen::MatrixXd kingghidorah::_mySparse::solve0(_mySparse* rhs)
 
 void kingghidorah::_mySparse::minus(_mySparse* m) {
 	this->_freeze();
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(__dmat, __r, __c);
-	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat2(m->__dmat, m->__r, m->__c);
 
-	//_dmat = _dmat - _dmat2;
 	_dmat = _dmat - m->_dmat;
 	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);
 }
@@ -2300,11 +2148,9 @@ void kingghidorah::_mySparse::addsmallidentity(double salt,bool sparse,bool dens
 
 	if (dense)
 	{
-		//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(__dmat, __r, __c);
-
-		id.conservativeResize(_dmat.rows(), _dmat.cols());
+		id.resize(this->_dmat.rows(), this->_dmat.cols());
 		id.setIdentity();
-		_dmat += (id * salt);
+		this->_dmat += (id * salt);
 	}
 	if (sparse)
 

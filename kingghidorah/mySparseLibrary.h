@@ -12,63 +12,21 @@ using std::string;
 using namespace System;
 using namespace System::Threading::Tasks;
 
-
-
-
 namespace kingghidorah {
-	
 	public ref class myDoubleArray {
 	public:
-		//double* _arr = 0;
-		Eigen::VectorXd *_arr;
+		double* _arr = 0;
 		int _N = 0;
 	public:
-		void reset(int N)
-		{
-			_N = N;
-			//memset(this->data(), 0, sizeof(double) * _N);
-			_arr->conservativeResize(N);
-			_arr->setZero();
-		}
 		myDoubleArray(int N)
 		{
-			_arr = new Eigen::VectorXd();// new double[N];
-			_arr->resize(N);
-			_arr->setZero();
+			_arr = new double[N];
 			_N = N;
 		}
-		void plus(myDoubleArray^ b, double sc)
+		inline double* data()
 		{
-			(*this->_arr) += sc * (*b->_arr);
-			/*
-			int _mt = omp_get_max_threads();
-#pragma omp parallel for
-			for (int ii = 0; ii < _mt; ii++)
-			{
-				int S = ii * _N / _mt;
-				int E = (ii+1) * _N / _mt;
-				double* ptr1 = &_arr[S];
-				double* ptr2 = &b->data()[S];
-
-				for (int i = S; i < E; i++)
-				{
-					*ptr1 += *ptr2 * sc;
-					ptr1++;
-					ptr2++;
-				}
-			}*/
+			return _arr;
 		}
-		double at(int i) {
-			return (*_arr)(i);
-		}
-		void _set(int i, double val)
-		{
-			(*_arr)(i) = val;
-		}
-		/*inline double* data()
-		{
-			return (*_arr).data();
-		}*/
 		inline int size() {
 			return _N;
 		}
@@ -76,9 +34,7 @@ namespace kingghidorah {
 		{
 			if (_arr != 0)
 			{
-				delete _arr;
-				_arr = 0;
-				//delete[] _arr;
+				delete[] _arr;
 			}
 			_arr = 0;
 			_N = 0;
@@ -86,64 +42,14 @@ namespace kingghidorah {
 		~myDoubleArray()
 		{
 			if (_arr != 0) {
-				//delete[] _arr;
-				delete _arr;
+				delete[] _arr;
 			}
 			_arr = 0;
 			_N = 0;
 		}
 		void set(int i, double val)
 		{
-			(*_arr)(i) = val;
-		}
-		void scale(double val)
-		{
-			(*_arr) *= val;
-			/*
-			int _mt = omp_get_max_threads();
-#pragma omp parallel for
-			for (int ii = 0; ii < _mt; ii++)
-			{
-				int S = ii * _N / _mt;
-				int E = (ii + 1) * _N / _mt;
-				double* ptr = &_arr[S];
-				for (int i = S; i < E; i++)
-				{
-					*ptr *= val;
-					ptr++;
-				}
-			}*/
-		}
-		void minus()
-		{
-			(*_arr) = -(*_arr);
-			/*int _mt = omp_get_max_threads();
-#pragma omp parallel for
-			for (int ii = 0; ii < _mt; ii++)
-			{
-				int S = ii * _N / _mt;
-				int E = (ii + 1) * _N / _mt;
-				double* ptr = &_arr[S];
-				for (int i = S; i < E; i++)
-				{
-					*ptr = -*ptr;
-					ptr++;
-				}
-			}*/
-		}
-		void resize(int N)
-		{
-			_arr->conservativeResize(N);
-			/*if (_N < N)
-			{
-#pragma omp parallel for
-				for (int i = _N; i < N; i++)
-				{
-					_arr[i] = 0;
-				}
-			}*/
-			_N = N;
-
+			_arr[i] = val;
 		}
 	};
 	public ref class myIntArray {
@@ -278,6 +184,7 @@ namespace kingghidorah {
 			pin_ptr<double> ptr = &vec[0];
 			int N = vec->Length;
 			Eigen::Map<Eigen::VectorXd> b(ptr, N);
+
 			b.applyOnTheLeft(this->p->perm);
 			//array<double>^ ret = gcnew array<double>(vec->Length);
 			//pin_ptr<double> ptr2 = &ret[0];
@@ -307,16 +214,16 @@ namespace kingghidorah {
 			//return ret;
 		}
 		void perm(myDoubleArray^ vec) {
-			
-			//int N = vec->size();
-			//Eigen::Map<Eigen::VectorXd> b(ptr, N);
-			(*vec->_arr).applyOnTheLeft(this->p->perm);
+			double* ptr = vec->data();
+			int N = vec->size();
+			Eigen::Map<Eigen::VectorXd> b(ptr, N);
+			b.applyOnTheLeft(this->p->perm);
 		}
 		void permback(myDoubleArray^ vec) {
-			//double* ptr = vec->data();
-			//int N = vec->size();
-			//Eigen::Map<Eigen::VectorXd> b(ptr, N);
-			(*vec->_arr).applyOnTheLeft(this->p->perm.transpose());
+			double* ptr = vec->data();
+			int N = vec->size();
+			Eigen::Map<Eigen::VectorXd> b(ptr, N);
+			b.applyOnTheLeft(this->p->perm.transpose());
 		}
 	};
 	public ref class mySparse {
@@ -352,9 +259,9 @@ namespace kingghidorah {
 			dat->init(m->rows(), m->cols());
 			this->dat->_OfDuplicate(m->dat);
 		}
-		/*void freeze(bool _do) {
+		void freeze(bool _do) {
 			this->dat->freeze(_do);
-		}*/
+		}
 		mySparse^ Duplicate()
 		{
 			return gcnew mySparse(this);
@@ -390,9 +297,6 @@ namespace kingghidorah {
 		}
 		void reserve(int n) {
 			dat->reserve(n);
-		}
-		void _reserve(int n,int m) {
-			dat->_resize(n, m);
 		}
 		void addmat(mySparse^ m)
 		{
@@ -448,10 +352,10 @@ namespace kingghidorah {
 		void ofAtB(mySparse^ m,bool sparse) {
 			dat->ofAtB(m->dat,sparse);
 		}
-		/*void _ofAtB(mySparse^ A, mySparse^ B)
+		void _ofAtB(mySparse^ A, mySparse^ B)
 		{
 			A->dat->_ofAtB(B->dat, this->dat);
-		}*/
+		}
 		array<double>^ _ofBtAB(mySparse^ A, mySparse^ B,array<double>^ b)
 		{
 			pin_ptr<double> ptr = &b[0];
@@ -461,10 +365,10 @@ namespace kingghidorah {
 			ptr = nullptr;
 			return ret;
 		}
-		/*void _ofAtB_gpu(myCuda^ gpu, mySparse^ A, mySparse^ B)
+		void _ofAtB_gpu(myCuda^ gpu, mySparse^ A, mySparse^ B)
 		{
 			A->dat->_ofAtB_gpu(gpu->cuda(), B->dat, this->dat);
-		}*/
+		}
 		void addemptyrow(int ii) {
 			dat->addemptyrow(ii);
 		}
@@ -498,12 +402,6 @@ namespace kingghidorah {
 			ptr = nullptr;
 			return ret;
 		}
-		void Atb(array<double>^ b,myDoubleArray^_ret)
-		{
-			pin_ptr<double> ptr = &b[0];
-			dat->Atb(ptr, b->Length,_ret->_arr);
-			ptr = nullptr;
-		}
 		array<double>^ _Atb(array<double>^ b)
 		{
 			pin_ptr<double> ptr = &b[0];
@@ -524,16 +422,7 @@ namespace kingghidorah {
 			ptr = nullptr;
 			return ret;
 		}
-		void solve0(kingghidorah::myDoubleArray^ rhs, kingghidorah::myDoubleArray^ ret) {
-			(*ret->_arr) = dat->solve0(rhs->_arr->data(), rhs->size());
-			//memcpy(ret->data(), _ret.data(), sizeof(double) * _ret.rows());
-		}
-		void _solve0(kingghidorah::myDoubleArray^ rhs, kingghidorah::myDoubleArray^ ret) {
-			dat->_solve0(rhs->_arr->data(), rhs->size(),ret->_arr->data());
-			//Eigen::VectorXd _ret = dat->_solve0(rhs->data(), rhs->size());
-			//memcpy(ret->data(), _ret.data(), sizeof(double) * _ret.rows());
-		}
-		/*array<double>^ _solve0(array<double>^ rhs) {
+		array<double>^ _solve0(array<double>^ rhs) {
 			pin_ptr<double> ptr = &rhs[0];
 
 			Eigen::VectorXd _ret = dat->_solve0(ptr, rhs->Length);
@@ -543,7 +432,7 @@ namespace kingghidorah {
 
 			ptr = nullptr;
 			return ret;
-		}*/
+		}
 		array<double>^ __solve0(array<double>^ rhs) {
 			pin_ptr<double> ptr = &rhs[0];
 
@@ -555,13 +444,8 @@ namespace kingghidorah {
 			ptr = nullptr;
 			return ret;
 		}
-		void _solve0_gpu(myCuda^ gpu, kingghidorah::myDoubleArray^ rhs, kingghidorah::myDoubleArray^ ret, int device) {
-			//Eigen::VectorXd _ret = dat->_solve0_gpu(gpu->cuda(), rhs->data(), rhs->size(), device);
-			dat->_solve0_gpu(gpu->cuda(), rhs->_arr->data(), rhs->size(),ret->_arr->data(),device);
-			//memcpy(ret->data(), _ret.data(), sizeof(double) * _ret.rows());
-		}
-
-		/*array<double>^ _solve0_gpu(myCuda^ gpu, array<double>^ rhs, int device) {
+		
+		array<double>^ _solve0_gpu(myCuda^ gpu, array<double>^ rhs, int device) {
 			pin_ptr<double> ptr = &rhs[0];
 
 			Eigen::VectorXd _ret = dat->_solve0_gpu(gpu->cuda(), ptr, rhs->Length, device);
@@ -571,7 +455,7 @@ namespace kingghidorah {
 
 			ptr = nullptr;
 			return ret;
-		}*/
+		}
 
 		mySparse^ solve0(mySparse^ rhs) {
 			Eigen::LLT<Eigen::MatrixXd>* _LLT = new Eigen::LLT<Eigen::MatrixXd>();
@@ -662,8 +546,13 @@ namespace kingghidorah {
 			ptr2 = nullptr;
 			return ret;
 		}
-		void vector(myDoubleArray^ a, myDoubleArray^ ret) {
-			dat->Vector(a->_arr, a->size(),ret->_arr);
+		array<double>^ vector(array<double>^ a) {
+			pin_ptr<double> ptr1 = &a[0];
+			auto _ret = dat->Vector(ptr1, a->Length);
+			ptr1 = nullptr;
+			array<double>^ ret = gcnew array<double>(_ret.rows());
+			System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
+			return ret;
 		}
 		void plus(mySparse^ m, double a,bool dense,bool sparse) {
 			this->dat->plus(m->dat, a,dense,sparse);
