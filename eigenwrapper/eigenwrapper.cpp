@@ -982,14 +982,14 @@ int kingghidorah::_mySparse::ofAtA(_mySparse* A,bool sparse)
 	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(this->__dmat, nn, nn);
 	//Eigen::MatrixXd ___dmat(nn, nn);
 //#pragma omp parallel sections
-	{
+//	{
 //#pragma omp section
 		{
 			//memset(this->__dmat, 0, sizeof(double) * nn * nn);
 			if (!sparse)_dmat.setZero();
 		}
 //#pragma omp section
-		{
+	//	{
 #pragma omp parallel for
 	for (int _ii = 0; _ii < mt; _ii++)
 	{
