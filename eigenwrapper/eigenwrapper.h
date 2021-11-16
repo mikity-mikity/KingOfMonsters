@@ -115,9 +115,11 @@ namespace kingghidorah {
 		vector<vector<double>> _coeff;
 	private:
 		std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor>> _mat;
-		Eigen::MatrixXd mats;
-		Eigen::MatrixXd _dmat;
-
+		//Eigen::MatrixXd mats;
+		//Eigen::MatrixXd _dmat;
+		double* ___dmat=0;
+		int __r = 0;
+		int __c = 0;
 		vector<Eigen::VectorXd> coeff;
 		int _nt = 0;
 		int _mt = 0;
@@ -177,7 +179,6 @@ namespace kingghidorah {
 		void ofAtB(_mySparse* B,bool sparse);
 		void _ofAtB(_mySparse* B, _mySparse* C);
 		void _ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret);
-		void _ofAtB_gpu(kingghidorah::cuda* cuda, _mySparse* B, _mySparse* C);
 		Eigen::VectorXd Atb(double* ptr, int N);
 		Eigen::VectorXd _Atb(double* ptr, int N);
 		void Atb(double* ptr, int N,Eigen::VectorXd* c);

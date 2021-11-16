@@ -405,11 +405,7 @@ namespace kingghidorah {
 			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
 			//ptr = nullptr;
 			//return ret;
-		}
-		void _ofAtB_gpu(myCuda^ gpu, mySparse^ A, mySparse^ B)
-		{
-			A->dat->_ofAtB_gpu(gpu->cuda(), B->dat, this->dat);
-		}
+		}		
 		void addemptyrow(int ii) {
 			dat->addemptyrow(ii);
 		}
