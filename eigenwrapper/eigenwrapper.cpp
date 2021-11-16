@@ -1081,9 +1081,11 @@ void kingghidorah::_mySparse::_ofAtB(_mySparse* B, _mySparse* C)
 Eigen::VectorXd kingghidorah::_mySparse::_ofBtAB(_mySparse* B, double* ptr, int N, _mySparse* C)
 {
 	static Eigen::MatrixXd D;
-
+	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat(__dmat, __r, __c);
 	int nn = B->_mat[0].cols();
-	int kk = this->_dmat.cols();
+	int kk = _dmat.cols();
+	C->_resize(nn, nn);
+	//Eigen::Map<Eigen::MatrixXd, Eigen::Aligned128> _dmat2(C->__dmat, nn, nn);
 
 	C->_dmat.resize(nn, nn);
 	C->_dmat.setZero();
