@@ -14,7 +14,12 @@
 int previdentiyN = 0;
 //std::vector<cudaStream_t> streams;
 Eigen::MatrixXd I;
-#define STRTREAMCOUNT 2
+#define STREAMCOUNT 4
+bool __cuinit = false;
+void kingghidorah::cuda::disable()
+{
+	__cuinit = false;
+}
 kingghidorah::cuda::cuda(int N) {
 	I.resize(0, 0);
 	omp_set_dynamic(false);
@@ -31,6 +36,7 @@ kingghidorah::cuda::cuda(int N) {
 	if (_count > 0)
 	{
 		for (int i = 0; i < _count; i++)_deviceList[i] = i;
+		__cuinit = true;
 	}
 	if (_count > 1)
 	{
@@ -43,17 +49,17 @@ kingghidorah::cuda::cuda(int N) {
 	_streams.resize(_count);
 	for (int ii = 0; ii < _count; ii++)
 	{
-		solver_handle[ii].resize(STRTREAMCOUNT);
-		_streams[ii].resize(STRTREAMCOUNT);
+		solver_handle[ii].resize(STREAMCOUNT);
+		_streams[ii].resize(STREAMCOUNT);
 		cudaSetDevice(ii);
-		for(int kk=0;kk< STRTREAMCOUNT;kk++)
+		for(int kk=0;kk< STREAMCOUNT;kk++)
 		cudaStreamCreate(&_streams[ii][kk]);
 	}
 
 	//std::cout << err << "yay" << std::endl;
 	for (int i = 0; i < _count; i++)
 	{
-		for (int j = 0; j < STRTREAMCOUNT; j++)
+		for (int j = 0; j < STREAMCOUNT; j++)
 		{
 			solver_handle[i][j] = 0;
 		}
@@ -69,7 +75,7 @@ kingghidorah::cuda::cuda(int N) {
 	{
 		cudaSetDevice(ii);
 		cusolverStatus_t status;
-		for(int j=0;j<STRTREAMCOUNT;j++)
+		for(int j=0;j<STREAMCOUNT;j++)
 			status = cusolverDnCreate(&solver_handle[ii][j]);
 		auto status2 = cublasCreate(&cublas_handle[ii]);
 
@@ -81,7 +87,7 @@ kingghidorah::cuda::cuda(int N) {
 		else {
 			initialized = false;
 			failed = true;
-			for(int j=0;j<STRTREAMCOUNT;j++)
+			for(int j=0;j<STREAMCOUNT;j++)
 			solver_handle[ii][j] = 0;
 			return;
 		}
@@ -342,7 +348,7 @@ void kingghidorah::cuda::dispose() {
 		for (int ii = 0; ii < _count; ii++)
 		{
 			cudaSetDevice(ii);
-			for(int kk=0;kk< STRTREAMCOUNT;kk++)
+			for(int kk=0;kk< STREAMCOUNT;kk++)
 			cudaStreamDestroy(_streams[ii][kk]);
 		}
 		previdentiyN = 0;
@@ -406,7 +412,7 @@ void kingghidorah::cuda::dispose() {
 			__mgC[i] = 0;
 			__work[i] = 0;
 			work_size[i] = 0;
-			for(int j=0;j<STRTREAMCOUNT;j++)
+			for(int j=0;j<STREAMCOUNT;j++)
 			if (solver_handle[i][j] != 0)
 			{
 				cusolverDnDestroy(solver_handle[i][j]);
@@ -542,7 +548,16 @@ kingghidorah::_mySparse::~_mySparse()
 	//delete _smat;
 	if (___dmat != 0)
 	{
-		cudaFreeHost(___dmat);
+		if (__cuinit)
+		{
+			cudaFreeHost(___dmat);
+		}
+		else {
+			free(___dmat);
+		}
+		___dmat = 0;
+		__r = 0;
+		__c = 0;
 	}
 }
 
@@ -1000,7 +1015,13 @@ int kingghidorah::_mySparse::ofAtA(_mySparse* A,bool sparse)
 		//this->_dmat.setZero(nn, nn);
 		if (__r == 0 || __c == 0)
 		{
-			cudaMallocHost(&___dmat, sizeof(double) * nn * nn*1.2);
+			if (__cuinit)
+			{
+				cudaMallocHost(&___dmat, sizeof(double) * nn * nn * 1.2);
+			}
+			else {
+				___dmat=(double*)malloc(sizeof(double) * nn * nn * 1.2);
+			}
 		}
 		__r = nn;
 		__c = nn;
@@ -1022,7 +1043,13 @@ std::string kingghidorah::_mySparse::_ofAtA(_mySparse* A)
 {
 	if (__r == 0)
 	{
-		cudaMallocHost(&___dmat,sizeof(double)*A->cols()* A->cols());
+		if (__cuinit)
+		{
+			cudaMallocHost(&___dmat, sizeof(double) * A->cols() * A->cols());
+		}
+		else {
+			___dmat=(double*)malloc(sizeof(double) * A->cols() * A->cols());
+		}
 	}
 	__r = A->cols();
 	__c = A->cols();
@@ -1060,7 +1087,13 @@ void kingghidorah::_mySparse::_ofAtB(_mySparse* B, _mySparse* C)
 	int mm = B->_cols();
 	if (C->__r == 0)
 	{
-		cudaMallocHost(&C->___dmat, sizeof(double) * nn * mm);
+		if (__cuinit)
+		{
+			cudaMallocHost(&C->___dmat, sizeof(double) * nn * mm);
+		}
+		else {
+			C->___dmat = (double*)malloc(sizeof(double) * nn * mm);
+		}
 	}
 	C->__r = nn;
 	C->__c = mm;
@@ -1097,7 +1130,12 @@ void kingghidorah::_mySparse::_ofBtAB(_mySparse* B,Eigen::VectorXd *b,_mySparse*
 
 	if (C->__r == 0)
 	{
-		cudaMallocHost(&C->___dmat, sizeof(double) * nn * nn);
+		if (__cuinit) {
+			cudaMallocHost(&C->___dmat, sizeof(double) * nn * nn);
+		}
+		else {
+			C->___dmat = (double*)malloc(sizeof(double) * nn * nn);
+		}
 	}
 	C->__r = nn;
 	C->__c = nn;
@@ -1147,7 +1185,13 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 	int mm = B->cols();
 	if (__r == 0)
 	{
-		cudaMallocHost(&___dmat, sizeof(double) * nn * mm);
+		if (__cuinit)
+		{
+			cudaMallocHost(&___dmat, sizeof(double) * nn * mm);
+		}
+		else {
+			___dmat = (double*)malloc(sizeof(double) * nn * mm);
+		}
 	}
 	__r = nn;
 	__c = mm;
@@ -1375,7 +1419,13 @@ void kingghidorah::_mySparse::_solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse
 	//Eigen::MatrixXd x(N,nn);
 	if (ret->__r == 0)
 	{
-		cudaMallocHost(&ret->___dmat,sizeof(double)* N* N);
+		if (__cuinit)
+		{
+			cudaMallocHost(&ret->___dmat, sizeof(double) * N * N);
+		}
+		else {
+			ret->___dmat = (double*)malloc(sizeof(double) * N * N);
+		}
 	}
 	ret->__r = N;
 	ret->__c = N;
@@ -1548,7 +1598,13 @@ void kingghidorah::_mySparse::_solveI(_mySparse* ret)
 	int nn = this->_mat[0].rows();
 	if (ret->__r == 0)
 	{
-		cudaMallocHost(&ret->___dmat, sizeof(double)*nn*nn);
+		if (__cuinit)
+		{			
+			cudaMallocHost(&ret->___dmat, sizeof(double) * nn * nn);
+		}
+		else {
+			ret->___dmat = (double*)malloc(sizeof(double) * nn * nn);
+		}
 	}
 	ret->__r = nn;
 	ret->__c = nn;
@@ -1600,7 +1656,13 @@ std::string kingghidorah::_mySparse::_solveI_gpu_single(kingghidorah::cuda* cuda
 
 	if (ret->__r == 0)
 	{
-		cudaMallocHost(&ret->___dmat,sizeof(double)*N*N);
+		if (__cuinit)
+		{
+			cudaMallocHost(&ret->___dmat, sizeof(double) * N * N);
+		}
+		else {
+			ret->___dmat = (double*)malloc(sizeof(double) * N * N);
+		}
 	}
 	ret->__r = N;
 	ret->__c = N;
@@ -1648,10 +1710,10 @@ std::string kingghidorah::_mySparse::_solveI_gpu_single(kingghidorah::cuda* cuda
 	
 		bool exit = false;
 #pragma omp parallel for
-	for (int kk = 0; kk < STRTREAMCOUNT; kk++)
+	for (int kk = 0; kk < STREAMCOUNT; kk++)
 	{
-		int S = kk * N / STRTREAMCOUNT;
-		int E = (kk + 1) * N / STRTREAMCOUNT;
+		int S = kk * N / STREAMCOUNT;
+		int E = (kk + 1) * N / STREAMCOUNT;
 		cudaStream_t _stream = cuda->__streams(cuda->fastest(), kk);
 		cusolverDnHandle_t _solver = cuda->solver(cuda->fastest(), kk);
 		cusolverDnSetStream(_solver, _stream);
@@ -1672,7 +1734,13 @@ std::string kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _
 
 	if (ret->__r == 0)
 	{
-		cudaMallocHost(&ret->___dmat, sizeof(double)*N*N);
+		if (__cuinit)
+		{
+			cudaMallocHost(&ret->___dmat, sizeof(double) * N * N);
+		}
+		else {
+			ret->___dmat = (double*)malloc(sizeof(double) * N * N);
+		}
 	}
 	ret->__r = N;
 	ret->__c = N;
@@ -1743,11 +1811,11 @@ std::string kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _
 		cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, work, work_size, devInfo_on_gpu);
 		cudaDeviceSynchronize();
 #pragma omp parallel for
-		for (int ss = 0; ss < STRTREAMCOUNT; ss++)
+		for (int ss = 0; ss < STREAMCOUNT; ss++)
 		{
 			cudaSetDevice(cuda->fastest());
-			int S = ss * N / STRTREAMCOUNT;
-			int E = (ss + 1) * N / STRTREAMCOUNT;
+			int S = ss * N / STREAMCOUNT;
+			int E = (ss + 1) * N / STREAMCOUNT;
 			cudaStream_t _streamX = cuda->__streams(cuda->fastest(), ss);
 			cudaMemcpyAsync(ret_dmat.data() + S * N, gpu_matrix + S * N, sizeof(double) * N * (E - S), cudaMemcpyDeviceToHost, _streamX);
 			cudaStreamSynchronize(_streamX);
@@ -1768,7 +1836,7 @@ std::string kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _
 	}
 
 	int job = 0;
-	int ss = N / cuda->count() / STRTREAMCOUNT/4;
+	int ss = N / cuda->count() / STREAMCOUNT/4;
 	if (ss == 0) ss = 1;
 	for (int i = 0; i < nn; i++)
 	{
@@ -1795,7 +1863,7 @@ std::string kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _
 		while (true)
 		{
 #pragma omp parallel for
-			for (int kk = 0; kk < STRTREAMCOUNT; kk++)
+			for (int kk = 0; kk < STREAMCOUNT; kk++)
 			{
 				int S = 0;
 				int E = 0;
@@ -1844,7 +1912,13 @@ void kingghidorah::_mySparse::_solveI_gpu(kingghidorah::cuda* cuda, _mySparse* r
 	int N = __c;
 	if (ret->__r == 0)
 	{
-		cudaMallocHost(&ret->___dmat, sizeof(double)*N*N);
+		if (__cuinit)
+		{
+			cudaMallocHost(&ret->___dmat, sizeof(double) * N * N);
+		}
+		else {
+			ret->___dmat = (double*)malloc(sizeof(double) * N * N);
+		}
 	}
 	ret->__r = N;
 	ret->__c = N;
@@ -1905,7 +1979,13 @@ void kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, _mySparse* m
 
 	if (ret->__r == 0)
 	{
-		cudaMallocHost(&ret->___dmat, sizeof(double)*N* nn);
+		if (__cuinit)
+		{
+			cudaMallocHost(&ret->___dmat, sizeof(double) * N * nn);
+		}
+		else {
+			ret->___dmat = (double*)malloc(sizeof(double) * N * nn);
+		}
 	}
 	ret->__c = nn;
 	ret->__r = N;

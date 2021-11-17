@@ -66,6 +66,7 @@ namespace kingghidorah {
 		int prevT_A = 0;
 		int prevN = 0;
 		int prevwn = 0;
+		static void disable();
 		cuda(int N);
 		~cuda();
 		cusolverDnHandle_t& solver(int ii, int kk);

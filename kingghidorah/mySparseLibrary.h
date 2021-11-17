@@ -148,6 +148,9 @@ namespace kingghidorah {
 	private:
 		cuda* _cuda = 0;
 	public:
+		static void disable() {
+			cuda::disable();
+		}
 		myCuda(int N) {
 			_cuda = new kingghidorah::cuda(N);
 		}
