@@ -1388,7 +1388,7 @@ Eigen::MatrixXd kingghidorah::_mySparse::_solve0(_myLLT* LLT, _mySparse* mat)
 {
 	Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 	//this function assumes that LLT decomposition has been done already
-	Eigen::MatrixXd ret(this ->__r, mat->__c);
+	Eigen::MatrixXd ret(this ->__c, mat->__c);
 	int nn = mat->cols();
 	int numthreads = 0;
 #pragma omp parallel
@@ -2078,7 +2078,7 @@ void kingghidorah::_mySparse::_solve0(Eigen::VectorXd* rhs,Eigen::VectorXd *ret)
 	Eigen::SimplicialLLT<Eigen::SparseMatrix<double>> LLT;
 	LLT.compute(_mat[0]);
 	//Eigen::Map<Eigen::VectorXd> b(rhs, N);
-	ret->conservativeResize(_mat[0].rows());
+	ret->conservativeResize(_mat[0].cols());
 	ret->setZero();
 	//Eigen::VectorXd x(_mat[0].rows());
 	//x.setZero();
@@ -2091,7 +2091,7 @@ void kingghidorah::_mySparse::__solve0(Eigen::VectorXd* rhs, Eigen::VectorXd *re
 
 	LLT.compute(_dmat);
 	//Eigen::Map<Eigen::VectorXd> b(rhs, N);
-	ret->resize(_dmat.rows());
+	ret->resize(_dmat.cols());
 	ret->setZero();
 	*ret = LLT.solve(*rhs);
 }
@@ -2112,7 +2112,7 @@ Eigen::MatrixXd kingghidorah::_mySparse::solve0(_mySparse* rhs)
 	Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 	//_mat.makeCompressed();
 	lu.compute(_dmat);
-	Eigen::MatrixXd _x(__r, rhs->__c);
+	Eigen::MatrixXd _x(__c, rhs->__c);
 	_x = lu.solve(rhs_dmat);
 
 	return _x;// .sparseView(0.000000000000001, 1.0);

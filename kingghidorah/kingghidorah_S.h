@@ -2698,7 +2698,10 @@ public:
 		__mem->SLOPE(arr->_arr->data(), dcdt1, dcdt2, sc);
 		//return __mem->SLOPE(l, i);
 	}
-
+	void SLOPE(myDoubleArray^ arr, double dcdt1, double dcdt2, double sc,int shift) {
+		__mem->SLOPE(arr->_arr->data()+shift, dcdt1, dcdt2, sc);
+		//return __mem->SLOPE(l, i);
+	}
 	double eM(double _la, double _mu) {
 			return __mem->eM(_la,_mu);
 		}
