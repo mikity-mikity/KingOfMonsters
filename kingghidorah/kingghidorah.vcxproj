@@ -92,6 +92,9 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions512</EnableEnhancedInstructionSet>
+      <ConformanceMode>false</ConformanceMode>
+      <ForceConformanceInForLoopScope>false</ForceConformanceInForLoopScope>
     </ClCompile>
     <Link>
       <AdditionalDependencies>cublas.lib;cusolver.lib;cusolverMg.lib;cudart.lib;cuda.lib</AdditionalDependencies>

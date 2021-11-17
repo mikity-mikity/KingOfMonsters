@@ -604,6 +604,21 @@ namespace kingghidorah {
 		{
 			return(d2[i] - Gammaijk[0] * d1[i]);
 		}
+		void K(double*ptr,double sc)
+		{
+			double* ptr1 = ptr;
+			double* ptr2 = d2;
+			double* ptr3 = d1;
+
+			for (int i = 0; i < _nNode; i++)
+			{
+				*ptr1 = (*ptr2 - Gammaijk[0] * *ptr3)*sc;
+				ptr1++;
+				ptr2++;
+				ptr3++;
+			}
+			//return(d2[i] - Gammaijk[0] * d1[i]);
+		}
 		double K_z() {
 			double val = 0;
 			for (int I = 0; I < _nNode; I++) {
@@ -1189,6 +1204,9 @@ namespace kingghidorah {
 		}
 		double K(int i) {
 			return __mem->K(i);
+		}
+		void K(myDoubleArray ^arr,double sc,int shift) {
+			__mem->K(arr->_arr->data()+shift,sc);
 		}
 		double K_z() {
 			return __mem->K_z();

@@ -693,8 +693,8 @@ void kingghidorah::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic, 
 			int start = i;
 			int end = i + S;
 			if (end > nn)end = nn;
-			//_dmat.middleRows(start, end - start) = _dmat.middleRows(start, end - start) * pt;
-			perm.transpose().applyThisOnTheRight(_dmat.middleRows(start, end - start));
+			_dmat.middleRows(start, end - start) = _dmat.middleRows(start, end - start) * pt;
+			//perm.transpose().applyThisOnTheRight(_dmat.middleRows(start, end - start));
 		}
 
 #pragma omp parallel for
@@ -703,8 +703,8 @@ void kingghidorah::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic, 
 			int start = i;
 			int end = i + S;
 			if (end > nn)end = nn;
-			//_dmat.middleCols(start, end - start) = perm * _dmat.middleCols(start, end - start);
-			perm.applyThisOnTheLeft(_dmat.middleCols(start, end - start));
+			_dmat.middleCols(start, end - start) = perm * _dmat.middleCols(start, end - start);
+			//perm.applyThisOnTheLeft(_dmat.middleCols(start, end - start));
 		}
 	}
 	/*_dmat.applyOnTheLeft(perm);
@@ -858,7 +858,7 @@ void kingghidorah::_mySparse::addrow(int ii, int* ptr, double* data, int shift, 
 	ptr += shift;
 	if (dat.size() != 1)dat.resize(1);
 	if (_coeff.size() != 1)_coeff.resize(1);
-
+	dat[0].reserve(dat[0].size() + N);
 	for (int i = 0; i < N; i++)
 	{
 		dat[0].push_back(Eigen::Triplet<double>(ii, *ptr, (*data)));

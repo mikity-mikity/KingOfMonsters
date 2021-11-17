@@ -19,6 +19,10 @@ namespace kingghidorah {
 		Eigen::VectorXd* _arr;
 		int _N = 0;
 	public:
+		void setzero(int S, int N)
+		{
+			_arr->middleRows(S, N).setZero();
+		}
 		myDoubleArray(int N)
 		{
 			//_arr = new double[N];
@@ -101,6 +105,10 @@ namespace kingghidorah {
 		int* _arr = 0;
 		int _N = 0;
 	public:
+		void setzero(int S, int N)
+		{
+			memset(_arr + S, 0, sizeof(int) * N);
+		}
 		myIntArray(int N)
 		{
 			_arr = new int[N];
@@ -434,6 +442,22 @@ namespace kingghidorah {
 			this->dat->addrow(ii, ptr, dat, shift, sc, N, add);
 			ptr = nullptr;
 			dat = nullptr;
+		}
+		void addrow(int ii, myIntArray^ index, myDoubleArray^ data, double sc, int N) {
+			//pin_ptr<int> ptr = &index[0];
+			//pin_ptr<double> dat = &data[0];
+
+			this->dat->addrow(ii, index->_arr, data->_arr->data(), sc, N);
+			//ptr = nullptr;
+			//dat = nullptr;
+		}
+		void addrow(int ii, myIntArray^ index, myDoubleArray^ data, int shift, double sc, int N, bool add) {
+			//pin_ptr<int> ptr = &index[0];
+			//pin_ptr<double> dat = &data[0];
+
+			this->dat->addrow(ii, index->_arr, data->_arr->data(), shift, sc, N, add);
+			//ptr = nullptr;
+			//dat = nullptr;
 		}
 		array<double>^ Atb(array<double>^ b)
 		{
