@@ -972,10 +972,10 @@ int kingghidorah::_mySparse::numBlocks()
 {
 	return this->dat.size();
 }
-std::vector<Eigen::SparseMatrix<double>> e;
 //std::vector<Eigen::MatrixXd> e;
 int kingghidorah::_mySparse::ofAtA(_mySparse* A,bool sparse)
 {
+	static std::vector<Eigen::SparseMatrix<double>> e;
 	int nn = A->cols();
 	int mt = omp_get_max_threads();
 	_mt = mt*1;
@@ -1180,6 +1180,7 @@ void kingghidorah::_mySparse::_ofBtAB(_mySparse* B,Eigen::VectorXd *b,_mySparse*
 
 void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 {
+	static std::vector<Eigen::SparseMatrix<double>> e;
 
 	int nn = this->cols();
 	int mm = B->cols();

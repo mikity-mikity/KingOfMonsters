@@ -189,7 +189,7 @@ namespace kingghidorah {
 	public:
 		double __hh0(int k) {
 			double t = lo;
-			return pow(t, (double)(_dim - k - 1));
+			return pow(t, (_dim - k - 1));
 		}
 		double __tt0(int k) {
 			double val = 0;

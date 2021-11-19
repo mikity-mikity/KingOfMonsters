@@ -37,7 +37,7 @@ namespace kingghidorah {
 	public class _memS_ref {
 	public:
 		int _nNode;
-		double dim[2];
+		int dim[2];
 		int _uDim, _vDim;
 		double* node;
 		double* def;
@@ -444,7 +444,7 @@ namespace kingghidorah {
 		double lo[2];
 		//double** M[2];
 		//int** dd;
-		double dim[2];
+		int dim[2];
 		int _uDim, _vDim;
 		double gi[6];
 		double Gi[6];
@@ -520,10 +520,10 @@ namespace kingghidorah {
 			return _ref->hh0[i][s];
 		}
 		inline double get_tt1(int i, int j, int s) {
-			return _ref->tt1[i * 2 + j][s];
+			return _ref->tt1[(i<<1) + j][s];
 		}
 		inline double get_hh1(int i, int j, int s) {
-			return _ref->hh1[i * 2 + j][s];
+			return _ref->hh1[(i<<1) + j][s];
 		}
 		inline double get_tt2(int i, int j, int k, int s) {
 			return _ref->tt2[(((i<<1) + j) <<1) + k][s];
@@ -900,8 +900,8 @@ namespace kingghidorah {
 
 
 			_dv = sqrt(_det2(gij));
-			sc = 1 / _dv / _dv;
-
+			//sc = 1 / _dv / _dv;
+			sc = 1.0 / _det2(gij);
 			gij[0] = gi[0] * gi[0] + gi[1] * gi[1] + gi[2] * gi[2];
 			gij[1] = gi[0] * gi[3] + gi[1] * gi[4] + gi[2] * gi[5];
 			gij[2] = gij[1];
@@ -950,19 +950,72 @@ namespace kingghidorah {
 					bij[e + 2] = fz;
 				}
 			}
+			int ccc = 0;
+			static const int fff[8]{ 0,2,1,3,4,6,5,7 };
+			static const int ggg[8]{ 0,1,4,5,2,3,6,7 };
+			static const int hhh[8]{ 0,4,2,6,1,5,3,7 };
+			int eee = 0;
 			for (int i = 0; i < 2; i++) {
 				for (int j = 0; j < 2; j++) {
-					int e = ((i <<1 )+ j) * 3;
+					//int e = ((i <<1 )+ j) * 3;
 					for (int k = 0; k < 2; k++) {
 						double val = 0;
-						val += bij[e + 0] * get_Gi(k, 0);
-						val += bij[e + 1] * get_Gi(k, 1);
-						val += bij[e + 2] * get_Gi(k, 2);
-						Gammaijk[(((i<<1) + j) <<1) + k] = val;
+						if (i <= j) {
+							//if (j == k || i == k)Gammaijk[ccc] = 0;
+							//else
+							{
+								//if (i <= k)
+								{
+									val += bij[eee + 0] * get_Gi(k, 0);
+									val += bij[eee + 1] * get_Gi(k, 1);
+									val += bij[eee + 2] * get_Gi(k, 2);
+									//Gammaijk[(((i << 1) + j) << 1) + k] = val;
+									Gammaijk[ccc] = val;
+								}
+								/*else {
+									Gammaijk[ccc] = -Gammaijk[hhh[ccc]];
+								}*/
+							}
+							/*else {
+								Gammaijk[ccc] = -Gammaijk[ggg[ccc]];   //swap 1th and 2th bits
+							}*/
+						}
+						else {
+							Gammaijk[ccc] = Gammaijk[fff[ccc]];   //swap 1th and 2th bits
+						}
+						ccc++;
 					}
+					eee += 3;
 				}
 			}
-			
+
+
+			/*ccc = 0;
+			for (int i = 0; i < 2; i++) {
+				for (int j = 0; j < 2; j++) {
+					for (int k = 0; k < 2; k++) {
+						if (i <= j) {
+							if (j <= k)
+							{
+								if (i <= k)
+								{
+								}
+								else {
+									//Gammaijk[ccc] = -Gammaijk[hhh[ccc]];
+								}
+							}
+							else {
+								Gammaijk[ccc] = -Gammaijk[ggg[ccc]];   //swap 1th and 2th bits
+							}
+						}
+						//else {
+							//Gammaijk[ccc] = Gammaijk[fff[ccc]];   //swap 1th and 2th bits
+						//}
+						ccc++;
+					}
+				}
+			}*/
+
 			if (mode == "U") {
 
 				double* ptr4;
@@ -1022,14 +1075,21 @@ namespace kingghidorah {
 				this->phi = val;
 				pptr = &__mat[0];
 				pptr1 = &_ref->buf_phi[0];
+				static const int sss[4]{ 1,2,0,3 };
 				for (int i = 0; i < _nNode; i++)
 				{
 					pptr2 = &_ref->buf_z[0];
 					for (int j = 0; j < _nNode; j++) {
 						double val = 0;
-						for (int k = 0; k < 4; k++) {
-							val += _ref->star2[k] * (_ref->d2[_ref->_star[k]][i] - Gammaijk[((_ref->_star[k])<<1) + 0] * _ref->d1[0][i] - Gammaijk[((_ref->_star[k]) <<1) + 1] * _ref->d1[1][i]) *
-								(_ref->d2[k][j] - Gammaijk[((k)<<1) + 0] * _ref->d1[0][j] - Gammaijk[((k)<<1) + 1] * _ref->d1[1][j]);
+						for (auto k:sss) {
+							if (k == 2)
+							{
+								val *= 2.0;
+							}
+							else {
+								val += _ref->star2[k] * (_ref->d2[_ref->_star[k]][i] - Gammaijk[((_ref->_star[k]) << 1) + 0] * _ref->d1[0][i] - Gammaijk[((_ref->_star[k]) << 1) + 1] * _ref->d1[1][i]) *
+									(_ref->d2[k][j] - Gammaijk[((k) << 1) + 0] * _ref->d1[0][j] - Gammaijk[((k) << 1) + 1] * _ref->d1[1][j]);
+							}
 						}
 						//__mat[i * _nNode + j] = val;
 						*pptr = val;
@@ -2363,7 +2423,7 @@ namespace kingghidorah {
 		{
 			double _val3 = 0;
 			for (int j = 0; j < 2; j++) {
-				_val3 += _Sij[i*2+j] * this->get_gi(j, k);
+				_val3 += _Sij[i<<1+j] * this->get_gi(j, k);
 			}	
 			return _val3 * _ref->_refDv;
 		}
@@ -2372,7 +2432,7 @@ namespace kingghidorah {
 		{
 			double _val3 = 0;
 			for (int j = 0; j < 2; j++) {
-				_val3 += _Sij[i * 2 + j] * _ref->d1[j][I];
+				_val3 += _Sij[i <<1 + j] * _ref->d1[j][I];
 			}
 			return _val3;
 		}
@@ -2381,7 +2441,7 @@ namespace kingghidorah {
 		{
 			double _val3 = 0;
 			for (int j = 0; j < 2; j++) {
-				_val3 += _Sij[i * 2 + j] * this->get_gi(j, k);
+				_val3 += _Sij[i <<1 + j] * this->get_gi(j, k);
 			}
 			return _val3;
 		}
