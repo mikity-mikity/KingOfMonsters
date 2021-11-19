@@ -22,8 +22,8 @@ void kingghidorah::cuda::disable()
 }
 kingghidorah::cuda::cuda(int N) {
 	I.resize(0, 0);
-	omp_set_dynamic(false);
-	omp_set_num_threads(16);
+	//omp_set_dynamic(true);
+	//omp_set_num_threads(16);
 	prevT_A = 0;
 	prevN = 0;
 	prevwn = 0;
@@ -973,9 +973,10 @@ int kingghidorah::_mySparse::numBlocks()
 	return this->dat.size();
 }
 //std::vector<Eigen::MatrixXd> e;
+std::vector<Eigen::SparseMatrix<double>> e;
 int kingghidorah::_mySparse::ofAtA(_mySparse* A,bool sparse)
 {
-	static std::vector<Eigen::SparseMatrix<double>> e;
+	//static std::vector<Eigen::SparseMatrix<double>> e;
 	int nn = A->cols();
 	int mt = omp_get_max_threads();
 	_mt = mt*1;
@@ -1178,9 +1179,9 @@ void kingghidorah::_mySparse::_ofBtAB(_mySparse* B,Eigen::VectorXd *b,_mySparse*
 	*ret = D * *b;
 }
 
+std::vector<Eigen::SparseMatrix<double>> e2;
 void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 {
-	static std::vector<Eigen::SparseMatrix<double>> e;
 
 	int nn = this->cols();
 	int mm = B->cols();
@@ -1205,12 +1206,12 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 
 	_mt = mt*1;
 	
-	if (_mt > e.size())
-		e.resize(_mt);
+	if (_mt > e2.size())
+		e2.resize(_mt);
 	for (int i = 0; i < _mt; i++) {
-		e[i].resize(nn, mm);
-		e[i].setZero();
-		e[i].reserve(nn * mm / 10);
+		e2[i].resize(nn, mm);
+		e2[i].setZero();
+		e2[i].reserve(nn * mm / 10);
 	}
 #pragma omp parallel for
 	for (int _ii = 0; _ii < _mt; _ii++)
@@ -1220,7 +1221,7 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 
 		for (int ii = S; ii < E; ii++)
 		{
-			e[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * B->_mat[ii];
+			e2[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * B->_mat[ii];
 		}
 	}
 	if (_mat.size() == 0)_mat.resize(1);
@@ -1230,12 +1231,12 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 	if (sparse)
 	{
 		for (int i = 0; i < _mt; i++) {
-			this->_mat[0] += e[i];
+			this->_mat[0] += e2[i];
 		}
 	}
 	else {
 		for (int i = 0; i < _mt; i++) {
-			_dmat += e[i];
+			_dmat += e2[i];
 		}
 	}
 	//this->_dmat = this->_mat[0];

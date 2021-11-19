@@ -23,7 +23,7 @@ namespace kingghidorah {
 		double _bij[3];
 		double _Sij[1];
 		double _Gammaijk[1];
-		double _up[3] = { 0,0,1 };
+		const double _up[3]{ 0,0,1 };
 	public:
 		double refDv,_refDv;
 		double _x, _y, _z,__z;

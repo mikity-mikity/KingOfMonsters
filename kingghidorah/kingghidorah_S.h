@@ -60,12 +60,10 @@ namespace kingghidorah {
 		double* d1[2];
 		double* d2[4];
 		double* d2_star[4];
-		double star2[4];
-		int _star[4];
+		const int star2[4]{ 1,-1,-1,1 };
+		const int _star[4]{ 3,1,2,0 };
 		double* B[4];
 		double* tt0[2], * hh0[2], * tt1[4], * hh1[4], * tt2[8], * hh2[8];
-
-
 	public:
 		bool initialized;
 		double refDv,_refDv;
@@ -158,15 +156,7 @@ namespace kingghidorah {
 			d2_star[2] = 0;
 			d2_star[3] = 0;
 
-			star2[0] = 1;
-			star2[1] = -1;
-			star2[2] = -1;
-			star2[3] = 1;
 
-			_star[0] = 3;
-			_star[1] = 1;
-			_star[2] = 2;
-			_star[3] = 0;
 
 			B[0] = 0;
 			B[1] = 0;
