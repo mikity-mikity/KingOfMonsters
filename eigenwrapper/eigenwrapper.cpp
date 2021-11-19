@@ -1364,10 +1364,10 @@ void kingghidorah::_mySparse::_solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse
 	{
 	}*///always fails
 	//auto status = cusolverMgCreateDeviceGrid(&gridA, 1, nbGpus, deviceList, mapping);
-	assert(CUSOLVER_STATUS_SUCCESS == status);
+	//assert(CUSOLVER_STATUS_SUCCESS == status);
 
 
-	assert(CUSOLVER_STATUS_SUCCESS == status);
+	//assert(CUSOLVER_STATUS_SUCCESS == status);
 
 
 
@@ -1520,7 +1520,7 @@ void kingghidorah::_mySparse::_solveI(_mySparse* ret)
 		I.setIdentity();
 	}
 	int mt = omp_get_max_threads();
-	int ee = mt * 4;
+	int ee = mt * 2;
 #pragma omp parallel for
 	for (int i = 0; i < ee; i++)
 	{
@@ -1902,7 +1902,7 @@ void kingghidorah::_mySparse::_solveI_gpu(kingghidorah::cuda* cuda, _mySparse* r
 		int work_size2 = 0;
 		cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, &work_size1);
 		cusolverDnDpotri_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, &work_size2);
-		work_size = std::max(work_size1, work_size2);
+		work_size = N * N;// std::max(work_size1, work_size2);
 		work = cuda->work(work_size, ii, cuda->__streams(cuda->fastest(), 1));
 		//cudaMallocAsync(&work, sizeof(double) * work_size, stream);
 		cudaMemsetAsync(work, 0, sizeof(double) * work_size1, cuda->__streams(cuda->fastest(), 1));
@@ -1918,15 +1918,15 @@ void kingghidorah::_mySparse::_solveI_gpu(kingghidorah::cuda* cuda, _mySparse* r
 		cudaMemcpy(ret->_dmat.data(), m_gpu, sizeof(double) * N * N, cudaMemcpyDeviceToHost);
 		cudaDeviceSynchronize();
 
-	
-#pragma omp parallel for
+		ret->_dmat.triangularView<Eigen::Upper>() = ret->_dmat.triangularView<Eigen::Lower>().transpose();
+/*#pragma omp parallel for
 	for (int i = 0; i < N; i++)
 	{
 		for (int j = 0; j < i; j++)
 		{
 			ret->_dmat(j, i) = ret->_dmat(i, j);
 		}
-	}
+	}*/
 	
 }
 
