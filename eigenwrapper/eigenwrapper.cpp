@@ -14,7 +14,7 @@
 int previdentiyN = 0;
 //std::vector<cudaStream_t> streams;
 Eigen::MatrixXd I;
-#define STREAMCOUNT 1
+#define STREAMCOUNT 2
 bool __cuinit = false;
 void kingghidorah::cuda::disable()
 {
@@ -22,7 +22,7 @@ void kingghidorah::cuda::disable()
 }
 kingghidorah::cuda::cuda(int N) {
 	I.resize(0, 0);
-	omp_set_dynamic(false);
+	omp_set_dynamic(true);
 	//omp_set_num_threads(16);
 	prevT_A = 0;
 	prevN = 0;
@@ -1960,15 +1960,15 @@ void kingghidorah::_mySparse::_solveI_gpu(kingghidorah::cuda* cuda, _mySparse* r
 		cudaMemcpy(ret_dmat.data(), m_gpu, sizeof(double) * N * N, cudaMemcpyDeviceToHost);
 		cudaDeviceSynchronize();
 
-		//ret_dmat.triangularView<Eigen::Upper>() = ret_dmat.triangularView<Eigen::Lower>().transpose();
-#pragma omp parallel for
+		ret_dmat.triangularView<Eigen::Upper>() = ret_dmat.triangularView<Eigen::Lower>().transpose();
+/*#pragma omp parallel for
 	for (int i = 0; i < N; i++)
 	{
 		for (int j = 0; j < i; j++)
 		{
 			ret_dmat(j, i) = ret_dmat(i, j);
 		}
-	}
+	}*/
 	
 }
 
