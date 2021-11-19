@@ -22,7 +22,7 @@ void kingghidorah::cuda::disable()
 }
 kingghidorah::cuda::cuda(int N) {
 	I.resize(0, 0);
-	omp_set_dynamic(true);
+	omp_set_dynamic(false);
 	//omp_set_num_threads(16);
 	prevT_A = 0;
 	prevN = 0;
