@@ -986,8 +986,8 @@ int kingghidorah::_mySparse::ofAtA(_mySparse* A,bool sparse)
 	}
 	for (int i = 0; i < _mt; i++) {
 		e[i].resize(nn, nn);
+		e[i].reserve(nn * nn / 5);
 		e[i].setZero();
-		e[i].reserve(nn * nn / 10);
 	}
 #pragma omp parallel for
 	for (int _ii = 0; _ii < _mt; _ii++)
@@ -1926,7 +1926,7 @@ void kingghidorah::_mySparse::_solveI_gpu(kingghidorah::cuda* cuda, _mySparse* r
 	//ret->_dmat.resize(N, N);
 	Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, N, N);
 	Eigen::Map<Eigen::MatrixXd> ret_dmat(ret->___dmat, N, N);
-	ret_dmat.setZero();
+	//ret_dmat.setZero();
 	//initidentiy(cuda, N);
 	if (!cuda->valid())return;
 	
@@ -1947,9 +1947,9 @@ void kingghidorah::_mySparse::_solveI_gpu(kingghidorah::cuda* cuda, _mySparse* r
 		work_size = N * N;// std::max(work_size1, work_size2);
 		work = cuda->work(work_size, ii, cuda->__streams(cuda->fastest(), 1));
 		//cudaMallocAsync(&work, sizeof(double) * work_size, stream);
-		cudaMemsetAsync(work, 0, sizeof(double) * work_size1, cuda->__streams(cuda->fastest(), 1));
+		cudaMemset(work, 0, sizeof(double) * work_size1);
 		int* devInfo = cuda->info(ii);
-		cudaDeviceSynchronize();
+
 		cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, work, work_size1, devInfo);
 		double* work2 = cuda->work_rhs(ii);
 		//cudaMalloc(&work2, sizeof(double) * work_size2);
@@ -1960,15 +1960,15 @@ void kingghidorah::_mySparse::_solveI_gpu(kingghidorah::cuda* cuda, _mySparse* r
 		cudaMemcpy(ret_dmat.data(), m_gpu, sizeof(double) * N * N, cudaMemcpyDeviceToHost);
 		cudaDeviceSynchronize();
 
-		ret_dmat.triangularView<Eigen::Upper>() = ret_dmat.triangularView<Eigen::Lower>().transpose();
-/*#pragma omp parallel for
+		//ret_dmat.triangularView<Eigen::Upper>() = ret_dmat.triangularView<Eigen::Lower>().transpose();
+#pragma omp parallel for
 	for (int i = 0; i < N; i++)
 	{
 		for (int j = 0; j < i; j++)
 		{
 			ret_dmat(j, i) = ret_dmat(i, j);
 		}
-	}*/
+	}
 	
 }
 
