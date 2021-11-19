@@ -189,7 +189,7 @@ namespace kingghidorah {
 	public:
 		double __hh0(int k) {
 			double t = lo;
-			return pow(t, (double)(_dim - k - 1));
+			return pow(t, (_dim - k - 1));
 		}
 		double __tt0(int k) {
 			double val = 0;
@@ -603,6 +603,21 @@ namespace kingghidorah {
 		double K(int i)
 		{
 			return(d2[i] - Gammaijk[0] * d1[i]);
+		}
+		void K(double*ptr,double sc)
+		{
+			double* ptr1 = ptr;
+			double* ptr2 = d2;
+			double* ptr3 = d1;
+
+			for (int i = 0; i < _nNode; i++)
+			{
+				*ptr1 = (*ptr2 - Gammaijk[0] * *ptr3)*sc;
+				ptr1++;
+				ptr2++;
+				ptr3++;
+			}
+			//return(d2[i] - Gammaijk[0] * d1[i]);
 		}
 		double K_z() {
 			double val = 0;
@@ -1048,29 +1063,29 @@ namespace kingghidorah {
 		{
 			__mem->set_z(z);
 		}
-		void update_z_phi(int nNode, array<double>^ Z, array<double>^ phi) {
+		void update_z_phi(int nNode, kingghidorah::myDoubleArray ^ Z, kingghidorah::myDoubleArray^ phi) {
 			if (Z != nullptr)
 			{
 				for (int i = 0; i < nNode; i++) {
-					__mem->set_buf_z(i, Z[i]);
+					__mem->set_buf_z(i, (*Z->_arr)(i));
 				}
 			}
 			if (phi != nullptr)
 			{
 				for (int i = 0; i < nNode; i++) {
 					int e = i;
-					__mem->set_buf_phi(i, phi[e]);
+					__mem->set_buf_phi(i, (*phi->_arr)(e));
 				}
 			}
 		}
-		void update3(int nNode, array<double>^ node, array<double>^ def,bool ignorez) {
+		void update3(int nNode, kingghidorah::myDoubleArray^ node, array<double>^ def,bool ignorez) {
 			if (node != nullptr) {
 				for (int i = 0; i < nNode; i++) {
 					int e = i * 3;
-					__mem->set_node(i, 0, node[e + 0]);
-					__mem->set_node(i, 1, node[e + 1]);
+					__mem->set_node(i, 0, (*node->_arr)(e + 0));
+					__mem->set_node(i, 1, (*node->_arr)(e + 1));
 					if (!ignorez) {
-						__mem->set_node(i, 2, node[e + 2]);
+						__mem->set_node(i, 2, (*node->_arr)(e + 2));
 					}
 					else {
 						__mem->set_node(i, 2, 0);
@@ -1092,7 +1107,7 @@ namespace kingghidorah {
 				}
 			}
 		}
-		void update3(int nNode, array<double>^ node, array<double>^ def) {
+		void update3(int nNode, kingghidorah::myDoubleArray^ node, array<double>^ def) {
 			update3(nNode, node, def, false);
 		}
 		void update(int nNode, int Dim) {
@@ -1189,6 +1204,9 @@ namespace kingghidorah {
 		}
 		double K(int i) {
 			return __mem->K(i);
+		}
+		void K(myDoubleArray ^arr,double sc,int shift) {
+			__mem->K(arr->_arr->data()+shift,sc);
 		}
 		double K_z() {
 			return __mem->K_z();

@@ -15,26 +15,44 @@ using namespace System::Threading::Tasks;
 namespace kingghidorah {
 	public ref class myDoubleArray {
 	public:
-		double* _arr = 0;
+		//double* _arr = 0;
+		Eigen::VectorXd* _arr;
 		int _N = 0;
 	public:
+		void setzero(int S, int N)
+		{
+			_arr->middleRows(S, N).setZero();
+		}
 		myDoubleArray(int N)
 		{
-			_arr = new double[N];
+			//_arr = new double[N];
+			_arr = new Eigen::VectorXd(N);
 			_N = N;
+			_arr->setZero();
 		}
-		inline double* data()
+		/*inline double* data()
 		{
 			return _arr;
-		}
+		}*/
 		inline int size() {
 			return _N;
 		}
+		void copyfrom(array<double>^ arr,int N)
+		{
+			System::Runtime::InteropServices::Marshal::Copy( arr,0, (System::IntPtr)_arr->data(), N);
+		}
+		void minus() {
+			*_arr = -(*_arr);
+		}
+		void plus(myDoubleArray^ a, double sc) {
+			*(this->_arr) += (*a->_arr )* sc;
+		}
+
 		!myDoubleArray()
 		{
 			if (_arr != 0)
 			{
-				delete[] _arr;
+				delete _arr;
 			}
 			_arr = 0;
 			_N = 0;
@@ -42,14 +60,44 @@ namespace kingghidorah {
 		~myDoubleArray()
 		{
 			if (_arr != 0) {
-				delete[] _arr;
+				delete _arr;
 			}
 			_arr = 0;
 			_N = 0;
 		}
 		void set(int i, double val)
 		{
-			_arr[i] = val;
+			(*_arr)(i) = val;
+		}
+		double at(int i)
+		{
+			return (*_arr)(i);
+		}
+		void scale(double sc)
+		{
+			(*_arr) *= sc;
+		}
+		void resize(int N)
+		{
+			_arr->conservativeResize(N);
+			if (N > _N)
+			{
+				_arr->middleRows(_N, N - _N).setZero();
+			}
+			_N = N;
+		}
+		void reset(int N)
+		{
+			_N = N;
+			_arr->resize(_N);
+			_arr->setZero();
+		}
+		void minus(myDoubleArray^ b)
+		{
+			*_arr -= *b->_arr;
+		}
+		double L2Norm() {
+			return _arr->norm();
 		}
 	};
 	public ref class myIntArray {
@@ -57,6 +105,10 @@ namespace kingghidorah {
 		int* _arr = 0;
 		int _N = 0;
 	public:
+		void setzero(int S, int N)
+		{
+			memset(_arr + S, 0, sizeof(int) * N);
+		}
 		myIntArray(int N)
 		{
 			_arr = new int[N];
@@ -96,6 +148,9 @@ namespace kingghidorah {
 	private:
 		cuda* _cuda = 0;
 	public:
+		static void disable() {
+			cuda::disable();
+		}
 		myCuda(int N) {
 			_cuda = new kingghidorah::cuda(N);
 		}
@@ -195,7 +250,7 @@ namespace kingghidorah {
 			//ptr2 = nullptr;
 			//return ret;
 		}
-		void  permback(array<double>^ vec) {
+		/*void  permback(array<double>^ vec) {
 			pin_ptr<double> ptr = &vec[0];
 			int N = vec->Length;
 			Eigen::Map<Eigen::VectorXd> b(ptr, N);
@@ -212,18 +267,19 @@ namespace kingghidorah {
 			ptr = nullptr;
 			//ptr2 = nullptr;
 			//return ret;
-		}
+		}*/
 		void perm(myDoubleArray^ vec) {
-			double* ptr = vec->data();
+			//double* ptr = vec->data();
 			int N = vec->size();
-			Eigen::Map<Eigen::VectorXd> b(ptr, N);
-			b.applyOnTheLeft(this->p->perm);
+			//Eigen::Map<Eigen::VectorXd> b(ptr, N);
+			vec->_arr->applyOnTheLeft(this->p->perm);
 		}
 		void permback(myDoubleArray^ vec) {
-			double* ptr = vec->data();
-			int N = vec->size();
-			Eigen::Map<Eigen::VectorXd> b(ptr, N);
-			b.applyOnTheLeft(this->p->perm.transpose());
+			//double* ptr = vec->data();
+			//int N = vec->size();
+			//Eigen::Map<Eigen::VectorXd> b(ptr, N);
+			//b.applyOnTheLeft(this->p->perm.transpose());
+			vec->_arr->applyOnTheLeft(this->p->perm.transpose());
 		}
 	};
 	public ref class mySparse {
@@ -356,19 +412,16 @@ namespace kingghidorah {
 		{
 			A->dat->_ofAtB(B->dat, this->dat);
 		}
-		array<double>^ _ofBtAB(mySparse^ A, mySparse^ B,array<double>^ b)
+		void _ofBtAB(mySparse^ A, mySparse^ B,myDoubleArray^ b, myDoubleArray^ ret)
 		{
-			pin_ptr<double> ptr = &b[0];
-			auto _ret=A->dat->_ofBtAB(B->dat, ptr,b->Length,this->dat);
-			array<double>^ ret = gcnew array<double>(_ret.rows());
-			System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
-			ptr = nullptr;
-			return ret;
-		}
-		void _ofAtB_gpu(myCuda^ gpu, mySparse^ A, mySparse^ B)
-		{
-			A->dat->_ofAtB_gpu(gpu->cuda(), B->dat, this->dat);
-		}
+			//pin_ptr<double> ptr = &b[0];
+			
+			A->dat->_ofBtAB(B->dat, b->_arr,this->dat,ret->_arr);
+			//array<double>^ ret = gcnew array<double>(_ret.rows());
+			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
+			//ptr = nullptr;
+			//return ret;
+		}		
 		void addemptyrow(int ii) {
 			dat->addemptyrow(ii);
 		}
@@ -393,6 +446,22 @@ namespace kingghidorah {
 			ptr = nullptr;
 			dat = nullptr;
 		}
+		void addrow(int ii, myIntArray^ index, myDoubleArray^ data, double sc, int N) {
+			//pin_ptr<int> ptr = &index[0];
+			//pin_ptr<double> dat = &data[0];
+
+			this->dat->addrow(ii, index->_arr, data->_arr->data(), sc, N);
+			//ptr = nullptr;
+			//dat = nullptr;
+		}
+		void addrow(int ii, myIntArray^ index, myDoubleArray^ data, int shift, double sc, int N, bool add) {
+			//pin_ptr<int> ptr = &index[0];
+			//pin_ptr<double> dat = &data[0];
+
+			this->dat->addrow(ii, index->_arr, data->_arr->data(), shift, sc, N, add);
+			//ptr = nullptr;
+			//dat = nullptr;
+		}
 		array<double>^ Atb(array<double>^ b)
 		{
 			pin_ptr<double> ptr = &b[0];
@@ -401,6 +470,15 @@ namespace kingghidorah {
 			System::Runtime::InteropServices::Marshal::Copy((IntPtr)rhs.data(), ret, 0, rhs.rows());
 			ptr = nullptr;
 			return ret;
+		}
+		void Atb(array<double>^ b, kingghidorah::myDoubleArray^ ret)
+		{
+			pin_ptr<double> ptr = &b[0];
+			dat->Atb(ptr,b->Length,ret->_arr);
+			//array<double>^ ret = gcnew array<double>(rhs.rows());
+			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)rhs.data(), ret, 0, rhs.rows());
+			ptr = nullptr;
+			//return ret;
 		}
 		array<double>^ _Atb(array<double>^ b)
 		{
@@ -411,50 +489,50 @@ namespace kingghidorah {
 			ptr = nullptr;
 			return ret;
 		}
-		array<double>^ solve0(array<double>^ rhs) {
-			pin_ptr<double> ptr = &rhs[0];
+		void solve0(myDoubleArray^ rhs,myDoubleArray ^ret) {
+			//pin_ptr<double> ptr = &rhs[0];
 
-			Eigen::VectorXd _ret = dat->solve0(ptr, rhs->Length);
+			dat->solve0(rhs->_arr,ret->_arr);
 
-			array<double>^ ret = gcnew array<double>(_ret.rows());
-			System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
+			//array<double>^ ret = gcnew array<double>(_ret.rows());
+			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
 
-			ptr = nullptr;
-			return ret;
+			//ptr = nullptr;
+			//return ret;
 		}
-		array<double>^ _solve0(array<double>^ rhs) {
-			pin_ptr<double> ptr = &rhs[0];
+		void _solve0(myDoubleArray^ rhs, myDoubleArray^ ret) {
+			//pin_ptr<double> ptr = &rhs[0];
 
-			Eigen::VectorXd _ret = dat->_solve0(ptr, rhs->Length);
+			dat->_solve0(rhs->_arr,ret->_arr);
 
-			array<double>^ ret = gcnew array<double>(_ret.rows());
-			System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
+			//array<double>^ ret = gcnew array<double>(_ret.rows());
+			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
 
-			ptr = nullptr;
-			return ret;
+			//ptr = nullptr;
+			//return ret;
 		}
-		array<double>^ __solve0(array<double>^ rhs) {
-			pin_ptr<double> ptr = &rhs[0];
+		void __solve0(myDoubleArray^ rhs, myDoubleArray^ ret) {
+			//pin_ptr<double> ptr = &rhs[0];
 
-			Eigen::VectorXd _ret = dat->__solve0(ptr, rhs->Length);
+			dat->__solve0(rhs->_arr, ret->_arr);
 
-			array<double>^ ret = gcnew array<double>(_ret.rows());
-			System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
+			//array<double>^ ret = gcnew array<double>(_ret.rows());
+			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
 
-			ptr = nullptr;
-			return ret;
+			//ptr = nullptr;
+			//return ret;
 		}
 		
-		array<double>^ _solve0_gpu(myCuda^ gpu, array<double>^ rhs, int device) {
-			pin_ptr<double> ptr = &rhs[0];
+		void _solve0_gpu(myCuda^ gpu, myDoubleArray^ rhs, myDoubleArray^ ret, int device) {
+			//pin_ptr<double> ptr = &rhs[0];
 
-			Eigen::VectorXd _ret = dat->_solve0_gpu(gpu->cuda(), ptr, rhs->Length, device);
+			dat->_solve0_gpu(gpu->cuda(), rhs->_arr, ret->_arr, device);
 
-			array<double>^ ret = gcnew array<double>(_ret.rows());
-			System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
+			//array<double>^ ret = gcnew array<double>(_ret.rows());
+			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
 
-			ptr = nullptr;
-			return ret;
+			//ptr = nullptr;
+			//return ret;
 		}
 
 		mySparse^ solve0(mySparse^ rhs) {
@@ -538,12 +616,9 @@ namespace kingghidorah {
 		{
 			dat->clearcoeff();
 		}
-		double L2Norm(array<double>^ a, array<double>^ b) {
-			pin_ptr<double> ptr1 = &a[0];
-			pin_ptr<double> ptr2 = &b[0];
-			double ret = dat->L2Norm(ptr1, a->Length, ptr2, b->Length);
-			ptr1 = nullptr;
-			ptr2 = nullptr;
+		double L2Norm(myDoubleArray^ a,myDoubleArray^b) {
+			double ret = dat->L2Norm(a->_arr,b->_arr);
+			
 			return ret;
 		}
 		array<double>^ vector(array<double>^ a) {
@@ -553,6 +628,16 @@ namespace kingghidorah {
 			array<double>^ ret = gcnew array<double>(_ret.rows());
 			System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
 			return ret;
+		}
+		array<double>^ vector(myDoubleArray^ a) {
+			auto _ret = dat->Vector(a->_arr);
+			array<double>^ ret = gcnew array<double>(_ret.rows());
+			System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
+			return ret;
+		}
+		void vector(myDoubleArray^ a, myDoubleArray^ b) {
+			b->resize(dat->cols());
+			dat->Vector(a->_arr,b->_arr);
 		}
 		void plus(mySparse^ m, double a,bool dense,bool sparse) {
 			this->dat->plus(m->dat, a,dense,sparse);

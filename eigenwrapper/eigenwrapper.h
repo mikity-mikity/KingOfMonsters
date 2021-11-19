@@ -66,6 +66,7 @@ namespace kingghidorah {
 		int prevT_A = 0;
 		int prevN = 0;
 		int prevwn = 0;
+		static void disable();
 		cuda(int N);
 		~cuda();
 		cusolverDnHandle_t& solver(int ii,int kk);
@@ -115,9 +116,11 @@ namespace kingghidorah {
 		vector<vector<double>> _coeff;
 	private:
 		std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor>> _mat;
-		Eigen::MatrixXd mats;
-		Eigen::MatrixXd _dmat;
-
+		//Eigen::MatrixXd mats;
+		//Eigen::MatrixXd _dmat;
+		double* ___dmat=0;
+		int __r = 0;
+		int __c = 0;
 		vector<Eigen::VectorXd> coeff;
 		int _nt = 0;
 		int _mt = 0;
@@ -135,8 +138,10 @@ namespace kingghidorah {
 		~_mySparse();
 		void freeze(bool _do);
 		void _freeze();
-		double L2Norm(double* ptr1, int N1, double* ptr2, int N2);
+		double L2Norm(Eigen::VectorXd* a, Eigen::VectorXd* b);
 		Eigen::VectorXd Vector(double* ptr1, int N1);
+		Eigen::VectorXd Vector(Eigen::VectorXd* a);
+		void Vector(Eigen::VectorXd* a, Eigen::VectorXd* ret);
 		void plus(_mySparse* m, double sc,bool dense,bool sparse);
 		double at(int i, int ii);
 		double _at(int i);
@@ -174,10 +179,10 @@ namespace kingghidorah {
 		std::string _ofAtA(_mySparse* A);
 		void ofAtB(_mySparse* B,bool sparse);
 		void _ofAtB(_mySparse* B, _mySparse* C);
-		Eigen::VectorXd _ofBtAB(_mySparse* B, double* ptr, int N, _mySparse* C);
-		void _ofAtB_gpu(kingghidorah::cuda* cuda, _mySparse* B, _mySparse* C);
+		void _ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret);
 		Eigen::VectorXd Atb(double* ptr, int N);
 		Eigen::VectorXd _Atb(double* ptr, int N);
+		void Atb(double* ptr, int N,Eigen::VectorXd* c);
 		void merge();
 		void computeQR();
 		void computeLU();
@@ -187,9 +192,9 @@ namespace kingghidorah {
 		void setmat(Eigen::SparseMatrix<double> mat, int ii);
 		void setmat(const Eigen::MatrixXd& mat);
 		void setmiddlecolum(Eigen::SparseMatrix<double> f, int start, int end);
-		Eigen::VectorXd solve0(double* rhs, int N);
-		Eigen::VectorXd _solve0(double* rhs, int N);
-		Eigen::VectorXd _solve0_gpu(kingghidorah::cuda* cuda, double* rhs, int N, int device);
+		void solve0(Eigen::VectorXd* rhs,Eigen::VectorXd *ret);
+		void _solve0(Eigen::VectorXd* rhs,Eigen::VectorXd* ret);
+		void _solve0_gpu(kingghidorah::cuda* cuda, Eigen::VectorXd*rhs, Eigen::VectorXd* ret, int device);
 		Eigen::MatrixXd _solve0(_myLLT* LLT, _mySparse* rhs);
 		void _solve0_gpu(kingghidorah::cuda* cuda, _mySparse* rhs, _mySparse* ret);
 		void _solveI(_mySparse* ret);
@@ -198,7 +203,7 @@ namespace kingghidorah {
 		std::string _solveI_gpu_single(kingghidorah::cuda* cuda, _mySparse* ret);
 		
 		void _solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse* ret);
-		Eigen::VectorXd __solve0(double* rhs, int N);
+		void __solve0(Eigen::VectorXd *rhs, Eigen::VectorXd *ret);
 		Eigen::MatrixXd inv();
 		Eigen::MatrixXd solve0(_mySparse* rhs);
 		void minus(_mySparse* m);
