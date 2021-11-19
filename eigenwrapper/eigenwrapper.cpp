@@ -14,7 +14,7 @@
 int previdentiyN = 0;
 //std::vector<cudaStream_t> streams;
 Eigen::MatrixXd I;
-#define STREAMCOUNT 4
+#define STREAMCOUNT 1
 bool __cuinit = false;
 void kingghidorah::cuda::disable()
 {
@@ -22,7 +22,7 @@ void kingghidorah::cuda::disable()
 }
 kingghidorah::cuda::cuda(int N) {
 	I.resize(0, 0);
-	//omp_set_dynamic(false);
+	omp_set_dynamic(false);
 	//omp_set_num_threads(16);
 	prevT_A = 0;
 	prevN = 0;
