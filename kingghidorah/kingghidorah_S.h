@@ -73,6 +73,7 @@ namespace kingghidorah {
 		_star[3] = 0;*/
 		double* B[4];
 		double* tt0[2], * hh0[2], * tt1[4], * hh1[4], * tt2[8], * hh2[8];
+		const int ___ll[4]{ 0,3,6,9 };
 	public:
 		bool initialized;
 		double refDv,_refDv;
@@ -93,7 +94,7 @@ namespace kingghidorah {
 			buf_D = &buf[10000];
 		}
 		inline void set_node(const int &i, const int &s, const double val) {
-			node[i * 3 + s] = val;
+			node[___ll[i] + s] = val;
 		}
 		inline void set_buf_z(const int &i, const double &val) {
 			buf_z[i] = val;
@@ -118,16 +119,16 @@ namespace kingghidorah {
 			buf_phi[i] = val;
 		}
 		inline void set_def(const int &i, const int &s, const double &val) {
-			def[i * 3 + s] = val;
+			def[___ll[i]  + s] = val;
 		}
 		inline double& get_node(const int &i, const int &s) {
-			return node[i * 3 + s];
+			return node[___ll[i] + s];
 		}
 		inline double& get__gi(const int &i, const int &s) {
-			return _gi[i * 3 + s];
+			return _gi[___ll[i] + s];
 		}
 		inline double& get__Gi(const int &i, const int &s) {
-			return _Gi[i * 3 + s];
+			return _Gi[___ll[i] + s];
 		}
 		inline double& get__gij(const int &i, const int &j) {
 			return _gij[i<<1 + j];
@@ -136,7 +137,7 @@ namespace kingghidorah {
 			return _Gij[i<<1 + j];
 		}
 		inline double& get__bij(const int &i, const int &j, const int &s) {
-			return _bij[(i<<1 + j) * 3 + s];
+			return _bij[___ll[(i<<1 + j)] + s];
 		}
 		inline double& get__Gammaijk(const int &i, const int &j, const int &k) {
 			return _Gammaijk[(((i<<1) + j) <<1) + k];
@@ -465,6 +466,7 @@ namespace kingghidorah {
 		//double* tt0[2], * hh0[2], * tt1[4], * hh1[4], * tt2[8], * hh2[8];
 		double* gradN[3];
 		double* gradG;
+		const int ___ll[4]{ 0,3,6,9 };
 	public:
 		double x, y, z, Z, _Z, phi;
 		double dv, _dv;
@@ -495,10 +497,10 @@ namespace kingghidorah {
 		}
 
 		inline double& get_gi(const int &i, const int &s) {
-			return gi[i * 3 + s];
+			return gi[___ll[i] + s];
 		}
 		inline double& get_Gi(const int &i, const int &s) {
-			return Gi[i * 3 + s];
+			return Gi[___ll[i] + s];
 		}
 		inline double get_gij(const int &i, const int &j) {
 			return gij[(i<<1) + j];
@@ -507,7 +509,7 @@ namespace kingghidorah {
 			return Gij[(i<<1) + j];
 		}
 		inline double& get_bij(const int &i, const int &j, const int &s) {
-			return bij[((i<<1) + j) * 3 + s];
+			return bij[___ll[((i << 1) + j)] + s];
 		}
 		inline double& get_Gammaijk(const int &i, const int &j, const int &k) {
 			return Gammaijk[(((i<<1) + j) <<1)+ k];

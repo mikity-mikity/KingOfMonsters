@@ -540,6 +540,10 @@ inline int& kingghidorah::cuda::fastest() {
 }
 kingghidorah::_mySparse::_mySparse()
 {
+	dat.reserve(1000);
+	coeff.reserve(1000);
+	_coeff.reserve(1000);
+	_mat.reserve(1000);
 	_mt = omp_get_max_threads();
 	//_smat.resize(1);
 	//_smat = new Eigen::SparseMatrix<double>();
@@ -831,6 +835,7 @@ void kingghidorah::_mySparse::Clear() {
 	if (this->coeff.size() != _nt)this->coeff.resize(_nt);
 	if (this->_mat.size() != _nt)this->_mat.resize(_nt);
 
+#pragma omp parallel for
 	for (int ii = 0; ii < _nt; ii++)
 	{
 		this->coeff[ii].setZero();
@@ -1227,7 +1232,6 @@ void kingghidorah::_mySparse::_ofBtAB(_mySparse* B,Eigen::VectorXd *b,_mySparse*
 }
 std::vector<Eigen::SparseMatrix<double>> e2;
 
-std::vector<Eigen::SparseMatrix<double>> e2;
 void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 {
 
