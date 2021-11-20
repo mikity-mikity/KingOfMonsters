@@ -19,7 +19,7 @@
 #include <chrono>
 #include <vector>
 //#define EIGEN_DONT_PARALLELIZE
-//#define EIGEN_DONT_ALIGN
+#define EIGEN_DONT_ALIGN
 
 #define MAXDEVICE 4
 using namespace std::chrono;
@@ -116,6 +116,8 @@ namespace kingghidorah {
 		vector<vector<double>> _coeff;
 	private:
 		std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor>> _mat;
+		//std::vector<Eigen::SparseMatrix<double>> e;
+		//std::vector<Eigen::SparseMatrix<double>> e2;
 		//Eigen::MatrixXd mats;
 		//Eigen::MatrixXd _dmat;
 		double* ___dmat=0;

@@ -540,6 +540,7 @@ inline int& kingghidorah::cuda::fastest() {
 }
 kingghidorah::_mySparse::_mySparse()
 {
+	_mt = omp_get_max_threads();
 	//_smat.resize(1);
 	//_smat = new Eigen::SparseMatrix<double>();
 }
@@ -973,20 +974,23 @@ int kingghidorah::_mySparse::numBlocks()
 	return this->dat.size();
 }
 //std::vector<Eigen::MatrixXd> e;
+std::vector<Eigen::SparseMatrix<double>> e;
 int kingghidorah::_mySparse::ofAtA(_mySparse* A,bool sparse)
 {
-	static std::vector<Eigen::SparseMatrix<double>> e;
 	int nn = A->cols();
 	int mt = omp_get_max_threads();
-	_mt = mt*1;
-
+	//int _mt = mt*1;
+	//_mt = _nt;
 	if (e.size() < _mt)
 	{
 		e.resize(_mt);
 	}
+#pragma omp parallel for
 	for (int i = 0; i < _mt; i++) {
+		e[i].setZero();
 		e[i].resize(nn, nn);
-		e[i].reserve(nn * nn / 5);
+		e[i].setZero();
+		e[i].reserve(nn * nn / 20);
 		e[i].setZero();
 	}
 #pragma omp parallel for
@@ -994,7 +998,7 @@ int kingghidorah::_mySparse::ofAtA(_mySparse* A,bool sparse)
 	{
 		int S = 0;
 		int E = 0;
-		auto _e = e[_ii];
+		//auto _e = e[_ii];
 		S = _ii * _nt / _mt;
 		E = (_ii + 1) * _nt / _mt;
 		for (int ii = S; ii < E; ii++)
@@ -1177,10 +1181,10 @@ void kingghidorah::_mySparse::_ofBtAB(_mySparse* B,Eigen::VectorXd *b,_mySparse*
 	//Eigen::Map<Eigen::VectorXd> b(ptr, N);
 	*ret = D * *b;
 }
+std::vector<Eigen::SparseMatrix<double>> e2;
 
 void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 {
-	static std::vector<Eigen::SparseMatrix<double>> e;
 
 	int nn = this->cols();
 	int mm = B->cols();
@@ -1201,16 +1205,19 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 
 	//this->_dmat.resize(nn, mm);
 	_dmat.setZero();
-	int mt = omp_get_max_threads();
+	//int mt = omp_get_max_threads();
 
-	_mt = mt*1;
-	
-	if (_mt > e.size())
-		e.resize(_mt);
+	//int _mt = mt*1;
+	//_mt = _nt;
+	if (_mt > e2.size())
+		e2.resize(_mt);
+#pragma omp parallel for
 	for (int i = 0; i < _mt; i++) {
-		e[i].resize(nn, mm);
-		e[i].setZero();
-		e[i].reserve(nn * mm / 10);
+		e2[i].setZero();
+		e2[i].resize(nn, mm);
+		e2[i].setZero();
+		e2[i].reserve(nn * mm / 20);
+		e2[i].setZero();
 	}
 #pragma omp parallel for
 	for (int _ii = 0; _ii < _mt; _ii++)
@@ -1220,7 +1227,7 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 
 		for (int ii = S; ii < E; ii++)
 		{
-			e[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * B->_mat[ii];
+			e2[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * B->_mat[ii];
 		}
 	}
 	if (_mat.size() == 0)_mat.resize(1);
@@ -1230,12 +1237,12 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 	if (sparse)
 	{
 		for (int i = 0; i < _mt; i++) {
-			this->_mat[0] += e[i];
+			this->_mat[0] += e2[i];
 		}
 	}
 	else {
 		for (int i = 0; i < _mt; i++) {
-			_dmat += e[i];
+			_dmat += e2[i];
 		}
 	}
 	//this->_dmat = this->_mat[0];
