@@ -987,9 +987,7 @@ int kingghidorah::_mySparse::ofAtA(_mySparse* A,bool sparse)
 	}
 #pragma omp parallel for
 	for (int i = 0; i < _mt; i++) {
-		e[i].setZero();
 		e[i].resize(nn, nn);
-		e[i].setZero();
 		e[i].reserve(nn * nn / 20);
 		e[i].setZero();
 	}
@@ -1213,9 +1211,7 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 		e2.resize(_mt);
 #pragma omp parallel for
 	for (int i = 0; i < _mt; i++) {
-		e2[i].setZero();
 		e2[i].resize(nn, mm);
-		e2[i].setZero();
 		e2[i].reserve(nn * mm / 20);
 		e2[i].setZero();
 	}
