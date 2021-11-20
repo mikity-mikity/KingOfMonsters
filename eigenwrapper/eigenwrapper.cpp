@@ -14,7 +14,7 @@
 int previdentiyN = 0;
 //std::vector<cudaStream_t> streams;
 Eigen::MatrixXd I;
-#define STREAMCOUNT 4
+#define STREAMCOUNT 2
 bool __cuinit = false;
 void kingghidorah::cuda::disable()
 {
@@ -22,7 +22,7 @@ void kingghidorah::cuda::disable()
 }
 kingghidorah::cuda::cuda(int N) {
 	I.resize(0, 0);
-	//omp_set_dynamic(true);
+	omp_set_dynamic(false);
 	//omp_set_num_threads(16);
 	prevT_A = 0;
 	prevN = 0;
@@ -540,6 +540,7 @@ inline int& kingghidorah::cuda::fastest() {
 }
 kingghidorah::_mySparse::_mySparse()
 {
+	_mt = omp_get_max_threads();
 	//_smat.resize(1);
 	//_smat = new Eigen::SparseMatrix<double>();
 }
@@ -976,26 +977,26 @@ int kingghidorah::_mySparse::numBlocks()
 std::vector<Eigen::SparseMatrix<double>> e;
 int kingghidorah::_mySparse::ofAtA(_mySparse* A,bool sparse)
 {
-	//static std::vector<Eigen::SparseMatrix<double>> e;
 	int nn = A->cols();
 	int mt = omp_get_max_threads();
-	_mt = mt*1;
-
+	//int _mt = mt*1;
+	//_mt = _nt;
 	if (e.size() < _mt)
 	{
 		e.resize(_mt);
 	}
+#pragma omp parallel for
 	for (int i = 0; i < _mt; i++) {
 		e[i].resize(nn, nn);
+		e[i].reserve(nn * nn / 20);
 		e[i].setZero();
-		e[i].reserve(nn * nn / 10);
 	}
 #pragma omp parallel for
 	for (int _ii = 0; _ii < _mt; _ii++)
 	{
 		int S = 0;
 		int E = 0;
-		auto _e = e[_ii];
+		//auto _e = e[_ii];
 		S = _ii * _nt / _mt;
 		E = (_ii + 1) * _nt / _mt;
 		for (int ii = S; ii < E; ii+=4)
@@ -1224,6 +1225,7 @@ void kingghidorah::_mySparse::_ofBtAB(_mySparse* B,Eigen::VectorXd *b,_mySparse*
 	//Eigen::Map<Eigen::VectorXd> b(ptr, N);
 	*ret = D * *b;
 }
+std::vector<Eigen::SparseMatrix<double>> e2;
 
 std::vector<Eigen::SparseMatrix<double>> e2;
 void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
@@ -1247,17 +1249,18 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 	Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, nn, mm);
 
 	//this->_dmat.resize(nn, mm);
-	//_dmat.setZero();
-	int mt = omp_get_max_threads();
+	_dmat.setZero();
+	//int mt = omp_get_max_threads();
 
-	_mt = mt*1;
-	
+	//int _mt = mt*1;
+	//_mt = _nt;
 	if (_mt > e2.size())
 		e2.resize(_mt);
+#pragma omp parallel for
 	for (int i = 0; i < _mt; i++) {
 		e2[i].resize(nn, mm);
+		e2[i].reserve(nn * mm / 20);
 		e2[i].setZero();
-		e2[i].reserve(nn * mm / 10);
 	}
 #pragma omp parallel for
 	for (int _ii = 0; _ii < _mt; _ii++)
@@ -1715,7 +1718,7 @@ void kingghidorah::_mySparse::_solveI(_mySparse* ret)
 		I.setIdentity();
 	}
 	int mt = omp_get_max_threads();
-	int ee = mt * 4;
+	int ee = mt * 2;
 #pragma omp parallel for
 	for (int i = 0; i < ee; i++)
 	{
@@ -2024,7 +2027,7 @@ void kingghidorah::_mySparse::_solveI_gpu(kingghidorah::cuda* cuda, _mySparse* r
 	//ret->_dmat.resize(N, N);
 	Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, N, N);
 	Eigen::Map<Eigen::MatrixXd> ret_dmat(ret->___dmat, N, N);
-	ret_dmat.setZero();
+	//ret_dmat.setZero();
 	//initidentiy(cuda, N);
 	if (!cuda->valid())return;
 	
@@ -2042,12 +2045,12 @@ void kingghidorah::_mySparse::_solveI_gpu(kingghidorah::cuda* cuda, _mySparse* r
 		int work_size2 = 0;
 		cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, &work_size1);
 		cusolverDnDpotri_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, &work_size2);
-		work_size = std::max(work_size1, work_size2);
+		work_size = N * N;// std::max(work_size1, work_size2);
 		work = cuda->work(work_size, ii, cuda->__streams(cuda->fastest(), 1));
 		//cudaMallocAsync(&work, sizeof(double) * work_size, stream);
-		cudaMemsetAsync(work, 0, sizeof(double) * work_size1, cuda->__streams(cuda->fastest(), 1));
+		cudaMemset(work, 0, sizeof(double) * work_size1);
 		int* devInfo = cuda->info(ii);
-		cudaDeviceSynchronize();
+
 		cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, work, work_size1, devInfo);
 		double* work2 = cuda->work_rhs(ii);
 		//cudaMalloc(&work2, sizeof(double) * work_size2);
@@ -2058,7 +2061,7 @@ void kingghidorah::_mySparse::_solveI_gpu(kingghidorah::cuda* cuda, _mySparse* r
 		cudaMemcpy(ret_dmat.data(), m_gpu, sizeof(double) * N * N, cudaMemcpyDeviceToHost);
 		cudaDeviceSynchronize();
 
-	
+		//ret_dmat.triangularView<Eigen::Upper>() = ret_dmat.triangularView<Eigen::Lower>().transpose();
 #pragma omp parallel for
 	for (int i = 0; i < N; i++)
 	{

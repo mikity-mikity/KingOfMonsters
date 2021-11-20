@@ -116,6 +116,8 @@ namespace kingghidorah {
 		vector<vector<double>> _coeff;
 	private:
 		std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor>> _mat;
+		//std::vector<Eigen::SparseMatrix<double>> e;
+		//std::vector<Eigen::SparseMatrix<double>> e2;
 		//Eigen::MatrixXd mats;
 		//Eigen::MatrixXd _dmat;
 		double* ___dmat=0;
