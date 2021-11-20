@@ -998,9 +998,28 @@ int kingghidorah::_mySparse::ofAtA(_mySparse* A,bool sparse)
 		auto _e = e[_ii];
 		S = _ii * _nt / _mt;
 		E = (_ii + 1) * _nt / _mt;
-		for (int ii = S; ii < E; ii++)
+		for (int ii = S; ii < E; ii+=4)
 		{
-			e[_ii] += (A->_mat[ii].transpose() * coeff[ii].asDiagonal() * A->_mat[ii]);
+			if (ii + 3 < E)
+			{
+				e[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii] +
+					this->_mat[ii + 1].transpose() * coeff[ii + 1].asDiagonal() * this->_mat[ii + 1] +
+					this->_mat[ii + 2].transpose() * coeff[ii + 2].asDiagonal() * this->_mat[ii + 2] +
+					this->_mat[ii + 3].transpose() * coeff[ii + 3].asDiagonal() * this->_mat[ii + 3];
+			}
+			else if (ii + 2 < E) {
+				e[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii] +
+					this->_mat[ii + 1].transpose() * coeff[ii + 1].asDiagonal() * this->_mat[ii + 1] +
+					this->_mat[ii + 2].transpose() * coeff[ii + 2].asDiagonal() * this->_mat[ii + 2];
+			}
+			else if (ii + 1 < E) {
+				e[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii] +
+					this->_mat[ii + 1].transpose() * coeff[ii + 1].asDiagonal() * this->_mat[ii + 1];
+			}
+			else if (ii < E)
+			{
+				e[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
+			}
 		}
 	}
 	if (sparse) {
@@ -1027,10 +1046,37 @@ int kingghidorah::_mySparse::ofAtA(_mySparse* A,bool sparse)
 		__r = nn;
 		__c = nn;
 		Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, nn, nn);
-		_dmat.setZero();
-		for (int i = 0; i < _mt; i++) {
-			_dmat += e[i];
-			//this->_dmat += e[i];
+		_dmat = e[0];
+		for (int i = 1; i < _mt; i += 8) {
+			if (i + 7 < _mt)
+			{
+				_dmat += e[i] + e[i + 1] + e[i + 2] + e[i + 3] + e[i + 4] + e[i + 5] + e[i + 6] + e[i + 7];
+			}
+			else if(i+6<_mt){
+				_dmat += e[i] + e[i + 1] + e[i + 2] + e[i + 3] + e[i + 4] + e[i + 5] + e[i + 6];
+			}
+			else if (i + 5 < _mt) {
+				_dmat += e[i] + e[i + 1] + e[i + 2] + e[i + 3] + e[i + 4] + e[i + 5];
+			}
+			else if (i + 4 < _mt) {
+				_dmat += e[i] + e[i + 1] + e[i + 2] + e[i + 3] + e[i + 4];
+			}
+			else if (i + 3 < _mt)
+			{
+				_dmat += e[i] + e[i + 1] + e[i + 2] + e[i + 3];
+			}
+			else if (i + 2 < _mt)
+			{
+				_dmat += e[i] + e[i + 1] + e[i + 2];
+			}
+			else if (i + 1 < _mt)
+			{
+				_dmat += e[i] + e[i + 1];
+			}
+			else if (i  < _mt)
+			{
+				_dmat += e[i];
+			}
 		}
 		//this->_dmat = x;
 	}
@@ -1201,7 +1247,7 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 	Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, nn, mm);
 
 	//this->_dmat.resize(nn, mm);
-	_dmat.setZero();
+	//_dmat.setZero();
 	int mt = omp_get_max_threads();
 
 	_mt = mt*1;
@@ -1219,9 +1265,29 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 		int S = _ii * _nt / _mt;
 		int E = (_ii + 1) * _nt / _mt;
 
-		for (int ii = S; ii < E; ii++)
+		for (int ii = S; ii < E; ii+=4)
 		{
-			e2[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * B->_mat[ii];
+			if (ii + 3 < E)
+			{
+				e2[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * B->_mat[ii] +
+					this->_mat[ii + 1].transpose() * coeff[ii + 1].asDiagonal() * B->_mat[ii + 1] +
+					this->_mat[ii + 2].transpose() * coeff[ii + 2].asDiagonal() * B->_mat[ii + 2] +
+					this->_mat[ii + 3].transpose() * coeff[ii + 3].asDiagonal() * B->_mat[ii + 3];
+			}
+			else if(ii+2<E){
+				e2[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * B->_mat[ii] +
+					this->_mat[ii + 1].transpose() * coeff[ii + 1].asDiagonal() * B->_mat[ii + 1] +
+					this->_mat[ii + 2].transpose() * coeff[ii + 2].asDiagonal() * B->_mat[ii + 2];
+			}
+			else if (ii + 1 < E) {
+				e2[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * B->_mat[ii] +
+					this->_mat[ii + 1].transpose() * coeff[ii + 1].asDiagonal() * B->_mat[ii + 1];
+			}
+			else if (ii < E)
+			{
+				e2[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * B->_mat[ii];
+			}
+			
 		}
 	}
 	if (_mat.size() == 0)_mat.resize(1);
@@ -1235,8 +1301,39 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 		}
 	}
 	else {
-		for (int i = 0; i < _mt; i++) {
-			_dmat += e2[i];
+		_dmat = e2[0];
+		for (int i = 1; i < _mt; i+=4) {
+			for (int i = 1; i < _mt; i += 8) {
+				if (i + 7 < _mt)
+				{
+					_dmat += e2[i] + e2[i + 1] + e2[i + 2] + e2[i + 3] + e2[i + 4] + e2[i + 5] + e2[i + 6] + e2[i + 7];
+				}
+				else if (i + 6 < _mt) {
+					_dmat += e2[i] + e2[i + 1] + e2[i + 2] + e2[i + 3] + e2[i + 4] + e2[i + 5] + e2[i + 6];
+				}
+				else if (i + 5 < _mt) {
+					_dmat += e2[i] + e2[i + 1] + e2[i + 2] + e2[i + 3] + e2[i + 4] + e2[i + 5];
+				}
+				else if (i + 4 < _mt) {
+					_dmat += e2[i] + e2[i + 1] + e2[i + 2] + e2[i + 3] + e2[i + 4];
+				}
+				else if (i + 3 < _mt)
+				{
+					_dmat += e2[i] + e2[i + 1] + e2[i + 2] + e2[i + 3];
+				}
+				else if (i + 2 < _mt)
+				{
+					_dmat += e2[i] + e2[i + 1] + e2[i + 2];
+				}
+				else if (i + 1 < _mt)
+				{
+					_dmat += e2[i] + e2[i + 1];
+				}
+				else if (i < _mt)
+				{
+					_dmat += e2[i];
+				}
+			}
 		}
 	}
 	//this->_dmat = this->_mat[0];
