@@ -1316,37 +1316,35 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 	}
 	else {
 		_dmat = e2[0];
-		for (int i = 1; i < _mt; i+=4) {
-			for (int i = 1; i < _mt; i += 8) {
-				if (i + 7 < _mt)
-				{
-					_dmat += e2[i] + e2[i + 1] + e2[i + 2] + e2[i + 3] + e2[i + 4] + e2[i + 5] + e2[i + 6] + e2[i + 7];
-				}
-				else if (i + 6 < _mt) {
-					_dmat += e2[i] + e2[i + 1] + e2[i + 2] + e2[i + 3] + e2[i + 4] + e2[i + 5] + e2[i + 6];
-				}
-				else if (i + 5 < _mt) {
-					_dmat += e2[i] + e2[i + 1] + e2[i + 2] + e2[i + 3] + e2[i + 4] + e2[i + 5];
-				}
-				else if (i + 4 < _mt) {
-					_dmat += e2[i] + e2[i + 1] + e2[i + 2] + e2[i + 3] + e2[i + 4];
-				}
-				else if (i + 3 < _mt)
-				{
-					_dmat += e2[i] + e2[i + 1] + e2[i + 2] + e2[i + 3];
-				}
-				else if (i + 2 < _mt)
-				{
-					_dmat += e2[i] + e2[i + 1] + e2[i + 2];
-				}
-				else if (i + 1 < _mt)
-				{
-					_dmat += e2[i] + e2[i + 1];
-				}
-				else if (i < _mt)
-				{
-					_dmat += e2[i];
-				}
+		for (int i = 1; i < _mt; i += 8) {
+			if (i + 7 < _mt)
+			{
+				_dmat += e2[i] + e2[i + 1] + e2[i + 2] + e2[i + 3] + e2[i + 4] + e2[i + 5] + e2[i + 6] + e2[i + 7];
+			}
+			else if (i + 6 < _mt) {
+				_dmat += e2[i] + e2[i + 1] + e2[i + 2] + e2[i + 3] + e2[i + 4] + e2[i + 5] + e2[i + 6];
+			}
+			else if (i + 5 < _mt) {
+				_dmat += e2[i] + e2[i + 1] + e2[i + 2] + e2[i + 3] + e2[i + 4] + e2[i + 5];
+			}
+			else if (i + 4 < _mt) {
+				_dmat += e2[i] + e2[i + 1] + e2[i + 2] + e2[i + 3] + e2[i + 4];
+			}
+			else if (i + 3 < _mt)
+			{
+				_dmat += e2[i] + e2[i + 1] + e2[i + 2] + e2[i + 3];
+			}
+			else if (i + 2 < _mt)
+			{
+				_dmat += e2[i] + e2[i + 1] + e2[i + 2];
+			}
+			else if (i + 1 < _mt)
+			{
+				_dmat += e2[i] + e2[i + 1];
+			}
+			else if (i < _mt)
+			{
+				_dmat += e2[i];
 			}
 		}
 	}
