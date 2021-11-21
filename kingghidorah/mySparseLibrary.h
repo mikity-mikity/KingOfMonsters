@@ -11,24 +11,25 @@ using std::vector;
 using std::string;
 using namespace System;
 using namespace System::Threading::Tasks;
-
+#define EIGEN_DONT_ALIGN
 namespace kingghidorah {
 	public ref class myDoubleArray {
 	public:
 		//double* _arr = 0;
-		Eigen::VectorXd* _arr;
+		_myDoubleArray *_arr=0;
 		int _N = 0;
 	public:
 		void setzero(int S, int N)
 		{
-			_arr->middleRows(S, N).setZero();
+			_arr->__v.middleRows(S, N).setZero();
 		}
 		myDoubleArray(int N)
 		{
+			_arr = new _myDoubleArray();
 			//_arr = new double[N];
-			_arr = new Eigen::VectorXd(N);
 			_N = N;
-			_arr->setZero();
+			_arr->__v.resize(N);
+			_arr->__v.setZero();
 		}
 		/*inline double* data()
 		{
@@ -37,16 +38,16 @@ namespace kingghidorah {
 		inline int size() {
 			return _N;
 		}
-		void copyfrom(myDoubleArray ^arr,int N)
+		void copyfrom(myDoubleArray^ arr, int N)
 		{
-			_arr = arr->_arr;
+			_arr->__v = arr->_arr->__v;
 			//System::Runtime::InteropServices::Marshal::Copy( arr,0, (System::IntPtr)_arr->data(), N);
 		}
 		void minus() {
-			*_arr = -(*_arr);
+			_arr->__v.noalias() = -(_arr->__v);
 		}
 		void plus(myDoubleArray^ a, double sc) {
-			*(this->_arr) += (*a->_arr )* sc;
+			_arr->__v.noalias() += _arr->__v * sc;
 		}
 
 		!myDoubleArray()
@@ -68,37 +69,37 @@ namespace kingghidorah {
 		}
 		void set(int i, double val)
 		{
-			(*_arr)(i) = val;
+			(_arr->__v)(i) = val;
 		}
 		double at(int i)
 		{
-			return (*_arr)(i);
+			return _arr->__v(i);
 		}
 		void scale(double sc)
 		{
-			(*_arr) *= sc;
+			_arr->__v *= sc;
 		}
 		void resize(int N)
 		{
-			_arr->conservativeResize(N);
+			_arr->__v.conservativeResize(N);
 			if (N > _N)
 			{
-				_arr->middleRows(_N, N - _N).setZero();
+				_arr->__v.middleRows(_N, N - _N).setZero();
 			}
 			_N = N;
 		}
 		void reset(int N)
 		{
 			_N = N;
-			_arr->resize(_N);
-			_arr->setZero();
+			_arr->__v.resize(_N);
+			_arr->__v.setZero();
 		}
 		void minus(myDoubleArray^ b)
 		{
-			*_arr -= *b->_arr;
+			_arr->__v.noalias() -= b->_arr->__v;
 		}
 		double L2Norm() {
-			return _arr->norm();
+			return _arr->__v.norm();
 		}
 	};
 	public ref class myIntArray {
@@ -273,14 +274,14 @@ namespace kingghidorah {
 			//double* ptr = vec->data();
 			int N = vec->size();
 			//Eigen::Map<Eigen::VectorXd> b(ptr, N);
-			vec->_arr->applyOnTheLeft(this->p->perm);
+			vec->_arr->__v.applyOnTheLeft(this->p->perm);
 		}
 		void permback(myDoubleArray^ vec) {
 			//double* ptr = vec->data();
 			//int N = vec->size();
 			//Eigen::Map<Eigen::VectorXd> b(ptr, N);
 			//b.applyOnTheLeft(this->p->perm.transpose());
-			vec->_arr->applyOnTheLeft(this->p->perm.transpose());
+			vec->_arr->__v.applyOnTheLeft(this->p->perm.transpose());
 		}
 	};
 	public ref class mySparse {
@@ -382,9 +383,9 @@ namespace kingghidorah {
 		{
 			dat->permute(p->p->perm);
 		}
-		void _shrink(int M,bool sparse,bool dense)
+		void _shrink(int M, bool sparse, bool dense)
 		{
-			dat->_shrink(M,sparse,dense);
+			dat->_shrink(M, sparse, dense);
 		}
 		void _permute(myPermutation^ p, bool sparse, bool dense)
 		{
@@ -398,31 +399,31 @@ namespace kingghidorah {
 		{
 			dat->_permute(p->p->perm, q->p->perm);
 		}
-		int ofAtA(mySparse^ m,bool sparse) {
-			return dat->ofAtA(m->dat,sparse);
+		int ofAtA(mySparse^ m, bool sparse) {
+			return dat->ofAtA(m->dat, sparse);
 		}
 		System::String^ _ofAtA(mySparse^ m) {
-			auto str=dat->_ofAtA(m->dat);
+			auto str = dat->_ofAtA(m->dat);
 			auto ret = gcnew System::String(str.c_str());
 			return ret;
 		}
-		void ofAtB(mySparse^ m,bool sparse) {
-			dat->ofAtB(m->dat,sparse);
+		void ofAtB(mySparse^ m, bool sparse) {
+			dat->ofAtB(m->dat, sparse);
 		}
 		void _ofAtB(mySparse^ A, mySparse^ B)
 		{
 			A->dat->_ofAtB(B->dat, this->dat);
 		}
-		void _ofBtAB(mySparse^ A, mySparse^ B,myDoubleArray^ b, myDoubleArray^ ret)
+		void _ofBtAB(mySparse^ A, mySparse^ B, myDoubleArray^ b, myDoubleArray^ ret)
 		{
 			//pin_ptr<double> ptr = &b[0];
-			
-			A->dat->_ofBtAB(B->dat, b->_arr,this->dat,ret->_arr);
+
+			A->dat->_ofBtAB(B->dat, &b->_arr->__v, this->dat, &ret->_arr->__v);
 			//array<double>^ ret = gcnew array<double>(_ret.rows());
 			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
 			//ptr = nullptr;
 			//return ret;
-		}		
+		}
 		void addemptyrow(int ii) {
 			dat->addemptyrow(ii);
 		}
@@ -451,7 +452,7 @@ namespace kingghidorah {
 			//pin_ptr<int> ptr = &index[0];
 			//pin_ptr<double> dat = &data[0];
 
-			this->dat->addrow(ii, index->_arr, data->_arr->data(), sc, N);
+			this->dat->addrow(ii, index->_arr, data->_arr->__v.data(), sc, N);
 			//ptr = nullptr;
 			//dat = nullptr;
 		}
@@ -459,7 +460,7 @@ namespace kingghidorah {
 			//pin_ptr<int> ptr = &index[0];
 			//pin_ptr<double> dat = &data[0];
 
-			this->dat->addrow(ii, index->_arr, data->_arr->data(), shift, sc, N, add);
+			this->dat->addrow(ii, index->_arr, data->_arr->__v.data(), shift, sc, N, add);
 			//ptr = nullptr;
 			//dat = nullptr;
 		}
@@ -475,7 +476,7 @@ namespace kingghidorah {
 		void Atb(array<double>^ b, kingghidorah::myDoubleArray^ ret)
 		{
 			pin_ptr<double> ptr = &b[0];
-			dat->Atb(ptr,b->Length,ret->_arr);
+			dat->Atb(ptr, b->Length, &ret->_arr->__v);
 			//array<double>^ ret = gcnew array<double>(rhs.rows());
 			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)rhs.data(), ret, 0, rhs.rows());
 			ptr = nullptr;
@@ -490,10 +491,10 @@ namespace kingghidorah {
 			ptr = nullptr;
 			return ret;
 		}
-		void solve0(myDoubleArray^ rhs,myDoubleArray ^ret) {
+		void solve0(myDoubleArray^ rhs, myDoubleArray^ ret) {
 			//pin_ptr<double> ptr = &rhs[0];
 
-			dat->solve0(rhs->_arr,ret->_arr);
+			dat->solve0(&rhs->_arr->__v, &ret->_arr->__v);
 
 			//array<double>^ ret = gcnew array<double>(_ret.rows());
 			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
@@ -504,7 +505,7 @@ namespace kingghidorah {
 		void _solve0(myDoubleArray^ rhs, myDoubleArray^ ret) {
 			//pin_ptr<double> ptr = &rhs[0];
 
-			dat->_solve0(rhs->_arr,ret->_arr);
+			dat->_solve0(&rhs->_arr->__v, &ret->_arr->__v);
 
 			//array<double>^ ret = gcnew array<double>(_ret.rows());
 			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
@@ -515,7 +516,7 @@ namespace kingghidorah {
 		void __solve0(myDoubleArray^ rhs, myDoubleArray^ ret) {
 			//pin_ptr<double> ptr = &rhs[0];
 
-			dat->__solve0(rhs->_arr, ret->_arr);
+			dat->__solve0(&rhs->_arr->__v, &ret->_arr->__v);
 
 			//array<double>^ ret = gcnew array<double>(_ret.rows());
 			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
@@ -523,11 +524,11 @@ namespace kingghidorah {
 			//ptr = nullptr;
 			//return ret;
 		}
-		
+
 		void _solve0_gpu(myCuda^ gpu, myDoubleArray^ rhs, myDoubleArray^ ret, int device) {
 			//pin_ptr<double> ptr = &rhs[0];
 
-			dat->_solve0_gpu(gpu->cuda(), rhs->_arr, ret->_arr, device);
+			dat->_solve0_gpu(gpu->cuda(), &rhs->_arr->__v, &ret->_arr->__v, device);
 
 			//array<double>^ ret = gcnew array<double>(_ret.rows());
 			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
@@ -547,7 +548,7 @@ namespace kingghidorah {
 
 			return ret;
 		}
-		
+
 		mySparse^ solve0_gpu(myCuda^ gpu, mySparse^ rhs, mySparse^ ret) {
 			this->dat->_solve0_gpu(gpu->cuda(), rhs->dat, ret->dat);
 			return ret;
@@ -617,9 +618,9 @@ namespace kingghidorah {
 		{
 			dat->clearcoeff();
 		}
-		double L2Norm(myDoubleArray^ a,myDoubleArray^b) {
-			double ret = dat->L2Norm(a->_arr,b->_arr);
-			
+		double L2Norm(myDoubleArray^ a, myDoubleArray^ b) {
+			double ret = dat->L2Norm(&a->_arr->__v, &b->_arr->__v);
+
 			return ret;
 		}
 		array<double>^ vector(array<double>^ a) {
@@ -631,20 +632,20 @@ namespace kingghidorah {
 			return ret;
 		}
 		array<double>^ vector(myDoubleArray^ a) {
-			auto _ret = dat->Vector(a->_arr);
+			auto _ret = dat->Vector(&a->_arr->__v);
 			array<double>^ ret = gcnew array<double>(_ret.rows());
 			System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
 			return ret;
 		}
 		void vector(myDoubleArray^ a, myDoubleArray^ b) {
 			b->resize(dat->cols());
-			dat->Vector(a->_arr,b->_arr);
+			dat->Vector(&a->_arr->__v, &b->_arr->__v);
 		}
-		void plus(mySparse^ m, double a,bool dense,bool sparse) {
-			this->dat->plus(m->dat, a,dense,sparse);
+		void plus(mySparse^ m, double a, bool dense, bool sparse) {
+			this->dat->plus(m->dat, a, dense, sparse);
 		}
-		void addsmallidentity(double salt,bool sparse,bool dense) {
-			this->dat->addsmallidentity(salt,sparse,dense);
+		void addsmallidentity(double salt, bool sparse, bool dense) {
+			this->dat->addsmallidentity(salt, sparse, dense);
 		}
 		void Clear() {
 			this->dat->Clear();
@@ -660,9 +661,9 @@ namespace kingghidorah {
 		}
 		static System::String^ testopenmp()
 		{
-			auto str =gcnew System::String("");
+			auto str = gcnew System::String("");
 			int mt = omp_get_max_threads();
-			str += "num threads:" + mt.ToString()+"\n";
+			str += "num threads:" + mt.ToString() + "\n";
 #pragma omp parallel for
 			for (int i = 0; i < 100; i++)
 			{

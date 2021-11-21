@@ -18,7 +18,7 @@
 #include <cuda_runtime_api.h>
 #include <chrono>
 #include <vector>
-//#define EIGEN_DONT_PARALLELIZE
+#define EIGEN_DONT_PARALLELIZE
 //#define EIGEN_DONT_ALIGN
 
 #define MAXDEVICE 4
@@ -102,6 +102,14 @@ namespace kingghidorah {
 		Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm;
 		_myPermutation(int* ptr, int N);
 	};
+	class _myDoubleArray
+	{
+	public:
+		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	public:
+		Eigen::VectorXd __v;
+
+	};
 	class _myLLT {
 	public:
 		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -116,6 +124,8 @@ namespace kingghidorah {
 		vector<vector<double>> _coeff;
 	private:
 		std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor>> _mat;
+		//std::vector<Eigen::SparseMatrix<double>> e;
+		//std::vector<Eigen::SparseMatrix<double>> e2;
 		//Eigen::MatrixXd mats;
 		//Eigen::MatrixXd _dmat;
 		double* ___dmat = 0;
@@ -149,11 +159,11 @@ namespace kingghidorah {
 		int num_elem(int j);
 		int cols();
 		std::string info();
-		void permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm);
+		void permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>& perm);
 		void shrink(int M);
-		void _permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm, bool sparse, bool dense);
+		void _permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>& perm, bool sparse, bool dense);
 		void _shrink(int M, bool sparse, bool dense);
-		void _permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm, Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm2);
+		void _permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>& perm, Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>& perm2);
 		void _shrink(int M, int N);
 		Eigen::VectorXd get_coeff(int ii);
 		int rows();
@@ -213,6 +223,8 @@ namespace kingghidorah {
 		void end_construct(int c);
 		int numBlocks();
 		static std::string _testopenmp();
+		//Eigen::SparseMatrix<double>* e = 0;
+		//Eigen::SparseMatrix<double>* e2 = 0;
 
 	};
 }

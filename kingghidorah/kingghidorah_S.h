@@ -2571,14 +2571,14 @@ public:
 	void update_z_phi(int nNode, kingghidorah::myDoubleArray^ Z, kingghidorah::myDoubleArray^ phi) {
 		if (Z != nullptr)
 		{
-			__mem->set_buf_z(Z->_arr->data(), nNode);
+			__mem->set_buf_z(Z->_arr->__v.data(), nNode);
 			/*for (int i = 0; i < nNode; i++) {
 				__mem->set_buf_z(i, (*Z->_arr)(i));
 			}*/
 		}
 		if (phi != nullptr)
 		{
-			__mem->set_buf_phi(phi->_arr->data(), nNode);
+			__mem->set_buf_phi(phi->_arr->__v.data(), nNode);
 			/*for (int i = 0; i < nNode; i++) {
 				__mem->set_buf_phi(i, (*phi->_arr)(i));
 			}*/
@@ -2586,7 +2586,7 @@ public:
 	}
 	void update3(int nNode, kingghidorah::myDoubleArray^ node, kingghidorah::myDoubleArray^ def,bool ignoreZ) {
 		if (node != nullptr) {
-			__mem->set_node(node->_arr->data(), nNode * 3);
+			__mem->set_node(node->_arr->__v.data(), nNode * 3);
 			/*for (int i = 0; i < nNode; i++) {
 				int e = i * 3;
 				__mem->set_node(i, 0, (*node->_arr)(e + 0));
@@ -2601,7 +2601,7 @@ public:
 		}
 		if (def != nullptr)
 		{
-			__mem->set_def(def->_arr->data(), nNode * 3);
+			__mem->set_def(def->_arr->__v.data(), nNode * 3);
 
 			/*for (int i = 0; i < nNode; i++) {
 				int e = i * 3;
@@ -2699,7 +2699,7 @@ public:
 	double U_phi(int J) {
 		return __mem->U_phi(J);
 	}
-	void d0(mySparse^ mat, int ii, myIntArray^ index,double sc)
+	void d0(mySparse^ mat, int ii, myIntArray^ index, double sc)
 	{
 		mat->dat->addrow(ii, index->_arr, __mem->_ref->d0, sc, __mem->_nNode);
 	}
@@ -2722,10 +2722,10 @@ public:
 		System::Runtime::InteropServices::Marshal::Copy((IntPtr)__mem->__grad_phi, x, 0, __mem->_nNode);
 	}
 	void U_z(myDoubleArray^ X) {
-		memcpy(X->_arr->data(),__mem->__grad_z,sizeof(double)* __mem->_nNode);
+		memcpy(X->_arr->__v.data(),__mem->__grad_z,sizeof(double)* __mem->_nNode);
 	}
 	void U_phi(myDoubleArray^ x) {
-		memcpy(x->_arr->data(), __mem->__grad_phi, sizeof(double) * __mem->_nNode);
+		memcpy(x->_arr->__v.data(), __mem->__grad_phi, sizeof(double) * __mem->_nNode);
 	}
 	double fM(double _la, double _mu)
 	{
@@ -2758,11 +2758,11 @@ public:
 	}
 
 	void SLOPE(myDoubleArray^ arr,double dcdt1,double dcdt2,double sc) {
-		__mem->SLOPE(arr->_arr->data(), dcdt1, dcdt2, sc);
+		__mem->SLOPE(arr->_arr->__v.data(), dcdt1, dcdt2, sc);
 		//return __mem->SLOPE(l, i);
 	}
 	void SLOPE(myDoubleArray^ arr, double dcdt1, double dcdt2, double sc,int shift) {
-		__mem->SLOPE(arr->_arr->data()+shift, dcdt1, dcdt2, sc);
+		__mem->SLOPE(arr->_arr->__v.data()+shift, dcdt1, dcdt2, sc);
 		//return __mem->SLOPE(l, i);
 	}
 	double eM(double _la, double _mu) {
@@ -2823,11 +2823,11 @@ public:
 		}
 		void F4_z(myDoubleArray^ arr,double dcdtstar0,double dcdtstar1,double sc)
 		{
-			__mem->F4_z(arr->_arr->data(),dcdtstar0,dcdtstar1,sc);
+			__mem->F4_z(arr->_arr->__v.data(),dcdtstar0,dcdtstar1,sc);
 		}
 		void F4_phi(myDoubleArray^ arr, double dcdtstar0, double dcdtstar1, double sc)
 		{
-			__mem->F4_phi(arr->_arr->data(), dcdtstar0, dcdtstar1, sc);
+			__mem->F4_phi(arr->_arr->__v.data(), dcdtstar0, dcdtstar1, sc);
 		}
 		double F5_z(int i, int I)
 		{

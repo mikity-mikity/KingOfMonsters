@@ -27,7 +27,7 @@ using std::vector;
 using std::string;
 
 //#define EIGEN_MALLOC_ALREADY_ALIGNED  0
-void kernel(double* A, double* work, int N,cudaStream_t stream);
+void kernel(double* A, double* work, int N, cudaStream_t stream);
 namespace kingghidorah {
 	class cuda {
 	private:
@@ -69,7 +69,7 @@ namespace kingghidorah {
 		static void disable();
 		cuda(int N);
 		~cuda();
-		cusolverDnHandle_t& solver(int ii,int kk);
+		cusolverDnHandle_t& solver(int ii, int kk);
 		cublasHandle_t& blas(int ii);
 		cusolverMgHandle_t mgsolver();
 		//double* L();
@@ -83,7 +83,7 @@ namespace kingghidorah {
 		double* work_rhs2();
 		double* work_C(int i);
 		double* work(int N, int i);
-		double* work(int N, int i,cudaStream_t stream);
+		double* work(int N, int i, cudaStream_t stream);
 		int& count();
 		int& fastest();
 		void dispose();
@@ -101,6 +101,14 @@ namespace kingghidorah {
 	public:
 		Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm;
 		_myPermutation(int* ptr, int N);
+	};
+	class _myDoubleArray
+	{
+	public:
+		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	public:
+		Eigen::VectorXd __v;
+
 	};
 	class _myLLT {
 	public:
@@ -120,7 +128,7 @@ namespace kingghidorah {
 		//std::vector<Eigen::SparseMatrix<double>> e2;
 		//Eigen::MatrixXd mats;
 		//Eigen::MatrixXd _dmat;
-		double* ___dmat=0;
+		double* ___dmat = 0;
 		int __r = 0;
 		int __c = 0;
 		vector<Eigen::VectorXd> coeff;
@@ -144,18 +152,18 @@ namespace kingghidorah {
 		Eigen::VectorXd Vector(double* ptr1, int N1);
 		Eigen::VectorXd Vector(Eigen::VectorXd* a);
 		void Vector(Eigen::VectorXd* a, Eigen::VectorXd* ret);
-		void plus(_mySparse* m, double sc,bool dense,bool sparse);
+		void plus(_mySparse* m, double sc, bool dense, bool sparse);
 		double at(int i, int ii);
 		double _at(int i);
 		double _at(int i, int j);
 		int num_elem(int j);
 		int cols();
 		std::string info();
-		void permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm);
+		void permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &perm);
 		void shrink(int M);
-		void _permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm,bool sparse,bool dense);
-		void _shrink(int M,bool sparse,bool dense);
-		void _permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm, Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm2);
+		void _permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>& perm, bool sparse, bool dense);
+		void _shrink(int M, bool sparse, bool dense);
+		void _permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>& perm, Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>& perm2);
 		void _shrink(int M, int N);
 		Eigen::VectorXd get_coeff(int ii);
 		int rows();
@@ -179,12 +187,12 @@ namespace kingghidorah {
 		void freezecoeff();
 		int ofAtA(_mySparse* A, bool sparse);
 		std::string _ofAtA(_mySparse* A);
-		void ofAtB(_mySparse* B,bool sparse);
+		void ofAtB(_mySparse* B, bool sparse);
 		void _ofAtB(_mySparse* B, _mySparse* C);
 		void _ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret);
 		Eigen::VectorXd Atb(double* ptr, int N);
 		Eigen::VectorXd _Atb(double* ptr, int N);
-		void Atb(double* ptr, int N,Eigen::VectorXd* c);
+		void Atb(double* ptr, int N, Eigen::VectorXd* c);
 		void merge();
 		void computeQR();
 		void computeLU();
@@ -194,28 +202,28 @@ namespace kingghidorah {
 		void setmat(Eigen::SparseMatrix<double> mat, int ii);
 		void setmat(const Eigen::MatrixXd& mat);
 		void setmiddlecolum(Eigen::SparseMatrix<double> f, int start, int end);
-		void solve0(Eigen::VectorXd* rhs,Eigen::VectorXd *ret);
-		void _solve0(Eigen::VectorXd* rhs,Eigen::VectorXd* ret);
-		void _solve0_gpu(kingghidorah::cuda* cuda, Eigen::VectorXd*rhs, Eigen::VectorXd* ret, int device);
+		void solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
+		void _solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
+		void _solve0_gpu(kingghidorah::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int device);
 		Eigen::MatrixXd _solve0(_myLLT* LLT, _mySparse* rhs);
 		void _solve0_gpu(kingghidorah::cuda* cuda, _mySparse* rhs, _mySparse* ret);
 		void _solveI(_mySparse* ret);
 		void _solveI_gpu(kingghidorah::cuda* cuda, _mySparse* ret);
 		std::string _solveI_gpu_omp(kingghidorah::cuda* cuda, _mySparse* ret);
 		std::string _solveI_gpu_single(kingghidorah::cuda* cuda, _mySparse* ret);
-		
+
 		void _solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse* ret);
-		void __solve0(Eigen::VectorXd *rhs, Eigen::VectorXd *ret);
+		void __solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		Eigen::MatrixXd inv();
 		Eigen::MatrixXd solve0(_mySparse* rhs);
 		void minus(_mySparse* m);
 		void clearcoeff();
-		void addsmallidentity(double salt,bool sparse,bool dense);
+		void addsmallidentity(double salt, bool sparse, bool dense);
 		void begin_construct();
 		void end_construct(int c);
 		int numBlocks();
 		static std::string _testopenmp();
-		Eigen::SparseMatrix<double>* e = 0;
+		//Eigen::SparseMatrix<double>* e = 0;
 		//Eigen::SparseMatrix<double>* e2 = 0;
 
 	};
