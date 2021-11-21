@@ -545,11 +545,18 @@ kingghidorah::_mySparse::_mySparse()
 	_coeff.reserve(1000);
 	_mat.reserve(1000);
 	_mt = omp_get_max_threads();
+	e = new Eigen::SparseMatrix<double>[200];
+	//e2 = new Eigen::SparseMatrix<double>[200];
 	//_smat.resize(1);
 	//_smat = new Eigen::SparseMatrix<double>();
 }
 kingghidorah::_mySparse::~_mySparse()
 {
+	if (e != 0)delete[] e;
+	e = 0;
+	//if (e2 != 0)delete[] e2;
+	//e2 = 0;
+
 	//delete _smat;
 	if (___dmat != 0)
 	{
@@ -694,8 +701,8 @@ void kingghidorah::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic, 
 	Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 	int nn = __r;
 	int numthreads = 0;
-	numthreads = omp_get_max_threads();
-	int S = nn / numthreads / 2;
+	//numthreads = omp_get_max_threads();
+	int S = nn / _mt / 2;
 	auto pt = perm.transpose();
 	if(sparse)
 	if (_mat.size() >= 1)
@@ -757,9 +764,9 @@ void kingghidorah::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic, 
 {
 	Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 	int nn = __r;
-	int numthreads = omp_get_max_threads();
+	//int numthreads = omp_get_max_threads();
 
-	int S = nn / numthreads / 2;
+	int S = nn / _mt / 2;
 	auto pt = perm2.transpose();
 
 	if (_mat.size() >= 1)
@@ -979,17 +986,17 @@ int kingghidorah::_mySparse::numBlocks()
 	return this->dat.size();
 }
 //std::vector<Eigen::MatrixXd> e;
-std::vector<Eigen::SparseMatrix<double>> e;
+//std::vector<Eigen::SparseMatrix<double>> e;
 int kingghidorah::_mySparse::ofAtA(_mySparse* A,bool sparse)
 {
 	int nn = A->cols();
-	int mt = omp_get_max_threads();
+	//int mt = omp_get_max_threads();
 	//int _mt = mt*1;
 	//_mt = _nt;
-	if (e.size() < _mt)
+	/*(if (e.size() < _mt)
 	{
 		e.resize(_mt);
-	}
+	}*/
 #pragma omp parallel for
 	for (int i = 0; i < _mt; i++) {
 		e[i].resize(nn, nn);
@@ -1155,9 +1162,9 @@ void kingghidorah::_mySparse::_ofAtB(_mySparse* B, _mySparse* C)
 	Eigen::Map<Eigen::MatrixXd> C_dmat(C->___dmat, nn, mm);
 	C_dmat.setZero();
 
-	int mt = omp_get_max_threads();
+	//int mt = omp_get_max_threads();
 
-	int ss = mm / mt / 2;
+	int ss = mm / _mt / 2;
 	auto left = _dmat.transpose();
 	auto right = B->_mat[0];
 
@@ -1200,7 +1207,7 @@ void kingghidorah::_mySparse::_ofBtAB(_mySparse* B,Eigen::VectorXd *b,_mySparse*
 	//C->_dmat.resize(nn, nn);
 	C_dmat.setZero();
 
-	int mt = omp_get_max_threads();
+	//int mt = omp_get_max_threads();
 
 	auto left = B->_mat[0].transpose();
 	auto mid = _dmat;
@@ -1208,7 +1215,7 @@ void kingghidorah::_mySparse::_ofBtAB(_mySparse* B,Eigen::VectorXd *b,_mySparse*
 
 	D.resize(nn, kk);
 	D.setZero();
-	int ss = kk / mt / 2;
+	int ss = kk / _mt / 2;
 
 #pragma omp parallel for
 	for (int ii = 0; ii < kk; ii += ss)
@@ -1218,7 +1225,7 @@ void kingghidorah::_mySparse::_ofBtAB(_mySparse* B,Eigen::VectorXd *b,_mySparse*
 		if (E >= kk)E = kk;
 		D.middleCols(S, E - S) = left * mid.middleCols(S, E - S);
 	}
-	ss = nn / mt / 2;
+	ss = nn / _mt / 2;
 #pragma omp parallel for
 	for (int ii = 0; ii < nn; ii += ss)
 	{
@@ -1230,10 +1237,10 @@ void kingghidorah::_mySparse::_ofBtAB(_mySparse* B,Eigen::VectorXd *b,_mySparse*
 	//Eigen::Map<Eigen::VectorXd> b(ptr, N);
 	*ret = D * *b;
 }
-std::vector<Eigen::SparseMatrix<double>> e2;
 
 void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 {
+	static Eigen::SparseMatrix<double> e2[200];
 
 	int nn = this->cols();
 	int mm = B->cols();
@@ -1258,8 +1265,8 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 
 	//int _mt = mt*1;
 	//_mt = _nt;
-	if (_mt > e2.size())
-		e2.resize(_mt);
+	//if (_mt > e2.size())
+	//	e2.resize(_mt);
 #pragma omp parallel for
 	for (int i = 0; i < _mt; i++) {
 		e2[i].resize(nn, mm);
@@ -1721,8 +1728,8 @@ void kingghidorah::_mySparse::_solveI(_mySparse* ret)
 		I.resize(nn, nn);
 		I.setIdentity();
 	}
-	int mt = omp_get_max_threads();
-	int ee = mt * 2;
+	//int mt = omp_get_max_threads();
+	int ee = _mt * 2;
 #pragma omp parallel for
 	for (int i = 0; i < ee; i++)
 	{

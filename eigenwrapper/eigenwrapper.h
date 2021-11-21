@@ -215,6 +215,8 @@ namespace kingghidorah {
 		void end_construct(int c);
 		int numBlocks();
 		static std::string _testopenmp();
+		Eigen::SparseMatrix<double>* e = 0;
+		//Eigen::SparseMatrix<double>* e2 = 0;
 
 	};
 }
