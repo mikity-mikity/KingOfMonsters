@@ -1172,7 +1172,7 @@ void kingghidorah::_mySparse::_ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySpars
 
 
 	//C->_dmat.resize(nn, nn);
-	C_dmat.setZero();
+	//C_dmat.setZero();
 
 	//int mt = omp_get_max_threads();
 
@@ -1181,26 +1181,28 @@ void kingghidorah::_mySparse::_ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySpars
 	auto right = B->_mat[0];
 
 	D.resize(nn, kk);
-	D.setZero();
+	//D.setZero();
 	int ss = kk / _mt / 2;
-
+	/*
 #pragma omp parallel for
 	for (int ii = 0; ii < kk; ii += ss)
 	{
 		int S = ii;
 		int E = ii + ss;
 		if (E >= kk)E = kk;
-		D.middleCols(S, E - S) = left * mid.middleCols(S, E - S);
-	}
+		D.middleCols(S, E - S).noalias() = left * mid.middleCols(S, E - S);
+	}*/
+	D.noalias() = left * mid;
 	ss = nn / _mt / 2;
-#pragma omp parallel for
+/*#pragma omp parallel for
 	for (int ii = 0; ii < nn; ii += ss)
 	{
 		int S = ii;
 		int E = ii + ss;
 		if (E >= nn)E = nn;
-		C_dmat.middleCols(S, E - S) = D * right.middleCols(S, E - S);
-	}
+		C_dmat.middleCols(S, E - S).noalias() = D * right.middleCols(S, E - S);
+	}*/
+	C_dmat.noalias() = D * right;
 	//Eigen::Map<Eigen::VectorXd> b(ptr, N);
 	*ret = D * *b;
 }
