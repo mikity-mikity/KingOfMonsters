@@ -18,7 +18,7 @@
 #include <cuda_runtime_api.h>
 #include <chrono>
 #include <vector>
-#define EIGEN_DONT_PARALLELIZE
+//#define EIGEN_DONT_PARALLELIZE
 //#define EIGEN_DONT_ALIGN
 
 #define MAXDEVICE 4
@@ -185,7 +185,7 @@ namespace kingghidorah {
 		void _OfDuplicate(_mySparse* mat);
 		void ofDat();
 		void freezecoeff();
-		int ofAtA(_mySparse* A, bool sparse);
+		std::string ofAtA(_mySparse* A, bool sparse);
 		std::string _ofAtA(_mySparse* A);
 		void ofAtB(_mySparse* B, bool sparse);
 		void _ofAtB(_mySparse* B, _mySparse* C);
@@ -223,7 +223,7 @@ namespace kingghidorah {
 		void end_construct(int c);
 		int numBlocks();
 		static std::string _testopenmp();
-		//Eigen::SparseMatrix<double>* e = 0;
+		Eigen::SparseMatrix<double>* e = 0;
 		//Eigen::SparseMatrix<double>* e2 = 0;
 
 	};

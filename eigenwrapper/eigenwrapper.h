@@ -127,10 +127,11 @@ namespace kingghidorah {
 		//std::vector<Eigen::SparseMatrix<double>> e;
 		//std::vector<Eigen::SparseMatrix<double>> e2;
 		//Eigen::MatrixXd mats;
-		//Eigen::MatrixXd _dmat;
-		double* ___dmat = 0;
-		int __r = 0;
-		int __c = 0;
+		Eigen::MatrixXd _dmat;
+		//Eigen::MatrixXd _tmp;
+		//double* ___dmat = 0;
+		//int __r = 0;
+		//int __c = 0;
 		vector<Eigen::VectorXd> coeff;
 		int _nt = 0;
 		int _mt = 0;
@@ -185,7 +186,7 @@ namespace kingghidorah {
 		void _OfDuplicate(_mySparse* mat);
 		void ofDat();
 		void freezecoeff();
-		int ofAtA(_mySparse* A, bool sparse);
+		std::string ofAtA(_mySparse* A, bool sparse);
 		std::string _ofAtA(_mySparse* A);
 		void ofAtB(_mySparse* B, bool sparse);
 		void _ofAtB(_mySparse* B, _mySparse* C);
