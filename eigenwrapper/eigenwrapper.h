@@ -18,7 +18,7 @@
 #include <cuda_runtime_api.h>
 #include <chrono>
 #include <vector>
-#define EIGEN_DONT_PARALLELIZE
+//#define EIGEN_DONT_PARALLELIZE
 //#define EIGEN_DONT_ALIGN
 
 #define MAXDEVICE 4
