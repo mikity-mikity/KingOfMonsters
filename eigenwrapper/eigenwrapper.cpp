@@ -998,10 +998,10 @@ int kingghidorah::_mySparse::numBlocks()
 	return this->dat.size();
 }
 //std::vector<Eigen::MatrixXd> e;
-static std::vector<Eigen::SparseMatrix<double>> e;
 
 int kingghidorah::_mySparse::ofAtA(_mySparse* A, bool sparse)
 {
+	static std::vector<Eigen::SparseMatrix<double>> e;
 	//static std::vector<Eigen::SparseMatrix<double>> e;
 	int nn = A->cols();
 	//int mt = omp_get_max_threads();
