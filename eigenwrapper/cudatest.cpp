@@ -27,10 +27,44 @@ using namespace std::chrono;
 #include"eigenwrapper.h"
 #include "eigen-3.4.0/Eigen/Dense"
 using namespace std;
+using namespace kingghidorah;
 int main() {
     {
 
-        int N = 2000;
+        int _N = 1000;
+        _mySparse m;
+        m.init(_N, _N);
+        for (int tt = 0; tt < 50; tt++)
+        {
+            for (int kk = 0; kk < 500; kk++)
+            {
+                m.Clear();
+                for (int i = 0; i < _N; i++)
+                {
+                    for (int j = i - 5; j < i + 5; j++)
+                    {
+                        if (j >= 0 && j < _N)
+                            m.adddat(i, j, i);
+                    }
+                }
+                Eigen::VectorXd rhs(_N);
+                for (int i = 0; i < _N; i++)rhs[i] = i;
+                m.ofDat();
+                m.clearcoeff();
+                auto start = high_resolution_clock::now();
+                m.ofAtA(&m, true);
+                //m._shrink(_N, false, true);
+                //Eigen::VectorXd ret(_N);
+                //m._solve0_gpu(&m, &rhs, &ret, ii);
+                auto stop = high_resolution_clock::now();
+                auto duration = duration_cast<microseconds>(stop - start);
+                if(kk==0)std::cout << duration.count() << "microseconds"<<std::endl;
+                
+                //speed[ii] = duration.count();
+            }
+        }
+
+        /*int N = 2000;
         double* c;
         double* m;
         double* e;
@@ -109,7 +143,7 @@ int main() {
             auto _end = std::chrono::high_resolution_clock::now();
             std::cout << "potrf"<<std::chrono::duration_cast<std::chrono::milliseconds>(_end - _start).count() << "ms" << std::endl;
         }
-
+        */
         /*
         auto start = std::chrono::high_resolution_clock::now();
 #pragma omp parallel for
@@ -147,7 +181,7 @@ int main() {
 
         std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
         */
-        for (int i = 0; i < _count; i++)
+        /*for (int i = 0; i < _count; i++)
         {
             cudaStreamDestroy(streams[i]);
             cusolverDnDestroy(solver[i]);
@@ -162,7 +196,7 @@ int main() {
         {
             cudaSetDevice(i);
             cudaDeviceReset();
-        }
+        }*/
         std::cin.get();
 
 
