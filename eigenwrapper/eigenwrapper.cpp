@@ -975,14 +975,25 @@ void kingghidorah::_mySparse::OfDuplicate(_mySparse* mat)
 	this->_mat.resize(_nt);
 	this->_coeff.resize(_nt);
 	this->coeff.resize(_nt);
+//	this->_mat.shrink_to_fit();
+	//this->coeff.shrink_to_fit();
+#pragma omp parallel for
 	for (int ii = 0; ii < _nt; ii++)
 	{
 		//Eigen::SparseMatrix<double> M(mat->_mat[ii]);
 		//std::vector<double> vec(mat->_coeff[ii]);
 
 		this->_mat[ii] = mat->_mat[ii];// M;
-		this->_coeff[ii] = mat->_coeff[ii];// vec;
+		//this->_coeff.clear();
+		this->_coeff[ii].reserve(mat->_coeff.size());
+		
+		this->_coeff[ii].clear();
+		this->_coeff[ii].insert(this->_coeff[ii].begin(), mat->_coeff[ii].begin(), mat->_coeff[ii].end());
+		//this->_coeff= mat->_coeff[ii];// vec;
+		this->coeff[ii] = mat->coeff[ii];
 	}
+	
+	//this->freezecoeff();
 }
 void kingghidorah::_mySparse::_OfDuplicate(_mySparse* mat)
 {
@@ -998,8 +1009,6 @@ void kingghidorah::_mySparse::ofDat()
 	for (int ii = 0; ii < _nt; ii++)
 	{
 		_mat[ii].setZero();
-		_mat[ii].makeCompressed();
-		_mat[ii].data().squeeze();
 		_mat[ii].reserve(dat[ii].size());
 		_mat[ii].setFromTriplets(dat[ii].begin(), dat[ii].end());
 		_mat[ii].makeCompressed();
@@ -1021,13 +1030,13 @@ int kingghidorah::_mySparse::numBlocks()
 std::string kingghidorah::_mySparse::ofAtA(_mySparse* A, bool sparse)
 {
 	static std::vector<Eigen::SparseMatrix<double>> e;
-	static std::vector<Eigen::SparseMatrix<double>> e2;
+	//static std::vector<Eigen::SparseMatrix<double>> e2;
 	//static std::vector<Eigen::SparseMatrix<double>> e;
 	auto ss = std::stringstream();
 	auto now = high_resolution_clock::now();
 	int nn = A->cols();
-	int _mt = omp_get_max_threads();
-	omp_set_num_threads(_mt);
+	//int _mt = omp_get_max_threads();
+	//omp_set_num_threads(_mt);
 	auto end = high_resolution_clock::now();
 	auto duration = duration_cast<milliseconds>(now - end);
 	ss << duration.count() << "ms" << std::endl;
@@ -1038,18 +1047,18 @@ std::string kingghidorah::_mySparse::ofAtA(_mySparse* A, bool sparse)
 	if (e.size() < __mt)
 	{
 		e.resize(__mt);
-		e2.resize(__mt);
+		//e2.resize(__mt);
 	}
 	Eigen::initParallel();
-	Eigen::setNbThreads(1);
+	//Eigen::setNbThreads(1);
 #pragma omp parallel for
 	for (int i = 0; i < __mt; i++) {
 		e[i].resize(nn, nn);
 		e[i].makeCompressed();
 		e[i].reserve(nn * nn / 20);
-		e2[i].resize(nn, nn);
-		e2[i].makeCompressed();
-		e2[i].reserve(nn * nn / 50);
+		//e2[i].resize(nn, nn);
+		//e2[i].makeCompressed();
+		//e2[i].reserve(nn * nn / 50);
 	}
 	end = high_resolution_clock::now();
 	duration = duration_cast<milliseconds>(now - end);
@@ -1072,7 +1081,7 @@ std::string kingghidorah::_mySparse::ofAtA(_mySparse* A, bool sparse)
 			if (_ii == 0)
 			{
 				now = high_resolution_clock::now();
-				e[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
+				e[_ii] += A->_mat[ii].transpose() * A->coeff[ii].asDiagonal() * A->_mat[ii];
 				
 				end = high_resolution_clock::now();
 				auto _duration = duration_cast<microseconds>(now - end);
@@ -1082,7 +1091,7 @@ std::string kingghidorah::_mySparse::ofAtA(_mySparse* A, bool sparse)
 				
 			}
 			else {
-				e[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
+				e[_ii] += A->_mat[ii].transpose() * A->coeff[ii].asDiagonal() * A->_mat[ii];
 			}
 		}
 		e[_ii].makeCompressed();
@@ -1091,7 +1100,7 @@ std::string kingghidorah::_mySparse::ofAtA(_mySparse* A, bool sparse)
 	duration = duration_cast<milliseconds>(now - end);
 	ss << duration.count() << "ms" << std::endl;
 	now = high_resolution_clock::now();
-	Eigen::setNbThreads(_mt);
+	//Eigen::setNbThreads(_mt);
 
 	for (int tt = 0; tt < 20; tt++)
 	{
