@@ -27,10 +27,63 @@ using namespace std::chrono;
 #include"eigenwrapper.h"
 #include "eigen-3.4.0/Eigen/Dense"
 using namespace std;
+using namespace kingghidorah;
+#define _N 1000
 int main() {
     {
 
-        int N = 2000;
+        _mySparse m[100];
+        _mySparse M;
+        for (int i = 0; i < 100; i++)
+        {
+            m[i].init(_N, _N);
+        }
+        M.init(_N, _N);
+        int index[_N];
+        for (int i = 0; i < _N; i++)index[i] = i;
+        for (int tt = 0; tt < 50; tt++)
+        {
+            for (int kk = 0; kk < 500; kk++)
+            {
+                double f[_N];
+                M.Clear();
+                for (int ii = 0; ii < 100; ii++)
+                {
+                    m[ii].Clear();
+                    for (int i = 0; i < _N; i++)
+                    {
+                        //memset(f, 0, sizeof(double) * _N);
+                        for (int j = i - 4; j < i + 4; j++)
+                        {
+                            if (j == i)
+                            {
+                                m[ii].adddat(i, j, 1.0);
+                            }
+                            else
+                                if(j>=0&&j<_N)
+                                {
+                                    m[ii].adddat(i, j, 0.1);
+                                }
+                        }
+                    }
+                    M.addmat(&m[ii]);
+                }
+                M.ofDat();
+                M.clearcoeff();
+                auto start = high_resolution_clock::now();
+                M.ofAtA(&M, true);
+                //m._shrink(_N, false, true);
+                //Eigen::VectorXd ret(_N);
+                //m._solve0_gpu(&m, &rhs, &ret, ii);
+                auto stop = high_resolution_clock::now();
+                auto duration = duration_cast<microseconds>(stop - start);
+                if(kk==0)std::cout << duration.count() << "microseconds"<<std::endl;
+                
+                //speed[ii] = duration.count();
+            }
+        }
+
+        /*int N = 2000;
         double* c;
         double* m;
         double* e;
@@ -109,7 +162,7 @@ int main() {
             auto _end = std::chrono::high_resolution_clock::now();
             std::cout << "potrf"<<std::chrono::duration_cast<std::chrono::milliseconds>(_end - _start).count() << "ms" << std::endl;
         }
-
+        */
         /*
         auto start = std::chrono::high_resolution_clock::now();
 #pragma omp parallel for
@@ -147,7 +200,7 @@ int main() {
 
         std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
         */
-        for (int i = 0; i < _count; i++)
+        /*for (int i = 0; i < _count; i++)
         {
             cudaStreamDestroy(streams[i]);
             cusolverDnDestroy(solver[i]);
@@ -162,7 +215,7 @@ int main() {
         {
             cudaSetDevice(i);
             cudaDeviceReset();
-        }
+        }*/
         std::cin.get();
 
 

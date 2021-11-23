@@ -7,6 +7,14 @@
 #include "eigen-3.4.0/Eigen/SparseQR"
 #include "eigen-3.4.0/Eigen/SparseLU"
 #include "eigen-3.4.0/Eigen/SparseCholesky"	
+
+/*#include "eigen-3.3.8/Eigen/Sparse"
+#include "eigen-3.3.8/Eigen/Dense"
+#include "eigen-3.3.8/Eigen/SparseQR"
+#include "eigen-3.3.8/Eigen/SparseLU"
+#include "eigen-3.3.8/Eigen/SparseCholesky"	
+*/
+
 #include <cuda_runtime.h>
 #include <device_launch_paraMeters.h>
 #include <stdlib.h>
@@ -18,7 +26,7 @@
 #include <cuda_runtime_api.h>
 #include <chrono>
 #include <vector>
-#define EIGEN_DONT_PARALLELIZE
+//#define EIGEN_DONT_PARALLELIZE
 //#define EIGEN_DONT_ALIGN
 
 #define MAXDEVICE 4
@@ -118,7 +126,7 @@ namespace kingghidorah {
 	};
 	class _mySparse {
 
-	public:
+	public:		
 		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	public:
 		vector<vector<double>> _coeff;
@@ -127,10 +135,11 @@ namespace kingghidorah {
 		//std::vector<Eigen::SparseMatrix<double>> e;
 		//std::vector<Eigen::SparseMatrix<double>> e2;
 		//Eigen::MatrixXd mats;
-		//Eigen::MatrixXd _dmat;
-		double* ___dmat = 0;
-		int __r = 0;
-		int __c = 0;
+		Eigen::MatrixXd _dmat;
+		//Eigen::MatrixXd _tmp;
+		//double* ___dmat = 0;
+		//int __r = 0;
+		//int __c = 0;
 		vector<Eigen::VectorXd> coeff;
 		int _nt = 0;
 		int _mt = 0;
@@ -199,9 +208,9 @@ namespace kingghidorah {
 		void computeLLT(Eigen::LLT<Eigen::MatrixXd>* LLT);
 		int nonzeros();
 		void Clear();
-		void setmat(Eigen::SparseMatrix<double> mat, int ii);
+		void setmat(Eigen::SparseMatrix<double> &mat, int ii);
 		void setmat(const Eigen::MatrixXd& mat);
-		void setmiddlecolum(Eigen::SparseMatrix<double> f, int start, int end);
+		void setmiddlecolum(Eigen::SparseMatrix<double> &f, int start, int end);
 		void solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void _solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void _solve0_gpu(kingghidorah::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int device);
