@@ -28,31 +28,50 @@ using namespace std::chrono;
 #include "eigen-3.4.0/Eigen/Dense"
 using namespace std;
 using namespace kingghidorah;
+#define _N 1000
 int main() {
     {
 
-        int _N = 1000;
-        _mySparse m;
-        m.init(_N, _N);
+        _mySparse m[100];
+        _mySparse M;
+        for (int i = 0; i < 100; i++)
+        {
+            m[i].init(_N, _N);
+        }
+        M.init(_N, _N);
+        int index[_N];
+        for (int i = 0; i < _N; i++)index[i] = i;
         for (int tt = 0; tt < 50; tt++)
         {
             for (int kk = 0; kk < 500; kk++)
             {
-                m.Clear();
-                for (int i = 0; i < _N; i++)
+                double f[_N];
+                M.Clear();
+                for (int ii = 0; ii < 100; ii++)
                 {
-                    for (int j = i - 5; j < i + 5; j++)
+                    m[ii].Clear();
+                    for (int i = 0; i < _N; i++)
                     {
-                        if (j >= 0 && j < _N)
-                            m.adddat(i, j, i);
+                        //memset(f, 0, sizeof(double) * _N);
+                        for (int j = i - 4; j < i + 4; j++)
+                        {
+                            if (j == i)
+                            {
+                                m[ii].adddat(i, j, 1.0);
+                            }
+                            else
+                                if(j>=0&&j<_N)
+                                {
+                                    m[ii].adddat(i, j, 0.1);
+                                }
+                        }
                     }
+                    M.addmat(&m[ii]);
                 }
-                Eigen::VectorXd rhs(_N);
-                for (int i = 0; i < _N; i++)rhs[i] = i;
-                m.ofDat();
-                m.clearcoeff();
+                M.ofDat();
+                M.clearcoeff();
                 auto start = high_resolution_clock::now();
-                m.ofAtA(&m, true);
+                M.ofAtA(&M, true);
                 //m._shrink(_N, false, true);
                 //Eigen::VectorXd ret(_N);
                 //m._solve0_gpu(&m, &rhs, &ret, ii);

@@ -999,6 +999,7 @@ void kingghidorah::_mySparse::ofDat()
 	{
 		_mat[ii].setZero();
 		_mat[ii].makeCompressed();
+		_mat[ii].data().squeeze();
 		_mat[ii].reserve(dat[ii].size());
 		_mat[ii].setFromTriplets(dat[ii].begin(), dat[ii].end());
 		_mat[ii].makeCompressed();
