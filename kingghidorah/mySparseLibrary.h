@@ -399,7 +399,7 @@ namespace kingghidorah {
 		{
 			dat->_permute(p->p->perm, q->p->perm);
 		}
-		System::String^ ofAtA(mySparse^ m, bool sparse) {
+		System::String ^ ofAtA(mySparse^ m, bool sparse) {
 			return gcnew System::String(dat->ofAtA(m->dat, sparse).c_str());
 		}
 		System::String^ _ofAtA(mySparse^ m) {

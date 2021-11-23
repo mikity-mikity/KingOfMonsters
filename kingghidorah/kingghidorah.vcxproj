@@ -95,6 +95,7 @@
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <ConformanceMode>false</ConformanceMode>
       <ForceConformanceInForLoopScope>false</ForceConformanceInForLoopScope>
+      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <Link>
       <AdditionalDependencies>cublas.lib;cusolver.lib;cusolverMg.lib;cudart.lib;cuda.lib</AdditionalDependencies>
@@ -123,7 +124,7 @@
       <ConformanceMode>false</ConformanceMode>
       <ForceConformanceInForLoopScope>false</ForceConformanceInForLoopScope>
       <OpenMPSupport>true</OpenMPSupport>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <Link>
       <AdditionalDependencies>cublas.lib;cusolver.lib;cusolverMg.lib;cudart.lib;cuda.lib</AdditionalDependencies>
