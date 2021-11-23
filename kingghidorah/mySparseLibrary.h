@@ -198,7 +198,7 @@ namespace kingghidorah {
 	};
 	public ref class myLLT {
 	public:
-		_myLLT* LLT;
+		_myLLT* LLT=0;
 		myLLT()
 		{
 			LLT = new _myLLT();
@@ -286,7 +286,7 @@ namespace kingghidorah {
 	};
 	public ref class mySparse {
 	public:
-		_mySparse* dat;
+		_mySparse* dat=0;
 		mySparse() {
 			dat = 0;
 			dat = new _mySparse();
@@ -326,12 +326,14 @@ namespace kingghidorah {
 		}
 		~mySparse()
 		{
-			delete(dat);
+			if(dat!=0)
+				delete(dat);
 			dat = 0;
 		}
 		!mySparse()
 		{
-			delete(dat);
+			if(dat!=0)
+				delete(dat);
 			dat = 0;
 		}
 		void ofDat()

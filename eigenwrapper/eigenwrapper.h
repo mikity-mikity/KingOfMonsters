@@ -18,7 +18,7 @@
 #include <cuda_runtime_api.h>
 #include <chrono>
 #include <vector>
-#define EIGEN_DONT_PARALLELIZE
+//#define EIGEN_DONT_PARALLELIZE
 //#define EIGEN_DONT_ALIGN
 
 #define MAXDEVICE 4
@@ -127,10 +127,10 @@ namespace kingghidorah {
 		//std::vector<Eigen::SparseMatrix<double>> e;
 		//std::vector<Eigen::SparseMatrix<double>> e2;
 		//Eigen::MatrixXd mats;
-		//Eigen::MatrixXd _dmat;
-		double* ___dmat = 0;
-		int __r = 0;
-		int __c = 0;
+		Eigen::MatrixXd _dmat;
+		//double* ___dmat = 0;
+		//int __r = 0;
+		//int __c = 0;
 		vector<Eigen::VectorXd> coeff;
 		int _nt = 0;
 		int _mt = 0;
