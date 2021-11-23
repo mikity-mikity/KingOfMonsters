@@ -185,7 +185,7 @@ namespace kingghidorah {
 		void _OfDuplicate(_mySparse* mat);
 		void ofDat();
 		void freezecoeff();
-		int ofAtA(_mySparse* A, bool sparse);
+		std::string ofAtA(_mySparse* A, bool sparse);
 		std::string _ofAtA(_mySparse* A);
 		void ofAtB(_mySparse* B, bool sparse);
 		void _ofAtB(_mySparse* B, _mySparse* C);

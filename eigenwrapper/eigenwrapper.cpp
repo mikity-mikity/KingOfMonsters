@@ -704,7 +704,7 @@ void kingghidorah::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic, 
 	//numthreads = omp_get_max_threads();
 	int S = nn / _mt / 2;
 	auto pt = perm.transpose();
-	if (sparse)
+	if (true)//sparse)
 		if (_mat.size() >= 1)
 		{
 			//if (_mat[0].rows() == _dmat.rows() && _mat[0].cols() == _dmat.cols())
@@ -712,7 +712,7 @@ void kingghidorah::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic, 
 				_mat[0] = perm * (_mat[0]) * pt;
 			}
 		}
-	if (dense)
+	if (false)//dense)
 	{
 #pragma omp parallel for
 		for (int i = 0; i < nn; i += S)
@@ -744,7 +744,21 @@ void kingghidorah::_mySparse::shrink(int M)
 }
 void kingghidorah::_mySparse::_shrink(int M, bool sparse, bool dense)
 {
-	if (sparse)
+	if (__r == 0 || __c == 0)
+			{
+				if (__cuinit)
+				{
+					cudaMallocHost(&___dmat, sizeof(double) * M * M* 2);
+				}
+				else {
+					___dmat = (double*)malloc(sizeof(double) * M * M * 2);
+				}
+				__r = M;
+				__c = M;
+			}
+
+	Eigen::Map<Eigen::MatrixXd> _dmat(___dmat,M, M);
+	if (true)//sparse)
 	{
 		if (_mat.size() >= 1)
 		{
@@ -756,8 +770,10 @@ void kingghidorah::_mySparse::_shrink(int M, bool sparse, bool dense)
 	}
 	if (dense)
 	{
-		_resize(M, M);
+		_dmat = _mat[0];
+		//_resize(M, M);
 		//_dmat.conservativeResize(M, M);
+
 	}
 }
 void kingghidorah::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>& perm, Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>& perm2)
@@ -955,6 +971,7 @@ void kingghidorah::_mySparse::OfDuplicate(_mySparse* mat)
 
 		this->_mat[ii] = mat->_mat[ii];// M;
 		this->_coeff[ii] = mat->_coeff[ii];// vec;
+		this->coeff[ii] = mat->coeff[ii];
 	}
 }
 void kingghidorah::_mySparse::_OfDuplicate(_mySparse* mat)
@@ -987,68 +1004,146 @@ int kingghidorah::_mySparse::numBlocks()
 }
 //std::vector<Eigen::MatrixXd> e;
 
-int kingghidorah::_mySparse::ofAtA(_mySparse* A, bool sparse)
+std::string kingghidorah::_mySparse::ofAtA(_mySparse* A, bool sparse)
 {
 	static std::vector<Eigen::SparseMatrix<double>> e;
+	//static std::vector<Eigen::SparseMatrix<double>> e2;
+	//static std::vector<Eigen::SparseMatrix<double>> e;
+	auto ss = std::stringstream();
+	auto now = high_resolution_clock::now();
 	int nn = A->cols();
-	//int mt = omp_get_max_threads();
+	//int _mt = omp_get_max_threads();
+	//omp_set_num_threads(_mt);
+	auto end = high_resolution_clock::now();
+	auto duration = duration_cast<milliseconds>(now - end);
+	ss << duration.count() << "ms" << std::endl;
+	now = high_resolution_clock::now();
 	//int _mt = mt*1;
 	//_mt = _nt;
-	if (e.size() < _mt)
+	int __mt = _mt;
+	if (e.size() < __mt)
 	{
-		e.resize(_mt);
+		e.resize(__mt);
+		//e2.resize(__mt);
 	}
+	Eigen::initParallel();
+	//Eigen::setNbThreads(1);
 #pragma omp parallel for
-	for (int i = 0; i < _mt; i++) {
+	for (int i = 0; i < __mt; i++) {
 		e[i].resize(nn, nn);
+		e[i].makeCompressed();
 		e[i].reserve(nn * nn / 20);
-		e[i].setZero();
+		//e2[i].resize(nn, nn);
+		//e2[i].makeCompressed();
+		//e2[i].reserve(nn * nn / 50);
 	}
+	end = high_resolution_clock::now();
+	duration = duration_cast<milliseconds>(now - end);
+	ss << duration.count() << "ms" << std::endl;
+	now = high_resolution_clock::now();
+	ss << _nt << ":nt:" << std::endl;
+	ss << _mt << ":_mt:" << std::endl;
 #pragma omp parallel for
-	for (int _ii = 0; _ii < _mt; _ii++)
+	for (int _ii = 0; _ii < __mt; _ii++)
 	{
 		int S = 0;
 		int E = 0;
 		//auto _e = e[_ii];
-		S = _ii * _nt / _mt;
-		E = (_ii + 1) * _nt / _mt;
-		for (int ii = S; ii < E; ii ++)
+		S = _ii * _nt / __mt;
+		E = (_ii + 1) * _nt / __mt;
+		//Eigen::SparseMatrix<double> tt(nn, nn);
+		for (int ii = S; ii < E; ii++)
 		{
-			e[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
-		}
-	}
-	if (sparse) {
-		if (this->_mat.size() == 0)this->_mat.resize(1);
-		this->_mat[0].resize(nn, nn);
-		this->_mat[0].setZero();
-		for (int i = 0; i < _mt; i++) {
-			this->_mat[0] += e[i];
-		}
-		//this->_dmat = this->_mat[0];
-	}
-	else {
-		//this->_dmat.setZero(nn, nn);
-		if (__r == 0 || __c == 0)
-		{
-			if (__cuinit)
+
+			if (_ii == 0)
 			{
-				cudaMallocHost(&___dmat, sizeof(double) * nn * nn * 1.2);
+				now = high_resolution_clock::now();
+				e[_ii] += A->_mat[ii].transpose() * A->coeff[ii].asDiagonal() * A->_mat[ii];
+
+				end = high_resolution_clock::now();
+				auto _duration = duration_cast<microseconds>(now - end);
+				ss << _duration.count() << "microseconds" << std::endl;
+				ss << coeff[ii].size() << "coeffsize" << std::endl;;
+				now = high_resolution_clock::now();
+
 			}
 			else {
-				___dmat = (double*)malloc(sizeof(double) * nn * nn * 1.2);
+				e[_ii] += A->_mat[ii].transpose() * A->coeff[ii].asDiagonal() * A->_mat[ii];
 			}
 		}
-		__r = nn;
-		__c = nn;
-		Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, nn, nn);
+		e[_ii].makeCompressed();
+	}
+	end = high_resolution_clock::now();
+	duration = duration_cast<milliseconds>(now - end);
+	ss << duration.count() << "ms" << std::endl;
+	now = high_resolution_clock::now();
+	//Eigen::setNbThreads(_mt);
+
+	for (int tt = 0; tt < 20; tt++)
+	{
+#pragma omp parallel for
+		for (int i = 0; i < __mt; i += 2)
+		{
+			if (i + 1 < __mt) {
+				e[i] += e[i + 1];
+			}
+		}
+		int _ct = 0;
+#pragma omp parallel for ordered schedule(dynamic)
+		for (int i = 0; i < __mt; i += 2)
+		{
+#pragma omp ordered
+			e[i / 2] = e[i];
+#pragma omp atomic
+			_ct++;
+		}
+		__mt = _ct;
+		if (__mt == 1)break;
+	}
+	if (true/*sparse*/) {
+		if (this->_mat.size() == 0)this->_mat.resize(1);
+		this->_mat[0].resize(nn, nn);
+		this->_mat[0].reserve(nn * nn / 20);
+		this->_mat[0] = e[0];
+		//for (int i = 1; i < __mt; i++) {
+		//	this->_mat[0] += e[i];
+		//}
+		this->_mat[0].makeCompressed();
+		//this->_dmat = this->_mat[0];
+	}
+	end = high_resolution_clock::now();
+	duration = duration_cast<milliseconds>(now - end);
+	ss << duration.count() << "ms" << std::endl;
+	now = high_resolution_clock::now();
+	if (!sparse) {
+		//this->_dmat.setZero(nn, nn);
+		//this->_tmp.setZero(nn, nn);
+		/*if (__r == 0 || __c == 0)
+		{
+			if (false)//__cuinit)
+			{
+				cudaMallocHost(&___dmat, sizeof(double) * nn * nn * 2);
+			}
+			else {
+				___dmat = (double*)malloc(sizeof(double) * nn * nn * 2);
+			}
+		}*/
+		//__r = nn;
+		//__c = nn;
+		/*Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, nn, nn);
 		_dmat = e[0];
 		for (int i = 1; i < _mt; i ++) {
 			_dmat += e[i];
-		}
+		}*/
 		//this->_dmat = x;
 	}
+	end = high_resolution_clock::now();
+	duration = duration_cast<milliseconds>(now - end);
+	ss << duration.count() << "ms" << std::endl;
+	now = high_resolution_clock::now();
 	//this->_mat[0] = this->_dmat.sparseView(1.0, 0.0000000000001);
-	return _nt;
+
+	return ss.str();
 }
 void kingghidorah::_mySparse::_freeze() {
 	//this->_dmat = this->_mat[0];
@@ -1198,61 +1293,89 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 
 	int nn = this->cols();
 	int mm = B->cols();
-	if (__r == 0)
+	/*if (__r == 0)
 	{
-		if (__cuinit)
+		if (false)//__cuinit)
 		{
-			cudaMallocHost(&___dmat, sizeof(double) * nn * mm);
+			cudaMallocHost(&___dmat, sizeof(double) * nn * mm*2);
 		}
 		else {
-			___dmat = (double*)malloc(sizeof(double) * nn * mm);
+			___dmat = (double*)malloc(sizeof(double) * nn * mm*2);
 		}
-	}
-	__r = nn;
-	__c = mm;
+	}*/
+	//__r = nn;
+	//__c = mm;
 	//C->_dmat.resize(nn, mm);
-	Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, nn, mm);
+	//C->_tmp.resize(nn, mm);
+	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, nn, mm);
 
-	//this->_dmat.resize(nn, mm);
-	_dmat.setZero();
+	//this->_dmat.setZero(nn, mm);
+	//this->_tmp.setZero(nn, mm);
 	//int mt = omp_get_max_threads();
 
 	//int _mt = mt*1;
 	//_mt = _nt;
-	if (_mt > e2.size())
-		e2.resize(_mt);
+	int __mt = _mt;
+	if (__mt > e2.size())
+		e2.resize(__mt);
 #pragma omp parallel for
-	for (int i = 0; i < _mt; i++) {
+	for (int i = 0; i < __mt; i++) {
 		e2[i].resize(nn, mm);
-		e2[i].reserve(nn * mm / 20);
 		e2[i].setZero();
+		e2[i].makeCompressed();
+		e2[i].reserve(nn * mm / 20);
 	}
 #pragma omp parallel for
-	for (int _ii = 0; _ii < _mt; _ii++)
+	for (int _ii = 0; _ii < __mt; _ii++)
 	{
-		int S = _ii * _nt / _mt;
-		int E = (_ii + 1) * _nt / _mt;
+		int S = _ii * _nt / __mt;
+		int E = (_ii + 1) * _nt / __mt;
 
-		for (int ii = S; ii < E; ii ++)
+		for (int ii = S; ii < E; ii++)
 		{
 			e2[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * B->_mat[ii];
 		}
+		e2[_ii].makeCompressed();
 	}
 	if (_mat.size() == 0)_mat.resize(1);
 	this->_mat[0].resize(nn, mm);
 	this->_mat[0].setZero();
 
+	for (int tt = 0; tt < 20; tt++)
+	{
+#pragma omp parallel for
+		for (int i = 0; i < __mt; i += 2)
+		{
+			if (i + 1 < __mt) {
+				e2[i] += e2[i + 1];
+			}
+		}
+		int _ct = 0;
+#pragma omp parallel for ordered schedule(dynamic)
+		for (int i = 0; i < __mt; i += 2)
+		{
+#pragma omp ordered
+			e2[i / 2] = e2[i];
+#pragma omp atomic
+			_ct++;
+		}
+		__mt = _ct;
+		if (__mt == 1)break;
+	}
+
 	if (sparse)
 	{
-		for (int i = 0; i < _mt; i++) {
+		this->_mat[0] += e2[0];
+		/*for (int i = 0; i < _mt; i++) {
 			this->_mat[0] += e2[i];
-		}
+		}*/
+		this->_mat[0].makeCompressed();
 	}
 	else {
-		_dmat = e2[0];
-		for (int i = 1; i < _mt; i ++) {
+		/*_dmat = e2[0];
+		for (int i = 1; i < _mt; i++) {
 			_dmat += e2[i];
-		}
+		}*/
 	}
 	//this->_dmat = this->_mat[0];
 }
