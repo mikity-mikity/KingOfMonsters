@@ -655,7 +655,7 @@ void kingghidorah::_mySparse::plus(_mySparse* m, double sc, bool dense, bool spa
 		_dmat += m->_mat[0] * sc;
 	}
 }
-void kingghidorah::_mySparse::setmat(Eigen::SparseMatrix<double> mat, int ii) {
+void kingghidorah::_mySparse::setmat(Eigen::SparseMatrix<double> &mat, int ii) {
 	this->_mat[ii] = mat;
 }
 void kingghidorah::_mySparse::setmat(const Eigen::MatrixXd& mat) {
@@ -701,7 +701,7 @@ void kingghidorah::_mySparse::_resize(int n, int m) {
 	//__r = n;
 	//__c = m;
 }
-void kingghidorah::_mySparse::setmiddlecolum(Eigen::SparseMatrix<double> f, int start, int end) {
+void kingghidorah::_mySparse::setmiddlecolum(Eigen::SparseMatrix<double> &f, int start, int end) {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 	_dmat.middleCols(start, end - start) = f;
 }
@@ -1021,7 +1021,6 @@ std::string kingghidorah::_mySparse::ofAtA(_mySparse* A, bool sparse)
 {
 	static std::vector<Eigen::SparseMatrix<double>> e;
 	static std::vector<Eigen::SparseMatrix<double>> e2;
-
 	//static std::vector<Eigen::SparseMatrix<double>> e;
 	auto ss = std::stringstream();
 	auto now = high_resolution_clock::now();
@@ -1068,7 +1067,22 @@ std::string kingghidorah::_mySparse::ofAtA(_mySparse* A, bool sparse)
 		//Eigen::SparseMatrix<double> tt(nn, nn);
 		for (int ii = S; ii < E; ii ++)
 		{
-			e[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
+
+			if (_ii == 0)
+			{
+				now = high_resolution_clock::now();
+				e[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
+				
+				end = high_resolution_clock::now();
+				auto _duration = duration_cast<microseconds>(now - end);
+				ss << _duration.count() << "microseconds" << std::endl;
+				ss << coeff[ii].size() << "coeffsize" << std::endl;;
+				now = high_resolution_clock::now();
+				
+			}
+			else {
+				e[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
+			}
 		}
 		e[_ii].makeCompressed();
 	}
