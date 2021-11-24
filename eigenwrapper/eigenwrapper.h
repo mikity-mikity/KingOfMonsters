@@ -62,7 +62,7 @@ namespace kingghidorah {
 		//double* _L=0;
 		std::vector<int> speed;
 
-		cusolverMgHandle_t mg_solver = 0;
+		//cusolverMgHandle_t mg_solver = 0;
 
 		std::vector< std::vector<cudaStream_t>> _streams;
 
@@ -79,7 +79,7 @@ namespace kingghidorah {
 		~cuda();
 		cusolverDnHandle_t& solver(int ii, int kk);
 		cublasHandle_t& blas(int ii);
-		cusolverMgHandle_t mgsolver();
+		//cusolverMgHandle_t mgsolver();
 		//double* L();
 		bool valid();
 		bool canpeer();
@@ -131,11 +131,11 @@ namespace kingghidorah {
 	public:
 		vector<vector<double>> _coeff;
 	private:
+		Eigen::MatrixXd _dmat;
 		std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor>> _mat;
 		//std::vector<Eigen::SparseMatrix<double>> e;
 		//std::vector<Eigen::SparseMatrix<double>> e2;
 		//Eigen::MatrixXd mats;
-		Eigen::MatrixXd _dmat;
 		//Eigen::MatrixXd _tmp;
 		//double* ___dmat = 0;
 		//int __r = 0;
@@ -221,7 +221,7 @@ namespace kingghidorah {
 		std::string _solveI_gpu_omp(kingghidorah::cuda* cuda, _mySparse* ret);
 		std::string _solveI_gpu_single(kingghidorah::cuda* cuda, _mySparse* ret);
 
-		void _solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse* ret);
+		//void _solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse* ret);
 		void __solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		Eigen::MatrixXd inv();
 		Eigen::MatrixXd solve0(_mySparse* rhs);
