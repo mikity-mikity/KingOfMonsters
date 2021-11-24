@@ -418,7 +418,7 @@ namespace kingghidorah {
 	public class _memS {
 	public:
 		std::string mode;
-		_memS_ref* _ref;
+		_memS_ref* _ref=0;
 		double N[3];
 		double bodyF;
 		double BCF[2];
