@@ -1075,7 +1075,7 @@ std::string kingghidorah::_mySparse::ofAtA(_mySparse* A, bool sparse)
 		{
 
 			//if (_ii == 0)
-			{
+			/* {
 				now = high_resolution_clock::now();
 				e[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
 				
@@ -1086,7 +1086,8 @@ std::string kingghidorah::_mySparse::ofAtA(_mySparse* A, bool sparse)
 				now = high_resolution_clock::now();
 				
 			}
-			else {
+			else*/ 
+			{
 				e[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
 			}
 		}
