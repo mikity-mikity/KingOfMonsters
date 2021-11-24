@@ -215,7 +215,7 @@ kingghidorah::cuda::cuda(int N) {
 			_deviceList); //seem like cannot be called twice. So call this only once here.
 	}
 	else */ {
-		cusolverMgCreate(&mg_solver);
+		/*cusolverMgCreate(&mg_solver);
 		cusolverStatus_t status = cusolverMgDeviceSelect(
 			mg_solver,
 			_count,
@@ -291,6 +291,7 @@ kingghidorah::cuda::cuda(int N) {
 			);
 			prevwn = lwork;
 		}
+		*/
 	}
 	//_L = new double[N * N];
 	/*if (CUSOLVER_STATUS_SUCCESS != status)
@@ -430,18 +431,19 @@ void kingghidorah::cuda::dispose() {
 				cublasDestroy(cublas_handle[i]);
 			cublas_handle[i] = 0;
 		}
-		if (mg_solver != 0)
+		/*if (mg_solver != 0)
 		{
 			cusolverMgDestroy(mg_solver);
 		}
-		mg_solver = 0;
+		mg_solver = 0;*/
 		cudaDeviceReset();
 	}
 	initialized = false;
 }
+/*
 cusolverMgHandle_t kingghidorah::cuda::mgsolver() {
 	return mg_solver;
-}
+}*/
 int* kingghidorah::cuda::info(int i) {
 	return __info[i];
 }
@@ -581,7 +583,7 @@ kingghidorah::_mySparse::~_mySparse()
 	}*/
 	//__r = 0;
 	//__c = 0;
-	_dmat.resize(0, 0);
+	//_dmat.resize(0, 0);
 }
 
 // TODO: This is an example of a library function
@@ -983,10 +985,18 @@ void kingghidorah::_mySparse::OfDuplicate(_mySparse* mat)
 	{
 		//Eigen::SparseMatrix<double> M(mat->_mat[ii]);
 		//std::vector<double> vec(mat->_coeff[ii]);
-
+		this->_mat[ii].resize(mat->_mat[ii].rows(), mat->_mat[ii].cols());
+		this->_mat[ii].reserve(mat->_mat[ii].nonZeros());
 		this->_mat[ii] = mat->_mat[ii];// M;
-		this->_coeff[ii] = mat->_coeff[ii];// vec;
-		this->coeff[ii] = mat->coeff[ii];
+		
+		this->coeff[ii].resize(mat->coeff[ii].size());
+		this->_coeff[ii].resize(mat->coeff[ii].size());
+
+		for (int k = 0; k < mat->coeff[ii].size(); k++)
+		{
+			this->coeff[ii](k) = mat->coeff[ii](k);
+			this->_coeff[ii][k] = mat->_coeff[ii][k];
+		}
 	}
 }
 void kingghidorah::_mySparse::_OfDuplicate(_mySparse* mat)
@@ -1577,22 +1587,13 @@ Eigen::MatrixXd kingghidorah::_mySparse::_solve0(_myLLT* LLT, _mySparse* mat)
 	}
 	return ret.transpose();
 }
-
+/*
 void kingghidorah::_mySparse::_solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse* ret)
 {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 	int N = this->_dmat.cols();
 	//Eigen::MatrixXd x(N,nn);
-	/*if (ret->__r == 0)
-	{
-		if (false)//__cuinit)
-		{
-			cudaMallocHost(&ret->___dmat, sizeof(double) * N * N*2);
-		}
-		else {
-			ret->___dmat = (double*)malloc(sizeof(double) * N * N*2);
-		}
-	}*/
+	
 	//ret->__r = N;
 	//ret->__c = N;
 	//Eigen::Map<Eigen::MatrixXd> ret_dmat(ret->___dmat, N, N);
@@ -1756,7 +1757,7 @@ void kingghidorah::_mySparse::_solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse
 	//if (NULL != array_d_work) free(array_d_work);
 
 }
-
+*/
 void kingghidorah::_mySparse::_solveI(_mySparse* ret)
 {
 	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);	
@@ -2037,7 +2038,7 @@ std::string kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _
 				int S = 0;
 				int E = 0;
 
-#pragma critical
+#pragma ompcritical
 				{
 					S = job;
 					E = S + ss;

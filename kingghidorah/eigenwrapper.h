@@ -7,6 +7,14 @@
 #include "eigen-3.4.0/Eigen/SparseQR"
 #include "eigen-3.4.0/Eigen/SparseLU"
 #include "eigen-3.4.0/Eigen/SparseCholesky"	
+
+/*#include "eigen-3.3.8/Eigen/Sparse"
+#include "eigen-3.3.8/Eigen/Dense"
+#include "eigen-3.3.8/Eigen/SparseQR"
+#include "eigen-3.3.8/Eigen/SparseLU"
+#include "eigen-3.3.8/Eigen/SparseCholesky"
+*/
+
 #include <cuda_runtime.h>
 #include <device_launch_paraMeters.h>
 #include <stdlib.h>
@@ -18,7 +26,7 @@
 #include <cuda_runtime_api.h>
 #include <chrono>
 #include <vector>
-#define EIGEN_DONT_PARALLELIZE
+//#define EIGEN_DONT_PARALLELIZE
 //#define EIGEN_DONT_ALIGN
 
 #define MAXDEVICE 4
@@ -54,7 +62,7 @@ namespace kingghidorah {
 		//double* _L=0;
 		std::vector<int> speed;
 
-		cusolverMgHandle_t mg_solver = 0;
+		//cusolverMgHandle_t mg_solver = 0;
 
 		std::vector< std::vector<cudaStream_t>> _streams;
 
@@ -71,7 +79,7 @@ namespace kingghidorah {
 		~cuda();
 		cusolverDnHandle_t& solver(int ii, int kk);
 		cublasHandle_t& blas(int ii);
-		cusolverMgHandle_t mgsolver();
+		//cusolverMgHandle_t mgsolver();
 		//double* L();
 		bool valid();
 		bool canpeer();
@@ -123,14 +131,15 @@ namespace kingghidorah {
 	public:
 		vector<vector<double>> _coeff;
 	private:
+		Eigen::MatrixXd _dmat;
 		std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor>> _mat;
 		//std::vector<Eigen::SparseMatrix<double>> e;
 		//std::vector<Eigen::SparseMatrix<double>> e2;
 		//Eigen::MatrixXd mats;
-		//Eigen::MatrixXd _dmat;
-		double* ___dmat = 0;
-		int __r = 0;
-		int __c = 0;
+		//Eigen::MatrixXd _tmp;
+		//double* ___dmat = 0;
+		//int __r = 0;
+		//int __c = 0;
 		vector<Eigen::VectorXd> coeff;
 		int _nt = 0;
 		int _mt = 0;
@@ -159,7 +168,7 @@ namespace kingghidorah {
 		int num_elem(int j);
 		int cols();
 		std::string info();
-		void permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &perm);
+		void permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>& perm);
 		void shrink(int M);
 		void _permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>& perm, bool sparse, bool dense);
 		void _shrink(int M, bool sparse, bool dense);
@@ -199,9 +208,9 @@ namespace kingghidorah {
 		void computeLLT(Eigen::LLT<Eigen::MatrixXd>* LLT);
 		int nonzeros();
 		void Clear();
-		void setmat(Eigen::SparseMatrix<double> mat, int ii);
+		void setmat(Eigen::SparseMatrix<double>& mat, int ii);
 		void setmat(const Eigen::MatrixXd& mat);
-		void setmiddlecolum(Eigen::SparseMatrix<double> f, int start, int end);
+		void setmiddlecolum(Eigen::SparseMatrix<double>& f, int start, int end);
 		void solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void _solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void _solve0_gpu(kingghidorah::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int device);
@@ -212,7 +221,7 @@ namespace kingghidorah {
 		std::string _solveI_gpu_omp(kingghidorah::cuda* cuda, _mySparse* ret);
 		std::string _solveI_gpu_single(kingghidorah::cuda* cuda, _mySparse* ret);
 
-		void _solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse* ret);
+		//void _solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse* ret);
 		void __solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		Eigen::MatrixXd inv();
 		Eigen::MatrixXd solve0(_mySparse* rhs);

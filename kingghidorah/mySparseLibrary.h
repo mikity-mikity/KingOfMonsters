@@ -573,10 +573,10 @@ namespace kingghidorah {
 			auto ee = gcnew System::String(ss.c_str());
 			return ee;
 		}
-		mySparse^ solveI_gpu_mg(myCuda^ gpu, mySparse^ ret) {
+		/*mySparse^ solveI_gpu_mg(myCuda^ gpu, mySparse^ ret) {
 			this->dat->_solveI_gpu_mg(gpu->cuda(), ret->dat);
 			return ret;
-		}
+		}*/
 		void freezecoeff()
 		{
 			dat->freezecoeff();

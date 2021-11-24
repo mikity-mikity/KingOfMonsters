@@ -37,14 +37,14 @@ namespace kingghidorah {
 	public class _memS_ref {
 	public:
 		int _nNode;
-		int dim[2];
+		int dim[2]{ 0,0 };
 		int _uDim, _vDim;
-		double* node;
-		double* def;
-		double* buf_z;
-		double* buf_phi;
-		double* buf_b;
-		double* buf_D;
+		double* node=0;
+		double* def = 0;
+		double* buf_z = 0;
+		double* buf_phi = 0;
+		double* buf_b = 0;
+		double* buf_D = 0;
 
 		double _gi[6];
 		double _Gi[6];
@@ -54,12 +54,12 @@ namespace kingghidorah {
 		double _Sij[4];
 		double _Gammaijk[8];
 
-		double** M[2];
-		int** dd;
+		double** M[2]{ 0,0 };
+		int** dd=0;
 		double* d0;
-		double* d1[2];
-		double* d2[4];
-		double* d2_star[4];
+		double* d1[2]{ 0,0 };
+		double* d2[4]{ 0,0,0,0 };
+		double* d2_star[4]{ 0,0,0,0 };
 		const int star2[4]{ 1,-1,-1,1 };
 		const int _star[4]{ 3,1,2,0 };
 		/*star2[0] = 1;
@@ -71,8 +71,8 @@ namespace kingghidorah {
 		_star[1] = 1;
 		_star[2] = 2;
 		_star[3] = 0;*/
-		double* B[4];
-		double* tt0[2], * hh0[2], * tt1[4], * hh1[4], * tt2[8], * hh2[8];
+		double* B[4]{ 0,0,0,0 };
+		double* tt0[2]{ 0,0 }, * hh0[2]{ 0,0 }, * tt1[4]{ 0,0,0,0 }, * hh1[4]{ 0,0,0,0 }, * tt2[8]{ 0,0,0,0,0,0,0,0 }, * hh2[8]{ 0,0,0,0,0,0,0,0 };
 		const int ___ll[4]{ 0,3,6,9 };
 	public:
 		bool initialized;
@@ -335,7 +335,7 @@ namespace kingghidorah {
 			}
 		}
 		void update(int nNode, int uDim, int vDim) {
-			if (_nNode != nNode || _uDim != uDim || _vDim != vDim) {
+			if (!initialized||_nNode != nNode || _uDim != uDim || _vDim != vDim) {
 				initialized = false;
 
 				del();
@@ -418,31 +418,30 @@ namespace kingghidorah {
 	public class _memS {
 	public:
 		std::string mode;
-		_memS_ref* _ref;
+		_memS_ref* _ref=0;
 		double N[3];
 		double bodyF;
 		double BCF[2];
 		double BCF2[2];
 		double BCF6[2];
 	public:
-		double* __grad_z;
-		double* __grad_phi;
+		double* __grad_z=0;
+		double* __grad_phi = 0;
 		int _nNode;
 	private:
-		double* __mat;
-		//double* __mat2;
-		double* _F3;
+		double* __mat = 0;
+		double* _F3 = 0;
 		double _F3_phi[2];
 		double _F3_z[2];
 		double _SLOPE_phi[2];
 		double _SLOPE_z[2];
-		double* __grad_C_z;
-		double* __grad_C_phi;
-		double* __grad_D_z;
-		double* __grad_D_phi;
+		double* __grad_C_z = 0;
+		double* __grad_C_phi = 0;
+		double* __grad_D_z = 0;
+		double* __grad_D_phi = 0;
 		double _K_phi[2];
-		double* _K;
-		double lo[2];
+		double* _K = 0;
+		double lo[2]{ 0,0, };
 		//double** M[2];
 		//int** dd;
 		int dim[2];
@@ -464,8 +463,8 @@ namespace kingghidorah {
 		//int _star[4];
 		//double* B[4];
 		//double* tt0[2], * hh0[2], * tt1[4], * hh1[4], * tt2[8], * hh2[8];
-		double* gradN[3];
-		double* gradG;
+		double* gradN[3]{ 0,0,0 };
+		double* gradG = 0;
 		const int ___ll[4]{ 0,3,6,9 };
 	public:
 		double x, y, z, Z, _Z, phi;
@@ -1372,7 +1371,7 @@ namespace kingghidorah {
 		}
 
 		void update(int nNode, int uDim, int vDim) {
-			if (!_ref->initialized)
+			//if (!_ref->initialized)
 			{
 				_ref->update(nNode, uDim, vDim);
 			}
