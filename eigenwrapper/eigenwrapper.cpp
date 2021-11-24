@@ -866,13 +866,16 @@ int kingghidorah::_mySparse::__rows() {
 	return _ret;
 }
 void kingghidorah::_mySparse::Clear() {
-	if (_nt == 1)
-	{
-		this->dat[0].resize(0);
-		this->_coeff[0].resize(0);
-	}
+	if (_nt == 0)_nt = 1;
 	this->dat.resize(_nt);
 	this->_coeff.resize(_nt);
+
+	if (_nt == 1)
+	{
+		this->dat[0].clear();
+		this->_coeff[0].clear();
+	}
+
 
 	if (this->coeff.size() != _nt)this->coeff.resize(_nt);
 	if (this->_mat.size() != _nt)this->_mat.resize(_nt);
@@ -962,7 +965,8 @@ void kingghidorah::_mySparse::begin_construct()
 void kingghidorah::_mySparse::end_construct(int cc)
 {
 	_nt = _dat_count;
-
+	//_mat.clear();
+	//_mat.shrink_to_fit();
 	_mat.resize(_nt);
 	coeff.resize(_nt);
 	for (int ii = 0; ii < _nt; ii++)
@@ -1012,8 +1016,10 @@ void kingghidorah::_mySparse::ofDat()
 #pragma omp parallel for
 	for (int ii = 0; ii < _nt; ii++)
 	{
+		_mat[ii].setZero();
 		_mat[ii].reserve(dat[ii].size());
 		_mat[ii].setFromTriplets(dat[ii].begin(), dat[ii].end());
+		_mat[ii].makeCompressed();
 	}
 }
 void kingghidorah::_mySparse::freezecoeff() {
@@ -1032,35 +1038,24 @@ int kingghidorah::_mySparse::numBlocks()
 std::string kingghidorah::_mySparse::ofAtA(_mySparse* A, bool sparse)
 {
 	static std::vector<Eigen::SparseMatrix<double>> e;
-	//static std::vector<Eigen::SparseMatrix<double>> e2;
-	//static std::vector<Eigen::SparseMatrix<double>> e;
 	auto ss = std::stringstream();
 	auto now = high_resolution_clock::now();
 	int nn = A->cols();
-	//int _mt = omp_get_max_threads();
-	//omp_set_num_threads(_mt);
 	auto end = high_resolution_clock::now();
 	auto duration = duration_cast<milliseconds>(now - end);
 	ss << duration.count() << "ms" << std::endl;
 	now = high_resolution_clock::now();
-	//int _mt = mt*1;
-	//_mt = _nt;
 	int __mt = _mt;
 	if (e.size() < __mt)
 	{
 		e.resize(__mt);
-		//e2.resize(__mt);
 	}
 	Eigen::initParallel();
-	//Eigen::setNbThreads(1);
 #pragma omp parallel for
 	for (int i = 0; i < __mt; i++) {
 		e[i].resize(nn, nn);
 		e[i].reserve(nn * nn / 20);
 		e[i].setZero();
-		//e2[i].resize(nn, nn);
-		//e2[i].makeCompressed();
-		//e2[i].reserve(nn * nn / 50);
 	}
 	end = high_resolution_clock::now();
 	duration = duration_cast<milliseconds>(now - end);
@@ -1068,6 +1063,8 @@ std::string kingghidorah::_mySparse::ofAtA(_mySparse* A, bool sparse)
 	now = high_resolution_clock::now();
 	ss << _nt << ":nt:" << std::endl;
 	ss << _mt << ":_mt:" << std::endl;
+	Eigen::initParallel();
+	Eigen::setNbThreads(1);
 #pragma omp parallel for
 	for (int _ii = 0; _ii < __mt; _ii++)
 	{
@@ -1077,27 +1074,42 @@ std::string kingghidorah::_mySparse::ofAtA(_mySparse* A, bool sparse)
 		S = _ii * _nt / __mt;
 		E = (_ii + 1) * _nt / __mt;
 		//Eigen::SparseMatrix<double> tt(nn, nn);
+		Eigen::SparseMatrix<double> mm;
+		Eigen::SparseMatrix<double> ll;
 		for (int ii = S; ii < E; ii++)
 		{
 
-			if (_ii == 0)
+			//if (_ii == 0)
 			{
-				now = high_resolution_clock::now();
-				e[_ii] += A->_mat[ii].transpose() * A->coeff[ii].asDiagonal() * A->_mat[ii];
+				//now = high_resolution_clock::now();
+				//A->_mat[ii].prune(1.0, 0.000000000001);
+				//A->_mat.data()->sumupDuplicates();
+				//mm = ((A->_mat[ii].transpose().toDense()) *( A->coeff[ii].asDiagonal() *A->_mat[ii])).sparseView(1.0,0.000000000001);
 
-				end = high_resolution_clock::now();
-				auto _duration = duration_cast<microseconds>(now - end);
-				ss << _duration.count() << "microseconds" << std::endl;
-				ss << coeff[ii].size() << "coeffsize" << std::endl;;
-				now = high_resolution_clock::now();
+				//end = high_resolution_clock::now();
+				//auto _duration = duration_cast<microseconds>(now - end);
+				//ss << "11"<<_duration.count() << "microseconds" << std::endl;
+				//lss << coeff[ii].size() << "coeffsize" << std::endl;;
+				//slls << A->_mat[ii].nonZeros() << " nonzeros found" << std::endl;;
+				//ss << e[_ii].nonZeros() << " nonzeros found" << std::endl;;
+				//lnow = high_resolution_clock::now();
+				e[_ii] += A->_mat[ii].transpose() * A->coeff[ii].asDiagonal() * A->_mat[ii];
+				//end = high_resolution_clock::now();
+				//_duration = duration_cast<microseconds>(now - end);
+				//ss << "22"<<_duration.count() << "microseconds" << std::endl;
+				//ss << coeff[ii].size() << "coeffsize" << std::endl;;
+
+				//ll = A->coeff[ii].asDiagonal() * A->_mat[ii];
 
 			}
-			else {
-				e[_ii] += A->_mat[ii].transpose() * A->coeff[ii].asDiagonal() * A->_mat[ii];
-			}
+			//else {
+				//Eigen::SparseMatrix<double> mm = A->_mat[ii].transpose() * A->coeff[ii].asDiagonal() * A->_mat[ii];
+				//e[_ii] += mm;
+			//}
 		}
 		e[_ii].makeCompressed();
 	}
+	Eigen::setNbThreads(0);
 	end = high_resolution_clock::now();
 	duration = duration_cast<milliseconds>(now - end);
 	ss << duration.count() << "ms" << std::endl;
