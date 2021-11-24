@@ -982,6 +982,7 @@ void kingghidorah::_mySparse::OfDuplicate(_mySparse* mat)
 
 		this->_mat[ii] = mat->_mat[ii];// M;
 		this->_coeff[ii] = mat->_coeff[ii];// vec;
+		this->coeff[ii] = mat->coeff[ii];
 	}
 }
 void kingghidorah::_mySparse::_OfDuplicate(_mySparse* mat)
