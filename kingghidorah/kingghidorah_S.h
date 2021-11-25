@@ -75,9 +75,9 @@ namespace kingghidorah {
 		double* tt0[2]{ 0,0 }, * hh0[2]{ 0,0 }, * tt1[4]{ 0,0,0,0 }, * hh1[4]{ 0,0,0,0 }, * tt2[8]{ 0,0,0,0,0,0,0,0 }, * hh2[8]{ 0,0,0,0,0,0,0,0 };
 		const int ___ll[4]{ 0,3,6,9 };
 	public:
-		bool initialized;
-		double refDv,_refDv;
-		double _x, _y, _z, __z, Z, _Z;
+		bool initialized=false;
+		double refDv=0,_refDv=0;
+		double _x=0, _y=0, _z=0, __z=0, Z=0, _Z=0;
 		inline void set_z(double &z) {
 			this->_z = z;
 		}
@@ -206,11 +206,6 @@ namespace kingghidorah {
 		}
 		
 		void del() {			
-			_nNode = 0;
-			__z = -10000000;
-			_nNode = 0;
-			_uDim = -1;
-			_vDim = -1;
 			if (dd != 0)
 			{
 				for (int i = 0; i < _nNode; i++) {
@@ -333,10 +328,14 @@ namespace kingghidorah {
 				M[0] = 0;
 				M[1] = 0;
 			}
+			/*_nNode = 0;
+			__z = -10000000;
+			_nNode = 0;
+			_uDim = -1;
+			_vDim = -1;*/
 		}
 		void update(int nNode, int uDim, int vDim) {
-			if (!initialized||_nNode != nNode || _uDim != uDim || _vDim != vDim) {
-				initialized = false;
+			if (_nNode != nNode || _uDim != uDim || _vDim != vDim) {
 
 				del();
 
@@ -411,6 +410,12 @@ namespace kingghidorah {
 				for (int i = 0; i < nNode; i++) {
 					dd[i] = new int[2];
 				}
+				initialized = false;
+
+			}
+			else {
+				initialized = false;
+
 			}
 		}
 	};
@@ -1017,7 +1022,7 @@ namespace kingghidorah {
 				}
 			}*/
 
-			if (mode == "U") {
+			if (mode == "U"||mode=="SLOPE") {
 
 				double* ptr4;
 				for (auto const& j : ___ee) {
@@ -1371,7 +1376,7 @@ namespace kingghidorah {
 		}
 
 		void update(int nNode, int uDim, int vDim) {
-			//if (!_ref->initialized)
+			if (!_ref->initialized)
 			{
 				_ref->update(nNode, uDim, vDim);
 			}
@@ -2535,7 +2540,7 @@ namespace kingghidorah {
 
 public ref class memS_ref {
 public:
-	_memS_ref* __mem;
+	_memS_ref* __mem=0;
 	void setbuffer(buffer^ buf) {
 		__mem->set_buffer(buf->_buf->mem);
 	}
@@ -2555,7 +2560,9 @@ public:
 		__mem = new _memS_ref();
 	}
 	void dispose() {
+		if(__mem!=0)
 		delete __mem;
+		__mem = 0;
 	}
 	~memS_ref() {
 		dispose();
@@ -2625,7 +2632,7 @@ public:
 public ref class memS
 {
 public:
-	_memS* __mem;
+	_memS* __mem=0;
 public:
 	double x, y, z,Z,phi;
 	double _x, _y, _z,_Z,_phi;
@@ -2981,7 +2988,9 @@ public:
 				__mem = new _memS("");
 		}
 		void dispose() {
+			if(__mem!=0)
 			delete __mem ;
+			__mem = 0;
 		}
 		~memS() {
 			dispose();

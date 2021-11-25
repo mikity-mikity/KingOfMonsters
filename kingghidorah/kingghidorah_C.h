@@ -1117,7 +1117,7 @@ namespace kingghidorah {
 	};
 	public ref class memC {
 	public:
-		_memC* __mem;
+		_memC* __mem=0;
 	public:
 		int _nNode;
 		int dim;
@@ -1285,7 +1285,9 @@ namespace kingghidorah {
 			__mem = new _memC();
 		}
 		void dispose() {
+			if(__mem!=0)
 			delete __mem;
+			__mem = 0;
 		}
 		~memC() {
 			dispose();

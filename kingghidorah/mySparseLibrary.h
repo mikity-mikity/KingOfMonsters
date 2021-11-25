@@ -438,15 +438,19 @@ namespace kingghidorah {
 			pin_ptr<int> ptr = &index[0];
 			pin_ptr<double> dat = &data[0];
 
-			this->dat->addrow(ii, ptr, dat, sc, N);
+			int* _ptr = ptr;
+			double* _dat = dat;
+			this->dat->addrow(ii, _ptr, _dat, sc, N);
 			ptr = nullptr;
 			dat = nullptr;
 		}
 		void addrow(int ii, array<int>^ index, array<double>^ data, int shift, double sc, int N, bool add) {
 			pin_ptr<int> ptr = &index[0];
 			pin_ptr<double> dat = &data[0];
+			int* _ptr = ptr;
+			double* _dat = dat;
 
-			this->dat->addrow(ii, ptr, dat, shift, sc, N, add);
+			this->dat->addrow(ii, _ptr, _dat, shift, sc, N, add);
 			ptr = nullptr;
 			dat = nullptr;
 		}
