@@ -97,7 +97,7 @@
       <ForceConformanceInForLoopScope>false</ForceConformanceInForLoopScope>
       <FloatingPointModel>Fast</FloatingPointModel>
       <LanguageStandard>Default</LanguageStandard>
-      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
       <SupportJustMyCode>true</SupportJustMyCode>
     </ClCompile>
     <Link>

@@ -1091,6 +1091,7 @@ std::string kingghidorah::_mySparse::ofAtA(_mySparse* A, bool sparse)
 	Eigen::setNbThreads(1);
 	int job = 0;
 	int sss = _nt / __mt / 8;
+	if (sss == 0)sss = 1;
 #pragma omp parallel for schedule(static)
 	for (int _ii = 0; _ii < __mt; _ii++)
 	{
@@ -1098,7 +1099,7 @@ std::string kingghidorah::_mySparse::ofAtA(_mySparse* A, bool sparse)
 		int E = 0;
 		//int K = 0;
 		//auto _e = e[_ii];
-		while (true)
+		for(int tt=0;tt<40;tt++)
 		{
 #pragma omp critical
 			{
@@ -1108,44 +1109,20 @@ std::string kingghidorah::_mySparse::ofAtA(_mySparse* A, bool sparse)
 				job = E;
 			}
 			if (S >= _nt)break;
-			//S = _ii * _nt / __mt;
-			//E = (_ii + 1) * _nt / __mt;
-			//Eigen::SparseMatrix<double> tt(nn, nn);
 			for (int ii = S; ii < E; ii++)
 			{
-
-				//if (_ii == 0)
-				/* {
-					now = high_resolution_clock::now();
-					e[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
-
-					end = high_resolution_clock::now();
-					auto _duration = duration_cast<microseconds>(now - end);
-					ss << _duration.count() << "microseconds" << std::endl;
-					ss << coeff[ii].size() << "coeffsize" << std::endl;;
-					now = high_resolution_clock::now();
-
-				}
-				else*/
-				{
-					//if (this->_mat[ii].rows() > 0)
-					{
-						//K = this->_mat[ii].sum();
-						e[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
-					}
-				}
+				e[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
 			}
 		}
 		//e[_ii].makeCompressed();
 	}
-	Eigen::setNbThreads(0);
 	end = high_resolution_clock::now();
 	duration = duration_cast<milliseconds>(now - end);
 	ss << duration.count() << "ms" << std::endl;
 	now = high_resolution_clock::now();
 	Eigen::setNbThreads(_mt);
 
-	for (int tt = 0; tt < 200; tt++)
+	for (int tt = 0; tt < 40; tt++)
 	{
 #pragma omp parallel for
 		for (int i = 0; i < __mt; i += 2)
@@ -1406,6 +1383,7 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 	}
 	int job = 0;
 	int sss = _nt / __mt / 8;
+	if (sss == 0)sss = 1;
 #pragma omp parallel for schedule(dynamic,1)
 	for (int _ii = 0; _ii < __mt; _ii++)
 	{
@@ -1413,20 +1391,18 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 		//int E = (_ii + 1) * _nt / __mt;
 		int S = 0;
 		int E = 0;
-		while (true)
+		for(int tt=0;tt<20;tt++)
 		{
 #pragma omp critical
 			{
-			S = job;
-			E = job + sss;
-			if (E > _nt)E = _nt;
-			job = E;
+				S = job;
+				E = job + sss;
+				if (E >=_nt)E = _nt;
+				job = E;
 			}
 		if (S >= _nt)break;
 			for (int ii = S; ii < E; ii++)
 			{
-				//if (this->_mat[ii].rows() > 0 && this->_mat[ii].cols() > 0)
-
 				e2[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * B->_mat[ii];
 			}
 		}
@@ -1436,7 +1412,7 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 	this->_mat[0].resize(nn, mm);
 	this->_mat[0].setZero();
 
-	for (int tt = 0; tt < 200; tt++)
+	for (int tt = 0; tt < 40; tt++)
 	{
 #pragma omp parallel for
 		for (int i = 0; i < __mt; i += 2)
