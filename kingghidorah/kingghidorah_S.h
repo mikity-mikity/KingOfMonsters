@@ -964,33 +964,13 @@ namespace kingghidorah {
 			int eee = 0;
 			for (auto const& i : ___ee) {
 				for (auto const& j : ___ee) {
-					//int e = ((i <<1 )+ j) * 3;
 					for (auto const& k : ___ee) {
 						double val = 0;
-						//if (i >= j)
-						  {
-							//if (j == k || i == k)Gammaijk[ccc] = 0;
-							//else
-							{
-								//if (i <= k)
-								{
-									val += bij[eee + 0] * get_Gi(k, 0);
-									val += bij[eee + 1] * get_Gi(k, 1);
-									val += bij[eee + 2] * get_Gi(k, 2);
-									//Gammaijk[(((i << 1) + j) << 1) + k] = val;
-									Gammaijk[ccc] = val;
-								}
-								/*else {
-									Gammaijk[ccc] = -Gammaijk[hhh[ccc]];
-								}*/
-							}
-							/*else {
-								Gammaijk[ccc] = -Gammaijk[ggg[ccc]];   //swap 1th and 2th bits
-							}*/
-						}
-						//else {
-						//	Gammaijk[ccc] = Gammaijk[fff[ccc]];   //swap 1th and 2th bits
-						//}
+						
+						val += bij[eee + 0] * get_Gi(k, 0);
+						val += bij[eee + 1] * get_Gi(k, 1);
+						val += bij[eee + 2] * get_Gi(k, 2);
+						Gammaijk[ccc] = val;
 						ccc++;
 					}
 					eee += 3;
@@ -1126,17 +1106,22 @@ namespace kingghidorah {
 				}
 				pptr = __mat;
 				pptr1 = &_ref->buf_phi[0];
-				pptr2 = &__grad_phi[0];				
-				for (int i = 0; i < _nNode; i++) {
-					val2 = 0;
-					for (int j = 0; j < _nNode; j++) {
-						val2 += (*pptr)/*__mat[i * _nNode + j]*/ * (*pptr1)/* _ref->buf_phi[i]*/;
-						pptr++;
-						pptr1++;
-					}
-					eigen_assert(val2<1000 && val2>-1000);
-					*pptr2 = val2 * sc;
+				pptr2 = &__grad_phi[0];
+				for (int j = 0; j < _nNode; j++) {
+					*pptr2 = 0;
 					pptr2++;
+				}
+				for (int i = 0; i < _nNode; i++) {
+					//val2 = 0;
+					pptr2 = &__grad_phi[0];
+					for (int j = 0; j < _nNode; j++) {
+						val2 = (*pptr)/*__mat[i * _nNode + j]*/ * (*pptr1)/* _ref->buf_phi[i]*/;
+						pptr++;
+						*pptr2 += val2 * sc;
+						pptr2++;
+					}
+					//__grad_phi[j] = val2 * sc;
+					pptr1++;
 				}
 			}
 			if ( mode == "SLOPE") {
