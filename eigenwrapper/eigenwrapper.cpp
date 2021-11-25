@@ -1063,7 +1063,7 @@ std::string kingghidorah::_mySparse::ofAtA(_mySparse* A, bool sparse)
 	auto duration = duration_cast<milliseconds>(now - end);
 	ss << duration.count() << "ms" << std::endl;
 	now = high_resolution_clock::now();
-	int __mt = _nt;
+	int __mt = std::min(_nt/10,_mt*10);
 	if (e.size() < __mt)
 	{
 		e.resize(__mt);
@@ -1089,7 +1089,7 @@ std::string kingghidorah::_mySparse::ofAtA(_mySparse* A, bool sparse)
 	ss << _mt << ":_mt:" << std::endl;
 	Eigen::initParallel();
 	Eigen::setNbThreads(1);
-#pragma omp parallel for schedule(dynamic,1)
+#pragma omp parallel for schedule(dynamic,10)
 	for (int _ii = 0; _ii < __mt; _ii++)
 	{
 		int S = 0;
@@ -1132,7 +1132,7 @@ std::string kingghidorah::_mySparse::ofAtA(_mySparse* A, bool sparse)
 	now = high_resolution_clock::now();
 	Eigen::setNbThreads(_mt);
 
-	for (int tt = 0; tt < 20; tt++)
+	for (int tt = 0; tt < 200; tt++)
 	{
 #pragma omp parallel for
 		for (int i = 0; i < __mt; i += 2)
@@ -1276,7 +1276,7 @@ void kingghidorah::_mySparse::_ofAtB(_mySparse* B, _mySparse* C)
 
 	//int mt = omp_get_max_threads();
 
-	int ss = mm / _mt / 2;
+	int ss = mm / _mt;
 	auto left = _dmat.transpose();
 	auto right = B->_mat[0];
 
@@ -1381,7 +1381,7 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 
 	//int _mt = mt*1;
 	//_mt = _nt;
-	int __mt = _nt;
+	int __mt = std::min(_nt/10,_mt*10);
 	if (__mt > e2.size())
 		e2.resize(__mt);
 #pragma omp parallel for
@@ -1391,7 +1391,7 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 		e2[i].makeCompressed();
 		e2[i].reserve(nn * mm / 20);
 	}
-#pragma omp parallel for schedule(dynamic,1)
+#pragma omp parallel for schedule(dynamic,10)
 	for (int _ii = 0; _ii < __mt; _ii++)
 	{
 		int S = _ii * _nt / __mt;
@@ -1409,7 +1409,7 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 	this->_mat[0].resize(nn, mm);
 	this->_mat[0].setZero();
 
-	for (int tt = 0; tt < 20; tt++)
+	for (int tt = 0; tt < 200; tt++)
 	{
 #pragma omp parallel for
 		for (int i = 0; i < __mt; i += 2)
