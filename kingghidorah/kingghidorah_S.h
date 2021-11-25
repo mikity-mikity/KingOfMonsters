@@ -56,7 +56,7 @@ namespace kingghidorah {
 
 		double** M[2]{ 0,0 };
 		int** dd=0;
-		double* d0;
+		double* d0=0;
 		double* d1[2]{ 0,0 };
 		double* d2[4]{ 0,0,0,0 };
 		double* d2_star[4]{ 0,0,0,0 };
