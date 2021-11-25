@@ -1285,7 +1285,7 @@ void kingghidorah::_mySparse::_ofAtB(_mySparse* B, _mySparse* C)
 void kingghidorah::_mySparse::_ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret)
 {
 
-	static Eigen::MatrixXd D;
+	Eigen::MatrixXd D;
 
 	int nn = B->_mat[0].cols();
 	int kk = _dmat.cols();// __c;
