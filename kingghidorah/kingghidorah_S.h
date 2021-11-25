@@ -336,9 +336,9 @@ namespace kingghidorah {
 		}
 		void update(int nNode, int uDim, int vDim) {
 			if (_nNode != nNode || _uDim != uDim || _vDim != vDim) {
+				initialized = false;
 
 				del();
-
 				_nNode = nNode;
 				_uDim = uDim;
 				_vDim = vDim;
@@ -410,7 +410,7 @@ namespace kingghidorah {
 				for (int i = 0; i < nNode; i++) {
 					dd[i] = new int[2];
 				}
-				initialized = false;
+				
 
 			}
 			else {
@@ -740,6 +740,8 @@ namespace kingghidorah {
 		void update2() {
 			if (!_ref->initialized)
 			{
+				_ref->initialized = true;
+
 				for (auto const& j:___ee)
 				{
 					for (int k = 0; k < dim[j]; k++)
@@ -848,7 +850,6 @@ namespace kingghidorah {
 						ptr++;
 					}
 				}
-				_ref->initialized = true;
 			}
 			double X = 0, Y = 0, ZZ = 0;
 			double *ptr2 = _ref->d0;
@@ -958,8 +959,8 @@ namespace kingghidorah {
 			}
 			int ccc = 0;
 			static const int fff[8]{ 0,2,1,3,4,6,5,7 };
-			static const int ggg[8]{ 0,1,4,5,2,3,6,7 };
-			static const int hhh[8]{ 0,4,2,6,1,5,3,7 };
+			//static const int ggg[8]{ 0,1,4,5,2,3,6,7 };
+			//static const int hhh[8]{ 0,4,2,6,1,5,3,7 };
 			int eee = 0;
 			for (auto const& i : ___ee) {
 				for (auto const& j : ___ee) {
