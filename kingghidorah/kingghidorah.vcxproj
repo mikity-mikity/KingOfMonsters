@@ -98,6 +98,7 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <LanguageStandard>Default</LanguageStandard>
       <BufferSecurityCheck>false</BufferSecurityCheck>
+      <SupportJustMyCode>true</SupportJustMyCode>
     </ClCompile>
     <Link>
       <AdditionalDependencies>cublas.lib;cusolver.lib;cusolverMg.lib;cudart.lib;cuda.lib</AdditionalDependencies>

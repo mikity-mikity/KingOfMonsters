@@ -967,7 +967,8 @@ namespace kingghidorah {
 					//int e = ((i <<1 )+ j) * 3;
 					for (auto const& k : ___ee) {
 						double val = 0;
-						if (i <= j) {
+						//if (i >= j)
+						  {
 							//if (j == k || i == k)Gammaijk[ccc] = 0;
 							//else
 							{
@@ -987,9 +988,9 @@ namespace kingghidorah {
 								Gammaijk[ccc] = -Gammaijk[ggg[ccc]];   //swap 1th and 2th bits
 							}*/
 						}
-						else {
-							Gammaijk[ccc] = Gammaijk[fff[ccc]];   //swap 1th and 2th bits
-						}
+						//else {
+						//	Gammaijk[ccc] = Gammaijk[fff[ccc]];   //swap 1th and 2th bits
+						//}
 						ccc++;
 					}
 					eee += 3;
@@ -1119,27 +1120,23 @@ namespace kingghidorah {
 						pptr++;
 					}
 					//__grad_z[i] = val2*sc;
+					eigen_assert(val2<1000 && val2>-1000);
 					*pptr2 = val2 * sc;
 					pptr2++;
 				}
 				pptr = __mat;
 				pptr1 = &_ref->buf_phi[0];
-				pptr2 = &__grad_phi[0];
-				for (int j = 0; j < _nNode; j++) {
-					*pptr2 = 0;
-					pptr2++;
-				}
+				pptr2 = &__grad_phi[0];				
 				for (int i = 0; i < _nNode; i++) {
-					//val2 = 0;
-					pptr2 = &__grad_phi[0];
+					val2 = 0;
 					for (int j = 0; j < _nNode; j++) {
-						val2 = (*pptr)/*__mat[i * _nNode + j]*/ * (*pptr1)/* _ref->buf_phi[i]*/;
+						val2 += (*pptr)/*__mat[i * _nNode + j]*/ * (*pptr1)/* _ref->buf_phi[i]*/;
 						pptr++;
-						*pptr2 += val2 * sc;
-						pptr2++;
+						pptr1++;
 					}
-					//__grad_phi[j] = val2 * sc;
-					pptr1++;
+					eigen_assert(val2<1000 && val2>-1000);
+					*pptr2 = val2 * sc;
+					pptr2++;
 				}
 			}
 			if ( mode == "SLOPE") {
@@ -1176,6 +1173,8 @@ namespace kingghidorah {
 				BCF[1] = 0;
 				BCF2[0] = 0;
 				BCF2[1] = 0;
+				BCF6[0] = 0;
+				BCF6[1] = 0;
 				for (int j = 0; j < _nNode; j++) {
 					BCF[0] += __grad_C_z[j] * _ref->buf_phi[j];
 					BCF[1] += __grad_C_z[_nNode + j] * _ref->buf_phi[j];
@@ -2578,6 +2577,7 @@ public:
 	void update_z_phi(int nNode, kingghidorah::myDoubleArray^ Z, kingghidorah::myDoubleArray^ phi) {
 		if (Z != nullptr)
 		{
+			eigen_assert(Z->_arr->__v.norm() < 10000 && Z->_arr->__v.norm() > -100000);
 			__mem->set_buf_z(Z->_arr->__v.data(), nNode);
 			/*for (int i = 0; i < nNode; i++) {
 				__mem->set_buf_z(i, (*Z->_arr)(i));
@@ -2585,6 +2585,7 @@ public:
 		}
 		if (phi != nullptr)
 		{
+			eigen_assert(phi->_arr->__v.norm() < 10000 && phi->_arr->__v.norm() > -100000);
 			__mem->set_buf_phi(phi->_arr->__v.data(), nNode);
 			/*for (int i = 0; i < nNode; i++) {
 				__mem->set_buf_phi(i, (*phi->_arr)(i));
