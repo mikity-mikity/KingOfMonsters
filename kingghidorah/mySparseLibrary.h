@@ -404,6 +404,9 @@ namespace kingghidorah {
 		System::String ^ ofAtA(mySparse^ m, bool sparse) {
 			return gcnew System::String(dat->ofAtA(m->dat, sparse).c_str());
 		}
+		System::String^ ofAtA_gpu(mySparse^ m, bool sparse) {
+			return gcnew System::String(dat->ofAtA_gpu(m->dat, sparse).c_str());
+		}
 		System::String^ _ofAtA(mySparse^ m) {
 			auto str = dat->_ofAtA(m->dat);
 			auto ret = gcnew System::String(str.c_str());
@@ -411,6 +414,9 @@ namespace kingghidorah {
 		}
 		void ofAtB(mySparse^ m, bool sparse) {
 			dat->ofAtB(m->dat, sparse);
+		}
+		void ofAtB_gpu(mySparse^ m, bool sparse) {
+			dat->ofAtB_gpu(m->dat, sparse);
 		}
 		void _ofAtB(mySparse^ A, mySparse^ B)
 		{
@@ -425,6 +431,16 @@ namespace kingghidorah {
 			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
 			//ptr = nullptr;
 			//return ret;
+		}
+		
+		void _ofBtAB_qr(mySparse^ A, mySparse^ B, myDoubleArray^ b, myDoubleArray^ ret)
+		{
+			A->dat->join();
+			B->dat->join();
+			A->dat->_ofBtAB_qr(B->dat, &b->_arr->__v, this->dat, &ret->_arr->__v);
+			
+			
+
 		}
 		void addemptyrow(int ii) {
 			dat->addemptyrow(ii);

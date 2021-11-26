@@ -28,7 +28,7 @@ using namespace std::chrono;
 #include "eigen-3.4.0/Eigen/Dense"
 using namespace std;
 using namespace kingghidorah;
-#define _N 1000
+#define _N 2000
 int main() {
     {
 
@@ -41,9 +41,9 @@ int main() {
         M.init(_N, _N);
         int index[_N];
         for (int i = 0; i < _N; i++)index[i] = i;
-        for (int tt = 0; tt < 50; tt++)
+        for (int tt = 0; tt < 1; tt++)
         {
-            for (int kk = 0; kk < 500; kk++)
+            for (int kk = 0; kk <1; kk++)
             {
                 double f[_N];
                 M.Clear();
@@ -53,7 +53,7 @@ int main() {
                     for (int i = 0; i < _N; i++)
                     {
                         //memset(f, 0, sizeof(double) * _N);
-                        for (int j = i - 4; j < i + 4; j++)
+                        for (int j = 0;j<_N;j++)
                         {
                             if (j == i)
                             {
@@ -71,7 +71,12 @@ int main() {
                 M.ofDat();
                 M.clearcoeff();
                 auto start = high_resolution_clock::now();
-                M.ofAtA(&M, true);
+                //std::cout << M._mat[0] << std::endl;
+                std::cout << "start" << std::endl;
+                //M.ofAtA(&M, true);
+                M.ofAtA_gpu(&M, true);
+                std::cout << "end" << std::endl;
+                //std::cout << M._mat[0] << std::endl;
                 //m._shrink(_N, false, true);
                 //Eigen::VectorXd ret(_N);
                 //m._solve0_gpu(&m, &rhs, &ret, ii);

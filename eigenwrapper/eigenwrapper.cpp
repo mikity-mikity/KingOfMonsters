@@ -13,13 +13,15 @@
 #include <fstream>
 #define EIGEN_NO_DEBUG
 #define EIGEN_NO_STATIC_ASSERT
+#define EIGEN_USE_LAPACKE
 int previdentiyN = 0;
 //std::vector<cudaStream_t> streams;
 Eigen::MatrixXd I;
 #define STREAMCOUNT 2
 bool __cuinit = false;
 //static std::vector<Eigen::SparseMatrix<double>> e;
-
+cusparseHandle_t sp_handle = 0;
+std::map<kingghidorah::_mySparse*, kingghidorah::spgemm> dict;
 void kingghidorah::cuda::disable()
 {
 	__cuinit = false;
@@ -111,6 +113,7 @@ kingghidorah::cuda::cuda(int N) {
 			return;
 		}
 	}
+	cusparseCreate(&sp_handle);
 	if (!initialized || failed)return;
 
 
@@ -436,6 +439,8 @@ void kingghidorah::cuda::dispose() {
 			cusolverMgDestroy(mg_solver);
 		}
 		mg_solver = 0;*/
+		if (sp_handle != 0)cusparseDestroy(sp_handle);
+		sp_handle = 0;
 		cudaDeviceReset();
 	}
 	initialized = false;
@@ -562,6 +567,31 @@ kingghidorah::_mySparse::_mySparse()
 }
 kingghidorah::_mySparse::~_mySparse()
 {
+	
+	if(dict.contains(this))
+	{
+		spgemm __spgemm_dat=dict[this];
+
+		cusparseSpGEMM_destroyDescr(__spgemm_dat.spgemmDesc);
+		cusparseDestroySpMat(__spgemm_dat.matA);
+		cusparseDestroySpMat(__spgemm_dat.matB);
+		cusparseDestroySpMat(__spgemm_dat.matC);
+
+		//--------------------------------------------------------------------------
+		// device memory deallocation
+		cudaFree(__spgemm_dat.dBuffer1);
+		cudaFree(__spgemm_dat.dBuffer2);
+		cudaFree(__spgemm_dat.dA_csrOffsets);
+		cudaFree(__spgemm_dat.dA_columns);
+		cudaFree(__spgemm_dat.dA_values);
+		cudaFree(__spgemm_dat.dB_csrOffsets);
+		cudaFree(__spgemm_dat.dB_columns);
+		cudaFree(__spgemm_dat.dB_values);
+		cudaFree(__spgemm_dat.dC_csrOffsets);
+		cudaFree(__spgemm_dat.dC_columns);
+		cudaFree(__spgemm_dat.dC_values);
+		dict.erase(this);
+	}
 	//if (e != 0)delete[] e;
 	//e = 0;
 	//if (e2 != 0)delete[] e2;
@@ -659,7 +689,7 @@ void kingghidorah::_mySparse::plus(_mySparse* m, double sc, bool dense, bool spa
 		_dmat += m->_mat[0] * sc;
 	}
 }
-void kingghidorah::_mySparse::setmat(Eigen::SparseMatrix<double> &mat, int ii) {
+void kingghidorah::_mySparse::setmat(Eigen::SparseMatrix<double, Eigen::RowMajor> &mat, int ii) {
 	this->_mat[ii] = mat;
 }
 void kingghidorah::_mySparse::setmat(const Eigen::MatrixXd& mat) {
@@ -705,7 +735,7 @@ void kingghidorah::_mySparse::_resize(int n, int m) {
 	//__r = n;
 	//__c = m;
 }
-void kingghidorah::_mySparse::setmiddlecolum(Eigen::SparseMatrix<double> &f, int start, int end) {
+void kingghidorah::_mySparse::setmiddlecolum(Eigen::SparseMatrix<double, Eigen::RowMajor> &f, int start, int end) {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 	_dmat.middleCols(start, end - start) = f;
 }
@@ -1053,7 +1083,7 @@ int kingghidorah::_mySparse::numBlocks()
 
 std::string kingghidorah::_mySparse::ofAtA(_mySparse* A, bool sparse)
 {
-	static std::vector<Eigen::SparseMatrix<double>> e;
+	static std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>> e;
 	auto ss = std::stringstream();
 	auto now = high_resolution_clock::now();
 	int nn = A->cols();
@@ -1111,7 +1141,13 @@ std::string kingghidorah::_mySparse::ofAtA(_mySparse* A, bool sparse)
 			if (S >= _nt)break;
 			for (int ii = S; ii < E; ii++)
 			{
-				e[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
+				/*Eigen::SparseMatrix<double> __coeff(coeff[ii].size(), coeff[ii].size());
+				for (int k = 0; k < coeff[ii].size(); k++)
+				{
+					__coeff.insert(k, k) = coeff[ii](k);
+				}*/
+
+				e[_ii] += this->_mat[ii].transpose() *coeff[ii].asDiagonal()* this->_mat[ii];
 			}
 		}
 		//e[_ii].makeCompressed();
@@ -1188,6 +1224,406 @@ std::string kingghidorah::_mySparse::ofAtA(_mySparse* A, bool sparse)
 
 	return ss.str();
 }
+
+
+
+void kingghidorah::_mySparse::ofAtB_gpu(_mySparse* B, bool sparse)
+{
+	kingghidorah::spgemm __spgemm_dat;
+	if (dict.contains(this))
+	{
+		__spgemm_dat = dict[this];
+	}
+	else {
+		__spgemm_dat.initialized = false;
+	}
+
+
+	this->join();
+	B->join();
+	cusparseHandle_t     handle = sp_handle;
+	//std::vector <cusolverSpHandle_t> solversp_handles(_mt);
+	//std::vector <CUstream> __streams(_mt);
+	//cuInit(0);
+	//cudaSetDevice(0);
+
+
+	//static std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>> e;
+	int nn = this->cols();
+	int _mt = omp_get_max_threads();
+
+	cudaSetDevice(0);
+
+	Eigen::SparseMatrix<double, Eigen::RowMajor> tmp = this->_mat[0].transpose() * coeff[0].asDiagonal();
+
+	this->_mat[0].makeCompressed();
+	tmp.makeCompressed();
+	if (!__spgemm_dat.initialized)
+	{
+		__spgemm_dat.A_num_rows = tmp.rows();
+		__spgemm_dat.A_num_cols = tmp.cols();
+		__spgemm_dat.A_nnz = tmp.nonZeros();
+
+		__spgemm_dat.B_num_rows = B->_mat[0].rows();
+		__spgemm_dat.B_num_cols = B->_mat[0].cols();
+		__spgemm_dat.B_nnz = B->_mat[0].nonZeros();
+	}
+
+	double               alpha = 1.0;
+	double               beta = 0;
+	cusparseOperation_t opA = CUSPARSE_OPERATION_NON_TRANSPOSE;
+	cusparseOperation_t opB = CUSPARSE_OPERATION_NON_TRANSPOSE;
+	cudaDataType        computeType = CUDA_R_64F;
+	//--------------------------------------------------------------------------
+	// Device memory management: Allocate and copy A, B
+
+
+	// allocate A
+	if (!__spgemm_dat.initialized)
+	{
+		auto err = cudaMalloc(&__spgemm_dat.dA_csrOffsets, sizeof(int) * (__spgemm_dat.A_num_rows + 1));
+		std::cout << cudaGetErrorString(err) << std::endl;
+		err = cudaMalloc(&__spgemm_dat.dA_columns, sizeof(int) * __spgemm_dat.A_nnz);
+		std::cout << cudaGetErrorString(err) << std::endl;
+		err = cudaMalloc(&__spgemm_dat.dA_values, sizeof(double) * __spgemm_dat.A_nnz);
+		std::cout << cudaGetErrorString(err) << std::endl;
+		// allocate B
+		err = cudaMalloc(&__spgemm_dat.dB_csrOffsets, (__spgemm_dat.B_num_rows + 1) * sizeof(int));
+		err = cudaMalloc(&__spgemm_dat.dB_columns, __spgemm_dat.B_nnz * sizeof(int));
+		err = cudaMalloc(&__spgemm_dat.dB_values, __spgemm_dat.B_nnz * sizeof(double));
+		// allocate C offsets
+		err = cudaMalloc(&__spgemm_dat.dC_csrOffsets, (__spgemm_dat.A_num_rows + 1) * sizeof(int));
+	}
+	// copy A
+	auto err = cudaMemcpy(__spgemm_dat.dA_csrOffsets, tmp.outerIndexPtr(), (__spgemm_dat.A_num_rows + 1) * sizeof(int), cudaMemcpyHostToDevice);
+	err = cudaMemcpy(__spgemm_dat.dA_columns, tmp.innerIndexPtr(), __spgemm_dat.A_nnz * sizeof(int), cudaMemcpyHostToDevice);
+	err = cudaMemcpy(__spgemm_dat.dA_values, tmp.valuePtr(), __spgemm_dat.A_nnz * sizeof(double), cudaMemcpyHostToDevice);
+	// copy B
+	err = cudaMemcpy(__spgemm_dat.dB_csrOffsets, this->_mat[0].outerIndexPtr(), (__spgemm_dat.B_num_rows + 1) * sizeof(int), cudaMemcpyHostToDevice);
+	err = cudaMemcpy(__spgemm_dat.dB_columns, this->_mat[0].innerIndexPtr(), __spgemm_dat.B_nnz * sizeof(int), cudaMemcpyHostToDevice);
+	err = cudaMemcpy(__spgemm_dat.dB_values, this->_mat[0].valuePtr(), __spgemm_dat.B_nnz * sizeof(double), cudaMemcpyHostToDevice);
+	//--------------------------------------------------------------------------
+	// CUSPARSE APIs
+
+
+
+
+	// Create sparse matrix A in CSR format
+	if (!__spgemm_dat.initialized)
+	{
+		auto status = cusparseCreateCsr(&__spgemm_dat.matA, __spgemm_dat.A_num_rows, __spgemm_dat.A_num_cols, __spgemm_dat.A_nnz,
+			__spgemm_dat.dA_csrOffsets, __spgemm_dat.dA_columns, __spgemm_dat.dA_values,
+			CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I,
+			CUSPARSE_INDEX_BASE_ZERO, computeType);
+		status = cusparseCreateCsr(&__spgemm_dat.matB, __spgemm_dat.B_num_rows, __spgemm_dat.B_num_cols, __spgemm_dat.B_nnz,
+			__spgemm_dat.dB_csrOffsets, __spgemm_dat.dB_columns, __spgemm_dat.dB_values,
+			CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I,
+			CUSPARSE_INDEX_BASE_ZERO, computeType);
+		status = cusparseCreateCsr(&__spgemm_dat.matC, __spgemm_dat.A_num_rows, __spgemm_dat.B_num_cols, 0,
+			NULL, NULL, NULL,
+			CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I,
+			CUSPARSE_INDEX_BASE_ZERO, computeType);
+		//--------------------------------------------------------------------------
+		// SpGEMM Computation
+		status = cusparseSpGEMM_createDescr(&__spgemm_dat.spgemmDesc);
+	}
+	// ask bufferSize1 bytes for external memory
+
+	auto status = cusparseSpGEMM_workEstimation(handle, opA, opB,
+		&alpha, __spgemm_dat.matA, __spgemm_dat.matB, &beta, __spgemm_dat.matC,
+		computeType, CUSPARSE_SPGEMM_DEFAULT,
+		__spgemm_dat.spgemmDesc, &__spgemm_dat.bufferSize1, NULL);
+	if (!__spgemm_dat.initialized)
+	{
+		err = cudaMalloc(&__spgemm_dat.dBuffer1, __spgemm_dat.bufferSize1);
+	}
+	// inspect the matrices A and B to understand the memory requirement for
+	// the next step
+	if (!__spgemm_dat.initialized)
+	{
+		status = cusparseSpGEMM_workEstimation(handle, opA, opB,
+			&alpha, __spgemm_dat.matA, __spgemm_dat.matB, &beta, __spgemm_dat.matC,
+			computeType, CUSPARSE_SPGEMM_DEFAULT,
+			__spgemm_dat.spgemmDesc, &__spgemm_dat.bufferSize1, __spgemm_dat.dBuffer1);
+	}
+	status = cusparseSpGEMM_compute(handle, opA, opB,
+		&alpha, __spgemm_dat.matA, __spgemm_dat.matB, &beta, __spgemm_dat.matC,
+		computeType, CUSPARSE_SPGEMM_DEFAULT,
+		__spgemm_dat.spgemmDesc, &__spgemm_dat.bufferSize2, NULL);
+	// ask bufferSize2 bytes for external memory
+	if (!__spgemm_dat.initialized)
+	{
+
+		err = cudaMalloc(&__spgemm_dat.dBuffer2, __spgemm_dat.bufferSize2);
+	}
+	// compute the intermediate product of A * B
+	status = cusparseSpGEMM_compute(handle, opA, opB,
+		&alpha, __spgemm_dat.matA, __spgemm_dat.matB, &beta, __spgemm_dat.matC,
+		computeType, CUSPARSE_SPGEMM_DEFAULT,
+		__spgemm_dat.spgemmDesc, &__spgemm_dat.bufferSize2, __spgemm_dat.dBuffer2);
+	// get matrix C non-zero entries C_nnz1
+
+	status = cusparseSpMatGetSize(__spgemm_dat.matC, &__spgemm_dat.C_num_rows1, &__spgemm_dat.C_num_cols1,
+		&__spgemm_dat.C_nnz1);
+	//std::cout << "rows" << C_num_rows1 << "cols" << C_num_cols1 <<"nnz"<<C_nnz1<< std::endl;
+	// allocate matrix C
+	if (!__spgemm_dat.initialized)
+	{
+		err = cudaMalloc(&__spgemm_dat.dC_columns, __spgemm_dat.C_nnz1 * sizeof(int));
+		err = cudaMalloc(&__spgemm_dat.dC_values, __spgemm_dat.C_nnz1 * sizeof(double));
+	}
+	// update matC with the new pointers
+
+	status = cusparseCsrSetPointers(__spgemm_dat.matC, __spgemm_dat.dC_csrOffsets, __spgemm_dat.dC_columns, __spgemm_dat.dC_values);
+
+	// if beta != 0, cusparseSpGEMM_copy reuses/updates the values of dC_values
+
+	// copy the final products to the matrix C
+
+	status = cusparseSpGEMM_copy(handle, opA, opB,
+		&alpha, __spgemm_dat.matA, __spgemm_dat.matB, &beta, __spgemm_dat.matC,
+		computeType, CUSPARSE_SPGEMM_DEFAULT, __spgemm_dat.spgemmDesc);
+
+	// copy A
+	this->_mat[0].resize(__spgemm_dat.C_num_rows1, __spgemm_dat.C_num_cols1);
+	this->_mat[0].resizeNonZeros(__spgemm_dat.C_nnz1);
+	err = cudaMemcpy(this->_mat[0].outerIndexPtr(), __spgemm_dat.dC_csrOffsets, (__spgemm_dat.C_num_rows1 + 1) * sizeof(int), cudaMemcpyDeviceToHost);
+	err = cudaMemcpy(this->_mat[0].innerIndexPtr(), __spgemm_dat.dC_columns, __spgemm_dat.C_nnz1 * sizeof(int), cudaMemcpyDeviceToHost);
+	err = cudaMemcpy(this->_mat[0].valuePtr(), __spgemm_dat.dC_values, __spgemm_dat.C_nnz1 * sizeof(double), cudaMemcpyDeviceToHost);
+
+
+
+	if (!sparse) {
+
+	}
+	__spgemm_dat.initialized = true;
+	dict[this] = __spgemm_dat;
+
+}
+
+std::string kingghidorah::_mySparse::ofAtA_gpu(_mySparse* A, bool sparse)
+{
+	kingghidorah::spgemm __spgemm_dat;
+	if (dict.contains(this))
+	{
+		__spgemm_dat = dict[this];
+	}
+	else {
+		__spgemm_dat.initialized = false;
+	}
+	auto ss = std::stringstream();
+	auto now = high_resolution_clock::now();
+	this->join();
+	cusparseHandle_t     handle = sp_handle;
+	//std::vector <cusolverSpHandle_t> solversp_handles(_mt);
+	//std::vector <CUstream> __streams(_mt);
+	//cuInit(0);
+	//cudaSetDevice(0);
+
+	//cusparseCreate(&sp_handle);
+		
+	//static std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>> e;
+	int nn = this->cols();
+	int _mt = omp_get_max_threads();
+	omp_set_num_threads(_mt);
+	auto end = high_resolution_clock::now();
+	auto duration = duration_cast<milliseconds>(now - end);
+	ss << "join"<<duration.count() << "ms" << std::endl;
+	now = high_resolution_clock::now();
+		cudaSetDevice(0);
+		
+		Eigen::SparseMatrix<double, Eigen::RowMajor> tmp = this->_mat[0].transpose()*coeff[0].asDiagonal();
+
+		this->_mat[0].makeCompressed();
+		tmp.makeCompressed();
+		if (!__spgemm_dat.initialized)
+		{
+			__spgemm_dat.A_num_rows = tmp.rows();
+			__spgemm_dat.A_num_cols = tmp.cols();
+			__spgemm_dat.A_nnz = tmp.nonZeros();
+
+			__spgemm_dat.B_num_rows = this->_mat[0].rows();
+			__spgemm_dat.B_num_cols = this->_mat[0].cols();
+			__spgemm_dat.B_nnz = this->_mat[0].nonZeros();
+		}
+		std::cout << "A_nnz" << __spgemm_dat.A_nnz << std::endl;
+		std::cout << "B_nnz" << __spgemm_dat.B_nnz << std::endl;
+		double               alpha = 1.0;
+		double               beta = 0;
+		cusparseOperation_t opA = CUSPARSE_OPERATION_NON_TRANSPOSE;
+		cusparseOperation_t opB = CUSPARSE_OPERATION_NON_TRANSPOSE;
+		cudaDataType        computeType = CUDA_R_64F;
+		//--------------------------------------------------------------------------
+		// Device memory management: Allocate and copy A, B
+
+				
+		// allocate A
+		if (!__spgemm_dat.initialized)
+		{
+			auto err = cudaMalloc(&__spgemm_dat.dA_csrOffsets, sizeof(int) * (__spgemm_dat.A_num_rows + 1));
+			std::cout << cudaGetErrorString(err) << std::endl;
+			err = cudaMalloc(&__spgemm_dat.dA_columns, sizeof(int) * __spgemm_dat.A_nnz);
+			std::cout << cudaGetErrorString(err) << std::endl;
+			err = cudaMalloc(&__spgemm_dat.dA_values, sizeof(double) * __spgemm_dat.A_nnz);
+			std::cout << cudaGetErrorString(err) << std::endl;
+			// allocate B
+			err = cudaMalloc(&__spgemm_dat.dB_csrOffsets, (__spgemm_dat.B_num_rows + 1) * sizeof(int));
+			err = cudaMalloc(&__spgemm_dat.dB_columns, __spgemm_dat.B_nnz * sizeof(int));
+			err = cudaMalloc(&__spgemm_dat.dB_values, __spgemm_dat.B_nnz * sizeof(double));
+			// allocate C offsets
+			err = cudaMalloc(&__spgemm_dat.dC_csrOffsets, (__spgemm_dat.A_num_rows + 1) * sizeof(int));
+		}
+		// copy A
+		auto err = cudaMemcpy(__spgemm_dat.dA_csrOffsets, tmp.outerIndexPtr(), (__spgemm_dat.A_num_rows + 1) * sizeof(int), cudaMemcpyHostToDevice);
+		err = cudaMemcpy(__spgemm_dat.dA_columns, tmp.innerIndexPtr(), __spgemm_dat.A_nnz * sizeof(int), cudaMemcpyHostToDevice);
+		err = cudaMemcpy(__spgemm_dat.dA_values, tmp.valuePtr(), __spgemm_dat.A_nnz * sizeof(double), cudaMemcpyHostToDevice);
+		// copy B
+		err = cudaMemcpy(__spgemm_dat.dB_csrOffsets, this->_mat[0].outerIndexPtr(), (__spgemm_dat.B_num_rows + 1) * sizeof(int), cudaMemcpyHostToDevice);
+		err = cudaMemcpy(__spgemm_dat.dB_columns, this->_mat[0].innerIndexPtr(), __spgemm_dat.B_nnz * sizeof(int), cudaMemcpyHostToDevice);
+		err = cudaMemcpy(__spgemm_dat.dB_values, this->_mat[0].valuePtr(), __spgemm_dat.B_nnz * sizeof(double), cudaMemcpyHostToDevice);
+		//--------------------------------------------------------------------------
+		// CUSPARSE APIs
+
+
+
+
+		// Create sparse matrix A in CSR format
+		if (!__spgemm_dat.initialized)
+		{
+			auto status = cusparseCreateCsr(&__spgemm_dat.matA, __spgemm_dat.A_num_rows, __spgemm_dat.A_num_cols, __spgemm_dat.A_nnz,
+				__spgemm_dat.dA_csrOffsets, __spgemm_dat.dA_columns, __spgemm_dat.dA_values,
+				CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I,
+				CUSPARSE_INDEX_BASE_ZERO, computeType);
+			status = cusparseCreateCsr(&__spgemm_dat.matB, __spgemm_dat.B_num_rows, __spgemm_dat.B_num_cols, __spgemm_dat.B_nnz,
+				__spgemm_dat.dB_csrOffsets, __spgemm_dat.dB_columns, __spgemm_dat.dB_values,
+				CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I,
+				CUSPARSE_INDEX_BASE_ZERO, computeType);
+			status = cusparseCreateCsr(&__spgemm_dat.matC, __spgemm_dat.A_num_rows, __spgemm_dat.B_num_cols, 0,
+				NULL, NULL, NULL,
+				CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I,
+				CUSPARSE_INDEX_BASE_ZERO, computeType);
+			//--------------------------------------------------------------------------
+			// SpGEMM Computation
+			status = cusparseSpGEMM_createDescr(&__spgemm_dat.spgemmDesc);
+		}
+		// ask bufferSize1 bytes for external memory
+
+		auto status = cusparseSpGEMM_workEstimation(handle, opA, opB,
+			&alpha, __spgemm_dat.matA, __spgemm_dat.matB, &beta, __spgemm_dat.matC,
+			computeType, CUSPARSE_SPGEMM_DEFAULT,
+			__spgemm_dat.spgemmDesc, &__spgemm_dat.bufferSize1, NULL);
+		if (!__spgemm_dat.initialized)
+		{
+			err = cudaMalloc(&__spgemm_dat.dBuffer1, __spgemm_dat.bufferSize1);
+		}
+		// inspect the matrices A and B to understand the memory requirement for
+		// the next step
+		if (!__spgemm_dat.initialized)
+		{
+			status = cusparseSpGEMM_workEstimation(handle, opA, opB,
+				&alpha, __spgemm_dat.matA, __spgemm_dat.matB, &beta, __spgemm_dat.matC,
+				computeType, CUSPARSE_SPGEMM_DEFAULT,
+				__spgemm_dat.spgemmDesc, &__spgemm_dat.bufferSize1, __spgemm_dat.dBuffer1);
+		}
+		status = cusparseSpGEMM_compute(handle, opA, opB,
+			&alpha, __spgemm_dat.matA, __spgemm_dat.matB, &beta, __spgemm_dat.matC,
+			computeType, CUSPARSE_SPGEMM_DEFAULT,
+			__spgemm_dat.spgemmDesc, &__spgemm_dat.bufferSize2, NULL);
+		// ask bufferSize2 bytes for external memory
+		if (!__spgemm_dat.initialized)
+		{
+
+			err = cudaMalloc(&__spgemm_dat.dBuffer2, __spgemm_dat.bufferSize2);
+		}
+		// compute the intermediate product of A * B
+		status = cusparseSpGEMM_compute(handle, opA, opB,
+			&alpha, __spgemm_dat.matA, __spgemm_dat.matB, &beta, __spgemm_dat.matC,
+			computeType, CUSPARSE_SPGEMM_DEFAULT,
+			__spgemm_dat.spgemmDesc, &__spgemm_dat.bufferSize2, __spgemm_dat.dBuffer2);
+		// get matrix C non-zero entries C_nnz1
+
+		status = cusparseSpMatGetSize(__spgemm_dat.matC, &__spgemm_dat.C_num_rows1, &__spgemm_dat.C_num_cols1,
+			&__spgemm_dat.C_nnz1);
+		//std::cout << "rows" << C_num_rows1 << "cols" << C_num_cols1 <<"nnz"<<C_nnz1<< std::endl;
+		// allocate matrix C
+		if (!__spgemm_dat.initialized)
+		{
+			err = cudaMalloc(&__spgemm_dat.dC_columns, __spgemm_dat.C_nnz1 * sizeof(int));
+			err = cudaMalloc(&__spgemm_dat.dC_values, __spgemm_dat.C_nnz1 * sizeof(double));
+		}
+		// update matC with the new pointers
+
+		status = cusparseCsrSetPointers(__spgemm_dat.matC, __spgemm_dat.dC_csrOffsets, __spgemm_dat.dC_columns, __spgemm_dat.dC_values);
+
+		// if beta != 0, cusparseSpGEMM_copy reuses/updates the values of dC_values
+
+		// copy the final products to the matrix C
+
+		status = cusparseSpGEMM_copy(handle, opA, opB,
+			&alpha, __spgemm_dat.matA, __spgemm_dat.matB, &beta, __spgemm_dat.matC,
+			computeType, CUSPARSE_SPGEMM_DEFAULT, __spgemm_dat.spgemmDesc);
+
+		// copy A
+		this->_mat[0].resize(__spgemm_dat.C_num_rows1, __spgemm_dat.C_num_cols1);
+		this->_mat[0].resizeNonZeros(__spgemm_dat.C_nnz1);
+		err=cudaMemcpy(this->_mat[0].outerIndexPtr(), __spgemm_dat.dC_csrOffsets, (__spgemm_dat.C_num_rows1 + 1) * sizeof(int), cudaMemcpyDeviceToHost);
+		err=cudaMemcpy(this->_mat[0].innerIndexPtr(), __spgemm_dat.dC_columns, __spgemm_dat.C_nnz1 * sizeof(int), cudaMemcpyDeviceToHost);
+		err=cudaMemcpy(this->_mat[0].valuePtr(), __spgemm_dat.dC_values, __spgemm_dat.C_nnz1 * sizeof(double), cudaMemcpyDeviceToHost);
+		//std::cout << "nnz" << C_nnz1 << std::endl;
+		// destroy matrix/vector descriptors
+
+
+	end = high_resolution_clock::now();
+	duration = duration_cast<milliseconds>(now - end);
+	ss << duration.count() << "ms" << std::endl;
+	now = high_resolution_clock::now();
+	Eigen::setNbThreads(_mt);
+
+	end = high_resolution_clock::now();
+	duration = duration_cast<milliseconds>(now - end);
+	ss << duration.count() << "ms" << std::endl;
+	now = high_resolution_clock::now();
+	if (!sparse) {
+		//this->_dmat.setZero(nn, nn);
+		//this->_tmp.setZero(nn, nn);
+		/*if (__r == 0 || __c == 0)
+		{
+			if (false)//__cuinit)
+			{
+				cudaMallocHost(&___dmat, sizeof(double) * nn * nn * 2);
+			}
+			else {
+				___dmat = (double*)malloc(sizeof(double) * nn * nn * 2);
+			}
+		}*/
+		//__r = nn;
+		//__c = nn;
+		/*Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, nn, nn);
+		_dmat = e[0];
+		for (int i = 1; i < _mt; i ++) {
+			_dmat += e[i];
+		}*/
+		//this->_dmat = x;
+	}
+	end = high_resolution_clock::now();
+	duration = duration_cast<milliseconds>(now - end);
+	ss << duration.count() << "ms" << std::endl;
+	now = high_resolution_clock::now();
+	//this->_mat[0] = this->_dmat.sparseView(1.0, 0.0000000000001);
+	for (int i = 0; i < _mt; i++)
+	{
+		//cuStreamDestroy(__streams[i]);
+	}
+	//for (auto& h : solversp_handles)
+	//{
+		//cusolverSpDestroy(h);
+	//}
+
+	//cusparseDestroy(sp_handle);
+	__spgemm_dat.initialized = true;
+	dict[this] = __spgemm_dat;
+	return ss.str();
+}
 void kingghidorah::_mySparse::_freeze() {
 	//this->_dmat = this->_mat[0];
 }
@@ -1238,7 +1674,20 @@ std::string kingghidorah::_mySparse::info()
 {
 	return "viennacl has been abandoned";
 }
-
+void kingghidorah::_mySparse::join()
+{
+	//eigen_assert(this->_mat[0].nonZeros() > 0);
+	int __rows = this->rows();
+	this->_mat[0].conservativeResize(__rows,this->_mat[0].cols());
+	this->coeff[0].conservativeResize(__rows, 1);
+	int offset = 0;
+	for (int i = 1; i < _nt; i++)
+	{
+		this->_mat[0].middleRows(offset, this->_mat[i].rows()) = this->_mat[i];
+		this->coeff[0].middleRows(offset, this->_mat[i].rows()) = this->coeff[i];
+		offset += this->_mat[i].rows();
+	}
+}
 void kingghidorah::_mySparse::_ofAtB(_mySparse* B, _mySparse* C)
 {
 	this->freeze(true);
@@ -1281,6 +1730,19 @@ void kingghidorah::_mySparse::_ofAtB(_mySparse* B, _mySparse* C)
 	if (C->_mat.size() == 0)C->_mat.resize(1);
 	C->_mat[0] = C->_dmat.sparseView(1.0, 0.0000000000001);
 	C->_mat[0].makeCompressed();
+}
+void kingghidorah::_mySparse::_ofBtAB_qr(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret)
+{
+	static Eigen::SparseMatrix<double, Eigen::ColMajor> _a;
+	static Eigen::SparseMatrix<double,Eigen::ColMajor> q;
+	static Eigen::SparseMatrix<double, Eigen::ColMajor > tmp;
+	this->_mat[0].makeCompressed();
+	_a = this->_mat[0];
+	Eigen::SparseQR<Eigen::SparseMatrix<double, Eigen::ColMajor>, Eigen::COLAMDOrdering<int>> qr;
+	qr.compute(_a);
+	q = qr.matrixQ();
+	tmp = q * B->_mat[0];
+	C->_dmat = tmp.transpose() * tmp;
 }
 void kingghidorah::_mySparse::_ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret)
 {
@@ -1345,7 +1807,7 @@ void kingghidorah::_mySparse::_ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySpars
 
 void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 {
-	static std::vector<Eigen::SparseMatrix<double>> e2;
+	static std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>> e2;
 
 	int nn = this->cols();
 	int mm = B->cols();
@@ -1403,6 +1865,11 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 		if (S >= _nt)break;
 			for (int ii = S; ii < E; ii++)
 			{
+				/*Eigen::SparseMatrix<double> __coeff(coeff[ii].size(), coeff[ii].size());
+				for (int k = 0; k < coeff[ii].size(); k++)
+				{
+					__coeff.insert(k, k) = coeff[ii](k);
+				}*/
 				e2[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * B->_mat[ii];
 			}
 		}
@@ -1437,9 +1904,6 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 	if (sparse)
 	{
 		this->_mat[0] += e2[0];
-		/*for (int i = 0; i < _mt; i++) {
-			this->_mat[0] += e2[i];
-		}*/
 		this->_mat[0].makeCompressed();
 	}
 	else {
@@ -1460,7 +1924,15 @@ void kingghidorah::_mySparse::Atb(double* ptr, int N, Eigen::VectorXd* c)
 		int ee = coeff[ii].rows();
 		Eigen::Map<Eigen::VectorXd> b(ptr + offset, ee);
 		if (this->_mat[ii].rows() > 0 && this->_mat[ii].cols() > 0)
-		*c += _mat[ii].transpose() * coeff[ii].asDiagonal() * b;
+		{
+
+			/*Eigen::SparseMatrix<double> __coeff(coeff[ii].size(), coeff[ii].size());
+			for (int k = 0; k < coeff[ii].size(); k++)
+			{
+				__coeff.insert(k, k) = coeff[ii](k);
+			}*/
+			*c += _mat[ii].transpose() * coeff[ii].asDiagonal() * b;
+		}
 		offset += ee;
 	}
 	//return ret;
@@ -1475,8 +1947,15 @@ Eigen::VectorXd kingghidorah::_mySparse::Atb(double* ptr, int N)
 		int ee = coeff[ii].rows();
 		Eigen::Map<Eigen::VectorXd> b(ptr + offset, ee);
 		if (this->_mat[ii].rows() > 0 && this->_mat[ii].cols() > 0)
+		{
+			/*Eigen::SparseMatrix<double> __coeff(coeff[ii].size(), coeff[ii].size());
+			for (int k = 0; k < coeff[ii].size(); k++)
+			{
+				__coeff.insert(k, k) = coeff[ii](k);
+			}*/
 
-		ret += _mat[ii].transpose() * coeff[ii].asDiagonal() * b;
+			ret += _mat[ii].transpose() * coeff[ii].asDiagonal() * b;
+		}
 		offset += ee;
 	}
 	return ret;
@@ -1801,7 +2280,7 @@ void kingghidorah::_mySparse::_solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse
 void kingghidorah::_mySparse::_solveI(_mySparse* ret)
 {
 	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);	
-	Eigen::SimplicialLLT<Eigen::SparseMatrix<double>> llt;
+	Eigen::SimplicialLLT<Eigen::SparseMatrix<double>, Eigen::RowMajor> llt;
 	llt.compute(this->_mat[0]);
 	int nn = this->_mat[0].rows();
 	/*if(ret->__r == 0)
@@ -2287,7 +2766,7 @@ void kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, _mySparse* m
 
 void kingghidorah::_mySparse::_solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret) {
 	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);
-	Eigen::SimplicialLLT<Eigen::SparseMatrix<double>> LLT;
+	Eigen::SimplicialLLT<Eigen::SparseMatrix<double>, Eigen::RowMajor> LLT;
 	LLT.compute(_mat[0]);
 	//Eigen::Map<Eigen::VectorXd> b(rhs, N);
 	ret->conservativeResize(_mat[0].cols());
@@ -2351,7 +2830,7 @@ void kingghidorah::_mySparse::clearcoeff() {
 		}
 	}
 }
-Eigen::SparseMatrix<double> id;
+Eigen::SparseMatrix<double, Eigen::RowMajor> id;
 void kingghidorah::_mySparse::addsmallidentity(double salt, bool sparse, bool dense) {
 
 	if (dense)

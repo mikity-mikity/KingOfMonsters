@@ -101,7 +101,7 @@
       <SupportJustMyCode>true</SupportJustMyCode>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>cublas.lib;cusolver.lib;cusolverMg.lib;cudart.lib;cuda.lib</AdditionalDependencies>
+      <AdditionalDependencies>cublas.lib;cusolver.lib;cusolverMg.lib;cudart.lib;cuda.lib;cusparse.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -132,7 +132,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>cublas.lib;cusolver.lib;cusolverMg.lib;cudart.lib;cuda.lib</AdditionalDependencies>
+      <AdditionalDependencies>cublas.lib;cusolver.lib;cusolverMg.lib;cudart.lib;cuda.lib;cusparse.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
