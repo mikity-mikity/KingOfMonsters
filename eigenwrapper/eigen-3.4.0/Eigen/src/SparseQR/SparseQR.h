@@ -289,12 +289,14 @@ class SparseQR : public SparseSolverBase<SparseQR<_MatrixType,_OrderingType> >
     mutable ComputationInfo m_info;
     std::string m_lastError;
     QRMatrixType m_pmat;            // Temporary matrix
+    public:
     QRMatrixType m_R;               // The triangular factor matrix
     QRMatrixType m_Q;               // The orthogonal reflectors
     ScalarVector m_hcoeffs;         // The Householder coefficients
     PermutationType m_perm_c;       // Fill-reducing  Column  permutation
     PermutationType m_pivotperm;    // The permutation for rank revealing
     PermutationType m_outputPerm_c; // The final column permutation
+    protected:
     RealScalar m_threshold;         // Threshold to determine null Householder reflections
     bool m_useDefaultThreshold;     // Use default threshold
     Index m_nonzeropivots;          // Number of non zero pivots found

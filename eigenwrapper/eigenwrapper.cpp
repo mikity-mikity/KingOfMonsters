@@ -1733,20 +1733,23 @@ void kingghidorah::_mySparse::_ofAtB(_mySparse* B, _mySparse* C)
 }
 void kingghidorah::_mySparse::_ofBtAB_qr(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret)
 {
+	this->join();
+	B->join();
+
 	static Eigen::SparseMatrix<double, Eigen::ColMajor> _a;
 	static Eigen::SparseMatrix<double,Eigen::ColMajor> q;
 	static Eigen::SparseMatrix<double, Eigen::ColMajor > tmp;
 	this->_mat[0].makeCompressed();
 	_a = this->_mat[0];
 	Eigen::SparseQR<Eigen::SparseMatrix<double, Eigen::ColMajor>, Eigen::COLAMDOrdering<int>> qr;
+	qr.setPivotThreshold(0.00000000001);
 	qr.compute(_a);
-	q = qr.matrixQ();
+	q = qr.m_Q;
 	tmp = q * B->_mat[0];
 	C->_dmat = tmp.transpose() * tmp;
 }
 void kingghidorah::_mySparse::_ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret)
 {
-
 	Eigen::MatrixXd D;
 
 	int nn = B->_mat[0].cols();

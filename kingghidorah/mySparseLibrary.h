@@ -425,7 +425,7 @@ namespace kingghidorah {
 		void _ofBtAB(mySparse^ A, mySparse^ B, myDoubleArray^ b, myDoubleArray^ ret)
 		{
 			//pin_ptr<double> ptr = &b[0];
-
+			
 			A->dat->_ofBtAB(B->dat, &b->_arr->__v, this->dat, &ret->_arr->__v);
 			//array<double>^ ret = gcnew array<double>(_ret.rows());
 			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
@@ -435,8 +435,6 @@ namespace kingghidorah {
 		
 		void _ofBtAB_qr(mySparse^ A, mySparse^ B, myDoubleArray^ b, myDoubleArray^ ret)
 		{
-			A->dat->join();
-			B->dat->join();
 			A->dat->_ofBtAB_qr(B->dat, &b->_arr->__v, this->dat, &ret->_arr->__v);
 			
 			
