@@ -11,7 +11,7 @@ using std::vector;
 using std::string;
 using namespace System;
 using namespace System::Threading::Tasks;
-#define EIGEN_DONT_ALIGN
+//#define EIGEN_DONT_ALIGN
 namespace kingghidorah {
 	public ref class myDoubleArray {
 	public:
@@ -404,8 +404,8 @@ namespace kingghidorah {
 		System::String ^ ofAtA(mySparse^ m, bool sparse) {
 			return gcnew System::String(dat->ofAtA(m->dat, sparse).c_str());
 		}
-		System::String^ ofAtA_gpu(mySparse^ m, bool sparse) {
-			return gcnew System::String(dat->ofAtA_gpu(m->dat, sparse).c_str());
+		System::String^ ofAtA_gpu(myCuda ^cuda,mySparse^ m, bool sparse) {
+			return gcnew System::String( dat->ofAtA_gpu(cuda->cuda(), m->dat, sparse).c_str());
 		}
 		System::String^ _ofAtA(mySparse^ m) {
 			auto str = dat->_ofAtA(m->dat);
@@ -415,9 +415,9 @@ namespace kingghidorah {
 		void ofAtB(mySparse^ m, bool sparse) {
 			dat->ofAtB(m->dat, sparse);
 		}
-		void ofAtB_gpu(mySparse^ m, bool sparse) {
+		/*void ofAtB_gpu(mySparse^ m, bool sparse) {
 			dat->ofAtB_gpu(m->dat, sparse);
-		}
+		}*/
 		void _ofAtB(mySparse^ A, mySparse^ B)
 		{
 			A->dat->_ofAtB(B->dat, this->dat);

@@ -41,6 +41,8 @@ using std::string;
 void kernel(double* A, double* work, int N, cudaStream_t stream);
 namespace kingghidorah {
 	class cuda {
+	public:
+
 	private:
 		bool _canpeer = false;
 		std::vector<std::string> rank;
@@ -131,8 +133,8 @@ namespace kingghidorah {
 	public:
 		bool initialized = false;
 		int* dA_csrOffsets = 0, * dA_columns = 0, * dB_csrOffsets = 0, * dB_columns = 0,
-			* dC_csrOffsets = 0, * dC_columns = 0;
-		double* dA_values = 0, * dB_values = 0, * dC_values = 0;
+			* dC_csrOffsets = 0, * dC_columns = 0, * dD_csrOffsets = 0, * dD_columns = 0;
+		double* dA_values = 0, * dB_values = 0, * dC_values = 0, * dD_values = 0;
 		int A_num_rows;
 		int A_num_cols;
 		int A_nnz;
@@ -140,9 +142,10 @@ namespace kingghidorah {
 		int B_num_rows;
 		int B_num_cols;
 		int B_nnz;
-		cusparseSpMatDescr_t matA, matB, matC;
-		cusparseSpGEMMDescr_t spgemmDesc;
-		int64_t C_num_rows1, C_num_cols1, C_nnz1;
+		//cusparseSpMatDescr_t matA, matB, matC;
+		//cusparseSpGEMMDescr_t spgemmDesc;
+		int C_num_rows, C_num_cols, C_nnz;
+		int D_num_rows, D_num_cols, D_nnz;
 
 		void* dBuffer1 = NULL, * dBuffer2 = NULL;
 		size_t bufferSize1 = 0, bufferSize2 = 0;
@@ -213,9 +216,9 @@ namespace kingghidorah {
 		void ofDat();
 		void freezecoeff();
 		std::string ofAtA(_mySparse* A, bool sparse);
-		std::string ofAtA_gpu(_mySparse* A, bool sparse);
+		std::string ofAtA_gpu(cuda* _cuda,_mySparse* A, bool sparse);
 		std::string _ofAtA(_mySparse* A);
-		void ofAtB_gpu(_mySparse* B, bool sparse);
+		//void ofAtB_gpu(_mySparse* B, bool sparse);
 		void ofAtB(_mySparse* B, bool sparse);
 		void _ofAtB(_mySparse* B, _mySparse* C);
 		void _ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret);

@@ -2562,7 +2562,7 @@ public:
 	void update_z_phi(int nNode, kingghidorah::myDoubleArray^ Z, kingghidorah::myDoubleArray^ phi) {
 		if (Z != nullptr)
 		{
-			eigen_assert(Z->_arr->__v.norm() < 10000 && Z->_arr->__v.norm() > -100000);
+			//eigen_assert(Z->_arr->__v.norm() < 10000 && Z->_arr->__v.norm() > -100000);
 			__mem->set_buf_z(Z->_arr->__v.data(), nNode);
 			/*for (int i = 0; i < nNode; i++) {
 				__mem->set_buf_z(i, (*Z->_arr)(i));
@@ -2570,7 +2570,7 @@ public:
 		}
 		if (phi != nullptr)
 		{
-			eigen_assert(phi->_arr->__v.norm() < 10000 && phi->_arr->__v.norm() > -100000);
+			//eigen_assert(phi->_arr->__v.norm() < 10000 && phi->_arr->__v.norm() > -100000);
 			__mem->set_buf_phi(phi->_arr->__v.data(), nNode);
 			/*for (int i = 0; i < nNode; i++) {
 				__mem->set_buf_phi(i, (*phi->_arr)(i));
