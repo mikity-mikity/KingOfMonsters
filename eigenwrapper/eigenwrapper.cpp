@@ -17,7 +17,7 @@
 int previdentiyN = 0;
 //std::vector<cudaStream_t> streams;
 Eigen::MatrixXd I;
-#define STREAMCOUNT 4
+#define STREAMCOUNT 8
 bool __cuinit = false;
 //static std::vector<Eigen::SparseMatrix<double>> e;
 std::vector<std::vector<cusparseHandle_t>> sp_handle;
@@ -1073,7 +1073,7 @@ void kingghidorah::_mySparse::ofDat()
 #pragma omp parallel for
 	for (int ii = 0; ii < _nt; ii++)
 	{
-		//_mat[ii].setZero();
+		_mat[ii].setZero();
 		_mat[ii].reserve(dat[ii].size());
 		if (dat[ii].size() > 0)
 		{
@@ -1253,7 +1253,9 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 	static std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>> res;
 	auto ss = std::stringstream();
 	auto now = high_resolution_clock::now();
-	//this->join();
+	this->join();
+
+	this->_nt = 1;
 	if (e.size() < _mt)e.resize(_mt);
 	tmp.resize(_mt);
 	tmp2.resize(_mt);
@@ -1280,8 +1282,8 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 	//cusparseCreate(&sp_handle);
 		
 	//static std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>> e;
-	
-	int __mt = STREAMCOUNT* _cuda->count();
+	auto ALG = CUSPARSE_SPGEMM_CSR_ALG_DETERMINITIC;
+	int __mt = 1;// STREAMCOUNT* _cuda->count();
 	omp_set_num_threads(__mt);
 		cudaSetDevice(0);
 		int _ss = 20;// _nt / __mt / 4;
@@ -1335,8 +1337,7 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 
 				__spgemm_dat.C_num_rows = max_cols;
 				__spgemm_dat.C_num_cols = max_cols;
-				__spgemm_dat.C_nnz = max_cols * max_cols / 20;
-
+				__spgemm_dat.C_nnz = max_cols * max_cols / 3+1000;
 				auto err = cudaMalloc(&__spgemm_dat.dA_csrOffsets, sizeof(int) * (__spgemm_dat.A_num_rows + 1));
 				err = cudaMalloc(&__spgemm_dat.dA_columns, sizeof(int) * __spgemm_dat.A_nnz);
 				err = cudaMalloc(&__spgemm_dat.dA_values, sizeof(double) * __spgemm_dat.A_nnz);
@@ -1395,9 +1396,11 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 				int64_t C_num_rows1 = nn, C_num_cols1 = nn;
 
 				//cusparseSetPointerMode(handle, CUSPARSE_POINTER_MODE_HOST);
-				
+	
+
 				for (int kk = 0; kk < 100000; kk++)
 				{
+					
 					//if (_ii == 0 )break;
 					int S = 0;// _ii* _nt / __mt;
 					int E = 0;// (_ii + 1)* _nt / __mt;
@@ -1414,11 +1417,14 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 					if (S >= _nt)break;
 					
 
-					int counter = 0;
-			
+
+
+
 					for (int ii = S; ii < E; ii++)
 					{
 						int64_t C_nnz1 = 0;
+						if (C_nnz1 == 0)
+							cudaMemsetAsync(__spgemm_dat->dC_csrOffsets, 0, sizeof(int) * (nn + 1), stream);
 						//int64_t* nnzTotalDevHostPtr = &C_nnz1;
 						//csrgemm2Info_t info = NULL;
 						//cusparseCreateCsrgemm2Info(&info);
@@ -1437,7 +1443,6 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 						C_num_rows1 = A_num_rows;
 						C_num_cols1 = B_num_cols;
 						if (A_nnz * B_nnz == 0)continue;
-			
 
 
 						//std::cout << "A_nnz" << A_nnz << std::endl;
@@ -1462,10 +1467,6 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 						}
 						//--------------------------------------------------------------------------
 						// CUSPARSE APIs
-
-						if (C_nnz1 == 0)
-							cudaMemsetAsync(__spgemm_dat->dC_csrOffsets, 0, sizeof(int) * (nn + 1), stream);
-
 
 
 
@@ -1500,15 +1501,7 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 								CUSPARSE_INDEX_BASE_ZERO, computeType);
 							eigen_assert(status == 0);
 						}
-						/*if (C_nnz1 == 0)
 						{
-							auto status = cusparseCreateCsr(&matC, C_num_rows1, C_num_cols1, 0,
-								__spgemm_dat->dC_csrOffsets, __spgemm_dat->dC_columns, __spgemm_dat->dC_values,
-								CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I,
-								CUSPARSE_INDEX_BASE_ZERO, computeType);
-							eigen_assert(status == 0);
-						}
-						else */{
 							auto status = cusparseCreateCsr(&matC, C_num_rows1, C_num_cols1, C_nnz1,
 								__spgemm_dat->dC_csrOffsets, __spgemm_dat->dC_columns, __spgemm_dat->dC_values,
 								CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I,
@@ -1525,7 +1518,7 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 						bufferSize2 = 0;
 						status = cusparseSpGEMM_workEstimation(handle, opA, opB,
 							&alpha, matA, matB, &beta, matC,
-							computeType, CUSPARSE_SPGEMM_DEFAULT,
+							computeType, ALG,
 							spgemmDesc, &bufferSize1, NULL);
 						eigen_assert(status == 0);
 						if (bufferSize1 > __spgemm_dat->bufferSize1)
@@ -1536,7 +1529,7 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 						}
 						status = cusparseSpGEMM_workEstimation(handle, opA, opB,
 							&alpha, matA, matB, &beta, matC,
-							computeType, CUSPARSE_SPGEMM_DEFAULT,
+							computeType, ALG,
 							spgemmDesc, &bufferSize1, __spgemm_dat->dBuffer1);
 						eigen_assert(status == 0);
 
@@ -1546,13 +1539,13 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 
 						status = cusparseSpGEMM_compute(handle, opA, opB,
 							&alpha, matA, matB, &beta, matC,
-							computeType, CUSPARSE_SPGEMM_DEFAULT,
+							computeType, ALG,
 							spgemmDesc, &bufferSize2, NULL);
 						eigen_assert(status == 0);
 						if (bufferSize2 > __spgemm_dat->bufferSize2)
 						{
 							cudaFree(__spgemm_dat->dBuffer2);
-							auto err = cudaMalloc((double**)&__spgemm_dat->dBuffer2, bufferSize2*2);
+							auto err = cudaMalloc((double**)&__spgemm_dat->dBuffer2, bufferSize2 * 2);
 							__spgemm_dat->bufferSize2 = bufferSize2 * 2;
 						}
 
@@ -1562,7 +1555,7 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 						// compute the intermediate product of A * B
 						status = cusparseSpGEMM_compute(handle, opA, opB,
 							&alpha, matA, matB, &beta, matC,
-							computeType, CUSPARSE_SPGEMM_DEFAULT,
+							computeType, ALG,
 							spgemmDesc, &bufferSize2, __spgemm_dat->dBuffer2);
 						eigen_assert(status == 0);
 						// get matrix C non-zero entries C_nnz1
@@ -1576,21 +1569,22 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 						//eigen_assert(C_nnz1 == 0);
 						//std::cout << "rows" << C_num_rows1 << "cols" << C_num_cols1 <<"nnz"<<C_nnz1<< std::endl;
 						// allocate matrix C
-						
+
 						// update matC with the new pointers
 						//if(prevC_nnz1==0)
-						//	status = cusparseCsrSetPointers(matC, __spgemm_dat->dC_csrOffsets, __spgemm_dat->dC_columns, __spgemm_dat->dC_values);
+							status = cusparseCsrSetPointers(matC, __spgemm_dat->dC_csrOffsets, __spgemm_dat->dC_columns, __spgemm_dat->dC_values);
 						//eigen_assert(status == 0);
 						// if beta != 0, cusparseSpGEMM_copy reuses/updates the values of dC_values
-
+							eigen_assert(status == 0);
 						// copy the final products to the matrix C
 						status = cusparseSpGEMM_copy(handle, opA, opB,
 							&alpha, matA, matB, &beta, matC,
-							computeType, CUSPARSE_SPGEMM_DEFAULT, spgemmDesc);
-						
+							computeType, ALG, spgemmDesc);
+
 						//cusparseSpCsrgeam()
 						//cusparsecsrmv
 						eigen_assert(status == 0);
+						//cusparseDestroyCsrgemm2Info(info);
 						if (C_nnz1 == 0) {
 							res[_ii].setZero();
 						}
@@ -1599,15 +1593,17 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 							res[_ii].setZero();
 							res[_ii].reserve(C_nnz1);
 							res[_ii].resizeNonZeros(C_nnz1);
+							Eigen::SparseMatrix<double, Eigen::RowMajor>ff2 = res[_ii];
 							auto err = cudaMemcpyAsync(res[_ii].outerIndexPtr(), __spgemm_dat->dC_csrOffsets, (C_num_rows1 + 1) * sizeof(int), cudaMemcpyDeviceToHost, stream);
 							err = cudaMemcpyAsync(res[_ii].innerIndexPtr(), __spgemm_dat->dC_columns, C_nnz1 * sizeof(int), cudaMemcpyDeviceToHost, stream);
 							err = cudaMemcpyAsync(res[_ii].valuePtr(), __spgemm_dat->dC_values, C_nnz1 * sizeof(double), cudaMemcpyDeviceToHost, stream);
 							e[_ii] += res[_ii];
+							Eigen::SparseMatrix<double, Eigen::RowMajor>ff = res[_ii];
+							Eigen::SparseMatrix<double, Eigen::RowMajor>gg = e[_ii];
 						}
-						//cusparseDestroyCsrgemm2Info(info);
 					}
-					
 				}
+
 				
 				//cuStreamDestroy(stream);
 				//cusparseDestroy(handle);
@@ -1620,7 +1616,8 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 			}
 		
 		cudaDeviceSynchronize();
-		
+		//this->_mat[0] = e[0];
+		//return ss.str();
 		//int __mt = _mt;
 		for (int tt = 0; tt < 40; tt++)
 		{
@@ -1663,6 +1660,8 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 		omp_set_num_threads(_mt);
 	return ss.str();
 }
+
+
 /*std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool sparse)
 {
 	static std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>> e;
@@ -1813,6 +1812,7 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 
 		double               alpha = 1.0;
 		double               beta = 1.0;
+		
 		cusparseOperation_t opA = CUSPARSE_OPERATION_NON_TRANSPOSE;
 		cusparseOperation_t opB = CUSPARSE_OPERATION_NON_TRANSPOSE;
 		size_t bufferSize1 = 0, bufferSize2 = 0;
@@ -1871,11 +1871,20 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 					nnzTotalDevHostPtr = &C_nnz;
 				}
 
-				tmp[_ii] = (this->_mat[ii].transpose()) * coeff[ii].asDiagonal();
+				tmp[_ii] = (this->_mat[ii].transpose());// *coeff[ii].asDiagonal();
 				tmp2[_ii] = (this->_mat[ii]);
 
 				tmp2[_ii].makeCompressed();
 				tmp[_ii].makeCompressed();
+
+				for (int i = 0; i < tmp2[_ii].rows(); i++)
+				{
+					int S = tmp2[_ii].outerIndexPtr()[i];
+					int E = tmp2[_ii].outerIndexPtr()[i+1];
+					for (int k = S; k < E; k++) {
+						*(tmp2[_ii].valuePtr()+k) *= coeff[ii][i];
+					}
+				}
 				int A_num_rows = tmp[_ii].rows();
 				int A_num_cols = tmp[_ii].cols();
 				int A_nnz = tmp[_ii].nonZeros();
@@ -2030,7 +2039,7 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 				//cudaMemcpyAsync(__spgemm_dat->dC_columns, __spgemm_dat->dD_columns, sizeof(int) * D_nnz, cudaMemcpyDeviceToDevice, stream);
 				//cudaMemcpyAsync(__spgemm_dat->dC_values, __spgemm_dat->dD_values, sizeof(double) * D_nnz, cudaMemcpyDeviceToDevice, stream);
 				//C_nnz = D_nnz;
-				eigen_assert(status == 0);
+				//eigen_assert(status == 0);
 			
 			}
 		}
@@ -2123,8 +2132,8 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 	ss << "gpu" << duration.count() << "ms" << std::endl;
 	omp_set_num_threads(_mt);
 	return ss.str();
-}
-*/
+}*/
+
 void kingghidorah::_mySparse::_freeze() {
 	//this->_dmat = this->_mat[0];
 }
@@ -2179,14 +2188,35 @@ void kingghidorah::_mySparse::join()
 {
 	//eigen_assert(this->_mat[0].nonZeros() > 0);
 	int __rows = this->rows();
+	int offset = this->_mat[0].rows();
+	int offsetnonzeros = this->_mat[0].nonZeros();;
 	this->_mat[0].conservativeResize(__rows,this->_mat[0].cols());
 	this->coeff[0].conservativeResize(__rows, 1);
-	int offset = 0;
+	int nnz = 0;
+	//for (int i = 0; i < _nt; i++)
+	//{
+	//	nnz += this->_mat[i].nonZeros();
+	//}
+	this->_mat[0].resizeNonZeros(nnz);
+	this->_mat[0].reserve(nnz);
+	this->_mat[0].makeCompressed();
+
 	for (int i = 1; i < _nt; i++)
 	{
 		this->_mat[0].middleRows(offset, this->_mat[i].rows()) = this->_mat[i];
+		//this->_mat[i].makeCompressed();
+		//int nnz0 = this->_mat[i].nonZeros();
+		//memcpy(this->_mat[0].valuePtr() + offsetnonzeros, this->_mat[i].valuePtr(), sizeof(double) * nnz0);
+		//memcpy(this->_mat[0].innerIndexPtr() + offsetnonzeros, this->_mat[i].innerIndexPtr(), sizeof(double) * nnz0);
+		
 		this->coeff[0].middleRows(offset, this->_mat[i].rows()) = this->coeff[i];
 		offset += this->_mat[i].rows();
+		//for (int k = 1; k < this->_mat[i].rows()+1; k++)
+		//{
+		//	this->_mat[0].outerIndexPtr()[offset + k] = offsetnonzeros + this->_mat[i].outerIndexPtr()[k];
+		//}
+		//offsetnonzeros += nnz0;
+		
 	}
 }
 void kingghidorah::_mySparse::_ofAtB(_mySparse* B, _mySparse* C)

@@ -29,17 +29,19 @@ using namespace std::chrono;
 using namespace std;
 using namespace kingghidorah;
 #define _N 4
+#define _M 4
 int main() {
     {
         auto _cuda = new kingghidorah::cuda(_N);
         
-        _mySparse m[100];
+        _mySparse m[_M];
         _mySparse M;
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < _M; i++)
         {
             m[i].init(_N, _N);
         }
         M.init(_N, _N);
+        M.begin_construct();
         int index[_N];
         for (int i = 0; i < _N; i++)index[i] = i;
         for (int tt = 0; tt < 1; tt++)
@@ -48,7 +50,7 @@ int main() {
             {
                 //double f[_N];
                 M.Clear();
-                for (int ii = 0; ii < 100; ii++)
+                for (int ii = 0; ii < _M; ii++)
                 {
                     m[ii].Clear();
                     for (int i = 0; i < _N; i++)
@@ -66,15 +68,19 @@ int main() {
                                     m[ii].adddat(i, j, 0.1);
                                 }
                         }
+                        m[ii].addcoeff(1.0);
                     }
                     M.addmat(&m[ii]);
                 }
+                M.end_construct(_N);
                 M.ofDat();
                 M.clearcoeff();
                 auto start = high_resolution_clock::now();
                 std::cout << M._mat[0] << std::endl;
+                std::cout << M._mat[1] << std::endl;
+                std::cout << M._mat[2] << std::endl;
                 std::cout << "start" << std::endl;
-                M.ofAtA(&M, true);
+                //M.ofAtA(&M, true);
                 std::cout << M._mat[0] << std::endl;
                 M.ofAtA_gpu(_cuda , &M, true);
                 std::cout << "end" << std::endl;
