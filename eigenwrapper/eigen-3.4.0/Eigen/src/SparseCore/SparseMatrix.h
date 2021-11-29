@@ -223,7 +223,7 @@ class SparseMatrix
       else
         return insert(row,col);
     }
-
+    
     /** \returns a reference to a novel non zero coefficient with coordinates \a row x \a col.
       * The non zero coefficient must \b not already exist.
       *

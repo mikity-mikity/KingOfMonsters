@@ -577,6 +577,7 @@ kingghidorah::_mySparse::_mySparse()
 	_coeff.reserve(1000);
 	_mat.reserve(1000);
 	_mt = omp_get_max_threads();
+	//prevmat.resize(1, 1);
 	//e = new Eigen::SparseMatrix<double>[200];
 	//e2 = new Eigen::SparseMatrix<double>[200];
 	//_smat.resize(1);
@@ -1100,10 +1101,15 @@ int kingghidorah::_mySparse::numBlocks()
 
 std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 {
+	static std::map<_mySparse*, Eigen::SparseMatrix<double, Eigen::RowMajor>> dict2;
+	static std::map< Eigen::SparseMatrix<double, Eigen::RowMajor>*, std::vector<std::vector<int>>>  map;
+	static std::vector<std::vector<int>> index;
 	static std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>> e;
+	static std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>> e2;
 	auto ss = std::stringstream();
 	auto now = high_resolution_clock::now();
-	int nn = A->cols();
+	int nn = this->cols();
+	int mm = this->cols();
 	int _mt = omp_get_max_threads();
 	omp_set_num_threads(_mt);
 	auto end = high_resolution_clock::now();
@@ -1114,20 +1120,10 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 	if (e.size() < __mt)
 	{
 		e.resize(__mt);
-		//e2.resize(__mt);
+		e2.resize(__mt);
 	}
 	Eigen::initParallel();
 	Eigen::setNbThreads(1);
-#pragma omp parallel for
-	for (int i = 0; i < __mt; i++) {
-		e[i].resize(nn, nn);
-		e[i].makeCompressed();
-		e[i].reserve(nn * nn / 20);
-		e[i].setZero();
-		//e2[i].resize(nn, nn);
-		//e2[i].makeCompressed();
-		//e2[i].reserve(nn * nn / 50);
-	}
 	end = high_resolution_clock::now();
 	duration = duration_cast<milliseconds>(now - end);
 	ss << duration.count() << "ms" << std::endl;
@@ -1135,10 +1131,40 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 	ss << _nt << ":nt:" << std::endl;
 	ss << _mt << ":_mt:" << std::endl;
 	Eigen::initParallel();
-	Eigen::setNbThreads(1);
 	int job = 0;
 	int sss = _nt / __mt / 8;
+	int __nt2 = _nt;
 	if (sss == 0)sss = 1;
+	Eigen::SparseMatrix<double, Eigen::RowMajor>* prevmat;
+	if (dict2.contains(this)) {
+		prevmat = &dict2[this];
+	}
+	else {
+		Eigen::SparseMatrix<double, Eigen::RowMajor> _prevmat(nn, nn);
+		dict2[this] = _prevmat;
+		prevmat = &dict2[this];
+		prevmat->resize(nn, nn);
+		prevmat->reserve(nn * nn / 10);
+	}
+	//prevmat->makeCompressed();
+	std::vector<std::vector<int>>* _map = 0;
+	if (map.contains(prevmat))
+	{
+		_map = &map[prevmat];
+	}
+#pragma omp parallel for
+	for (int i = 0; i < __mt; i++) {
+		e[i].resize(nn, mm);
+		if (e[i].nonZeros() != prevmat->nonZeros())
+		{
+			e[i] = *prevmat;
+			e[i].makeCompressed();
+		}
+		memset(e[i].valuePtr(), 0, sizeof(double) * prevmat->nonZeros());
+		e2[i].resize(nn, mm);
+		e2[i].reserve(nn * mm / 100);
+	}
+	index.resize(__mt);
 #pragma omp parallel for schedule(static)
 	for (int _ii = 0; _ii < __mt; _ii++)
 	{
@@ -1146,7 +1172,7 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 		int E = 0;
 		//int K = 0;
 		//auto _e = e[_ii];
-		for(int tt=0;tt<40;tt++)
+		for (int tt = 0; tt < 40; tt++)
 		{
 #pragma omp critical
 			{
@@ -1163,12 +1189,51 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 				{
 					__coeff.insert(k, k) = coeff[ii](k);
 				}*/
+				//e[_ii] = 
+//#pragma omp critical
+				{
 
-				e[_ii] += this->_mat[ii].transpose() *coeff[ii].asDiagonal()* this->_mat[ii];
+					e2[_ii] = this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
+					index[_ii].resize(e2[_ii].nonZeros());
+					if (_map == 0)
+					{
+					}
+					else {
+						int count = 0;
+						for (int k = 0; k < nn; ++k) {
+							for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(e2[_ii], k); it; ++it) {
+								//e[0].coeffRef(it.row(), it.col()) += it.value();
+								index[_ii][count] = (*_map)[it.row()][it.col()];
+								count++;
+							}
+						}
+						//e[_ii].makeCompressed();
+					}
+
+//#pragma omp critical
+					{
+						if (_map == 0)
+						{
+							e[_ii] += e2[_ii];
+						}
+						else {
+							int* ptr = &index[_ii][0];
+							for (int k = 0; k < nn; ++k) {
+								for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(e2[_ii], k); it; ++it) {
+									//e[0].coeffRef(it.row(), it.col()) += it.value();
+									*(e[_ii].valuePtr() + *ptr) += it.value();
+									ptr++;
+								}
+							}
+							//e[_ii].makeCompressed();
+						}
+					}
+				}
 			}
 		}
 		//e[_ii].makeCompressed();
 	}
+	//this->_mat[0] = *prevmat;
 	end = high_resolution_clock::now();
 	duration = duration_cast<milliseconds>(now - end);
 	ss << duration.count() << "ms" << std::endl;
@@ -1181,7 +1246,15 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 		for (int i = 0; i < __mt; i += 2)
 		{
 			if (i + 1 < __mt) {
-				e[i] += e[i + 1];
+				if (_map == 0 || e[i].nonZeros() != e[i + 1].nonZeros())
+				{
+					e[i] += e[i + 1];
+				}
+				else {
+					Eigen::Map<Eigen::VectorXd> map1(e[i].valuePtr(), e[i].nonZeros());
+					Eigen::Map<Eigen::VectorXd> map2(e[i + 1].valuePtr(), e[i].nonZeros());
+					map1 += map2;
+				}
 			}
 		}
 		int _ct = 0;
@@ -1189,14 +1262,21 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 		for (int i = 0; i < __mt; i += 2)
 		{
 #pragma omp ordered
-			e[i/2] = e[i];
+			if (_map == 0 || e[i].nonZeros() != e[i / 2].nonZeros())
+			{
+				e[i / 2] = e[i];
+			}
+			else
+			{
+				memcpy(e[i / 2].valuePtr(), e[i].valuePtr(), sizeof(double) * e[i].nonZeros());
+			}
 #pragma omp atomic
 			_ct++;
 		}
 		__mt = _ct;
 		if (__mt == 1)break;
 	}
-	if (true/*sparse*/) {
+	if (true) {
 		if (this->_mat.size() == 0)this->_mat.resize(1);
 		this->_mat[0].resize(nn, nn);
 		this->_mat[0].reserve(nn * nn / 20);
@@ -1205,13 +1285,40 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 		//	this->_mat[0] += e[i];
 		//}
 		this->_mat[0].makeCompressed();
-		//this->_dmat = this->_mat[0];
+		if (_map == 0 || prevmat->nonZeros() != this->_mat[0].nonZeros())
+		{
+			*prevmat = this->_mat[0];
+			prevmat->makeCompressed();
+			dict2[this] = *prevmat;
+			//build map
+			std::vector<std::vector<int>> __map;
+			__map.resize(this->_mat[0].rows());
+			for (int i = 0; i < this->_mat[0].rows(); i++)
+			{
+				__map[i].resize(this->_mat[0].cols());
+			}
+			for (int k = 0; k < prevmat->outerSize(); ++k) {
+				for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(*prevmat, k); it; ++it) {
+					int S = prevmat->outerIndexPtr()[k];
+					int E = prevmat->outerIndexPtr()[k + 1];
+
+					for (int tt = S; tt < E; tt++)
+					{
+						if (prevmat->innerIndexPtr()[tt] == it.col())
+							__map[it.row()][it.col()] = tt;
+					}
+				}
+			}
+			map[prevmat] = __map;
+		}
 	}
+
+
 	end = high_resolution_clock::now();
 	duration = duration_cast<milliseconds>(now - end);
 	ss << duration.count() << "ms" << std::endl;
 	now = high_resolution_clock::now();
-	if(!sparse) {
+	if (!sparse) {
 		//this->_dmat.setZero(nn, nn);
 		//this->_tmp.setZero(nn, nn);
 		/*if (__r == 0 || __c == 0)
@@ -2341,62 +2448,87 @@ void kingghidorah::_mySparse::_ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySpars
 
 void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 {
+	static std::map<_mySparse*, Eigen::SparseMatrix<double, Eigen::RowMajor>> dict2;
+	static std::map< Eigen::SparseMatrix<double, Eigen::RowMajor>*, std::vector<std::vector<int>>>  map;
+	static std::vector<std::vector<int>> index;
+	static std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>> e;
 	static std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>> e2;
-
+	auto ss = std::stringstream();
+	auto now = high_resolution_clock::now();
 	int nn = this->cols();
 	int mm = B->cols();
-	/*if (__r == 0)
-	{
-		if (false)//__cuinit)
-		{
-			cudaMallocHost(&___dmat, sizeof(double) * nn * mm*2);
-		}
-		else {
-			___dmat = (double*)malloc(sizeof(double) * nn * mm*2);
-		}
-	}*/
-	//__r = nn;
-	//__c = mm;
-	//C->_dmat.resize(nn, mm);
-	//C->_tmp.resize(nn, mm);
-	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, nn, mm);
-
-	this->_dmat.setZero(nn, mm);
-	//this->_tmp.setZero(nn, mm);
-	//int mt = omp_get_max_threads();
-
-	//int _mt = mt*1;
-	//_mt = _nt;
+	int _mt = omp_get_max_threads();
+	omp_set_num_threads(_mt);
+	auto end = high_resolution_clock::now();
+	auto duration = duration_cast<milliseconds>(now - end);
+	ss << duration.count() << "ms" << std::endl;
+	now = high_resolution_clock::now();
 	int __mt = _mt;// std::min(_nt / 10, _mt * 10);
-	if (__mt > e2.size())
+	if (e.size() < __mt)
+	{
+		e.resize(__mt);
 		e2.resize(__mt);
-#pragma omp parallel for
-	for (int i = 0; i < __mt; i++) {
-		e2[i].resize(nn, mm);
-		e2[i].setZero();
-		e2[i].makeCompressed();
-		e2[i].reserve(nn * mm / 20);
 	}
+	Eigen::initParallel();
+	Eigen::setNbThreads(1);
+	end = high_resolution_clock::now();
+	duration = duration_cast<milliseconds>(now - end);
+	ss << duration.count() << "ms" << std::endl;
+	now = high_resolution_clock::now();
+	ss << _nt << ":nt:" << std::endl;
+	ss << _mt << ":_mt:" << std::endl;
+	Eigen::initParallel();
 	int job = 0;
 	int sss = _nt / __mt / 8;
+	int __nt2 = _nt;
 	if (sss == 0)sss = 1;
-#pragma omp parallel for schedule(dynamic,1)
+	Eigen::SparseMatrix<double, Eigen::RowMajor>* prevmat;
+	if (dict2.contains(this)) {
+		prevmat = &dict2[this];
+	}
+	else {
+		Eigen::SparseMatrix<double, Eigen::RowMajor> _prevmat(nn, nn);
+		dict2[this] = _prevmat;
+		prevmat = &dict2[this];
+		prevmat->resize(nn, nn);
+		prevmat->reserve(nn * nn / 10);
+	}
+	//prevmat->makeCompressed();
+	std::vector<std::vector<int>>* _map = 0;
+	if (map.contains(prevmat))
+	{
+		_map = &map[prevmat];
+	}
+#pragma omp parallel for
+	for (int i = 0; i < __mt; i++) {
+		e[i].resize(nn, mm);
+		if (e[i].nonZeros() != prevmat->nonZeros())
+		{
+			e[i] = *prevmat;
+			e[i].makeCompressed();
+		}
+		memset(e[i].valuePtr(), 0, sizeof(double) * prevmat->nonZeros());
+		e2[i].resize(nn, mm);
+		e2[i].reserve(nn * mm / 100);
+	}
+	index.resize(__mt);
+#pragma omp parallel for schedule(static)
 	for (int _ii = 0; _ii < __mt; _ii++)
 	{
-		//int S = _ii * _nt / __mt;
-		//int E = (_ii + 1) * _nt / __mt;
 		int S = 0;
 		int E = 0;
-		for(int tt=0;tt<20;tt++)
+		//int K = 0;
+		//auto _e = e[_ii];
+		for (int tt = 0; tt < 40; tt++)
 		{
 #pragma omp critical
 			{
 				S = job;
 				E = job + sss;
-				if (E >=_nt)E = _nt;
+				if (E > _nt)E = _nt;
 				job = E;
 			}
-		if (S >= _nt)break;
+			if (S >= _nt)break;
 			for (int ii = S; ii < E; ii++)
 			{
 				/*Eigen::SparseMatrix<double> __coeff(coeff[ii].size(), coeff[ii].size());
@@ -2404,14 +2536,56 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 				{
 					__coeff.insert(k, k) = coeff[ii](k);
 				}*/
-				e2[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * B->_mat[ii];
+				//e[_ii] = 
+//#pragma omp critical
+				{
+
+					e2[_ii] = this->_mat[ii].transpose() * coeff[ii].asDiagonal() *B->_mat[ii];
+					index[_ii].resize(e2[_ii].nonZeros());
+					if (_map == 0)
+					{
+					}
+					else {
+						int count = 0;
+						for (int k = 0; k < nn; ++k) {
+							for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(e2[_ii], k); it; ++it) {
+								//e[0].coeffRef(it.row(), it.col()) += it.value();
+								index[_ii][count] = (*_map)[it.row()][it.col()];
+								count++;
+							}
+						}
+						//e[_ii].makeCompressed();
+					}
+
+//#pragma omp critical
+					{
+						if (_map == 0)
+						{
+							e[_ii] += e2[_ii];
+						}
+						else {
+							int* ptr = &index[_ii][0];
+							for (int k = 0; k < nn; ++k) {
+								for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(e2[_ii], k); it; ++it) {
+									//e[0].coeffRef(it.row(), it.col()) += it.value();
+									*(e[_ii].valuePtr()+*ptr) += it.value();
+									ptr++;
+								}
+							}
+							//e[_ii].makeCompressed();
+						}
+					}
+				}
 			}
 		}
-		e2[_ii].makeCompressed();
+		//e[_ii].makeCompressed();
 	}
-	if (_mat.size() == 0)_mat.resize(1);
-	this->_mat[0].resize(nn, mm);
-	this->_mat[0].setZero();
+	//this->_mat[0] = *prevmat;
+	end = high_resolution_clock::now();
+	duration = duration_cast<milliseconds>(now - end);
+	ss << duration.count() << "ms" << std::endl;
+	now = high_resolution_clock::now();
+	Eigen::setNbThreads(_mt);
 
 	for (int tt = 0; tt < 40; tt++)
 	{
@@ -2419,7 +2593,15 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 		for (int i = 0; i < __mt; i += 2)
 		{
 			if (i + 1 < __mt) {
-				e2[i] += e2[i + 1];
+				if (_map == 0 || e[i].nonZeros() != e[i + 1].nonZeros())
+				{
+					e[i] += e[i + 1];
+				}
+				else {
+					Eigen::Map<Eigen::VectorXd> map1(e[i].valuePtr(), e[i].nonZeros());
+					Eigen::Map<Eigen::VectorXd> map2(e[i + 1].valuePtr(), e[i].nonZeros());
+					map1 += map2;
+				}
 			}
 		}
 		int _ct = 0;
@@ -2427,26 +2609,91 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 		for (int i = 0; i < __mt; i += 2)
 		{
 #pragma omp ordered
-			e2[i / 2] = e2[i];
+			if (_map == 0 || e[i].nonZeros() != e[i / 2].nonZeros())
+			{
+				e[i / 2] = e[i];
+			}
+			else
+			{
+				memcpy(e[i / 2].valuePtr(), e[i].valuePtr(), sizeof(double) * e[i].nonZeros());
+			}
 #pragma omp atomic
 			_ct++;
 		}
 		__mt = _ct;
 		if (__mt == 1)break;
 	}
-
-	if (sparse)
-	{
-		this->_mat[0] += e2[0];
+	if (true) {
+		if (this->_mat.size() == 0)this->_mat.resize(1);
+		this->_mat[0].resize(nn, nn);
+		this->_mat[0].reserve(nn * nn / 20);
+		this->_mat[0] = e[0];
+		//for (int i = 1; i < __mt; i++) {
+		//	this->_mat[0] += e[i];
+		//}
 		this->_mat[0].makeCompressed();
-	}
-	else {
-		_dmat = e2[0];
-		for (int i = 1; i < _mt; i ++) {
-			_dmat += e2[i];
+		if (_map == 0 || prevmat->nonZeros() != this->_mat[0].nonZeros())
+		{
+			*prevmat = this->_mat[0];
+			prevmat->makeCompressed();
+			dict2[this] = *prevmat;
+			//build map
+			std::vector<std::vector<int>> __map;
+			__map.resize(this->_mat[0].rows());
+			for (int i = 0; i < this->_mat[0].rows(); i++)
+			{
+				__map[i].resize(this->_mat[0].cols());
+			}
+			for (int k = 0; k < prevmat->outerSize(); ++k) {
+				for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(*prevmat, k); it; ++it) {
+					int S = prevmat->outerIndexPtr()[k];
+					int E = prevmat->outerIndexPtr()[k + 1];
+
+					for (int tt = S; tt < E; tt++)
+					{
+						if (prevmat->innerIndexPtr()[tt] == it.col())
+							__map[it.row()][it.col()] = tt;
+					}
+				}
+			}
+			map[prevmat] = __map;
 		}
 	}
-	//this->_dmat = this->_mat[0];
+
+
+	end = high_resolution_clock::now();
+	duration = duration_cast<milliseconds>(now - end);
+	ss << duration.count() << "ms" << std::endl;
+	now = high_resolution_clock::now();
+	if (!sparse) {
+		//this->_dmat.setZero(nn, nn);
+		//this->_tmp.setZero(nn, nn);
+		/*if (__r == 0 || __c == 0)
+		{
+			if (false)//__cuinit)
+			{
+				cudaMallocHost(&___dmat, sizeof(double) * nn * nn * 2);
+			}
+			else {
+				___dmat = (double*)malloc(sizeof(double) * nn * nn * 2);
+			}
+		}*/
+		//__r = nn;
+		//__c = nn;
+		/*Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, nn, nn);
+		_dmat = e[0];
+		for (int i = 1; i < _mt; i ++) {
+			_dmat += e[i];
+		}*/
+		//this->_dmat = x;
+	}
+	end = high_resolution_clock::now();
+	duration = duration_cast<milliseconds>(now - end);
+	ss << duration.count() << "ms" << std::endl;
+	now = high_resolution_clock::now();
+	//this->_mat[0] = this->_dmat.sparseView(1.0, 0.0000000000001);
+	ss << "sum:" << e[0].sum() << std::endl;
+	return;// ss.str();
 }
 void kingghidorah::_mySparse::Atb(double* ptr, int N, Eigen::VectorXd* c)
 {
