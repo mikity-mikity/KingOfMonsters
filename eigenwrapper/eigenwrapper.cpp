@@ -17,7 +17,7 @@
 int previdentiyN = 0;
 //std::vector<cudaStream_t> streams;
 Eigen::MatrixXd I;
-#define STREAMCOUNT 2
+#define STREAMCOUNT 16
 bool __cuinit = false;
 //static std::vector<Eigen::SparseMatrix<double>> e;
 std::vector<std::vector<cusparseHandle_t>> sp_handle;
@@ -1168,7 +1168,7 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 		e2[i].reserve(nn * mm / 100);
 	}
 	index.resize(__mt);
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(dynamic,1)
 	for (int _ii = 0; _ii < __mt; _ii++)
 	{
 		int S = 0;
@@ -1359,9 +1359,6 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 
 std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool sparse)
 {
-	auto prevmat = &dict2[this];
-	auto __index = map[prevmat];
-	int p_nnz = prevmat->nonZeros();
 	static std::vector<Eigen::SparseMatrix<double,Eigen::RowMajor>> e;
 	static std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>> tmp;
 	static std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>> tmp2;
@@ -1390,7 +1387,7 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 		
 	//static std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>> e;
 	auto ALG = CUSPARSE_SPGEMM_DEFAULT;
-	omp_set_num_threads(__mt);
+	omp_set_num_threads(_mt);
 		cudaSetDevice(0);
 		int _ss = 20;// _nt / __mt / 4;
 		//if (_ss == 0)_ss = 1;
@@ -1425,6 +1422,9 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 		}
 		if (____spgemm_dat.initialized == false)
 		{
+			auto prevmat = &dict2[this];
+			auto __index = map[prevmat];
+
 #pragma omp parallel for
 			for (int _ii = 0; _ii < __mt; _ii++)
 			{
@@ -1452,7 +1452,9 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 
 				__spgemm_dat.C_num_rows = max_cols;
 				__spgemm_dat.C_num_cols = max_cols;
-				__spgemm_dat.C_nnz = max_cols * max_cols / 3+1000;
+				__spgemm_dat.C_nnz = max_cols * max_cols / 3 + 1000;
+				__spgemm_dat.D_nnz = prevmat->nonZeros();
+				int p_nnz = __spgemm_dat.D_nnz;
 				auto err = cudaMalloc(&__spgemm_dat.dA_csrOffsets, sizeof(int) * (__spgemm_dat.A_num_rows + 1));
 				err = cudaMalloc(&__spgemm_dat.dA_columns, sizeof(int) * __spgemm_dat.A_nnz);
 				err = cudaMalloc(&__spgemm_dat.dA_values, sizeof(double) * __spgemm_dat.A_nnz);
@@ -1484,7 +1486,6 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 		}
 			
 		//}
-
 		cudaDeviceSynchronize();
 		//for (int _tt = 0; _tt < _cuda->count(); _tt++)
 		//{
@@ -1496,6 +1497,8 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 			kingghidorah::spgemm* __spgemm_dat;
 			auto __key = std::tuple<kingghidorah::_mySparse*, int>(this, _ii);
 			__spgemm_dat = &dict[__key];
+			int p_nnz = __spgemm_dat->D_nnz;
+
 			CUstream stream = _cuda->__streams(device, _ii / _cuda->count());
 			cusparseHandle_t handle = sp_handle[device][_ii / _cuda->count()];
 			cudaMemsetAsync(__spgemm_dat->dD_values, 0, sizeof(double) * p_nnz,stream);
@@ -1520,6 +1523,8 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 			//cusparseSetPointerMode(handle, CUSPARSE_POINTER_MODE_HOST);
 			//e[_ii].setZero();
 			//memset(e[_ii].valuePtr(), 0, sizeof(double)* p_nnz);
+			auto status = cusparseSpGEMM_createDescr(&spgemmDesc);
+			eigen_assert(status == 0);
 			for (int kk = 0; kk < 100000; kk++)
 			{
 
@@ -1641,8 +1646,6 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 					//}
 					//--------------------------------------------------------------------------
 					// SpGEMM Computation
-					status = cusparseSpGEMM_createDescr(&spgemmDesc);
-					eigen_assert(status == 0);
 
 
 					// ask bufferSize1 bytes for external memory
@@ -2572,7 +2575,7 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 		e2[i].reserve(nn * mm / 100);
 	}
 	index.resize(__mt);
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(dynamic,1)
 	for (int _ii = 0; _ii < __mt; _ii++)
 	{
 		int S = 0;

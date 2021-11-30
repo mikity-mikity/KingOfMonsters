@@ -8,8 +8,8 @@
 #include <helper_cuda.h>
 #include <helper_functions.h>
 #include "device_launch_parameters.h"
-#define __blocksize 4
-#define __chunk 2
+#define __blocksize 8
+#define __chunk 128
 /*__global__ void cholesky1(double* A, double* L, int n) {
 	int _b = blockIdx.x;
 	int _t = threadIdx.x;
@@ -92,18 +92,23 @@ __global__ void __add(double* value, int* row, int* col, int N, int M, double* v
 	int _e = _s + __chunk;
 	if (_s >= _e)return;
 	if (_e > N)_e = N;
-	//int* _row = row + _s;
+	int* _row = row + _s;
 	for (int i = _s; i < _e; i++)
 	{
-		int S = row[i];
-		int E= row[i+1];
+		int S = *_row;// row[i];
+		_row++;
+		int E =* _row;// row[i + 1];
 		int __row = i;
+		int* _col = col + S;
+		double* _val = value + S;
 		for (int k = S; k < E; k++)
 		{
-			int __col = col[k];
-			double __val = value[k];
+			int __col = *_col;// col[k];
+			double __val = *_val;;// value[k];
 			int __index = index[__row * M + __col];
 			value2[__index] += __val;
+			_val++;
+			_col++;
 		}		
 	}
 }
