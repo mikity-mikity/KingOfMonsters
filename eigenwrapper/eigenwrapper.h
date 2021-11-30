@@ -228,7 +228,7 @@ namespace kingghidorah {
 		void _ofBtAB_qr(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret);
 		Eigen::VectorXd Atb(double* ptr, int N);
 		Eigen::VectorXd _Atb(double* ptr, int N);
-		void Atb(double* ptr, int N, Eigen::VectorXd* c);
+		void Atb(double* ptr, double* ptr2, double sc, int N, Eigen::VectorXd* c);
 		void merge();
 		void computeQR();
 		void computeLU();

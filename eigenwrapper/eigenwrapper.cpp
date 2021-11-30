@@ -22,8 +22,8 @@ bool __cuinit = false;
 //static std::vector<Eigen::SparseMatrix<double>> e;
 std::vector<std::vector<cusparseHandle_t>> sp_handle;
 std::map<std::tuple<kingghidorah::_mySparse*,int>, kingghidorah::spgemm> dict;
-static std::map<kingghidorah::_mySparse*, Eigen::SparseMatrix<double, Eigen::RowMajor>> dict2;
-static std::map< Eigen::SparseMatrix<double, Eigen::RowMajor>*, std::vector<int>>  map;
+std::map<kingghidorah::_mySparse*, Eigen::SparseMatrix<double, Eigen::RowMajor>> dict2;
+std::map< Eigen::SparseMatrix<double, Eigen::RowMajor>*, std::vector<int>>  map;
 
 void kingghidorah::cuda::disable()
 {
@@ -1025,7 +1025,7 @@ void kingghidorah::_mySparse::end_construct(int cc)
 	//_mat.shrink_to_fit();
 	_mat.resize(_nt);
 	coeff.resize(_nt);
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic,4)
 	for (int ii = 0; ii < _nt; ii++)
 	{
 		_mat[ii].resize(_coeff[ii].size(), cc);
@@ -1076,7 +1076,7 @@ void kingghidorah::_mySparse::_OfDuplicate(_mySparse* mat)
 void kingghidorah::_mySparse::ofDat()
 {
 	if (_mat.size() != _nt)_mat.resize(_nt);
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic,4)
 	for (int ii = 0; ii < _nt; ii++)
 	{
 		_mat[ii].setZero();
@@ -1092,7 +1092,7 @@ void kingghidorah::_mySparse::ofDat()
 	}
 }
 void kingghidorah::_mySparse::freezecoeff() {
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic,4)
 	for (int ii = 0; ii < _nt; ii++)
 	{
 		coeff[ii] = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(_coeff[ii].data(), _coeff[ii].size());
@@ -1155,7 +1155,7 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 	{
 		_map = &map[prevmat];
 	}
-#pragma omp parallel for
+#pragma omp parallel for schedule(static,1)
 	for (int i = 0; i < __mt; i++) {
 		e[i].resize(nn, mm);
 		if (e[i].nonZeros() != prevmat->nonZeros())
@@ -1168,7 +1168,7 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 		e2[i].reserve(nn * mm / 100);
 	}
 	index.resize(__mt);
-#pragma omp parallel for schedule(dynamic,1)
+#pragma omp parallel for schedule(static,1)
 	for (int _ii = 0; _ii < __mt; _ii++)
 	{
 		int S = 0;
@@ -1251,7 +1251,7 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 
 	for (int tt = 0; tt < 40; tt++)
 	{
-#pragma omp parallel for
+#pragma omp parallel for schedule(static,1)
 		for (int i = 0; i < __mt; i += 2)
 		{
 			if (i + 1 < __mt) {
@@ -1267,7 +1267,7 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 			}
 		}
 		int _ct = 0;
-#pragma omp parallel for ordered schedule(dynamic)
+#pragma omp parallel for ordered schedule(static,1)
 		for (int i = 0; i < __mt; i += 2)
 		{
 #pragma omp ordered
@@ -1425,7 +1425,7 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 			auto prevmat = &dict2[this];
 			auto __index = map[prevmat];
 
-#pragma omp parallel for
+#pragma omp parallel for schedule(static,1)
 			for (int _ii = 0; _ii < __mt; _ii++)
 			{
 				e[_ii] = *prevmat;
@@ -1489,7 +1489,7 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 		cudaDeviceSynchronize();
 		//for (int _tt = 0; _tt < _cuda->count(); _tt++)
 		//{
-#pragma omp parallel for
+#pragma omp parallel for schedule(static,1)
 		for (int _ii = 0; _ii < __mt; _ii++)
 		{
 			int device = _ii % _cuda->count();
@@ -1754,7 +1754,7 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 		//int __mt = _mt;
 		for (int tt = 0; tt < 40; tt++)
 		{
-#pragma omp parallel for
+#pragma omp parallel for schedule(static,1)
 			for (int i = 0; i < __mt; i += 2)
 			{
 				if (i + 1 < __mt) {
@@ -1770,7 +1770,7 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 				}
 			}
 			int _ct = 0;
-#pragma omp parallel for ordered schedule(dynamic)
+#pragma omp parallel for ordered schedule(static,1)
 			for (int i = 0; i < __mt; i += 2)
 			{
 #pragma omp ordered
@@ -2486,7 +2486,7 @@ void kingghidorah::_mySparse::_ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySpars
 	D.resize(nn, kk);
 	int ss = kk / _mt / 2;
 	
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic,4)
 	for (int ii = 0; ii < kk; ii += ss)
 	{
 		int S = ii;
@@ -2496,7 +2496,7 @@ void kingghidorah::_mySparse::_ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySpars
 	}
 	//D.noalias() = left * mid;
 	ss = nn / _mt / 2;
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic,4)
 	for (int ii = 0; ii < nn; ii += ss)
 	{
 		int S = ii;
@@ -2512,7 +2512,7 @@ void kingghidorah::_mySparse::_ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySpars
 void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 {
 	static std::map<_mySparse*, Eigen::SparseMatrix<double, Eigen::RowMajor>> dict2;
-	static std::map< Eigen::SparseMatrix<double, Eigen::RowMajor>*, std::vector<std::vector<int>>>  map;
+	static std::map< Eigen::SparseMatrix<double, Eigen::RowMajor>*, std::vector<int>>  map;
 	static std::vector<std::vector<int>> index;
 	static std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>> e;
 	static std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>> e2;
@@ -2557,12 +2557,12 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 		prevmat->reserve(nn * nn / 10);
 	}
 	//prevmat->makeCompressed();
-	std::vector<std::vector<int>>* _map = 0;
+	std::vector<int>* _map = 0;
 	if (map.contains(prevmat))
 	{
 		_map = &map[prevmat];
 	}
-#pragma omp parallel for
+#pragma omp parallel for schedule(static,1)
 	for (int i = 0; i < __mt; i++) {
 		e[i].resize(nn, mm);
 		if (e[i].nonZeros() != prevmat->nonZeros())
@@ -2575,7 +2575,7 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 		e2[i].reserve(nn * mm / 100);
 	}
 	index.resize(__mt);
-#pragma omp parallel for schedule(dynamic,1)
+#pragma omp parallel for schedule(static,1)
 	for (int _ii = 0; _ii < __mt; _ii++)
 	{
 		int S = 0;
@@ -2615,7 +2615,7 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 							for (int k = 0; k < nn; ++k) {
 								for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(e2[_ii], k); it; ++it) {
 									//e[0].coeffRef(it.row(), it.col()) += it.value();
-									index[_ii][count] = (*_map)[it.row()][it.col()];
+									index[_ii][count] = (*_map)[it.row()*nn+it.col()];
 									count++;
 								}
 							}
@@ -2658,7 +2658,7 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 
 	for (int tt = 0; tt < 40; tt++)
 	{
-#pragma omp parallel for
+#pragma omp parallel for  schedule(static,1)
 		for (int i = 0; i < __mt; i += 2)
 		{
 			if (i + 1 < __mt) {
@@ -2674,7 +2674,7 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 			}
 		}
 		int _ct = 0;
-#pragma omp parallel for ordered schedule(dynamic)
+#pragma omp parallel for ordered schedule(static,1)
 		for (int i = 0; i < __mt; i += 2)
 		{
 #pragma omp ordered
@@ -2707,12 +2707,8 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 			prevmat->makeCompressed();
 			dict2[this] = *prevmat;
 			//build map
-			std::vector<std::vector<int>> __map;
-			__map.resize(this->_mat[0].rows());
-			for (int i = 0; i < this->_mat[0].rows(); i++)
-			{
-				__map[i].resize(this->_mat[0].cols());
-			}
+			std::vector<int> __map;
+			__map.resize(nn*mm);
 			for (int k = 0; k < prevmat->outerSize(); ++k) {
 				for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(*prevmat, k); it; ++it) {
 					int S = prevmat->outerIndexPtr()[k];
@@ -2721,7 +2717,7 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 					for (int tt = S; tt < E; tt++)
 					{
 						if (prevmat->innerIndexPtr()[tt] == it.col())
-							__map[it.row()][it.col()] = tt;
+							__map[it.row()*nn+it.col()] = tt;
 					}
 				}
 			}
@@ -2764,26 +2760,76 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 	ss << "sum:" << e[0].sum() << std::endl;
 	return;// ss.str();
 }
-void kingghidorah::_mySparse::Atb(double* ptr, int N, Eigen::VectorXd* c)
+
+void kingghidorah::_mySparse::Atb(double* ptr, double* ptr2, double sc,int N, Eigen::VectorXd* c)
 {
+	static std::map<int, std::vector<Eigen::VectorXd>> __dict;
 	c->resize(this->cols());
 	c->setZero();
+	int nn = _mat[0].cols();
 	int offset = 0;
-	for (int ii = 0; ii < _nt; ii++)
+	std::vector<Eigen::VectorXd>* mm = 0;
+	if (__dict.contains(nn))
 	{
-		int ee = coeff[ii].rows();
-		Eigen::Map<Eigen::VectorXd> b(ptr + offset, ee);
-		if (this->_mat[ii].rows() > 0 && this->_mat[ii].cols() > 0)
+		mm = &__dict[nn];
+	}
+	else {
+		std::vector<Eigen::VectorXd> _mm(_mt);
+		for (int i = 0; i < _mt; i++)
 		{
-
-			/*Eigen::SparseMatrix<double> __coeff(coeff[ii].size(), coeff[ii].size());
-			for (int k = 0; k < coeff[ii].size(); k++)
-			{
-				__coeff.insert(k, k) = coeff[ii](k);
-			}*/
-			*c += _mat[ii].transpose() * coeff[ii].asDiagonal() * b;
+			_mm[i].resize(nn);
 		}
-		offset += ee;
+		__dict[nn] = _mm;
+		mm= &__dict[nn];
+	}
+	int job = 0;
+	int ss = _nt / _mt / 4;
+	if (ss == 0)ss = 1;
+#pragma omp parallel for schedule(static)
+	for (int ii = 0; ii < _mt; ii++)
+	{
+
+		int S = 0;
+		int E = 0;
+		int cpu = omp_get_thread_num();
+		auto tmp = (*mm)[cpu];
+		tmp.setZero();
+		for (int kk = 0; kk < 200; kk++)
+		{
+#pragma omp critical
+			{
+				S = job;
+				E = S + ss;
+				if (E > _nt)E = _nt;
+				job = E;
+			}
+			if (S >= _nt)break;
+			int offset = 0;
+			for (int _t = 0; _t < S; _t++)
+			{
+				offset += coeff[_t].rows();
+			}
+			for (int i = S; i < E; i++)
+			{
+				//Eigen::VectorXd tmp(this->cols());
+				int ee = coeff[i].rows();
+		
+
+				Eigen::Map<Eigen::VectorXd> b(ptr + offset, ee);
+				Eigen::Map<Eigen::VectorXd> b2(ptr2 + offset, ee);
+				if (this->_mat[i].rows() > 0 && this->_mat[i].cols() > 0)
+				{
+					tmp += _mat[i].transpose() * coeff[i].asDiagonal() * (b + sc * b2);
+				}
+				offset += ee;
+			}
+		}
+#pragma omp critical
+		{
+			*c += tmp;// _mat[ii].transpose()* coeff[ii].asDiagonal()* (b + sc * b2);
+		}
+
+		//offset += ee;
 	}
 	//return ret;
 }
@@ -2945,7 +2991,7 @@ Eigen::MatrixXd kingghidorah::_mySparse::_solve0(_myLLT* LLT, _mySparse* mat)
 
 	//ret = LLT->LLT->solve(mat->_dmat);
 
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic,1)
 	for (int i = 0; i < nn; i += S)
 	{
 		int start = i;

@@ -38,9 +38,12 @@ using std::vector;
 using std::string;
 
 //#define EIGEN_MALLOC_ALREADY_ALIGNED  0
-void kernel(double* A, double* work, int N, cudaStream_t stream);
+//void kernel(double* A, double* work, int N, cudaStream_t stream);
+void kernel(double* value, int* row, int* col, int N, int M, double* value2, int* index, cudaStream_t stream);
 namespace kingghidorah {
 	class cuda {
+	public:
+
 	private:
 		bool _canpeer = false;
 		std::vector<std::string> rank;
@@ -131,8 +134,10 @@ namespace kingghidorah {
 	public:
 		bool initialized = false;
 		int* dA_csrOffsets = 0, * dA_columns = 0, * dB_csrOffsets = 0, * dB_columns = 0,
-			* dC_csrOffsets = 0, * dC_columns = 0;
-		double* dA_values = 0, * dB_values = 0, * dC_values = 0;
+			* dC_csrOffsets = 0, * dC_columns = 0, * dD_csrOffsets = 0, * dD_columns = 0;
+		double* dA_values = 0, * dB_values = 0, * dC_values = 0, * dD_values = 0;
+		int* index = 0;
+
 		int A_num_rows;
 		int A_num_cols;
 		int A_nnz;
@@ -142,7 +147,8 @@ namespace kingghidorah {
 		int B_nnz;
 		//cusparseSpMatDescr_t matA, matB, matC;
 		//cusparseSpGEMMDescr_t spgemmDesc;
-		int64_t C_num_rows1, C_num_cols1, C_nnz1;
+		int C_num_rows, C_num_cols, C_nnz;
+		int D_num_rows, D_num_cols, D_nnz;
 
 		void* dBuffer1 = NULL, * dBuffer2 = NULL;
 		size_t bufferSize1 = 0, bufferSize2 = 0;
@@ -222,7 +228,7 @@ namespace kingghidorah {
 		void _ofBtAB_qr(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret);
 		Eigen::VectorXd Atb(double* ptr, int N);
 		Eigen::VectorXd _Atb(double* ptr, int N);
-		void Atb(double* ptr, int N, Eigen::VectorXd* c);
+		void Atb(double* ptr, double* ptr2, double sc, int N, Eigen::VectorXd* c);
 		void merge();
 		void computeQR();
 		void computeLU();

@@ -71,6 +71,12 @@ namespace kingghidorah {
 		{
 			(_arr->__v)(i) = val;
 		}
+		void set(myDoubleArray^ f)
+		{
+			_arr->__v = f->_arr->__v;
+			//System::Runtime::InteropServices::Marshal::Copy( arr,0,(IntPtr) _arr->__v.data(), arr->Length);
+
+		}
 		double at(int i)
 		{
 			return _arr->__v(i);
@@ -493,13 +499,15 @@ namespace kingghidorah {
 			ptr = nullptr;
 			return ret;
 		}
-		void Atb(array<double>^ b, kingghidorah::myDoubleArray^ ret)
+		void Atb(array<double>^ b, array<double>^ c,double sc, kingghidorah::myDoubleArray^ ret)
 		{
 			pin_ptr<double> ptr = &b[0];
-			dat->Atb(ptr, b->Length, &ret->_arr->__v);
+			pin_ptr<double> ptr2 = &c[0];
+			dat->Atb(ptr, ptr2,sc,b->Length, &ret->_arr->__v);
 			//array<double>^ ret = gcnew array<double>(rhs.rows());
 			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)rhs.data(), ret, 0, rhs.rows());
 			ptr = nullptr;
+			ptr2 = nullptr;
 			//return ret;
 		}
 		array<double>^ _Atb(array<double>^ b)

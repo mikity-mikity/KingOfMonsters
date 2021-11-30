@@ -53,7 +53,7 @@ namespace kingghidorah {
 		double _bij[12];
 		double _Sij[4];
 		double _Gammaijk[8];
-
+		double* __mat = 0;
 		double** M[2]{ 0,0 };
 		int** dd=0;
 		double* d0=0;
@@ -205,7 +205,9 @@ namespace kingghidorah {
 			del();
 		}
 		
-		void del() {			
+		void del() {		
+			if (__mat != 0)delete[] __mat;
+			__mat = 0;
 			if (dd != 0)
 			{
 				for (int i = 0; i < _nNode; i++) {
@@ -344,7 +346,7 @@ namespace kingghidorah {
 				_vDim = vDim;
 				dim[0] = _uDim;
 				dim[1] = _vDim;
-
+				//__mat = new double[nNode * nNode];
 				d0 = new double[nNode];
 
 				d1[0] = new double[nNode];
@@ -434,7 +436,7 @@ namespace kingghidorah {
 		double* __grad_phi = 0;
 		int _nNode;
 	private:
-		double* __mat = 0;
+		//double* __mat = 0;
 		double* _F3 = 0;
 		double _F3_phi[2];
 		double _F3_z[2];
@@ -656,14 +658,14 @@ namespace kingghidorah {
 	public:
 		_memS(string ultimate) {
 			this->mode = ultimate;
-			if (mode=="U" || mode=="SLOPE") {
+			if (mode=="U") {
 				__grad_z = 0;
 				__grad_phi = 0;
 				__grad_C_z = 0;
 				__grad_C_phi = 0;
 				__grad_D_z = 0;
 				__grad_D_phi = 0;
-				__mat = 0;
+				//__mat = 0;
 				_K = 0;
 				//__mat2 = 0;
 			}
@@ -1004,7 +1006,7 @@ namespace kingghidorah {
 				}
 			}*/
 
-			if (mode == "U"||mode=="SLOPE") {
+			if (mode == "U") {
 
 				double* ptr4;
 				for (auto const& j : ___ee) {
@@ -1061,35 +1063,47 @@ namespace kingghidorah {
 					pptr2++;
 				}
 				this->phi = val;
-				pptr = &__mat[0];
+				if (_ref->__mat == 0)
+				{
+					_ref->__mat = new double[_nNode * _nNode];
+					pptr = &_ref->__mat[0];
+					static const int sss[4]{ 1,2,0,3 };
+					for (int i = 0; i < _nNode; i++)
+					{
+						for (int j = 0; j < _nNode; j++) {
+							double val = 0;
+							for (auto const& k : sss) {
+								if (k == 2)
+								{
+									val *= 2.0;
+								}
+								else {
+									//double tmp = ;
+										val += _ref->star2[k] * (_ref->d2[_ref->_star[k]][i] - Gammaijk[((_ref->_star[k]) << 1) + 0] * _ref->d1[0][i] - Gammaijk[((_ref->_star[k]) << 1) + 1] * _ref->d1[1][i]) *
+										(_ref->d2[k][j] - Gammaijk[((k) << 1) + 0] * _ref->d1[0][j] - Gammaijk[((k) << 1) + 1] * _ref->d1[1][j]);
+								}
+							}
+							*pptr = val;
+							pptr++;
+						}
+					}
+				}
+	
+				pptr = &_ref->__mat[0];
 				pptr1 = &_ref->buf_phi[0];
 				static const int sss[4]{ 1,2,0,3 };
 				for (int i = 0; i < _nNode; i++)
 				{
 					pptr2 = &_ref->buf_z[0];
 					for (int j = 0; j < _nNode; j++) {
-						double val = 0;
-						for (auto const & k:sss) {
-							if (k == 2)
-							{
-								val *= 2.0;
-							}
-							else {
-								double tmp=
-								val += _ref->star2[k] * (_ref->d2[_ref->_star[k]][i] - Gammaijk[((_ref->_star[k]) << 1) + 0] * _ref->d1[0][i] - Gammaijk[((_ref->_star[k]) << 1) + 1] * _ref->d1[1][i]) *
-									(_ref->d2[k][j] - Gammaijk[((k) << 1) + 0] * _ref->d1[0][j] - Gammaijk[((k) << 1) + 1] * _ref->d1[1][j]);
-							}
-						}
-						//__mat[i * _nNode + j] = val;
-						*pptr = val;
+						val3 += *pptr * (*pptr2) */*_ref->buf_z[j] **/ (*pptr1);//_ref->buf_phi[i];
 						pptr++;
-						val3 += val * (*pptr2)*/*_ref->buf_z[j] **/ (*pptr1);//_ref->buf_phi[i];
 						pptr2++;
 					}
 					pptr1++;
 				}
 				bodyF = val3;
-				pptr = __mat;
+				pptr = &_ref->__mat[0];
 				pptr2 = &__grad_z[0];
 				for (int i = 0; i < _nNode; i++) {
 					val2 = 0;
@@ -1104,7 +1118,7 @@ namespace kingghidorah {
 					*pptr2 = val2 * sc;
 					pptr2++;
 				}
-				pptr = __mat;
+				pptr = _ref->__mat;
 				pptr1 = &_ref->buf_phi[0];
 				pptr2 = &__grad_phi[0];
 				for (int j = 0; j < _nNode; j++) {
@@ -1203,10 +1217,10 @@ namespace kingghidorah {
 
 		}
 		void del() {
-			if (mode=="U" || mode=="SLOPE") {
+			if (mode=="U" ) {
 				if (__grad_z != 0)delete[] __grad_z;
 				if (__grad_phi != 0)delete[] __grad_phi;
-				if (__mat != 0)delete[] __mat;
+				//if (__mat != 0)delete[] __mat;
 				if (__grad_C_z != 0)delete[] __grad_C_z;
 				if (__grad_C_phi != 0)delete[] __grad_C_phi;
 				if (__grad_D_z != 0)delete[] __grad_D_z;
@@ -1214,7 +1228,7 @@ namespace kingghidorah {
 				if (_K != 0)delete[] _K;
 				__grad_z = 0;
 				__grad_phi = 0;
-				__mat = 0;
+				//__mat = 0;
 				__grad_C_z = 0;
 				__grad_C_phi = 0;
 				__grad_D_z = 0;
@@ -1379,7 +1393,7 @@ namespace kingghidorah {
 				{
 					__grad_z = new double[nNode];
 					__grad_phi = new double[nNode];
-					__mat = new double[nNode * nNode];
+					//__mat = new double[nNode * nNode];
 					//__mat2 = new double[nNode * nNode];
 					__grad_C_phi = new double[nNode * 2];
 					__grad_C_z = new double[nNode * 2];
@@ -2379,7 +2393,7 @@ namespace kingghidorah {
 						(d2[ij][J] - Gammaijk[(ij) * 2 + 0] * d1[0][J] - Gammaijk[(ij) * 2 + 1] * d1[1][J]);
 				}
 			}*/
-			return sc*__mat[I * _nNode + J];
+			return sc*_ref->__mat[I * _nNode + J];
 		}
 		/*double U2(int I, int J) {
 			double sc = 1 / _ref->_refDv / _ref->_refDv;
