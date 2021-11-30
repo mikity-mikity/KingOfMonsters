@@ -1076,7 +1076,7 @@ void kingghidorah::_mySparse::_OfDuplicate(_mySparse* mat)
 void kingghidorah::_mySparse::ofDat()
 {
 	if (_mat.size() != _nt)_mat.resize(_nt);
-#pragma omp parallel for schedule(dynamic,4)
+#pragma omp parallel for
 	for (int ii = 0; ii < _nt; ii++)
 	{
 		_mat[ii].setZero();
@@ -1084,7 +1084,7 @@ void kingghidorah::_mySparse::ofDat()
 		if (dat[ii].size() > 0)
 		{
 			_mat[ii].setFromTriplets(dat[ii].begin(), dat[ii].end());
-			_mat[ii].makeCompressed();
+			//_mat[ii].makeCompressed();
 		}
 		else {
 			_mat[ii].setZero();
@@ -1092,7 +1092,7 @@ void kingghidorah::_mySparse::ofDat()
 	}
 }
 void kingghidorah::_mySparse::freezecoeff() {
-#pragma omp parallel for schedule(dynamic,4)
+#pragma omp parallel for schedule(dynamic,1)
 	for (int ii = 0; ii < _nt; ii++)
 	{
 		coeff[ii] = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(_coeff[ii].data(), _coeff[ii].size());
@@ -1107,7 +1107,7 @@ int kingghidorah::_mySparse::numBlocks()
 std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 {
 	static std::vector<std::vector<int>> index;
-	static std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>> e;
+	static std::map<_mySparse*,std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>>> ___e;
 	static std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>> e2;
 	auto ss = std::stringstream();
 	auto now = high_resolution_clock::now();
@@ -1120,9 +1120,11 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 	ss << duration.count() << "ms" << std::endl;
 	now = high_resolution_clock::now();
 	int __mt = _mt;// std::min(_nt / 10, _mt * 10);
-	if (e.size() < __mt)
+	std::vector < Eigen::SparseMatrix<double, Eigen::RowMajor>>* e;
+	if (___e.contains(this))e = &___e[this]; else { std::vector < Eigen::SparseMatrix<double, Eigen::RowMajor>> _e; ___e[this] = _e; e = &___e[this]; }
+	if (e->size() < __mt)
 	{
-		e.resize(__mt);
+		e->resize(__mt);
 		e2.resize(__mt);
 	}
 	Eigen::initParallel();
@@ -1155,20 +1157,20 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 	{
 		_map = &map[prevmat];
 	}
-#pragma omp parallel for schedule(static,1)
+#pragma omp parallel for
 	for (int i = 0; i < __mt; i++) {
-		e[i].resize(nn, mm);
-		if (e[i].nonZeros() != prevmat->nonZeros())
+		if (_map==0||(*e)[i].nonZeros()!=prevmat->nonZeros())
 		{
-			e[i] = *prevmat;
-			e[i].makeCompressed();
+			(*e)[i].resize(nn, mm);
+			(*e)[i] = *prevmat;
+			(*e)[i].makeCompressed();
 		}
-		memset(e[i].valuePtr(), 0, sizeof(double) * prevmat->nonZeros());
+		memset((*e)[i].valuePtr(), 0, sizeof(double) * prevmat->nonZeros());
 		e2[i].resize(nn, mm);
 		e2[i].reserve(nn * mm / 100);
 	}
 	index.resize(__mt);
-#pragma omp parallel for schedule(static,1)
+#pragma omp parallel for
 	for (int _ii = 0; _ii < __mt; _ii++)
 	{
 		int S = 0;
@@ -1192,8 +1194,8 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 				{
 					__coeff.insert(k, k) = coeff[ii](k);
 				}*/
-				//e[_ii] = 
-//#pragma omp critical
+				(*e)[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
+/*//#pragma omp critical
 				{
 
 					e2[_ii] = this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
@@ -1220,7 +1222,7 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 					{
 						if (_map == 0)
 						{
-							e[_ii] += e2[_ii];
+							(*e)[_ii] += e2[_ii];
 						}
 						else {
 							if (e2[_ii].nonZeros() > 0)
@@ -1229,7 +1231,7 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 								for (int k = 0; k < nn; ++k) {
 									for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(e2[_ii], k); it; ++it) {
 										//e[0].coeffRef(it.row(), it.col()) += it.value();
-										*(e[_ii].valuePtr() + *ptr) += it.value();
+										*((*e)[_ii].valuePtr() + *ptr) += it.value();
 										ptr++;
 									}
 								}
@@ -1237,7 +1239,7 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 							//e[_ii].makeCompressed();
 						}
 					}
-				}
+				}*/
 			}
 		}
 		//e[_ii].makeCompressed();
@@ -1255,13 +1257,13 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 		for (int i = 0; i < __mt; i += 2)
 		{
 			if (i + 1 < __mt) {
-				if (_map == 0 || e[i].nonZeros() != e[i + 1].nonZeros())
+				if (_map == 0 || (*e)[i].nonZeros() != (*e)[i + 1].nonZeros())
 				{
-					e[i] += e[i + 1];
+					(*e)[i] += (*e)[i + 1];
 				}
 				else {
-					Eigen::Map<Eigen::VectorXd> map1(e[i].valuePtr(), e[i].nonZeros());
-					Eigen::Map<Eigen::VectorXd> map2(e[i + 1].valuePtr(), e[i].nonZeros());
+					Eigen::Map<Eigen::VectorXd> map1((*e)[i].valuePtr(), (*e)[i].nonZeros());
+					Eigen::Map<Eigen::VectorXd> map2((*e)[i + 1].valuePtr(), (*e)[i].nonZeros());
 					map1 += map2;
 				}
 			}
@@ -1271,13 +1273,13 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 		for (int i = 0; i < __mt; i += 2)
 		{
 #pragma omp ordered
-			if (_map == 0 || e[i].nonZeros() != e[i / 2].nonZeros())
+			if (_map == 0 || (*e)[i].nonZeros() != (*e)[i / 2].nonZeros())
 			{
-				e[i / 2] = e[i];
+				(*e)[i / 2] = (*e)[i];
 			}
 			else
 			{
-				memcpy(e[i / 2].valuePtr(), e[i].valuePtr(), sizeof(double) * e[i].nonZeros());
+				memcpy((*e)[i / 2].valuePtr(), (*e)[i].valuePtr(), sizeof(double) * (*e)[i].nonZeros());
 			}
 #pragma omp atomic
 			_ct++;
@@ -1289,7 +1291,7 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 		if (this->_mat.size() == 0)this->_mat.resize(1);
 		this->_mat[0].resize(nn, nn);
 		this->_mat[0].reserve(nn * nn / 20);
-		this->_mat[0] = e[0];
+		this->_mat[0] = (*e)[0];
 		//for (int i = 1; i < __mt; i++) {
 		//	this->_mat[0] += e[i];
 		//}
@@ -1350,7 +1352,7 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 	ss << duration.count() << "ms" << std::endl;
 	now = high_resolution_clock::now();
 	//this->_mat[0] = this->_dmat.sparseView(1.0, 0.0000000000001);
-	ss << "sum:" << e[0].sum() << std::endl;
+	ss << "sum:" << (*e)[0].sum() << std::endl;
 	return ss.str();
 }
 
@@ -2513,8 +2515,9 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 {
 	static std::map<_mySparse*, Eigen::SparseMatrix<double, Eigen::RowMajor>> dict2;
 	static std::map< Eigen::SparseMatrix<double, Eigen::RowMajor>*, std::vector<int>>  map;
+	static std::map < _mySparse*, std::vector < Eigen::SparseMatrix<double, Eigen::RowMajor>>> ___e;
 	static std::vector<std::vector<int>> index;
-	static std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>> e;
+	//static std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>> e;
 	static std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>> e2;
 	auto ss = std::stringstream();
 	auto now = high_resolution_clock::now();
@@ -2527,9 +2530,11 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 	ss << duration.count() << "ms" << std::endl;
 	now = high_resolution_clock::now();
 	int __mt = _mt;// std::min(_nt / 10, _mt * 10);
-	if (e.size() < __mt)
+	std::vector < Eigen::SparseMatrix<double, Eigen::RowMajor>>* e;
+	if (___e.contains(this))e = &___e[this]; else { std::vector < Eigen::SparseMatrix<double, Eigen::RowMajor>> _e; ___e[this] = _e; e = &___e[this]; }
+	if (e->size() < __mt)
 	{
-		e.resize(__mt);
+		e->resize(__mt);
 		e2.resize(__mt);
 	}
 	Eigen::initParallel();
@@ -2564,18 +2569,18 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 	}
 #pragma omp parallel for schedule(static,1)
 	for (int i = 0; i < __mt; i++) {
-		e[i].resize(nn, mm);
-		if (e[i].nonZeros() != prevmat->nonZeros())
+		if (_map==0||(*e)[i].nonZeros()!=prevmat->nonZeros())
 		{
-			e[i] = *prevmat;
-			e[i].makeCompressed();
+			(*e)[i].resize(nn, mm);
+			(*e)[i] = *prevmat;
+			(*e)[i].makeCompressed();
 		}
-		memset(e[i].valuePtr(), 0, sizeof(double) * prevmat->nonZeros());
+		memset((*e)[i].valuePtr(), 0, sizeof(double) * prevmat->nonZeros());
 		e2[i].resize(nn, mm);
 		e2[i].reserve(nn * mm / 100);
 	}
 	index.resize(__mt);
-#pragma omp parallel for schedule(static,1)
+#pragma omp parallel for
 	for (int _ii = 0; _ii < __mt; _ii++)
 	{
 		int S = 0;
@@ -2599,8 +2604,8 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 				{
 					__coeff.insert(k, k) = coeff[ii](k);
 				}*/
-				//e[_ii] = 
-//#pragma omp critical
+				(*e)[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * B->_mat[ii];
+/*//#pragma omp critical
 				{
 
 					e2[_ii] = this->_mat[ii].transpose() * coeff[ii].asDiagonal() *B->_mat[ii];
@@ -2627,7 +2632,7 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 					{
 						if (_map == 0)
 						{
-							e[_ii] += e2[_ii];
+							(*e)[_ii] += e2[_ii];
 						}
 						else {
 							if (e2[_ii].nonZeros())
@@ -2636,7 +2641,7 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 								for (int k = 0; k < nn; ++k) {
 									for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(e2[_ii], k); it; ++it) {
 										//e[0].coeffRef(it.row(), it.col()) += it.value();
-										*(e[_ii].valuePtr() + *ptr) += it.value();
+										*((*e)[_ii].valuePtr() + *ptr) += it.value();
 										ptr++;
 									}
 								}
@@ -2644,7 +2649,7 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 							//e[_ii].makeCompressed();
 						}
 					}
-				}
+				}*/
 			}
 		}
 		//e[_ii].makeCompressed();
@@ -2662,13 +2667,13 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 		for (int i = 0; i < __mt; i += 2)
 		{
 			if (i + 1 < __mt) {
-				if (_map == 0 || e[i].nonZeros() != e[i + 1].nonZeros())
+				if (_map == 0 || (*e)[i].nonZeros() != (*e)[i + 1].nonZeros())
 				{
-					e[i] += e[i + 1];
+					(*e)[i] += (*e)[i + 1];
 				}
 				else {
-					Eigen::Map<Eigen::VectorXd> map1(e[i].valuePtr(), e[i].nonZeros());
-					Eigen::Map<Eigen::VectorXd> map2(e[i + 1].valuePtr(), e[i].nonZeros());
+					Eigen::Map<Eigen::VectorXd> map1((*e)[i].valuePtr(), (*e)[i].nonZeros());
+					Eigen::Map<Eigen::VectorXd> map2((*e)[i + 1].valuePtr(), (*e)[i].nonZeros());
 					map1 += map2;
 				}
 			}
@@ -2678,13 +2683,13 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 		for (int i = 0; i < __mt; i += 2)
 		{
 #pragma omp ordered
-			if (_map == 0 || e[i].nonZeros() != e[i / 2].nonZeros())
+			if (_map == 0 || (*e)[i].nonZeros() != (*e)[i / 2].nonZeros())
 			{
-				e[i / 2] = e[i];
+				(*e)[i / 2] = (*e)[i];
 			}
 			else
 			{
-				memcpy(e[i / 2].valuePtr(), e[i].valuePtr(), sizeof(double) * e[i].nonZeros());
+				memcpy((*e)[i / 2].valuePtr(), (*e)[i].valuePtr(), sizeof(double) * (*e)[i].nonZeros());
 			}
 #pragma omp atomic
 			_ct++;
@@ -2696,7 +2701,7 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 		if (this->_mat.size() == 0)this->_mat.resize(1);
 		this->_mat[0].resize(nn, nn);
 		this->_mat[0].reserve(nn * nn / 20);
-		this->_mat[0] = e[0];
+		this->_mat[0] = (*e)[0];
 		//for (int i = 1; i < __mt; i++) {
 		//	this->_mat[0] += e[i];
 		//}
@@ -2757,7 +2762,7 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 	ss << duration.count() << "ms" << std::endl;
 	now = high_resolution_clock::now();
 	//this->_mat[0] = this->_dmat.sparseView(1.0, 0.0000000000001);
-	ss << "sum:" << e[0].sum() << std::endl;
+	ss << "sum:" << (*e)[0].sum() << std::endl;
 	return;// ss.str();
 }
 
