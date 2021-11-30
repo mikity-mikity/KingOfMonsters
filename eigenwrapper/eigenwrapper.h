@@ -38,7 +38,8 @@ using std::vector;
 using std::string;
 
 //#define EIGEN_MALLOC_ALREADY_ALIGNED  0
-void kernel(double* A, double* work, int N, cudaStream_t stream);
+//void kernel(double* A, double* work, int N, cudaStream_t stream);
+void kernel(double* value, int* row, int* col, int N, int M, double* value2, int* index, cudaStream_t stream);
 namespace kingghidorah {
 	class cuda {
 	public:
@@ -135,6 +136,8 @@ namespace kingghidorah {
 		int* dA_csrOffsets = 0, * dA_columns = 0, * dB_csrOffsets = 0, * dB_columns = 0,
 			* dC_csrOffsets = 0, * dC_columns = 0, * dD_csrOffsets = 0, * dD_columns = 0;
 		double* dA_values = 0, * dB_values = 0, * dC_values = 0, * dD_values = 0;
+		int* index = 0;
+
 		int A_num_rows;
 		int A_num_cols;
 		int A_nnz;
