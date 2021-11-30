@@ -28,32 +28,35 @@ using namespace std::chrono;
 #include "eigen-3.4.0/Eigen/Dense"
 using namespace std;
 using namespace kingghidorah;
-#define _N 1000
+#define _N 4
+#define _M 4
 int main() {
     {
-
-        _mySparse m[100];
+        auto _cuda = new kingghidorah::cuda(_N);
+        
+        _mySparse m[_M];
         _mySparse M;
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < _M; i++)
         {
             m[i].init(_N, _N);
         }
         M.init(_N, _N);
+        M.begin_construct();
         int index[_N];
         for (int i = 0; i < _N; i++)index[i] = i;
-        for (int tt = 0; tt < 50; tt++)
+        for (int tt = 0; tt < 1; tt++)
         {
-            for (int kk = 0; kk < 500; kk++)
+            for (int kk = 0; kk <1; kk++)
             {
-                double f[_N];
+                //double f[_N];
                 M.Clear();
-                for (int ii = 0; ii < 100; ii++)
+                for (int ii = 0; ii < _M; ii++)
                 {
                     m[ii].Clear();
                     for (int i = 0; i < _N; i++)
                     {
                         //memset(f, 0, sizeof(double) * _N);
-                        for (int j = i - 4; j < i + 4; j++)
+                        for (int j = 0;j<_N;j++)
                         {
                             if (j == i)
                             {
@@ -65,13 +68,23 @@ int main() {
                                     m[ii].adddat(i, j, 0.1);
                                 }
                         }
+                        m[ii].addcoeff(1.0);
                     }
                     M.addmat(&m[ii]);
                 }
+                M.end_construct(_N);
                 M.ofDat();
                 M.clearcoeff();
                 auto start = high_resolution_clock::now();
-                M.ofAtA(&M, true);
+                std::cout << M._mat[0] << std::endl;
+                std::cout << M._mat[1] << std::endl;
+                std::cout << M._mat[2] << std::endl;
+                std::cout << "start" << std::endl;
+                //M.ofAtA(&M, true);
+                std::cout << M._mat[0] << std::endl;
+                M.ofAtA_gpu(_cuda , &M, true);
+                std::cout << "end" << std::endl;
+                std::cout << M._mat[0] << std::endl;
                 //m._shrink(_N, false, true);
                 //Eigen::VectorXd ret(_N);
                 //m._solve0_gpu(&m, &rhs, &ret, ii);
