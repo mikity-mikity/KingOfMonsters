@@ -11,7 +11,7 @@ using std::vector;
 using std::string;
 using namespace System;
 using namespace System::Threading::Tasks;
-#define EIGEN_DONT_ALIGN
+//#define EIGEN_DONT_ALIGN
 namespace kingghidorah {
 	public ref class myDoubleArray {
 	public:
@@ -70,6 +70,12 @@ namespace kingghidorah {
 		void set(int i, double val)
 		{
 			(_arr->__v)(i) = val;
+		}
+		void set(myDoubleArray^ f)
+		{
+			_arr->__v = f->_arr->__v;
+			//System::Runtime::InteropServices::Marshal::Copy( arr,0,(IntPtr) _arr->__v.data(), arr->Length);
+
 		}
 		double at(int i)
 		{
@@ -198,7 +204,7 @@ namespace kingghidorah {
 	};
 	public ref class myLLT {
 	public:
-		_myLLT* LLT;
+		_myLLT* LLT=0;
 		myLLT()
 		{
 			LLT = new _myLLT();
@@ -286,7 +292,7 @@ namespace kingghidorah {
 	};
 	public ref class mySparse {
 	public:
-		_mySparse* dat;
+		_mySparse* dat=0;
 		mySparse() {
 			dat = 0;
 			dat = new _mySparse();
@@ -326,12 +332,14 @@ namespace kingghidorah {
 		}
 		~mySparse()
 		{
-			delete(dat);
+			if(dat!=0)
+				delete(dat);
 			dat = 0;
 		}
 		!mySparse()
 		{
-			delete(dat);
+			if(dat!=0)
+				delete(dat);
 			dat = 0;
 		}
 		void ofDat()
@@ -402,6 +410,9 @@ namespace kingghidorah {
 		System::String ^ ofAtA(mySparse^ m, bool sparse) {
 			return gcnew System::String(dat->ofAtA(m->dat, sparse).c_str());
 		}
+		System::String^ ofAtA_gpu(myCuda ^cuda,mySparse^ m, bool sparse) {
+			return gcnew System::String( dat->ofAtA_gpu(cuda->cuda(), m->dat, sparse).c_str());
+		}
 		System::String^ _ofAtA(mySparse^ m) {
 			auto str = dat->_ofAtA(m->dat);
 			auto ret = gcnew System::String(str.c_str());
@@ -410,6 +421,9 @@ namespace kingghidorah {
 		void ofAtB(mySparse^ m, bool sparse) {
 			dat->ofAtB(m->dat, sparse);
 		}
+		/*void ofAtB_gpu(mySparse^ m, bool sparse) {
+			dat->ofAtB_gpu(m->dat, sparse);
+		}*/
 		void _ofAtB(mySparse^ A, mySparse^ B)
 		{
 			A->dat->_ofAtB(B->dat, this->dat);
@@ -417,12 +431,20 @@ namespace kingghidorah {
 		void _ofBtAB(mySparse^ A, mySparse^ B, myDoubleArray^ b, myDoubleArray^ ret)
 		{
 			//pin_ptr<double> ptr = &b[0];
-
+			
 			A->dat->_ofBtAB(B->dat, &b->_arr->__v, this->dat, &ret->_arr->__v);
 			//array<double>^ ret = gcnew array<double>(_ret.rows());
 			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
 			//ptr = nullptr;
 			//return ret;
+		}
+		
+		void _ofBtAB_qr(mySparse^ A, mySparse^ B, myDoubleArray^ b, myDoubleArray^ ret)
+		{
+			A->dat->_ofBtAB_qr(B->dat, &b->_arr->__v, this->dat, &ret->_arr->__v);
+			
+			
+
 		}
 		void addemptyrow(int ii) {
 			dat->addemptyrow(ii);
@@ -436,15 +458,19 @@ namespace kingghidorah {
 			pin_ptr<int> ptr = &index[0];
 			pin_ptr<double> dat = &data[0];
 
-			this->dat->addrow(ii, ptr, dat, sc, N);
+			int* _ptr = ptr;
+			double* _dat = dat;
+			this->dat->addrow(ii, _ptr, _dat, sc, N);
 			ptr = nullptr;
 			dat = nullptr;
 		}
 		void addrow(int ii, array<int>^ index, array<double>^ data, int shift, double sc, int N, bool add) {
 			pin_ptr<int> ptr = &index[0];
 			pin_ptr<double> dat = &data[0];
+			int* _ptr = ptr;
+			double* _dat = dat;
 
-			this->dat->addrow(ii, ptr, dat, shift, sc, N, add);
+			this->dat->addrow(ii, _ptr, _dat, shift, sc, N, add);
 			ptr = nullptr;
 			dat = nullptr;
 		}
@@ -473,13 +499,15 @@ namespace kingghidorah {
 			ptr = nullptr;
 			return ret;
 		}
-		void Atb(array<double>^ b, kingghidorah::myDoubleArray^ ret)
+		void Atb(array<double>^ b, array<double>^ c,double sc, kingghidorah::myDoubleArray^ ret)
 		{
 			pin_ptr<double> ptr = &b[0];
-			dat->Atb(ptr, b->Length, &ret->_arr->__v);
+			pin_ptr<double> ptr2 = &c[0];
+			dat->Atb(ptr, ptr2,sc,b->Length, &ret->_arr->__v);
 			//array<double>^ ret = gcnew array<double>(rhs.rows());
 			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)rhs.data(), ret, 0, rhs.rows());
 			ptr = nullptr;
+			ptr2 = nullptr;
 			//return ret;
 		}
 		array<double>^ _Atb(array<double>^ b)
@@ -571,10 +599,10 @@ namespace kingghidorah {
 			auto ee = gcnew System::String(ss.c_str());
 			return ee;
 		}
-		mySparse^ solveI_gpu_mg(myCuda^ gpu, mySparse^ ret) {
+		/*mySparse^ solveI_gpu_mg(myCuda^ gpu, mySparse^ ret) {
 			this->dat->_solveI_gpu_mg(gpu->cuda(), ret->dat);
 			return ret;
-		}
+		}*/
 		void freezecoeff()
 		{
 			dat->freezecoeff();

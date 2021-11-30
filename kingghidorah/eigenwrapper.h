@@ -7,18 +7,29 @@
 #include "eigen-3.4.0/Eigen/SparseQR"
 #include "eigen-3.4.0/Eigen/SparseLU"
 #include "eigen-3.4.0/Eigen/SparseCholesky"	
+
+/*#include "eigen-3.3.8/Eigen/Sparse"
+#include "eigen-3.3.8/Eigen/Dense"
+#include "eigen-3.3.8/Eigen/SparseQR"
+#include "eigen-3.3.8/Eigen/SparseLU"
+#include "eigen-3.3.8/Eigen/SparseCholesky"
+*/
+
 #include <cuda_runtime.h>
 #include <device_launch_paraMeters.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <cusolverDn.h>
 #include <cusolverMg.h>
+#include <cusolverSp.h>
+#include <cusparse_v2.h>
 #include <cublas_v2.h>
 #include<cuda.h>
 #include <cuda_runtime_api.h>
 #include <chrono>
 #include <vector>
-#define EIGEN_DONT_PARALLELIZE
+#include <map>
+//#define EIGEN_DONT_PARALLELIZE
 //#define EIGEN_DONT_ALIGN
 
 #define MAXDEVICE 4
@@ -27,9 +38,12 @@ using std::vector;
 using std::string;
 
 //#define EIGEN_MALLOC_ALREADY_ALIGNED  0
-void kernel(double* A, double* work, int N, cudaStream_t stream);
+//void kernel(double* A, double* work, int N, cudaStream_t stream);
+void kernel(double* value, int* row, int* col, int N, int M, double* value2, int* index, cudaStream_t stream);
 namespace kingghidorah {
 	class cuda {
+	public:
+
 	private:
 		bool _canpeer = false;
 		std::vector<std::string> rank;
@@ -54,7 +68,7 @@ namespace kingghidorah {
 		//double* _L=0;
 		std::vector<int> speed;
 
-		cusolverMgHandle_t mg_solver = 0;
+		//cusolverMgHandle_t mg_solver = 0;
 
 		std::vector< std::vector<cudaStream_t>> _streams;
 
@@ -71,7 +85,7 @@ namespace kingghidorah {
 		~cuda();
 		cusolverDnHandle_t& solver(int ii, int kk);
 		cublasHandle_t& blas(int ii);
-		cusolverMgHandle_t mgsolver();
+		//cusolverMgHandle_t mgsolver();
 		//double* L();
 		bool valid();
 		bool canpeer();
@@ -116,22 +130,40 @@ namespace kingghidorah {
 	public:
 		Eigen::LLT<Eigen::MatrixXd>* LLT;
 	};
+	struct spgemm {
+	public:
+		bool initialized = false;
+		int* dA_csrOffsets = 0, * dA_columns = 0, * dB_csrOffsets = 0, * dB_columns = 0,
+			* dC_csrOffsets = 0, * dC_columns = 0, * dD_csrOffsets = 0, * dD_columns = 0;
+		double* dA_values = 0, * dB_values = 0, * dC_values = 0, * dD_values = 0;
+		int* index = 0;
+
+		int A_num_rows;
+		int A_num_cols;
+		int A_nnz;
+
+		int B_num_rows;
+		int B_num_cols;
+		int B_nnz;
+		//cusparseSpMatDescr_t matA, matB, matC;
+		//cusparseSpGEMMDescr_t spgemmDesc;
+		int C_num_rows, C_num_cols, C_nnz;
+		int D_num_rows, D_num_cols, D_nnz;
+
+		void* dBuffer1 = NULL, * dBuffer2 = NULL;
+		size_t bufferSize1 = 0, bufferSize2 = 0;
+	};
 	class _mySparse {
 
 	public:
 		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	public:
 		vector<vector<double>> _coeff;
+		std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>> _mat;
+		Eigen::MatrixXd _dmat;
 	private:
-		std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor>> _mat;
-		//std::vector<Eigen::SparseMatrix<double>> e;
-		//std::vector<Eigen::SparseMatrix<double>> e2;
-		//Eigen::MatrixXd mats;
-		//Eigen::MatrixXd _dmat;
-		double* ___dmat = 0;
-		int __r = 0;
-		int __c = 0;
 		vector<Eigen::VectorXd> coeff;
+		int space = 0;
 		int _nt = 0;
 		int _mt = 0;
 		int _dat_count = 0;
@@ -158,8 +190,9 @@ namespace kingghidorah {
 		double _at(int i, int j);
 		int num_elem(int j);
 		int cols();
+		void join();
 		std::string info();
-		void permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &perm);
+		void permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>& perm);
 		void shrink(int M);
 		void _permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>& perm, bool sparse, bool dense);
 		void _shrink(int M, bool sparse, bool dense);
@@ -186,22 +219,25 @@ namespace kingghidorah {
 		void ofDat();
 		void freezecoeff();
 		std::string ofAtA(_mySparse* A, bool sparse);
+		std::string ofAtA_gpu(cuda* _cuda, _mySparse* A, bool sparse);
 		std::string _ofAtA(_mySparse* A);
+		//void ofAtB_gpu(_mySparse* B, bool sparse);
 		void ofAtB(_mySparse* B, bool sparse);
 		void _ofAtB(_mySparse* B, _mySparse* C);
 		void _ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret);
+		void _ofBtAB_qr(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret);
 		Eigen::VectorXd Atb(double* ptr, int N);
 		Eigen::VectorXd _Atb(double* ptr, int N);
-		void Atb(double* ptr, int N, Eigen::VectorXd* c);
+		void Atb(double* ptr, double* ptr2, double sc, int N, Eigen::VectorXd* c);
 		void merge();
 		void computeQR();
 		void computeLU();
 		void computeLLT(Eigen::LLT<Eigen::MatrixXd>* LLT);
 		int nonzeros();
 		void Clear();
-		void setmat(Eigen::SparseMatrix<double> mat, int ii);
+		void setmat(Eigen::SparseMatrix<double, Eigen::RowMajor>& mat, int ii);
 		void setmat(const Eigen::MatrixXd& mat);
-		void setmiddlecolum(Eigen::SparseMatrix<double> f, int start, int end);
+		void setmiddlecolum(Eigen::SparseMatrix<double, Eigen::RowMajor>& f, int start, int end);
 		void solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void _solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void _solve0_gpu(kingghidorah::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int device);
@@ -212,7 +248,7 @@ namespace kingghidorah {
 		std::string _solveI_gpu_omp(kingghidorah::cuda* cuda, _mySparse* ret);
 		std::string _solveI_gpu_single(kingghidorah::cuda* cuda, _mySparse* ret);
 
-		void _solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse* ret);
+		//void _solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse* ret);
 		void __solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		Eigen::MatrixXd inv();
 		Eigen::MatrixXd solve0(_mySparse* rhs);

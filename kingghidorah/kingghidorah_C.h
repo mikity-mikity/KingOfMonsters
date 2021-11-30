@@ -9,12 +9,12 @@ namespace kingghidorah {
 	public:
 		int _nNode;
 		
-		double* node;
-		double* def;
-		double* buf_z;
-		double* buf_phi;
-		double* buf_b;
-		double* buf_D;
+		double* node=0;
+		double* def = 0;
+		double* buf_z = 0;
+		double* buf_phi = 0;
+		double* buf_b = 0;
+		double* buf_D = 0;
 
 		double _gi[3];
 		double _Gi[3];
@@ -104,12 +104,12 @@ namespace kingghidorah {
 	};
 	public class _memC {
 	public:
-		_memC_ref* _ref;
+		_memC_ref* _ref = 0;
 	private:
 
-		double** M;
+		double** M = 0;
 		double lo;
-		int* dd;
+		int* dd = 0;
 
 		int _nNode;
 		int _dim;
@@ -122,13 +122,13 @@ namespace kingghidorah {
 		double _ss[4];
 		double _Sij[1];
 		double N[3], H[3];
-		double* d0;
-		double* d1;
-		double* d2;
-		double* B;
-		double* tt0, * hh0, * tt1, * hh1, * tt2, * hh2;
-		double* gradN[3];
-		double* gradG;
+		double* d0 = 0;
+		double* d1 = 0;
+		double* d2 = 0;
+		double* B = 0;
+		double* tt0 = 0, * hh0 = 0, * tt1 = 0, * hh1 = 0, * tt2 = 0, * hh2 = 0;
+		double* gradN[3]{ 0,0,0 };
+		double* gradG = 0;
 	public:
 		double x, y, z;
 		double dv, _dv;
@@ -1117,7 +1117,7 @@ namespace kingghidorah {
 	};
 	public ref class memC {
 	public:
-		_memC* __mem;
+		_memC* __mem=0;
 	public:
 		int _nNode;
 		int dim;
@@ -1285,7 +1285,9 @@ namespace kingghidorah {
 			__mem = new _memC();
 		}
 		void dispose() {
+			if(__mem!=0)
 			delete __mem;
+			__mem = 0;
 		}
 		~memC() {
 			dispose();
