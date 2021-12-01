@@ -1199,7 +1199,7 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 				{
 
 					e2[_ii] = this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
-					index[_ii].resize(e2[_ii].nonZeros());
+					/*index[_ii].resize(e2[_ii].nonZeros());
 					if (_map == 0)
 					{
 					}
@@ -1216,7 +1216,7 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 							}
 						}
 						//e[_ii].makeCompressed();
-					}
+					}*/
 
 //#pragma omp critical
 					{
@@ -1227,12 +1227,12 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 						else {
 							if (e2[_ii].nonZeros() > 0)
 							{
-								int* ptr = &index[_ii][0];
+								//int* ptr = &index[_ii][0];
 								for (int k = 0; k < nn; ++k) {
 									for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(e2[_ii], k); it; ++it) {
 										//e[0].coeffRef(it.row(), it.col()) += it.value();
-										*((*e)[_ii].valuePtr() + *ptr) += it.value();
-										ptr++;
+										*((*e)[_ii].valuePtr() + (*_map)[it.row() * nn + it.col()]) += it.value();
+										//ptr++;
 									}
 								}
 							}
@@ -2609,7 +2609,7 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 				{
 
 					e2[_ii] = this->_mat[ii].transpose() * coeff[ii].asDiagonal() *B->_mat[ii];
-					index[_ii].resize(e2[_ii].nonZeros());
+					/*index[_ii].resize(e2[_ii].nonZeros());
 					if (_map == 0)
 					{
 					}
@@ -2626,7 +2626,7 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 							}
 						}
 						//e[_ii].makeCompressed();
-					}
+					}*/
 
 //#pragma omp critical
 					{
@@ -2637,12 +2637,12 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 						else {
 							if (e2[_ii].nonZeros())
 							{
-								int* ptr = &index[_ii][0];
+								//int* ptr = &index[_ii][0];
 								for (int k = 0; k < nn; ++k) {
 									for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(e2[_ii], k); it; ++it) {
 										//e[0].coeffRef(it.row(), it.col()) += it.value();
-										*((*e)[_ii].valuePtr() + *ptr) += it.value();
-										ptr++;
+										*((*e)[_ii].valuePtr() + (*_map)[it.row() * nn + it.col()]) += it.value();
+										//ptr++;
 									}
 								}
 							}
