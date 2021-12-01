@@ -163,7 +163,7 @@ kingghidorah::cuda::cuda(int N) {
 	}
 	speed.resize(count());
 	for (int i = 0; i < count(); i++)speed[i] = i;
-	/*for (int kk = 0; kk < 3; kk++)
+	for (int kk = 0; kk < 3; kk++)
 	{
 		for (int ii = 0; ii < count(); ii++)
 		{
@@ -182,15 +182,15 @@ kingghidorah::cuda::cuda(int N) {
 			for (int i = 0; i < _N; i++)rhs[i] = i;
 			m.ofDat();
 			m.clearcoeff();
-			//m._ofAtA(&m);
+			m._ofAtA(&m);
 			Eigen::VectorXd ret(_N);
-			//m._solve0_gpu(this, &rhs, &ret, ii);
+			m._solve0_gpu(this, &rhs, &ret, ii);
 			auto stop = high_resolution_clock::now();
 			auto duration = duration_cast<microseconds>(stop - start);
 			speed[ii] = duration.count();
 		}
-	}*/
-	_fastest = 0;// std::distance(speed.begin(), std::min_element(speed.begin(), speed.end()));
+	}
+	std::distance(speed.begin(), std::min_element(speed.begin(), speed.end()));
 	//_fastest = 0;
 	for (int ii = 0; ii < count(); ii++)
 	{
@@ -1194,8 +1194,8 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 				{
 					__coeff.insert(k, k) = coeff[ii](k);
 				}*/
-				(*e)[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
-/*//#pragma omp critical
+				//(*e)[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
+//#pragma omp critical
 				{
 
 					e2[_ii] = this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
@@ -1239,7 +1239,7 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 							//e[_ii].makeCompressed();
 						}
 					}
-				}*/
+				}
 			}
 		}
 		//e[_ii].makeCompressed();
@@ -2604,8 +2604,8 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 				{
 					__coeff.insert(k, k) = coeff[ii](k);
 				}*/
-				(*e)[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * B->_mat[ii];
-/*//#pragma omp critical
+				//(*e)[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * B->_mat[ii];
+//#pragma omp critical
 				{
 
 					e2[_ii] = this->_mat[ii].transpose() * coeff[ii].asDiagonal() *B->_mat[ii];
@@ -2649,7 +2649,7 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 							//e[_ii].makeCompressed();
 						}
 					}
-				}*/
+				}
 			}
 		}
 		//e[_ii].makeCompressed();
