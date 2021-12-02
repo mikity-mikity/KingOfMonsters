@@ -131,13 +131,13 @@ namespace kingghidorah {
 			return _Gi[___ll[i] + s];
 		}
 		inline double& get__gij(const int &i, const int &j) {
-			return _gij[i<<1 + j];
+			return _gij[(i<<1) + j];
 		}
 		inline double& get__Gij(const int &i, const int &j) {
-			return _Gij[i<<1 + j];
+			return _Gij[(i<<1) + j];
 		}
 		inline double& get__bij(const int &i, const int &j, const int &s) {
-			return _bij[___ll[(i<<1 + j)] + s];
+			return _bij[___ll[((i<<1) + j)] + s];
 		}
 		inline double& get__Gammaijk(const int &i, const int &j, const int &k) {
 			return _Gammaijk[(((i<<1) + j) <<1) + k];
@@ -2429,7 +2429,7 @@ namespace kingghidorah {
 		{
 			double _val3 = 0;
 			for (int j = 0; j < 2; j++) {
-				_val3 += _Sij[i<<1+j] * this->get_gi(j, k);
+				_val3 += _Sij[(i<<1)+j] * this->get_gi(j, k);
 			}	
 			return _val3 * _ref->_refDv;
 		}
@@ -2438,7 +2438,7 @@ namespace kingghidorah {
 		{
 			double _val3 = 0;
 			for (int j = 0; j < 2; j++) {
-				_val3 += _Sij[i <<1 + j] * _ref->d1[j][I];
+				_val3 += _Sij[(i <<1) + j] * _ref->d1[j][I];
 			}
 			return _val3;
 		}
@@ -2447,12 +2447,12 @@ namespace kingghidorah {
 		{
 			double _val3 = 0;
 			for (int j = 0; j < 2; j++) {
-				_val3 += _Sij[i <<1 + j] * this->get_gi(j, k);
+				_val3 += _Sij[(i <<1) + j] * this->get_gi(j, k);
 			}
 			return _val3;
 		}
 		double S(int i, int j) {
-			return _Sij[i * 2 + j];
+			return _Sij[(i<<1) + j];
 		}
 		//bending boundary term
 		double KB(int j, int k,int l,int m, double _la, double _mu)
