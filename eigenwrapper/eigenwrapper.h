@@ -40,7 +40,7 @@ using std::string;
 //#define EIGEN_MALLOC_ALREADY_ALIGNED  0
 //void kernel(double* A, double* work, int N, cudaStream_t stream);
 void kernel(double* value, int* row, int* col, int N, int M, double* value2, int* index, cudaStream_t stream);
-namespace kingghidorah {
+namespace KingOfMonsters {
 	class cuda {
 	public:
 
@@ -203,7 +203,7 @@ namespace kingghidorah {
 		int _rows();
 		int _cols();
 		int __rows();
-		void copycoefffrom(kingghidorah::_mySparse* mat);
+		void copycoefffrom(KingOfMonsters::_mySparse* mat);
 		void init(int n, int m);
 		int resize(int n, int m);
 		void _resize(int n, int m);
@@ -240,15 +240,15 @@ namespace kingghidorah {
 		void setmiddlecolum(Eigen::SparseMatrix<double, Eigen::RowMajor> &f, int start, int end);
 		void solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void _solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
-		void _solve0_gpu(kingghidorah::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int device);
+		void _solve0_gpu(KingOfMonsters::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int device);
 		Eigen::MatrixXd _solve0(_myLLT* LLT, _mySparse* rhs);
-		void _solve0_gpu(kingghidorah::cuda* cuda, _mySparse* rhs, _mySparse* ret);
+		void _solve0_gpu(KingOfMonsters::cuda* cuda, _mySparse* rhs, _mySparse* ret);
 		void _solveI(_mySparse* ret);
-		void _solveI_gpu(kingghidorah::cuda* cuda, _mySparse* ret);
-		std::string _solveI_gpu_omp(kingghidorah::cuda* cuda, _mySparse* ret);
-		std::string _solveI_gpu_single(kingghidorah::cuda* cuda, _mySparse* ret);
+		void _solveI_gpu(KingOfMonsters::cuda* cuda, _mySparse* ret);
+		std::string _solveI_gpu_omp(KingOfMonsters::cuda* cuda, _mySparse* ret);
+		std::string _solveI_gpu_single(KingOfMonsters::cuda* cuda, _mySparse* ret);
 
-		//void _solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse* ret);
+		//void _solveI_gpu_mg(KingOfMonsters::cuda* cuda, _mySparse* ret);
 		void __solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		Eigen::MatrixXd inv();
 		Eigen::MatrixXd solve0(_mySparse* rhs);

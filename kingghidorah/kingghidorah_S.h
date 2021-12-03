@@ -10,7 +10,7 @@ using namespace System;
 using std::vector;
 using std::string;
 #include "mySparseLibrary.h"
-namespace kingghidorah {
+namespace KingOfMonsters {
 	
 	public class _buffer {
 	public:
@@ -131,13 +131,13 @@ namespace kingghidorah {
 			return _Gi[___ll[i] + s];
 		}
 		inline double& get__gij(const int &i, const int &j) {
-			return _gij[i<<1 + j];
+			return _gij[(i<<1) + j];
 		}
 		inline double& get__Gij(const int &i, const int &j) {
-			return _Gij[i<<1 + j];
+			return _Gij[(i<<1) + j];
 		}
 		inline double& get__bij(const int &i, const int &j, const int &s) {
-			return _bij[___ll[(i<<1 + j)] + s];
+			return _bij[___ll[((i<<1) + j)] + s];
 		}
 		inline double& get__Gammaijk(const int &i, const int &j, const int &k) {
 			return _Gammaijk[(((i<<1) + j) <<1) + k];
@@ -2573,7 +2573,7 @@ public:
 	{
 		__mem->set_z(z);
 	}
-	void update_z_phi(int nNode, kingghidorah::myDoubleArray^ Z, kingghidorah::myDoubleArray^ phi) {
+	void update_z_phi(int nNode, KingOfMonsters::myDoubleArray^ Z, KingOfMonsters::myDoubleArray^ phi) {
 		if (Z != nullptr)
 		{
 			//eigen_assert(Z->_arr->__v.norm() < 10000 && Z->_arr->__v.norm() > -100000);
@@ -2591,7 +2591,7 @@ public:
 			}*/
 		}
 	}
-	void update3(int nNode, kingghidorah::myDoubleArray^ node, kingghidorah::myDoubleArray^ def,bool ignoreZ) {
+	void update3(int nNode, KingOfMonsters::myDoubleArray^ node, KingOfMonsters::myDoubleArray^ def,bool ignoreZ) {
 		if (node != nullptr) {
 			__mem->set_node(node->_arr->__v.data(), nNode * 3);
 			/*for (int i = 0; i < nNode; i++) {
@@ -2623,7 +2623,7 @@ public:
 			}*/
 		}
 	}
-	void update3(int nNode, kingghidorah::myDoubleArray^ node, kingghidorah::myDoubleArray^  def) {
+	void update3(int nNode, KingOfMonsters::myDoubleArray^ node, KingOfMonsters::myDoubleArray^  def) {
 		update3(nNode, node, def, false);
 	}
 	void update(int nNode, int uDim, int vDim) {

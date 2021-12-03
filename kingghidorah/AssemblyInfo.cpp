@@ -6,11 +6,11 @@ using namespace System::Runtime::CompilerServices;
 using namespace System::Runtime::InteropServices;
 using namespace System::Security::Permissions;
 
-[assembly:AssemblyTitleAttribute(L"kingghidorah")];
+[assembly:AssemblyTitleAttribute(L"KingOfMonsters")];
 [assembly:AssemblyDescriptionAttribute(L"")];
 [assembly:AssemblyConfigurationAttribute(L"")];
 [assembly:AssemblyCompanyAttribute(L"")];
-[assembly:AssemblyProductAttribute(L"kingghidorah")];
+[assembly:AssemblyProductAttribute(L"KingOfMonsters")];
 [assembly:AssemblyCopyrightAttribute(L"Copyright (c)  2021")];
 [assembly:AssemblyTrademarkAttribute(L"")];
 [assembly:AssemblyCultureAttribute(L"")];

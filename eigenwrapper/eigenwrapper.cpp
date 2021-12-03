@@ -21,15 +21,15 @@ Eigen::MatrixXd I;
 bool __cuinit = false;
 //static std::vector<Eigen::SparseMatrix<double>> e;
 std::vector<std::vector<cusparseHandle_t>> sp_handle;
-std::map<std::tuple<kingghidorah::_mySparse*,int>, kingghidorah::spgemm> dict;
-std::map<kingghidorah::_mySparse*, Eigen::SparseMatrix<double, Eigen::RowMajor>> dict2;
+std::map<std::tuple<KingOfMonsters::_mySparse*,int>, KingOfMonsters::spgemm> dict;
+std::map<KingOfMonsters::_mySparse*, Eigen::SparseMatrix<double, Eigen::RowMajor>> dict2;
 std::map< Eigen::SparseMatrix<double, Eigen::RowMajor>*, std::vector<int>>  map;
 
-void kingghidorah::cuda::disable()
+void KingOfMonsters::cuda::disable()
 {
 	__cuinit = false;
 }
-kingghidorah::cuda::cuda(int N) {
+KingOfMonsters::cuda::cuda(int N) {
 	dict.clear();
 	dict2.clear();
 	map.clear();
@@ -318,41 +318,41 @@ kingghidorah::cuda::cuda(int N) {
 }
 
 
-int* kingghidorah::cuda::devicelist()
+int* KingOfMonsters::cuda::devicelist()
 {
 	return _deviceList;
 }
-double** kingghidorah::cuda::array_d_A()
+double** KingOfMonsters::cuda::array_d_A()
 {
 	return this->_array_d_A;
 }
-double** kingghidorah::cuda::array_d_B()
+double** KingOfMonsters::cuda::array_d_B()
 {
 	return this->_array_d_B;
 }
-double** kingghidorah::cuda::array_d_work()
+double** KingOfMonsters::cuda::array_d_work()
 {
 	return this->_array_d_work;
 }
-bool kingghidorah::cuda::canpeeraccess(int i, int j)
+bool KingOfMonsters::cuda::canpeeraccess(int i, int j)
 {
 	int canAccessPeer = 0;
 	cudaDeviceCanAccessPeer(&canAccessPeer, i, j);
 	return canAccessPeer;
 }
-/*double* kingghidorah::cuda::L()
+/*double* KingOfMonsters::cuda::L()
 {
 	return this->_L;
 }*/
-bool kingghidorah::cuda::canpeer()
+bool KingOfMonsters::cuda::canpeer()
 {
 	return _canpeer;
 }
-cudaStream_t& kingghidorah::cuda::__streams(int i, int j)
+cudaStream_t& KingOfMonsters::cuda::__streams(int i, int j)
 {
 	return _streams[i][j];
 }
-void kingghidorah::cuda::dispose() {
+void KingOfMonsters::cuda::dispose() {
 	if (valid())
 	{
 		if (prevwn != 0)
@@ -468,32 +468,32 @@ void kingghidorah::cuda::dispose() {
 	initialized = false;
 }
 /*
-cusolverMgHandle_t kingghidorah::cuda::mgsolver() {
+cusolverMgHandle_t KingOfMonsters::cuda::mgsolver() {
 	return mg_solver;
 }*/
-int* kingghidorah::cuda::info(int i) {
+int* KingOfMonsters::cuda::info(int i) {
 	return __info[i];
 }
-kingghidorah::cuda::~cuda() {
+KingOfMonsters::cuda::~cuda() {
 
 	dispose();
 }
-double* kingghidorah::cuda::work_M(int i) {
+double* KingOfMonsters::cuda::work_M(int i) {
 	return __mgM[i];
 }
-double* kingghidorah::cuda::work_rhs(int i) {
+double* KingOfMonsters::cuda::work_rhs(int i) {
 	return __mgrhs[i];
 }
-double* kingghidorah::cuda::work_M2() {
+double* KingOfMonsters::cuda::work_M2() {
 	return __mgM2;
 }
-double* kingghidorah::cuda::work_rhs2() {
+double* KingOfMonsters::cuda::work_rhs2() {
 	return __mgrhs2;
 }
-double* kingghidorah::cuda::work_C(int i) {
+double* KingOfMonsters::cuda::work_C(int i) {
 	return __mgC[i];
 }
-double* kingghidorah::cuda::work(int N, int device) {
+double* KingOfMonsters::cuda::work(int N, int device) {
 	if (N < work_size[device])
 	{
 		//do nothing
@@ -510,7 +510,7 @@ double* kingghidorah::cuda::work(int N, int device) {
 		return __work[device];
 	}
 }
-double* kingghidorah::cuda::work(int N, int device, cudaStream_t stream) {
+double* KingOfMonsters::cuda::work(int N, int device, cudaStream_t stream) {
 	if (N < work_size[device])
 	{
 		//do nothing
@@ -527,11 +527,11 @@ double* kingghidorah::cuda::work(int N, int device, cudaStream_t stream) {
 		return __work[device];
 	}
 }
-bool kingghidorah::cuda::valid() {
+bool KingOfMonsters::cuda::valid() {
 	//return true;
 	return initialized && (!failed);
 }
-string  kingghidorah::cuda::device_name() {
+string  KingOfMonsters::cuda::device_name() {
 	if (valid()) {
 		char name[100];
 
@@ -563,19 +563,19 @@ string  kingghidorah::cuda::device_name() {
 	}
 	return "invalid";
 }
-cusolverDnHandle_t& kingghidorah::cuda::solver(int ii, int kk) {
+cusolverDnHandle_t& KingOfMonsters::cuda::solver(int ii, int kk) {
 	return solver_handle[ii][kk];
 }
-cublasHandle_t& kingghidorah::cuda::blas(int ii) {
+cublasHandle_t& KingOfMonsters::cuda::blas(int ii) {
 	return cublas_handle[ii];
 }
-inline int& kingghidorah::cuda::count() {
+inline int& KingOfMonsters::cuda::count() {
 	return _count;
 }
-inline int& kingghidorah::cuda::fastest() {
+inline int& KingOfMonsters::cuda::fastest() {
 	return _fastest;
 }
-kingghidorah::_mySparse::_mySparse()
+KingOfMonsters::_mySparse::_mySparse()
 {
 	dat.reserve(1000);
 	coeff.reserve(1000);
@@ -588,7 +588,7 @@ kingghidorah::_mySparse::_mySparse()
 	//_smat.resize(1);
 	//_smat = new Eigen::SparseMatrix<double>();
 }
-kingghidorah::_mySparse::~_mySparse()
+KingOfMonsters::_mySparse::~_mySparse()
 {
 	
 	/*if (dict.contains(this))
@@ -640,7 +640,7 @@ kingghidorah::_mySparse::~_mySparse()
 }
 
 // TODO: This is an example of a library function
-kingghidorah::_myPermutation::_myPermutation(int* ptr, int N)
+KingOfMonsters::_myPermutation::_myPermutation(int* ptr, int N)
 {
 	//Eigen::VectorXi indices(N);
 	Eigen::VectorXi indices(N);
@@ -651,7 +651,7 @@ kingghidorah::_myPermutation::_myPermutation(int* ptr, int N)
 	}
 	perm.indices() = indices;
 }
-std::string kingghidorah::_mySparse::_testopenmp()
+std::string KingOfMonsters::_mySparse::_testopenmp()
 {
 	std::stringstream ss;
 	int mt = omp_get_max_threads();
@@ -672,7 +672,7 @@ std::string kingghidorah::_mySparse::_testopenmp()
 	}
 	return ss.str();
 }
-void kingghidorah::_mySparse::freeze(bool _do) {
+void KingOfMonsters::_mySparse::freeze(bool _do) {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, this->rows(), this->cols());
 	//__r = this->rows(); __c = this->cols();
 	_dmat.setZero(this->rows(), this->cols());
@@ -689,20 +689,20 @@ void kingghidorah::_mySparse::freeze(bool _do) {
 			_dmat += this->_mat[ii];
 		}
 }
-double kingghidorah::_mySparse::L2Norm(Eigen::VectorXd* a, Eigen::VectorXd* b) {
+double KingOfMonsters::_mySparse::L2Norm(Eigen::VectorXd* a, Eigen::VectorXd* b) {
 	return (*a).transpose() * this->_mat[0] * (*b);
 }
-Eigen::VectorXd kingghidorah::_mySparse::Vector(double* ptr1, int N1) {
+Eigen::VectorXd KingOfMonsters::_mySparse::Vector(double* ptr1, int N1) {
 	auto a = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(ptr1, N1);
 	return this->_mat[0] * a;
 }
-Eigen::VectorXd kingghidorah::_mySparse::Vector(Eigen::VectorXd* vec) {
+Eigen::VectorXd KingOfMonsters::_mySparse::Vector(Eigen::VectorXd* vec) {
 	return this->_mat[0] * *vec;
 }
-void kingghidorah::_mySparse::Vector(Eigen::VectorXd* vec, Eigen::VectorXd* ret) {
+void KingOfMonsters::_mySparse::Vector(Eigen::VectorXd* vec, Eigen::VectorXd* ret) {
 	*ret = this->_mat[0] * *vec;
 }
-void kingghidorah::_mySparse::plus(_mySparse* m, double sc, bool dense, bool sparse) {
+void KingOfMonsters::_mySparse::plus(_mySparse* m, double sc, bool dense, bool sparse) {
 	if (sparse)
 		this->_mat[0] = this->_mat[0] + m->_mat[0] * sc;
 	if (dense)
@@ -712,35 +712,35 @@ void kingghidorah::_mySparse::plus(_mySparse* m, double sc, bool dense, bool spa
 		_dmat += m->_mat[0] * sc;
 	}
 }
-void kingghidorah::_mySparse::setmat(Eigen::SparseMatrix<double, Eigen::RowMajor> &mat, int ii) {
+void KingOfMonsters::_mySparse::setmat(Eigen::SparseMatrix<double, Eigen::RowMajor> &mat, int ii) {
 	this->_mat[ii] = mat;
 }
-void kingghidorah::_mySparse::setmat(const Eigen::MatrixXd& mat) {
+void KingOfMonsters::_mySparse::setmat(const Eigen::MatrixXd& mat) {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, mat.rows(), mat.cols());
 	//__r = mat.rows();
 	//__c = mat.cols();
 	_dmat.resize(mat.rows(), mat.cols());
 	_dmat = mat;
 }
-double kingghidorah::_mySparse::at(int i, int ii) {
+double KingOfMonsters::_mySparse::at(int i, int ii) {
 	return this->_mat[ii].data().value(i);
 }
-int kingghidorah::_mySparse::num_elem(int ii)
+int KingOfMonsters::_mySparse::num_elem(int ii)
 {
 	return this->_mat[ii].data().size();
 }
-double kingghidorah::_mySparse::_at(int i) {
+double KingOfMonsters::_mySparse::_at(int i) {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 	return _dmat.data()[i];
 }
-double kingghidorah::_mySparse::_at(int i, int j) {
+double KingOfMonsters::_mySparse::_at(int i, int j) {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 	return _dmat(i, j);
 }
-int kingghidorah::_mySparse::cols() {
+int KingOfMonsters::_mySparse::cols() {
 	return _mat[0].cols();
 }
-void kingghidorah::_mySparse::_resize(int n, int m) {
+void KingOfMonsters::_mySparse::_resize(int n, int m) {
 
 	//Eigen::Map<Eigen::MatrixXd> map1(___dmat, __r, __c);
 	//Eigen::Map<Eigen::MatrixXd> map2(___dmat, n, m);
@@ -758,16 +758,16 @@ void kingghidorah::_mySparse::_resize(int n, int m) {
 	//__r = n;
 	//__c = m;
 }
-void kingghidorah::_mySparse::setmiddlecolum(Eigen::SparseMatrix<double, Eigen::RowMajor> &f, int start, int end) {
+void KingOfMonsters::_mySparse::setmiddlecolum(Eigen::SparseMatrix<double, Eigen::RowMajor> &f, int start, int end) {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 	_dmat.middleCols(start, end - start) = f;
 }
-void kingghidorah::_mySparse::permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>& perm)
+void KingOfMonsters::_mySparse::permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>& perm)
 {
 	for (int ii = 0; ii < _nt; ii++)
 		_mat[ii] = _mat[ii] * perm.transpose();
 }
-void kingghidorah::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>& perm, bool sparse, bool dense)
+void KingOfMonsters::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>& perm, bool sparse, bool dense)
 {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 	//Eigen::Map<Eigen::MatrixXd> _tmp(___dmat+__r*__c, __r, __c);
@@ -817,12 +817,12 @@ void kingghidorah::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic, 
 	}
 
 }
-void kingghidorah::_mySparse::shrink(int M)
+void KingOfMonsters::_mySparse::shrink(int M)
 {
 	for (int ii = 0; ii < _nt; ii++)
 		_mat[ii] = _mat[ii].leftCols(M);
 }
-void kingghidorah::_mySparse::_shrink(int M, bool sparse, bool dense)
+void KingOfMonsters::_mySparse::_shrink(int M, bool sparse, bool dense)
 {
 	if (true/*sparse*/)
 	{
@@ -845,7 +845,7 @@ void kingghidorah::_mySparse::_shrink(int M, bool sparse, bool dense)
 		//_dmat.conservativeResize(M, M);
 	}
 }
-void kingghidorah::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>& perm, Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>& perm2)
+void KingOfMonsters::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>& perm, Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>& perm2)
 {
 	int nn = _dmat.rows();// __r;
 	//int numthreads = omp_get_max_threads();
@@ -881,7 +881,7 @@ void kingghidorah::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic, 
 	}*/
 
 }
-void kingghidorah::_mySparse::_shrink(int M, int N)
+void KingOfMonsters::_mySparse::_shrink(int M, int N)
 {
 	if (_mat.size() >= 1)
 	{
@@ -892,7 +892,7 @@ void kingghidorah::_mySparse::_shrink(int M, int N)
 	}
 	//_dmat.conservativeResize(M, N);//;// _dmat.topLeftCorner(M, N);// f;
 }
-int kingghidorah::_mySparse::rows() {
+int KingOfMonsters::_mySparse::rows() {
 	int _ret = 0;
 	for (int ii = 0; ii < _nt; ii++)
 	{
@@ -900,13 +900,13 @@ int kingghidorah::_mySparse::rows() {
 	}
 	return _ret;
 }
-int kingghidorah::_mySparse::_rows() {
+int KingOfMonsters::_mySparse::_rows() {
 	return _dmat.rows();// __r;
 }
-int kingghidorah::_mySparse::_cols() {
+int KingOfMonsters::_mySparse::_cols() {
 	return _dmat.cols();// __c;
 }
-int kingghidorah::_mySparse::__rows() {
+int KingOfMonsters::_mySparse::__rows() {
 	int _ret = 0;
 	for (int ii = 0; ii < this->_coeff.size(); ii++)
 	{
@@ -914,7 +914,7 @@ int kingghidorah::_mySparse::__rows() {
 	}
 	return _ret;
 }
-void kingghidorah::_mySparse::Clear() {
+void KingOfMonsters::_mySparse::Clear() {
 	if (_nt == 0)_nt = 1;
 	this->dat.resize(_nt);
 	this->_coeff.resize(_nt);
@@ -937,13 +937,13 @@ void kingghidorah::_mySparse::Clear() {
 	}
 }
 
-void kingghidorah::_mySparse::init(int n, int m)
+void KingOfMonsters::_mySparse::init(int n, int m)
 {
 	this->_nt = 1;
 
 	resize(n, m);
 }
-int kingghidorah::_mySparse::resize(int n, int m) {
+int KingOfMonsters::_mySparse::resize(int n, int m) {
 	this->_nt = this->dat.size();
 	if (_nt == 0 || _nt == 1)
 	{
@@ -957,18 +957,18 @@ int kingghidorah::_mySparse::resize(int n, int m) {
 
 	return this->_nt;
 }
-void kingghidorah::_mySparse::reserve(int n) {
+void KingOfMonsters::_mySparse::reserve(int n) {
 	_mat.reserve(n);
 }
-void kingghidorah::_mySparse::addemptyrow(int ii) {
+void KingOfMonsters::_mySparse::addemptyrow(int ii) {
 	eigen_assert(_coeff[0].size() == ii );
 	_coeff[0].push_back(1);
 }
-void kingghidorah::_mySparse::addrow(int ii, int* ptr, double* data, double sc, int N)
+void KingOfMonsters::_mySparse::addrow(int ii, int* ptr, double* data, double sc, int N)
 {
 	addrow(ii, ptr, data, 0, sc, N, true);
 }
-void kingghidorah::_mySparse::addrow(int ii, int* ptr, double* data, int shift, double sc, int N, bool add)
+void KingOfMonsters::_mySparse::addrow(int ii, int* ptr, double* data, int shift, double sc, int N, bool add)
 {
 	data += shift;
 	ptr += shift;
@@ -994,17 +994,17 @@ void kingghidorah::_mySparse::addrow(int ii, int* ptr, double* data, int shift, 
 	}
 }
 
-void kingghidorah::_mySparse::adddat(int ii, int j, double value)
+void KingOfMonsters::_mySparse::adddat(int ii, int j, double value)
 {
 	dat[0].push_back(Eigen::Triplet<double>(ii, j, value));
 }
-void kingghidorah::_mySparse::addcoeff(double sc) {
+void KingOfMonsters::_mySparse::addcoeff(double sc) {
 	_coeff[0].push_back(sc);
 }
-Eigen::VectorXd kingghidorah::_mySparse::get_coeff(int ii) {
+Eigen::VectorXd KingOfMonsters::_mySparse::get_coeff(int ii) {
 	return this->coeff[ii];
 }
-void  kingghidorah::_mySparse::copycoefffrom(kingghidorah::_mySparse* mat)
+void  KingOfMonsters::_mySparse::copycoefffrom(KingOfMonsters::_mySparse* mat)
 {
 	this->_nt = mat->_nt;
 	this->coeff.resize(_nt);
@@ -1014,11 +1014,11 @@ void  kingghidorah::_mySparse::copycoefffrom(kingghidorah::_mySparse* mat)
 	}
 }
 
-void kingghidorah::_mySparse::begin_construct()
+void KingOfMonsters::_mySparse::begin_construct()
 {
 	_dat_count = 0;
 }
-void kingghidorah::_mySparse::end_construct(int cc)
+void KingOfMonsters::_mySparse::end_construct(int cc)
 {
 	_nt = _dat_count;
 	//_mat.clear();
@@ -1031,7 +1031,7 @@ void kingghidorah::_mySparse::end_construct(int cc)
 		_mat[ii].resize(_coeff[ii].size(), cc);
 	}
 }
-void kingghidorah::_mySparse::addmat(_mySparse* mat)
+void KingOfMonsters::_mySparse::addmat(_mySparse* mat)
 {
 	_dat_count++;
 	if (dat.size() < _dat_count)dat.resize(_dat_count);
@@ -1039,7 +1039,7 @@ void kingghidorah::_mySparse::addmat(_mySparse* mat)
 	dat[_dat_count - 1] = mat->dat[0];
 	_coeff[_dat_count - 1] = (mat->_coeff[0]);
 }
-void kingghidorah::_mySparse::OfDuplicate(_mySparse* mat)
+void KingOfMonsters::_mySparse::OfDuplicate(_mySparse* mat)
 {
 	this->_nt = mat->_nt;
 	this->_mat.resize(_nt);
@@ -1066,14 +1066,14 @@ void kingghidorah::_mySparse::OfDuplicate(_mySparse* mat)
 		}*/
 	}
 }
-void kingghidorah::_mySparse::_OfDuplicate(_mySparse* mat)
+void KingOfMonsters::_mySparse::_OfDuplicate(_mySparse* mat)
 {
 	if (this->_mat.size() == 0)
 		this->_mat.resize(1);
 	this->_mat[0] = mat->_mat[0];
 	//this->_dmat = this->_mat[0];// mat->_dmat;
 }
-void kingghidorah::_mySparse::ofDat()
+void KingOfMonsters::_mySparse::ofDat()
 {
 	if (_mat.size() != _nt)_mat.resize(_nt);
 #pragma omp parallel for
@@ -1091,20 +1091,20 @@ void kingghidorah::_mySparse::ofDat()
 		}
 	}
 }
-void kingghidorah::_mySparse::freezecoeff() {
+void KingOfMonsters::_mySparse::freezecoeff() {
 #pragma omp parallel for schedule(dynamic,1)
 	for (int ii = 0; ii < _nt; ii++)
 	{
 		coeff[ii] = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(_coeff[ii].data(), _coeff[ii].size());
 	}
 }
-int kingghidorah::_mySparse::numBlocks()
+int KingOfMonsters::_mySparse::numBlocks()
 {
 	return this->dat.size();
 }
 //std::vector<Eigen::MatrixXd> e;
 
-std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
+std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 {
 	static std::vector<std::vector<int>> index;
 	static std::map<_mySparse*,std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>>> ___e;
@@ -1359,7 +1359,7 @@ std::string kingghidorah::_mySparse::ofAtA( _mySparse* A, bool sparse)
 
 
 
-std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool sparse)
+std::string KingOfMonsters::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool sparse)
 {
 	static std::vector<Eigen::SparseMatrix<double,Eigen::RowMajor>> e;
 	static std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>> tmp;
@@ -1396,8 +1396,8 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 		int job = 0;
 
 
-		kingghidorah::spgemm ____spgemm_dat;
-		auto key = std::tuple<kingghidorah::_mySparse*,int>(this,0);
+		KingOfMonsters::spgemm ____spgemm_dat;
+		auto key = std::tuple<KingOfMonsters::_mySparse*,int>(this,0);
 		if (dict.contains(key))
 		{
 			____spgemm_dat = dict[key];
@@ -1441,8 +1441,8 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 				int device = _ii % _cuda->count();
 				cudaSetDevice(device);
 
-				kingghidorah::spgemm __spgemm_dat;
-				auto __key = std::tuple<kingghidorah::_mySparse*, int>(this, _ii);
+				KingOfMonsters::spgemm __spgemm_dat;
+				auto __key = std::tuple<KingOfMonsters::_mySparse*, int>(this, _ii);
 
 				__spgemm_dat.A_num_rows = max_cols;
 				__spgemm_dat.A_num_cols = max_rows;
@@ -1496,8 +1496,8 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 		{
 			int device = _ii % _cuda->count();
 			cudaSetDevice(device);
-			kingghidorah::spgemm* __spgemm_dat;
-			auto __key = std::tuple<kingghidorah::_mySparse*, int>(this, _ii);
+			KingOfMonsters::spgemm* __spgemm_dat;
+			auto __key = std::tuple<KingOfMonsters::_mySparse*, int>(this, _ii);
 			__spgemm_dat = &dict[__key];
 			int p_nnz = __spgemm_dat->D_nnz;
 
@@ -1834,7 +1834,7 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 }
 
 
-/*std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool sparse)
+/*std::string KingOfMonsters::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool sparse)
 {
 	static std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>> e;
 	static std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>> tmp;
@@ -1878,8 +1878,8 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 	int job = 0;
 
 
-	kingghidorah::spgemm ____spgemm_dat;
-	auto key = std::tuple<kingghidorah::_mySparse*, int>(this, 0);
+	KingOfMonsters::spgemm ____spgemm_dat;
+	auto key = std::tuple<KingOfMonsters::_mySparse*, int>(this, 0);
 	if (dict.contains(key))
 	{
 		____spgemm_dat = dict[key];
@@ -1911,8 +1911,8 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 			int device = _ii % _cuda->count();
 			cudaSetDevice(device);
 
-			kingghidorah::spgemm __spgemm_dat;
-			auto __key = std::tuple<kingghidorah::_mySparse*, int>(this, _ii);
+			KingOfMonsters::spgemm __spgemm_dat;
+			auto __key = std::tuple<KingOfMonsters::_mySparse*, int>(this, _ii);
 
 			__spgemm_dat.A_num_rows = max_cols;
 			__spgemm_dat.A_num_cols = max_rows;
@@ -1968,8 +1968,8 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 	{
 		int device = _ii % _cuda->count();
 		cudaSetDevice(device);
-		kingghidorah::spgemm* __spgemm_dat;
-		auto __key = std::tuple<kingghidorah::_mySparse*, int>(this, _ii);
+		KingOfMonsters::spgemm* __spgemm_dat;
+		auto __key = std::tuple<KingOfMonsters::_mySparse*, int>(this, _ii);
 		__spgemm_dat = &dict[__key];
 
 		CUstream stream = _cuda->__streams(device, _ii / _cuda->count());
@@ -2306,10 +2306,10 @@ std::string kingghidorah::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool s
 	return ss.str();
 }*/
 
-void kingghidorah::_mySparse::_freeze() {
+void KingOfMonsters::_mySparse::_freeze() {
 	//this->_dmat = this->_mat[0];
 }
-std::string kingghidorah::_mySparse::_ofAtA(_mySparse* A)
+std::string KingOfMonsters::_mySparse::_ofAtA(_mySparse* A)
 {
 	/*if (__r == 0)
 	{
@@ -2352,11 +2352,11 @@ std::string kingghidorah::_mySparse::_ofAtA(_mySparse* A)
 	}
 	return ss.str();
 }
-std::string kingghidorah::_mySparse::info()
+std::string KingOfMonsters::_mySparse::info()
 {
 	return "viennacl has been abandoned";
 }
-void kingghidorah::_mySparse::join()
+void KingOfMonsters::_mySparse::join()
 {
 	//eigen_assert(this->_mat[0].nonZeros() > 0);
 	int __rows = this->rows();
@@ -2391,7 +2391,7 @@ void kingghidorah::_mySparse::join()
 		
 	}
 }
-void kingghidorah::_mySparse::_ofAtB(_mySparse* B, _mySparse* C)
+void KingOfMonsters::_mySparse::_ofAtB(_mySparse* B, _mySparse* C)
 {
 	this->freeze(true);
 	B->freeze(false);
@@ -2434,7 +2434,7 @@ void kingghidorah::_mySparse::_ofAtB(_mySparse* B, _mySparse* C)
 	C->_mat[0] = C->_dmat.sparseView(1.0, 0.0000000000001);
 	C->_mat[0].makeCompressed();
 }
-void kingghidorah::_mySparse::_ofBtAB_qr(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret)
+void KingOfMonsters::_mySparse::_ofBtAB_qr(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret)
 {
 	this->join();
 	B->join();
@@ -2451,7 +2451,7 @@ void kingghidorah::_mySparse::_ofBtAB_qr(_mySparse* B, Eigen::VectorXd* b, _mySp
 	tmp = q * B->_mat[0];
 	C->_dmat = tmp.transpose() * tmp;
 }
-void kingghidorah::_mySparse::_ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret)
+void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret)
 {
 	Eigen::MatrixXd D;
 
@@ -2511,7 +2511,7 @@ void kingghidorah::_mySparse::_ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySpars
 	*ret = D * *b;
 }
 
-void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
+void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)
 {
 	static std::map<_mySparse*, Eigen::SparseMatrix<double, Eigen::RowMajor>> dict2;
 	static std::map< Eigen::SparseMatrix<double, Eigen::RowMajor>*, std::vector<int>>  map;
@@ -2766,7 +2766,7 @@ void kingghidorah::_mySparse::ofAtB(_mySparse* B, bool sparse)
 	return;// ss.str();
 }
 
-void kingghidorah::_mySparse::Atb(double* ptr, double* ptr2, double sc,int N, Eigen::VectorXd* c)
+void KingOfMonsters::_mySparse::Atb(double* ptr, double* ptr2, double sc,int N, Eigen::VectorXd* c)
 {
 	static std::map<int, std::vector<Eigen::VectorXd>> __dict;
 	c->resize(this->cols());
@@ -2838,7 +2838,7 @@ void kingghidorah::_mySparse::Atb(double* ptr, double* ptr2, double sc,int N, Ei
 	}
 	//return ret;
 }
-Eigen::VectorXd kingghidorah::_mySparse::Atb(double* ptr, int N)
+Eigen::VectorXd KingOfMonsters::_mySparse::Atb(double* ptr, int N)
 {
 	Eigen::VectorXd ret(this->cols());
 	ret.setZero();
@@ -2861,34 +2861,34 @@ Eigen::VectorXd kingghidorah::_mySparse::Atb(double* ptr, int N)
 	}
 	return ret;
 }
-Eigen::VectorXd kingghidorah::_mySparse::_Atb(double* ptr, int N)
+Eigen::VectorXd KingOfMonsters::_mySparse::_Atb(double* ptr, int N)
 {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 	Eigen::Map<Eigen::VectorXd> b(ptr, N);
 	return _dmat.transpose() * b;
 }
-void kingghidorah::_mySparse::merge()
+void KingOfMonsters::_mySparse::merge()
 {
 	this->ofDat();
 }
-void kingghidorah::_mySparse::computeQR()
+void KingOfMonsters::_mySparse::computeQR()
 {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 	Eigen::HouseholderQR<Eigen::MatrixXd> qr;
 	qr.compute(_dmat);
 }
-void kingghidorah::_mySparse::computeLU()
+void KingOfMonsters::_mySparse::computeLU()
 {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 	Eigen::PartialPivLU<Eigen::MatrixXd> lu;
 	lu.compute(_dmat);
 }
-void kingghidorah::_mySparse::computeLLT(Eigen::LLT<Eigen::MatrixXd>* _LLT)
+void KingOfMonsters::_mySparse::computeLLT(Eigen::LLT<Eigen::MatrixXd>* _LLT)
 {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 	_LLT->compute(_dmat);
 }
-int kingghidorah::_mySparse::nonzeros() {
+int KingOfMonsters::_mySparse::nonzeros() {
 	int _ret = 0;
 	for (int ii = 0; ii < _nt; ii++)
 	{
@@ -2898,7 +2898,7 @@ int kingghidorah::_mySparse::nonzeros() {
 	}
 	return _ret;
 }
-void kingghidorah::_mySparse::solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret) {
+void KingOfMonsters::_mySparse::solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret) {
 	Eigen::PartialPivLU<Eigen::MatrixXd> lu;
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 	lu.compute(_dmat);
@@ -2910,7 +2910,7 @@ void kingghidorah::_mySparse::solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret)
 }
 
 
-void kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int device) {
+void KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int device) {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 	Eigen::VectorXd x = *ret;
 	//this->_freeze();
@@ -2980,7 +2980,7 @@ void kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, Eigen::Vecto
 	//cudaStreamDestroy(stream);
 	return;
 }
-Eigen::MatrixXd kingghidorah::_mySparse::_solve0(_myLLT* LLT, _mySparse* mat)
+Eigen::MatrixXd KingOfMonsters::_mySparse::_solve0(_myLLT* LLT, _mySparse* mat)
 {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 	//this function assumes that LLT decomposition has been done already
@@ -3008,7 +3008,7 @@ Eigen::MatrixXd kingghidorah::_mySparse::_solve0(_myLLT* LLT, _mySparse* mat)
 	return ret.transpose();
 }
 /*
-void kingghidorah::_mySparse::_solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse* ret)
+void KingOfMonsters::_mySparse::_solveI_gpu_mg(KingOfMonsters::cuda* cuda, _mySparse* ret)
 {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 	int N = this->_dmat.cols();
@@ -3178,7 +3178,7 @@ void kingghidorah::_mySparse::_solveI_gpu_mg(kingghidorah::cuda* cuda, _mySparse
 
 }
 */
-void kingghidorah::_mySparse::_solveI(_mySparse* ret)
+void KingOfMonsters::_mySparse::_solveI(_mySparse* ret)
 {
 	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);	
 	Eigen::SimplicialLLT<Eigen::SparseMatrix<double>, Eigen::RowMajor> llt;
@@ -3214,7 +3214,7 @@ void kingghidorah::_mySparse::_solveI(_mySparse* ret)
 	}
 }
 
-void initidentiy(kingghidorah::cuda* cuda, int N) {
+void initidentiy(KingOfMonsters::cuda* cuda, int N) {
 	double _a = 0;
 	double _b = 1;
 	//if (I.cols() != N || I.rows() != N)
@@ -3235,7 +3235,7 @@ void initidentiy(kingghidorah::cuda* cuda, int N) {
 		}
 	}
 }
-std::string kingghidorah::_mySparse::_solveI_gpu_single(kingghidorah::cuda* cuda, _mySparse* ret)
+std::string KingOfMonsters::_mySparse::_solveI_gpu_single(KingOfMonsters::cuda* cuda, _mySparse* ret)
 {
 	this->_freeze();
 	std::stringstream sss;
@@ -3315,7 +3315,7 @@ std::string kingghidorah::_mySparse::_solveI_gpu_single(kingghidorah::cuda* cuda
 	return sss.str();
 
 }
-std::string kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _mySparse* ret)
+std::string KingOfMonsters::_mySparse::_solveI_gpu_omp(KingOfMonsters::cuda* cuda, _mySparse* ret)
 {
 	this->_freeze();
 	std::stringstream sss;
@@ -3495,7 +3495,7 @@ std::string kingghidorah::_mySparse::_solveI_gpu_omp(kingghidorah::cuda* cuda, _
 	return sss.str();
 }
 
-void kingghidorah::_mySparse::_solveI_gpu(kingghidorah::cuda* cuda, _mySparse* ret)
+void KingOfMonsters::_mySparse::_solveI_gpu(KingOfMonsters::cuda* cuda, _mySparse* ret)
 {
 	//this->_freeze();
 
@@ -3562,7 +3562,7 @@ void kingghidorah::_mySparse::_solveI_gpu(kingghidorah::cuda* cuda, _mySparse* r
 
 }
 
-void kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, _mySparse* mat, _mySparse* ret)
+void KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, _mySparse* mat, _mySparse* ret)
 {
 	int nn = mat->_dmat.cols();// __c;
 	int N = this->_dmat.cols();// __c;
@@ -3665,7 +3665,7 @@ void kingghidorah::_mySparse::_solve0_gpu(kingghidorah::cuda* cuda, _mySparse* m
 	}
 }
 
-void kingghidorah::_mySparse::_solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret) {
+void KingOfMonsters::_mySparse::_solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret) {
 	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);
 	Eigen::SimplicialLLT<Eigen::SparseMatrix<double>, Eigen::RowMajor> LLT;
 	LLT.compute(_mat[0]);
@@ -3677,7 +3677,7 @@ void kingghidorah::_mySparse::_solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret
 	*ret = LLT.solve(*rhs);
 	//return x;
 }
-void kingghidorah::_mySparse::__solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret) {
+void KingOfMonsters::_mySparse::__solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret) {
 	Eigen::LLT<Eigen::MatrixXd> LLT;
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 
@@ -3687,7 +3687,7 @@ void kingghidorah::_mySparse::__solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* re
 	ret->setZero();
 	*ret = LLT.solve(*rhs);
 }
-Eigen::MatrixXd kingghidorah::_mySparse::inv() {
+Eigen::MatrixXd KingOfMonsters::_mySparse::inv() {
 	Eigen::PartialPivLU<Eigen::MatrixXd> lu;
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 	lu.compute(_dmat);
@@ -3696,7 +3696,7 @@ Eigen::MatrixXd kingghidorah::_mySparse::inv() {
 	return lu.solve(I);
 }
 
-Eigen::MatrixXd kingghidorah::_mySparse::solve0(_mySparse* rhs)
+Eigen::MatrixXd KingOfMonsters::_mySparse::solve0(_mySparse* rhs)
 {
 	Eigen::PartialPivLU<Eigen::MatrixXd> lu;
 	//Eigen::Map<Eigen::MatrixXd> rhs_dmat(rhs->___dmat, rhs->__r, rhs->__c);
@@ -3711,7 +3711,7 @@ Eigen::MatrixXd kingghidorah::_mySparse::solve0(_mySparse* rhs)
 }
 
 
-void kingghidorah::_mySparse::minus(_mySparse* m) {
+void KingOfMonsters::_mySparse::minus(_mySparse* m) {
 	this->_freeze();
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 	//Eigen::Map<Eigen::MatrixXd> m_dmat(m->___dmat, m->__r, m->__c);
@@ -3719,7 +3719,7 @@ void kingghidorah::_mySparse::minus(_mySparse* m) {
 	_dmat = _dmat - m->_dmat;
 	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);
 }
-void kingghidorah::_mySparse::clearcoeff() {
+void KingOfMonsters::_mySparse::clearcoeff() {
 	for (int ii = 0; ii < _nt; ii++)
 	{
 		if (this->_mat[ii].rows() > 0 && this->_mat[ii].cols() > 0)
@@ -3732,7 +3732,7 @@ void kingghidorah::_mySparse::clearcoeff() {
 	}
 }
 Eigen::SparseMatrix<double, Eigen::RowMajor> id;
-void kingghidorah::_mySparse::addsmallidentity(double salt, bool sparse, bool dense) {
+void KingOfMonsters::_mySparse::addsmallidentity(double salt, bool sparse, bool dense) {
 
 	if (dense)
 	{

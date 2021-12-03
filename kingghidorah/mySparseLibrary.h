@@ -12,13 +12,19 @@ using std::string;
 using namespace System;
 using namespace System::Threading::Tasks;
 //#define EIGEN_DONT_ALIGN
-namespace kingghidorah {
+namespace KingOfMonsters {
 	public ref class myDoubleArray {
 	public:
 		//double* _arr = 0;
 		_myDoubleArray *_arr=0;
 		int _N = 0;
 	public:
+		myDoubleArray^ subVector(int i, int N)
+		{
+			myDoubleArray^ ret = gcnew myDoubleArray(N);
+			ret->_arr->__v = this->_arr->__v.middleRows(i, N);
+			return ret;
+		}
 		void setzero(int S, int N)
 		{
 			_arr->__v.middleRows(S, N).setZero();
@@ -70,6 +76,14 @@ namespace kingghidorah {
 		void set(int i, double val)
 		{
 			(_arr->__v)(i) = val;
+		}
+		void ofAplusB(myDoubleArray^ A, myDoubleArray^ B)
+		{
+			this->_arr ->__v = A->_arr->__v + B->_arr->__v;
+		}
+		void plus(int i, double val)
+		{
+			(_arr->__v)(i) += val;
 		}
 		void set(myDoubleArray^ f)
 		{
@@ -160,7 +174,7 @@ namespace kingghidorah {
 			cuda::disable();
 		}
 		myCuda(int N) {
-			_cuda = new kingghidorah::cuda(N);
+			_cuda = new KingOfMonsters::cuda(N);
 		}
 		!myCuda() {
 			if (_cuda != 0)
@@ -180,7 +194,7 @@ namespace kingghidorah {
 			}
 			_cuda = 0;
 		}
-		kingghidorah::cuda* cuda() {
+		KingOfMonsters::cuda* cuda() {
 			return _cuda;
 		}
 		bool isValid() {
@@ -292,7 +306,36 @@ namespace kingghidorah {
 	};
 	public ref class mySparse {
 	public:
-		_mySparse* dat=0;
+		_mySparse* dat = 0;
+		void ofStack(mySparse^ A, mySparse^ B)
+		{
+			std::vector<Eigen::Triplet<double>> dat;
+			for (int k = 0; k < A->dat->_mat[0].outerSize(); ++k)
+			{
+				for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(A->dat->_mat[0], k); it; ++it)
+				{
+					dat.push_back(Eigen::Triplet<double>(it.row(), it.col(), it.value()));
+				}
+			}
+			for (int k = 0; k < B->dat->_mat[0].outerSize(); ++k)
+			{
+				for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(A->dat->_mat[0], k); it; ++it)
+				{
+					dat.push_back(Eigen::Triplet<double>(it.row()+A->dat->_mat[0].rows(), it.col(), it.value()));
+				}
+			}
+			for (int k = 0; k < B->dat->_mat[0].outerSize(); ++k)
+			{
+				for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(A->dat->_mat[0], k); it; ++it)
+				{
+					dat.push_back(Eigen::Triplet<double>(it.col()+A->dat->_mat[0].cols(), it.row(), it.value()));
+				}
+			}
+
+			this->dat->_mat[0].setZero();
+			this->dat->_mat[0].reserve(dat.size());
+			this->dat->_mat[0].setFromTriplets(dat.begin(), dat.end());
+		}
 		mySparse() {
 			dat = 0;
 			dat = new _mySparse();
@@ -322,6 +365,21 @@ namespace kingghidorah {
 		{
 			dat->init(m->rows(), m->cols());
 			this->dat->_OfDuplicate(m->dat);
+		}
+		void ofAplusB(double alpha, mySparse^ A, double beta, mySparse^ B)
+		{
+			this->dat->init(A->rows(), B->cols());
+			this->dat->_mat[0] = alpha * A->dat->_mat[0] + beta * B->dat->_mat[0];
+		}
+		mySparse^ subMatrix(int i,int N,int j,int M)
+		{
+			auto ret = gcnew mySparse(N, M);
+			ret->dat->_mat[0] = this->dat->_mat[0].block(i, j, N, M);
+			return ret;
+		}
+		void plus(mySparse^ B,double sc)
+		{
+			this->dat->_mat[0] += B->dat->_mat[0] * sc;
 		}
 		void freeze(bool _do) {
 			this->dat->freeze(_do);
@@ -499,7 +557,7 @@ namespace kingghidorah {
 			ptr = nullptr;
 			return ret;
 		}
-		void Atb(array<double>^ b, array<double>^ c,double sc, kingghidorah::myDoubleArray^ ret)
+		void Atb(array<double>^ b, array<double>^ c,double sc, KingOfMonsters::myDoubleArray^ ret)
 		{
 			pin_ptr<double> ptr = &b[0];
 			pin_ptr<double> ptr2 = &c[0];
@@ -631,6 +689,12 @@ namespace kingghidorah {
 		double _at(int i, int j) {
 			return dat->_at(i, j);
 		}
+		void _plus(int i, int j, double val) {
+			this->dat->_mat[0].coeffRef(i,j) += val;
+		}
+		void _set(int i, int j, double val) {
+			this->dat->_mat[0].coeffRef(i,j) = val;
+		}
 		int nonZeros() {
 			return dat->nonzeros();
 		}
@@ -659,10 +723,12 @@ namespace kingghidorah {
 			System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
 			return ret;
 		}
-		array<double>^ vector(myDoubleArray^ a) {
+		myDoubleArray^ vector(myDoubleArray^ a) {
 			auto _ret = dat->Vector(&a->_arr->__v);
-			array<double>^ ret = gcnew array<double>(_ret.rows());
-			System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
+			//array<double>^ ret = gcnew array<double>(_ret.rows());
+			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
+			myDoubleArray^ ret = gcnew myDoubleArray(_ret.rows());
+			ret->_arr->__v = _ret;
 			return ret;
 		}
 		void vector(myDoubleArray^ a, myDoubleArray^ b) {
@@ -684,7 +750,7 @@ namespace kingghidorah {
 		}
 		static System::String^ _testopenmp()
 		{
-			auto _str = kingghidorah::_mySparse::_testopenmp();
+			auto _str = KingOfMonsters::_mySparse::_testopenmp();
 			return gcnew System::String(_str.c_str());
 		}
 		static System::String^ testopenmp()

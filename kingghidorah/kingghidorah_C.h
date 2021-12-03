@@ -4,7 +4,7 @@
 using namespace System;
 #include <cstring>
 using std::vector;
-namespace kingghidorah {
+namespace KingOfMonsters {
 	public class _memC_ref {
 	public:
 		int _nNode;
@@ -1063,7 +1063,7 @@ namespace kingghidorah {
 		{
 			__mem->set_z(z);
 		}
-		void update_z_phi(int nNode, kingghidorah::myDoubleArray ^ Z, kingghidorah::myDoubleArray^ phi) {
+		void update_z_phi(int nNode, KingOfMonsters::myDoubleArray ^ Z, KingOfMonsters::myDoubleArray^ phi) {
 			if (Z != nullptr)
 			{
 				for (int i = 0; i < nNode; i++) {
@@ -1078,7 +1078,7 @@ namespace kingghidorah {
 				}
 			}
 		}
-		void update3(int nNode, kingghidorah::myDoubleArray^ node, array<double>^ def,bool ignorez) {
+		void update3(int nNode, KingOfMonsters::myDoubleArray^ node, array<double>^ def,bool ignorez) {
 			if (node != nullptr) {
 				for (int i = 0; i < nNode; i++) {
 					int e = i * 3;
@@ -1107,7 +1107,7 @@ namespace kingghidorah {
 				}
 			}
 		}
-		void update3(int nNode, kingghidorah::myDoubleArray^ node, array<double>^ def) {
+		void update3(int nNode, KingOfMonsters::myDoubleArray^ node, array<double>^ def) {
 			update3(nNode, node, def, false);
 		}
 		void update(int nNode, int Dim) {

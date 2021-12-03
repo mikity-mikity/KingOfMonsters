@@ -27,12 +27,12 @@ using namespace std::chrono;
 #include"eigenwrapper.h"
 #include "eigen-3.4.0/Eigen/Dense"
 using namespace std;
-using namespace kingghidorah;
+using namespace KingOfMonsters;
 #define _N 4
 #define _M 4
 int main() {
     {
-        auto _cuda = new kingghidorah::cuda(_N);
+        auto _cuda = new KingOfMonsters::cuda(_N);
         
         _mySparse m[_M];
         _mySparse M;
@@ -243,12 +243,12 @@ int main() {
 
     for (int t = 0; t < 2; t++)
     {
-        kingghidorah::cuda cuda(M);
-        //std::cout << kingghidorah::_mySparse::_testopenmp() << std::endl;
+        KingOfMonsters::cuda cuda(M);
+        //std::cout << KingOfMonsters::_mySparse::_testopenmp() << std::endl;
 
-        kingghidorah::_mySparse mat;
+        KingOfMonsters::_mySparse mat;
         mat.resize(M, N);
-        //kingghidorah::_mySparse ret;
+        //KingOfMonsters::_mySparse ret;
         mat._resize(M, N);
         mat.adddat(0, 0, 2);
         mat.adddat(0, 1, 1);
@@ -264,8 +264,8 @@ int main() {
         
         int NT = mat.ofAtA(&mat,true);
 
-        kingghidorah::_mySparse mat2;
-        kingghidorah::_mySparse mat3;
+        KingOfMonsters::_mySparse mat2;
+        KingOfMonsters::_mySparse mat3;
         mat3.resize(M, M);
         mat2._OfDuplicate(&mat);
 
@@ -276,7 +276,7 @@ int main() {
         std::vector<double> x(N);
         for (int i = 0; i < N; i++)x[i] = 1;
         std::cout << "DN" << std::endl;
-        kingghidorah::_mySparse ret;
+        KingOfMonsters::_mySparse ret;
         ret.resize(N, N);
         auto start = high_resolution_clock::now();
         mat._solveI_gpu(&cuda,&ret);
