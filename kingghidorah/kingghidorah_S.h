@@ -2429,7 +2429,7 @@ namespace KingOfMonsters {
 		{
 			double _val3 = 0;
 			for (int j = 0; j < 2; j++) {
-				_val3 += _Sij[i<<1+j] * this->get_gi(j, k);
+				_val3 += _Sij[(i<<1)+j] * this->get_gi(j, k);
 			}	
 			return _val3 * _ref->_refDv;
 		}
@@ -2438,7 +2438,7 @@ namespace KingOfMonsters {
 		{
 			double _val3 = 0;
 			for (int j = 0; j < 2; j++) {
-				_val3 += _Sij[i <<1 + j] * _ref->d1[j][I];
+				_val3 += _Sij[(i <<1) + j] * _ref->d1[j][I];
 			}
 			return _val3;
 		}
@@ -2447,12 +2447,12 @@ namespace KingOfMonsters {
 		{
 			double _val3 = 0;
 			for (int j = 0; j < 2; j++) {
-				_val3 += _Sij[i <<1 + j] * this->get_gi(j, k);
+				_val3 += _Sij[(i <<1) + j] * this->get_gi(j, k);
 			}
 			return _val3;
 		}
 		double S(int i, int j) {
-			return _Sij[i * 2 + j];
+			return _Sij[(i<<1) + j];
 		}
 		//bending boundary term
 		double KB(int j, int k,int l,int m, double _la, double _mu)
