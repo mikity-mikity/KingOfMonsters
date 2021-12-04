@@ -195,10 +195,12 @@ namespace KingOfMonsters {
 		void permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &perm);
 		void shrink(int M);
 		void _permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>& perm, bool sparse, bool dense);
+		void _permuteCols(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>& perm, bool sparse, bool dense);
 		void _shrink(int M, bool sparse, bool dense);
 		void _permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>& perm, Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>& perm2);
 		void _shrink(int M, int N);
 		Eigen::VectorXd get_coeff(int ii);
+		double __at(int i, int j);
 		int rows();
 		int _rows();
 		int _cols();
@@ -240,6 +242,7 @@ namespace KingOfMonsters {
 		void setmiddlecolum(Eigen::SparseMatrix<double, Eigen::RowMajor> &f, int start, int end);
 		void solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void _solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
+		void _solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void _solve0_gpu(KingOfMonsters::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int device);
 		Eigen::MatrixXd _solve0(_myLLT* LLT, _mySparse* rhs);
 		void _solve0_gpu(KingOfMonsters::cuda* cuda, _mySparse* rhs, _mySparse* ret);
