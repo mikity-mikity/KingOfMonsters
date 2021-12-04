@@ -2972,6 +2972,7 @@ public:
 			_y = __mem->_ref->_y;
 			_z = __mem->_ref->_z;
 			Z = __mem->_ref->Z;
+			//phi = __mem->phi;
 		}
 		memS() {
 			__mem = new _memS(std::string(""));
