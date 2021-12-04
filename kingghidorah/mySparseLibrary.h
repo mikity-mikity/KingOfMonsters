@@ -363,15 +363,19 @@ namespace KingOfMonsters {
 				}
 				return (F.Multiply(D) as mySparse).Multiply(F.Transpose()) as mySparse; 
 			}*/
-			mySparse^ ret = gcnew mySparse(this->dat->_mat[0].rows() / 3, this->dat->_mat[0].cols() / 3);
+			mySparse^ ret = gcnew mySparse(L1*2, L1*2);
 			std::vector<Eigen::Triplet<double>> dat;
 			for (int k = 0; k < this->dat->_mat[0].outerSize(); ++k)
 			{
 				for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(this->dat->_mat[0], k); it; ++it)
 				{
-					if (it.row() % 3 == 2 && it.col() % 3 == 2)
+					if (it.col() < L1 && it.row() < L1)
 					{
-						dat.push_back(Eigen::Triplet<double>(it.row() / 3, it.col() / 3, it.value()));
+						dat.push_back(Eigen::Triplet<double>(it.row(), it.col(), it.value()));
+					}
+					if (it.col()>L2&&it.col() < L1+L2 && it.row()>L2&&it.row() < L1+L2)
+					{
+						dat.push_back(Eigen::Triplet<double>(it.row()-(L2-L1), it.col() - (L2 - L1), it.value()));
 					}
 				}
 			}
