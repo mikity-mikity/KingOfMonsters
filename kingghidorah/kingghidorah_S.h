@@ -881,7 +881,17 @@ namespace KingOfMonsters {
 				ptr2++;
 			}
 			this->Z = ZZ;
-
+			double* pptr1 = &_ref->buf_phi[0];
+			double* pptr2 = &_ref->d0[0];
+			double val = 0;
+			for (int i = 0; i < _nNode; i++)
+			{
+				//val += _ref->d0[i] * _ref->buf_phi[i];
+				val += (*pptr1) * (*pptr2);
+				pptr1++;
+				pptr2++;
+			}
+			this->phi = val;
 			//covariant base vectors
 
 			for (auto const& j : ___ee) {
@@ -1044,7 +1054,7 @@ namespace KingOfMonsters {
 				double* pptr = 0;
 				double* pptr1 = &_ref->buf_z[0];
 				double* pptr2 = &_ref->d0[0];
-				for (int i = 0; i < _nNode; i++)
+				/*for (int i = 0; i < _nNode; i++)
 				{
 					//val += _ref->d0[i] * _ref->buf_z[i];
 					val += (*pptr1) * (*pptr2);
@@ -1062,7 +1072,7 @@ namespace KingOfMonsters {
 					pptr1++;
 					pptr2++;
 				}
-				this->phi = val;
+				this->phi = val;*/
 				if (_ref->__mat == 0)
 				{
 					_ref->__mat = new double[_nNode * _nNode];
