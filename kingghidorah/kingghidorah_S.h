@@ -2036,10 +2036,15 @@ namespace KingOfMonsters {
 							val += A * D;
 						}
 					}
-					S[k * 2 + l] = val;
+					S[(k<<1) + l] = val;
 				}
 			}
-			return S[0] * S[3] - S[1] * S[2];
+			/*S[0] = get_gij(0, 0) - _ref->get__gij(0, 0);
+			S[1] = get_gij(1, 0) - _ref->get__gij(1, 0);
+			S[2] = get_gij(0, 1) - _ref->get__gij(0, 1);
+			S[3] = get_gij(1, 1) - _ref->get__gij(1, 1);*/
+
+			return (S[0] * S[3] - S[1] * S[2]);// *(_ref->get__gij(0, 0) * _ref->get__gij(1, 1) - _ref->get__gij(0, 1) * _ref->get__gij(0, 1));
 		}
 	    double eM(double _la, double _mu) {
 			double membrane = 0;

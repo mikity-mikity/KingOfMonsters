@@ -343,12 +343,13 @@ namespace KingOfMonsters {
 			{
 				for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(B->dat->_mat[0], k); it; ++it)
 				{
-					dat.push_back(Eigen::Triplet<double>(it.col() + A->dat->_mat[0].cols(), it.row(), it.value()));
+					dat.push_back(Eigen::Triplet<double>(it.col(), it.row()+ A->dat->_mat[0].cols(), it.value()));
 				}
 			}
 
 			this->dat->_mat[0].setZero();
 			this->dat->_mat[0].reserve(dat.size());
+			this->dat->_mat[0].resize(A->dat->_mat[0].rows() + B->dat->_mat[0].rows(), A->dat->_mat[0].cols() + B->dat->_mat[0].rows());
 			this->dat->_mat[0].setFromTriplets(dat.begin(), dat.end());
 		}
 		mySparse^ trimMatrix(int L1, int L2)
