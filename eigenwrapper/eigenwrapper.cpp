@@ -34,7 +34,7 @@ KingOfMonsters::cuda::cuda(int N) {
 	dict2.clear();
 	map.clear();
 	Eigen::initParallel();
-	Eigen::setNbThreads(omp_get_max_threads());
+	//Eigen::setNbThreads(omp_get_max_threads());
 	//e.shrink_to_fit();
 	//e.clear();
 	I.resize(0, 0);
@@ -582,6 +582,11 @@ KingOfMonsters::_mySparse::_mySparse()
 	_coeff.reserve(1000);
 	_mat.reserve(1000);
 	_mt = omp_get_max_threads();
+#pragma omp parallel
+	{
+#pragma omp single
+		_mt = omp_get_num_threads();
+	}
 	//prevmat.resize(1, 1);
 	//e = new Eigen::SparseMatrix<double>[200];
 	//e2 = new Eigen::SparseMatrix<double>[200];
@@ -1103,7 +1108,7 @@ void KingOfMonsters::_mySparse::OfDuplicate(_mySparse* mat)
 		//Eigen::SparseMatrix<double> M(mat->_mat[ii]);
 		//std::vector<double> vec(mat->_coeff[ii]);
 		this->_mat[ii].resize(mat->_mat[ii].rows(), mat->_mat[ii].cols());
-		this->_mat[ii].reserve(mat->_mat[ii].nonZeros());
+		this->_mat[ii].reserve(mat->_mat[ii].data().allocatedSize());
 		this->_mat[ii] = mat->_mat[ii];// M;
 		
 		this->coeff[ii].resize(mat->coeff[ii].size());
@@ -1129,11 +1134,11 @@ void KingOfMonsters::_mySparse::_OfDuplicate(_mySparse* mat)
 void KingOfMonsters::_mySparse::ofDat()
 {
 	if (_mat.size() != _nt)_mat.resize(_nt);
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic,2)
 	for (int ii = 0; ii < _nt; ii++)
 	{
 		_mat[ii].setZero();
-		_mat[ii].reserve(dat[ii].size());
+		_mat[ii].reserve(dat[ii].size()*2);
 		if (dat[ii].size() > 0)
 		{
 			_mat[ii].setFromTriplets(dat[ii].begin(), dat[ii].end());
@@ -1166,8 +1171,8 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 	auto now = high_resolution_clock::now();
 	int nn = this->cols();
 	int mm = this->cols();
-	int _mt = omp_get_max_threads();
-	omp_set_num_threads(_mt);
+	//int _mt = omp_get_max_threads();
+	//omp_set_num_threads(_mt);
 	auto end = high_resolution_clock::now();
 	auto duration = duration_cast<milliseconds>(now - end);
 	ss << duration.count() << "ms" << std::endl;
@@ -1180,15 +1185,15 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 		e->resize(__mt);
 		e2.resize(__mt);
 	}
-	Eigen::initParallel();
-	Eigen::setNbThreads(1);
+	//Eigen::initParallel();
+	//Eigen::setNbThreads(1);
 	end = high_resolution_clock::now();
 	duration = duration_cast<milliseconds>(now - end);
 	ss << duration.count() << "ms" << std::endl;
 	now = high_resolution_clock::now();
 	ss << _nt << ":nt:" << std::endl;
 	ss << _mt << ":_mt:" << std::endl;
-	Eigen::initParallel();
+	//Eigen::initParallel();
 	int job = 0;
 	int sss = _nt / __mt / 8;
 	int __nt2 = _nt;
@@ -1302,7 +1307,7 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 	duration = duration_cast<milliseconds>(now - end);
 	ss << duration.count() << "ms" << std::endl;
 	now = high_resolution_clock::now();
-	Eigen::setNbThreads(_mt);
+	//Eigen::setNbThreads(_mt);
 
 	for (int tt = 0; tt < 40; tt++)
 	{
@@ -1423,7 +1428,7 @@ std::string KingOfMonsters::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool
 	//this->join();
 
 	//this->_nt = 1;
-	int _mt = omp_get_max_threads();
+	//int _mt = omp_get_max_threads();
 	int __mt = STREAMCOUNT * _cuda->count();
 	if (__mt > _mt)__mt = _mt;
 
@@ -1442,7 +1447,7 @@ std::string KingOfMonsters::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool
 		
 	//static std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>> e;
 	auto ALG = CUSPARSE_SPGEMM_DEFAULT;
-	omp_set_num_threads(_mt);
+	//omp_set_num_threads(_mt);
 		cudaSetDevice(0);
 		int _ss = 20;// _nt / __mt / 4;
 		//if (_ss == 0)_ss = 1;
@@ -1882,7 +1887,7 @@ std::string KingOfMonsters::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool
 		auto end = high_resolution_clock::now();
 		auto duration = duration_cast<milliseconds>(now - end);
 		ss << "gpu" << duration.count() << "ms" << std::endl;
-		omp_set_num_threads(_mt);
+		//omp_set_num_threads(_mt);
 	return ss.str();
 }
 
@@ -2576,8 +2581,8 @@ void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)
 	auto now = high_resolution_clock::now();
 	int nn = this->cols();
 	int mm = B->cols();
-	int _mt = omp_get_max_threads();
-	omp_set_num_threads(_mt);
+	//int _mt = omp_get_max_threads();
+	//omp_set_num_threads(_mt);
 	auto end = high_resolution_clock::now();
 	auto duration = duration_cast<milliseconds>(now - end);
 	ss << duration.count() << "ms" << std::endl;
@@ -2590,8 +2595,8 @@ void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)
 		e->resize(__mt);
 		e2.resize(__mt);
 	}
-	Eigen::initParallel();
-	Eigen::setNbThreads(1);
+	//Eigen::initParallel();
+	//Eigen::setNbThreads(1);
 	end = high_resolution_clock::now();
 	duration = duration_cast<milliseconds>(now - end);
 	ss << duration.count() << "ms" << std::endl;
@@ -2712,7 +2717,7 @@ void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)
 	duration = duration_cast<milliseconds>(now - end);
 	ss << duration.count() << "ms" << std::endl;
 	now = high_resolution_clock::now();
-	Eigen::setNbThreads(_mt);
+	//Eigen::setNbThreads(_mt);
 
 	for (int tt = 0; tt < 40; tt++)
 	{
@@ -2824,7 +2829,7 @@ void KingOfMonsters::_mySparse::Atb(double* ptr, double* ptr2, double sc,int N, 
 	static std::map<int, std::vector<Eigen::VectorXd>> __dict;
 	c->resize(this->cols());
 	c->setZero();
-	int nn = _mat[0].cols();
+	int nn = this->cols();// _mat[0].cols();
 	int offset = 0;
 	std::vector<Eigen::VectorXd>* mm = 0;
 	if (__dict.contains(nn))
@@ -2843,14 +2848,14 @@ void KingOfMonsters::_mySparse::Atb(double* ptr, double* ptr2, double sc,int N, 
 	int job = 0;
 	int ss = _nt / _mt / 4;
 	if (ss == 0)ss = 1;
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for
 	for (int ii = 0; ii < _mt; ii++)
 	{
 
 		int S = 0;
 		int E = 0;
-		int cpu = omp_get_thread_num();
-		auto tmp = (*mm)[cpu];
+		//int cpu =  omp_get_thread_num();
+		auto tmp = (*mm)[ii];
 		tmp.setZero();
 		for (int kk = 0; kk < 200; kk++)
 		{
@@ -3039,12 +3044,7 @@ Eigen::MatrixXd KingOfMonsters::_mySparse::_solve0(_myLLT* LLT, _mySparse* mat)
 	//this function assumes that LLT decomposition has been done already
 	Eigen::MatrixXd ret(this->_dmat.cols(), mat->_dmat.cols());
 	int nn = mat->cols();
-	int numthreads = 0;
-#pragma omp parallel
-	{
-#pragma omp single
-		numthreads = omp_get_num_threads();
-	}
+	int numthreads = _mt;
 	int S = nn / numthreads / 2;
 
 	//ret = LLT->LLT->solve(mat->_dmat);
