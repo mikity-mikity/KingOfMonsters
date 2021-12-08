@@ -1012,7 +1012,7 @@ int KingOfMonsters::_mySparse::resize(int n, int m) {
 		_mat.resize(_nt);
 		coeff.resize(_nt);
 		_mat[0].resize(n, m);
-		_mat[0].reserve(n * m / 10);
+		//_mat[0].reserve(n * m / 10);
 	}
 
 	return this->_nt;
