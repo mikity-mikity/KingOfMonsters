@@ -327,21 +327,21 @@ namespace KingOfMonsters {
 			std::vector<Eigen::Triplet<double>> dat;
 			for (int k = 0; k < A->dat->_mat[0].outerSize(); ++k)
 			{
-				for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(A->dat->_mat[0], k); it; ++it)
+				for (Eigen::SparseMatrix<double, Eigen::ColMajor>::InnerIterator it(A->dat->_mat[0], k); it; ++it)
 				{
 					dat.push_back(Eigen::Triplet<double>(it.row(), it.col(), it.value()));
 				}
 			}
 			for (int k = 0; k < B->dat->_mat[0].outerSize(); ++k)
 			{
-				for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(B->dat->_mat[0], k); it; ++it)
+				for (Eigen::SparseMatrix<double, Eigen::ColMajor>::InnerIterator it(B->dat->_mat[0], k); it; ++it)
 				{
 					dat.push_back(Eigen::Triplet<double>(it.row() + A->dat->_mat[0].rows(), it.col(), it.value()));
 				}
 			}
 			for (int k = 0; k < B->dat->_mat[0].outerSize(); ++k)
 			{
-				for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(B->dat->_mat[0], k); it; ++it)
+				for (Eigen::SparseMatrix<double, Eigen::ColMajor>::InnerIterator it(B->dat->_mat[0], k); it; ++it)
 				{
 					dat.push_back(Eigen::Triplet<double>(it.col(), it.row()+ A->dat->_mat[0].cols(), it.value()));
 				}
@@ -368,7 +368,7 @@ namespace KingOfMonsters {
 			std::vector<Eigen::Triplet<double>> dat;
 			for (int k = 0; k < this->dat->_mat[0].outerSize(); ++k)
 			{
-				for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(this->dat->_mat[0], k); it; ++it)
+				for (Eigen::SparseMatrix<double, Eigen::ColMajor>::InnerIterator it(this->dat->_mat[0], k); it; ++it)
 				{
 					if (it.col() < L1 && it.row() < L1)
 					{
@@ -391,7 +391,7 @@ namespace KingOfMonsters {
 			std::vector<Eigen::Triplet<double>> dat;
 			for (int k = 0; k < this->dat->_mat[0].outerSize(); ++k)
 			{
-				for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(this->dat->_mat[0], k); it; ++it)
+				for (Eigen::SparseMatrix<double, Eigen::ColMajor>::InnerIterator it(this->dat->_mat[0], k); it; ++it)
 				{
 					if (it.row() % 3 == 2 && it.col() % 3 == 2)
 					{
@@ -410,7 +410,7 @@ namespace KingOfMonsters {
 			std::vector<Eigen::Triplet<double>> dat;
 			for (int k = 0; k < this->dat->_mat[0].outerSize(); ++k)
 			{
-				for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(this->dat->_mat[0], k); it; ++it)
+				for (Eigen::SparseMatrix<double, Eigen::ColMajor>::InnerIterator it(this->dat->_mat[0], k); it; ++it)
 				{
 					if (it.row() % 3 == 0 && it.col() % 3 == 0)
 					{
@@ -432,14 +432,14 @@ namespace KingOfMonsters {
 			std::vector<Eigen::Triplet<double>> dat;
 			for (int k = 0; k < A->dat->_mat[0].outerSize(); ++k)
 			{
-				for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(A->dat->_mat[0], k); it; ++it)
+				for (Eigen::SparseMatrix<double, Eigen::ColMajor>::InnerIterator it(A->dat->_mat[0], k); it; ++it)
 				{
 					dat.push_back(Eigen::Triplet<double>(it.row(), it.col(), it.value()));
 				}
 			}
 			for (int k = 0; k < B->dat->_mat[0].outerSize(); ++k)
 			{
-				for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(B->dat->_mat[0], k); it; ++it)
+				for (Eigen::SparseMatrix<double, Eigen::ColMajor>::InnerIterator it(B->dat->_mat[0], k); it; ++it)
 				{
 					dat.push_back(Eigen::Triplet<double>(it.row() + A->dat->_mat[0].rows(), it.col(), it.value()));
 				}

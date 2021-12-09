@@ -1884,7 +1884,7 @@ namespace KingOfMonsters {
 		}
 		//body force term projected
 		double G4(int i) {
-			return _ref->d0[i] * _ref->_refDv;
+			return _ref->d0[i] * _dv;
 		}
 		//body force term accurate element area
 		double G2(int i) {
@@ -2008,21 +2008,21 @@ namespace KingOfMonsters {
 
 		double fM(double _la,double _mu)
 		{
-			vector<double> ret;
+			//vector<double> ret;
 			double S[4]; //covariant
 			S[0] = 0;
 			S[1] = 0;
 			S[2] = 0;
 			S[3] = 0;
-			for (int k = 0; k < 2; k++) {
-				for (int l = 0; l < 2; l++) {
+			//for (int k = 0; k < 2; k++) {
+				//for (int l = 0; l < 2; l++) {
 					double val = 0;
 					for (int m = 0; m < 2; m++) {
 						for (int n = 0; n < 2; n++) {
 
 
-							double A = _la * _ref->get__Gij(l, k) * _ref->get__Gij(n, m) +2*_mu* _ref->get__Gij(l, n) * _ref->get__Gij(k, m);
-
+							//double A = _la * _ref->get__Gij(l, k) * _ref->get__Gij(n, m) +2*_mu* _ref->get__Gij(l, n) * _ref->get__Gij(k, m);
+							//A = 1.0;
 
 							double D = 0;
 							//double E = 0;
@@ -2033,12 +2033,14 @@ namespace KingOfMonsters {
 								//E += _ref->get__gi(k, s) * (get_gi(l, s) - _ref->get__gi(l, s));
 								//E += _ref->get__gi(l, s) * (get_gi(k, s) - _ref->get__gi(k, s));
 							}
-							val += A * D;
+							//val += A * D;
+							S[(m << 1) + n] = D;
+
 						}
 					}
-					S[(k<<1) + l] = val;
-				}
-			}
+					//S[(k<<1) + l] = val;
+				//}
+			//}
 			/*S[0] = get_gij(0, 0) - _ref->get__gij(0, 0);
 			S[1] = get_gij(1, 0) - _ref->get__gij(1, 0);
 			S[2] = get_gij(0, 1) - _ref->get__gij(0, 1);
@@ -2546,6 +2548,8 @@ namespace KingOfMonsters {
 			std::memcpy(__mem->_Gi, Gi, sizeof(double) * 6);
 			std::memcpy(__mem->_gij, gij, sizeof(double) * 4);
 			std::memcpy(__mem->_Gij, Gij, sizeof(double) * 4);
+			//std::memset(__mem->_gij, 0, sizeof(double) * 4);
+			//std::memset(__mem->_Gij, 0, sizeof(double) * 4);
 			std::memcpy(__mem->_bij, bij, sizeof(double) * 12);
 			std::memcpy(__mem->_Gammaijk, Gammaijk, sizeof(double) * 8);
 
