@@ -190,7 +190,7 @@ KingOfMonsters::cuda::cuda(int N) {
 			speed[ii] = duration.count();
 		}
 	}
-	std::distance(speed.begin(), std::min_element(speed.begin(), speed.end()));
+	_fastest=std::distance(speed.begin(), std::min_element(speed.begin(), speed.end()));
 	//_fastest = 0;
 	for (int ii = 0; ii < count(); ii++)
 	{
