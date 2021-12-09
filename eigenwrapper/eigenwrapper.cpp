@@ -1288,7 +1288,7 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 							if (e2[_ii].nonZeros() > 0)
 							{
 								//int* ptr = &index[_ii][0];
-								for (int k = 0; k < nn; ++k) {
+								for (int k = 0; k < mm; ++k) {
 									for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(e2[_ii], k); it; ++it) {
 										//e[0].coeffRef(it.row(), it.col()) += it.value();
 										*((*e)[_ii].valuePtr() + (*_map)[it.row() * nn + it.col()]) += it.value();
@@ -1371,7 +1371,7 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 
 					for (int tt = S; tt < E; tt++)
 					{
-						if (prevmat->innerIndexPtr()[tt] == it.col())
+						if (prevmat->innerIndexPtr()[tt] == it.row())
 							__map[it.row()*nn+it.col()] = tt;
 					}
 				}
@@ -2698,7 +2698,7 @@ void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)
 							if (e2[_ii].nonZeros())
 							{
 								//int* ptr = &index[_ii][0];
-								for (int k = 0; k < nn; ++k) {
+								for (int k = 0; k < mm; ++k) {
 									for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(e2[_ii], k); it; ++it) {
 										//e[0].coeffRef(it.row(), it.col()) += it.value();
 										*((*e)[_ii].valuePtr() + (*_map)[it.row() * nn + it.col()]) += it.value();
@@ -2781,7 +2781,7 @@ void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)
 
 					for (int tt = S; tt < E; tt++)
 					{
-						if (prevmat->innerIndexPtr()[tt] == it.col())
+						if (prevmat->innerIndexPtr()[tt] == it.row())
 							__map[it.row()*nn+it.col()] = tt;
 					}
 				}
