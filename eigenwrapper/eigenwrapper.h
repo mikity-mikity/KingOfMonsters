@@ -159,7 +159,7 @@ namespace KingOfMonsters {
 		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	public:
 		vector<vector<double>> _coeff;
-		std::vector<Eigen::SparseMatrix<double, Eigen::RowMajor>> _mat;
+		std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor>> _mat;
 		Eigen::MatrixXd _dmat;
 	private:
 		vector<Eigen::VectorXd> coeff;
@@ -237,9 +237,9 @@ namespace KingOfMonsters {
 		void computeLLT(Eigen::LLT<Eigen::MatrixXd>* LLT);
 		int nonzeros();
 		void Clear();
-		void setmat(Eigen::SparseMatrix<double, Eigen::RowMajor> &mat, int ii);
+		void setmat(Eigen::SparseMatrix<double, Eigen::ColMajor> &mat, int ii);
 		void setmat(const Eigen::MatrixXd& mat);
-		void setmiddlecolum(Eigen::SparseMatrix<double, Eigen::RowMajor> &f, int start, int end);
+		void setmiddlecolum(Eigen::SparseMatrix<double, Eigen::ColMajor> &f, int start, int end);
 		void solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void _solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void _solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
