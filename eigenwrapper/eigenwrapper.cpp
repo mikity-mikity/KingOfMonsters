@@ -3718,7 +3718,7 @@ void KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, _mySpars
 
 void KingOfMonsters::_mySparse::_solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret) {
 	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);
-	Eigen::SimplicialLLT<Eigen::SparseMatrix<double>, Eigen::ColMajor> LLT;
+	Eigen::SimplicialLLT<Eigen::SparseMatrix<double,Eigen::ColMajor>> LLT;
 	LLT.compute(_mat[0]);
 	//Eigen::Map<Eigen::VectorXd> b(rhs, N);
 	ret->conservativeResize(_mat[0].cols());
