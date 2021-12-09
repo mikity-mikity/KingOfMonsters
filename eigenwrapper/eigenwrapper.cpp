@@ -1144,7 +1144,7 @@ void KingOfMonsters::_mySparse::ofDat()
 		if (dat[ii].size() > 0)
 		{
 			_mat[ii].setFromTriplets(dat[ii].begin(), dat[ii].end());
-			//_mat[ii].makeCompressed();
+			_mat[ii].makeCompressed();
 		}
 		else {
 			_mat[ii].setZero();
