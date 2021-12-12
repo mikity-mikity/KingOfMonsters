@@ -190,7 +190,7 @@ KingOfMonsters::cuda::cuda(int N) {
 			speed[ii] = duration.count();
 		}
 	}
-	std::distance(speed.begin(), std::min_element(speed.begin(), speed.end()));
+	_fastest=std::distance(speed.begin(), std::min_element(speed.begin(), speed.end()));
 	//_fastest = 0;
 	for (int ii = 0; ii < count(); ii++)
 	{
@@ -1296,7 +1296,7 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 								for (int k = 0; k < mm; ++k) {
 									for (Eigen::SparseMatrix<double, Eigen::ColMajor>::InnerIterator it(e2[_ii], k); it; ++it) {
 										//e[0].coeffRef(it.row(), it.col()) += it.value();
-										*((*e)[_ii].valuePtr() + (*_map)[it.row() * nn + it.col()]) += it.value();
+										*((*e)[_ii].valuePtr() + (*_map)[it.row() * mm + it.col()]) += it.value();
 										//ptr++;
 									}
 								}
@@ -1377,7 +1377,7 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 					for (int tt = S; tt < E; tt++)
 					{
 						if (prevmat->innerIndexPtr()[tt] == it.row())
-							__map[it.row()*nn+it.col()] = tt;
+							__map[it.row()*mm+it.col()] = tt;
 					}
 				}
 			}
@@ -2702,7 +2702,7 @@ void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)
 								for (int k = 0; k < mm; ++k) {
 									for (Eigen::SparseMatrix<double, Eigen::ColMajor>::InnerIterator it(e2[_ii], k); it; ++it) {
 										//e[0].coeffRef(it.row(), it.col()) += it.value();
-										*((*e)[_ii].valuePtr() + (*_map)[it.row() * nn + it.col()]) += it.value();
+										*((*e)[_ii].valuePtr() + (*_map)[it.row() * mm + it.col()]) += it.value();
 										//ptr++;
 									}
 								}
@@ -2783,7 +2783,7 @@ void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)
 					for (int tt = S; tt < E; tt++)
 					{
 						if (prevmat->innerIndexPtr()[tt] == it.row())
-							__map[it.row()*nn+it.col()] = tt;
+							__map[it.row()*mm+it.col()] = tt;
 					}
 				}
 			}
