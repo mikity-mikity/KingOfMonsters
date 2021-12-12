@@ -121,25 +121,25 @@ namespace KingOfMonsters {
 		inline void set_def(const int &i, const int &s, const double &val) {
 			def[___ll[i]  + s] = val;
 		}
-		inline double& get_node(const int &i, const int &s) {
+		inline double get_node(const int &i, const int &s) {
 			return node[___ll[i] + s];
 		}
-		inline double& get__gi(const int &i, const int &s) {
+		inline double get__gi(const int &i, const int &s) {
 			return _gi[___ll[i] + s];
 		}
-		inline double& get__Gi(const int &i, const int &s) {
+		inline double get__Gi(const int &i, const int &s) {
 			return _Gi[___ll[i] + s];
 		}
-		inline double& get__gij(const int &i, const int &j) {
+		inline double get__gij(const int &i, const int &j) {
 			return _gij[(i<<1) + j];
 		}
-		inline double& get__Gij(const int &i, const int &j) {
+		inline double get__Gij(const int &i, const int &j) {
 			return _Gij[(i<<1) + j];
 		}
-		inline double& get__bij(const int &i, const int &j, const int &s) {
+		inline double get__bij(const int &i, const int &j, const int &s) {
 			return _bij[___ll[((i<<1) + j)] + s];
 		}
-		inline double& get__Gammaijk(const int &i, const int &j, const int &k) {
+		inline double get__Gammaijk(const int &i, const int &j, const int &k) {
 			return _Gammaijk[(((i<<1) + j) <<1) + k];
 		}
 	public:
@@ -502,41 +502,41 @@ namespace KingOfMonsters {
 			_Sij[2] = component(Gi, &(Gi[3]));
 		}
 
-		inline double& get_gi(const int &i, const int &s) {
+		inline double get_gi(const int &i, const int &s) {
 			return gi[___ll[i] + s];
 		}
-		inline double& get_Gi(const int &i, const int &s) {
+		inline double get_Gi(const int &i, const int &s) {
 			return Gi[___ll[i] + s];
 		}
 		inline double get_gij(const int &i, const int &j) {
 			return gij[(i<<1) + j];
 		}
-		inline double& get_Gij(const int &i, const int &j) {
+		inline double get_Gij(const int &i, const int &j) {
 			return Gij[(i<<1) + j];
 		}
-		inline double& get_bij(const int &i, const int &j, const int &s) {
+		inline double get_bij(const int &i, const int &j, const int &s) {
 			return bij[___ll[((i << 1) + j)] + s];
 		}
-		inline double& get_Gammaijk(const int &i, const int &j, const int &k) {
+		inline double get_Gammaijk(const int &i, const int &j, const int &k) {
 			return Gammaijk[(((i<<1) + j) <<1)+ k];
 		}
 
-		inline double& get_tt0(const int &i, const int &s) {
+		inline double get_tt0(const int &i, const int &s) {
 			return _ref->tt0[i][s];
 		}
-		inline double& get_hh0(const int &i, const int &s) {
+		inline double get_hh0(const int &i, const int &s) {
 			return _ref->hh0[i][s];
 		}
-		inline double& get_tt1(const int &i, const int &j, const int &s) {
+		inline double get_tt1(const int &i, const int &j, const int &s) {
 			return _ref->tt1[(i<<1) + j][s];
 		}
-		inline double& get_hh1(const int &i, const int &j, const int &s) {
+		inline double get_hh1(const int &i, const int &j, const int &s) {
 			return _ref->hh1[(i<<1) + j][s];
 		}
-		inline double& get_tt2(const int &i, const int &j, const int &k, const int &s) {
+		inline double get_tt2(const int &i, const int &j, const int &k, const int &s) {
 			return _ref->tt2[(((i<<1) + j) <<1) + k][s];
 		}
-		inline double& get_hh2(const int &i, const int &j, const int &k, const int &s) {
+		inline double get_hh2(const int &i, const int &j, const int &k, const int &s) {
 			return _ref->hh2[(((i<<1) + j) <<1) + k][s];
 		}
 
@@ -1124,7 +1124,7 @@ namespace KingOfMonsters {
 						pptr++;
 					}
 					//__grad_z[i] = val2*sc;
-					eigen_assert(val2<1000 && val2>-1000);
+					//eigen_assert(val2<1000 && val2>-1000);
 					*pptr2 = val2 * sc;
 					pptr2++;
 				}
@@ -2014,14 +2014,14 @@ namespace KingOfMonsters {
 			S[1] = 0;
 			S[2] = 0;
 			S[3] = 0;
-			//for (int k = 0; k < 2; k++) {
-				//for (int l = 0; l < 2; l++) {
+			for (int k = 0; k < 2; k++) {
+				for (int l = 0; l < 2; l++) {
 					double val = 0;
 					for (int m = 0; m < 2; m++) {
 						for (int n = 0; n < 2; n++) {
 
 
-							//double A = _la * _ref->get__Gij(l, k) * _ref->get__Gij(n, m) +2*_mu* _ref->get__Gij(l, n) * _ref->get__Gij(k, m);
+							double A = _la * _ref->get__Gij(l, k) * _ref->get__Gij(n, m) +2*_mu* _ref->get__Gij(l, n) * _ref->get__Gij(k, m);
 							//A = 1.0;
 
 							double D = 0;
@@ -2033,14 +2033,14 @@ namespace KingOfMonsters {
 								//E += _ref->get__gi(k, s) * (get_gi(l, s) - _ref->get__gi(l, s));
 								//E += _ref->get__gi(l, s) * (get_gi(k, s) - _ref->get__gi(k, s));
 							}
-							//val += A * D;
-							S[(m << 1) + n] = D;
+							val += A * D;
+							//S[(m << 1) + n] = D;
 
 						}
 					}
-					//S[(k<<1) + l] = val;
-				//}
-			//}
+					S[(k<<1) + l] = val;
+				}
+			}
 			/*S[0] = get_gij(0, 0) - _ref->get__gij(0, 0);
 			S[1] = get_gij(1, 0) - _ref->get__gij(1, 0);
 			S[2] = get_gij(0, 1) - _ref->get__gij(0, 1);
@@ -2368,8 +2368,7 @@ namespace KingOfMonsters {
 		//bending term
 		double K(int i, int k2, int j, int k,double _la, double _mu)
 		{
-			double _val3 = 0;
-			double _val4 = 0;
+			double _val3 = 0;			
 			
 			for (int l = 0; l < 2; l++)
 			{
@@ -2388,6 +2387,62 @@ namespace KingOfMonsters {
 				}
 			}
 			return _val3 * _ref->refDv;
+		}
+		void K(_mySparse* M,_mySparse* mat, int* _index, double _la, double _mu, double sc)
+		{
+			const static int kk[3]{ 0,1,2 };
+			const static int ll[2]{ 0,1 };
+			double _sc = sc * _ref->refDv;
+			//Eigen::SparseMatrix<double, Eigen::ColMajor> _mat(mat->_mat[0].rows(), mat->_mat[0].cols());
+			std::vector<Eigen::Triplet<double>> dat;//
+			dat.resize(_nNode * 3 * _nNode * 3);
+			//dat.clear();
+			//dat.reserve(_nNode * 3 * _nNode * 3);
+			Eigen::SparseMatrix<double, Eigen::ColMajor>* _mat = &mat->_mat[0];
+			_mat->setZero();
+			_mat->makeCompressed();
+			//_mat.reserve(_nNode * 3 * _nNode * 3);
+			for (int i = 0; i < _nNode; i++)
+			{
+				int I = _index[i] * 3;
+
+				for (int j = 0; j < _nNode; j++)
+				{
+					int J = _index[j] * 3;
+					for (int k = 0; k < 3; k++)
+					{
+						for (int k2 = 0; k2 < 3; k2++)
+						{
+							double _val3 = 0;
+							for (int l = 0; l < 2; l++)
+							{
+								for (int m = 0; m < 2; m++)
+								{
+									for (int g = 0; g < 2; g++)
+									{
+										for (int h = 0; h < 2; h++)
+										{
+											double A = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(m, l) + 2 * _mu * _ref->get__Gij(h, m) * _ref->get__Gij(g, l));
+											double D = (_ref->d2[(g*2) + h][j] - Gammaijk[(((g * 2) + h) * 2) + 0] * _ref->d1[0][j] - Gammaijk[(((g * 2)+ h) * 2)+ 1]* _ref->d1[1][j]);
+											double E = (_ref->d2[(l * 2) + m][i] - Gammaijk[(((l * 2) + m) * 2) + 0] * _ref->d1[0][i] - Gammaijk[(((l * 2)+ m) * 2)+ 1] * _ref->d1[1][i]);
+											_val3 += A * N[k] * N[k2] * (D) * (E);
+										}
+									}
+								}
+							}
+							//_val3 = K(i, k, j, k2, _la, _mu);
+							dat[(i*3+k) * (_nNode * 3) + (j*3 + k2)] = Eigen::Triplet<double>(I + k, J + k2, _val3 * _sc);
+
+							//dat.push_back(Eigen::Triplet<double>(I+k, J+k2, _val3 * _sc));
+						}
+					}
+				}
+			}
+			_mat->setFromTriplets(dat.begin(),dat.end());
+			M->_mat[0] += *_mat;
+			//_mat->makeCompressed();
+			//_mat->finalize();
+			//mat->plus(&_mat);
 		}
 		//ultimate term
 		int star(int i) {
@@ -2510,15 +2565,18 @@ namespace KingOfMonsters {
 		//membrane term
 		double H(int i, int k2, int j, int k, double _la, double _mu)
 		{
+			const static int kk[3]{ 0,1,2 };
+			const static int ll[2]{ 0,1};
+
 			double _val4 = 0;
 			
-			for (int l = 0; l < 2; l++)
+			for (auto l:ll)
 			{
-				for (int m = 0; m < 2; m++)
+				for (auto m : ll)
 				{
-					for (int g = 0; g < 2; g++)
+					for (auto g:ll)
 					{
-						for (int h = 0; h < 2; h++)
+						for (auto h:ll)
 						{
 
 							double A = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(m, l) +2*_mu* _ref->get__Gij(h, m) * _ref->get__Gij(g, l));
@@ -2531,6 +2589,61 @@ namespace KingOfMonsters {
 				}
 			}
 			return _val4 * _ref->refDv * 0.25;
+		}
+		void H(_mySparse* M,_mySparse * mat,int* _index,double _la, double _mu,double sc)
+		{
+			const static int kk[3]{ 0,1,2 };
+			const static int ll[2]{ 0,1 };
+			double _sc = sc * _ref->refDv * 0.25;
+			std::vector<Eigen::Triplet<double>> dat;//
+			dat.resize(_nNode * 3 * _nNode * 3);
+			//dat.clear();
+			Eigen::SparseMatrix<double,Eigen::ColMajor>*_mat = &mat->_mat[0];
+			_mat->setZero();
+			_mat->makeCompressed();
+			//_mat.reserve(_nNode * 3 * _nNode * 3);
+			for (int i = 0; i < _nNode; i++)
+			{
+				int I = _index[i]*3;
+				for (int j = 0; j < _nNode; j++)
+				{
+					int J = _index[j] * 3;
+					for (int k=0;k<3;k++)
+					{
+						for (int k2 = 0; k2 < 3; k2++)
+						{
+							double _val4 = 0;
+							for (int l = 0; l<2; l++)
+							{
+								for (int m = 0; m < 2; m++)
+								{
+									for (int g = 0; g < 2; g++)
+									{
+										for (int h = 0; h < 2; h++)
+										{
+											double A = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(m, l) + 2 * _mu * _ref->get__Gij(h, m) * _ref->get__Gij(g, l));
+
+											double FF = (_ref->d1[g][j] * get_gi(h, k2) + _ref->d1[h][j] * get_gi(g, k2));
+											double GG = (_ref->d1[l][i] * get_gi(m, k) + _ref->d1[m][i] * get_gi(l, k));
+											_val4 += A * FF * GG;
+										}
+									}
+								}
+							}
+							//_val4 = H(i, k, j, k2, _la, _mu);
+							//_mat.insert(I + k, J + k2) = _val4 * _sc;
+							dat[(i*3+k)*(_nNode*3)+(j*3+k2)]=Eigen::Triplet<double>(I + k, J + k2, _val4 * _sc);
+							//mat->_plus(I+k, J+k2, _val4 * _sc);
+						}
+					}
+				}
+			}
+			_mat->setFromTriplets(dat.begin(),dat.end());
+			M->_mat[0] += *_mat;
+			//_mat->makeCompressed();
+			//_mat->finalize();
+			//mat->plus(&_mat);
+			//return _val4 * _ref->refDv * 0.25;
 		}
 		void memory(_memS_ref* __mem) {
 			if (__mem->__z < -1000) {
@@ -2927,6 +3040,14 @@ public:
 		double K_phi(int j)
 		{
 			return __mem->K_phi(j);
+		}
+		void H(mySparse^ M, mySparse^ mat, myIntArray^ index, double _la, double _mu, double sc)
+		{
+			__mem->H(M->dat,mat->dat, index->data(), _la, _mu, sc);
+		}
+		void K(mySparse^ M,mySparse^ mat, myIntArray^ index, double _la, double _mu, double sc)
+		{
+			__mem->K(M->dat,mat->dat, index->data(), _la, _mu, sc);
 		}
 		void S(double val1, double val2, double val3) {
 			__mem->set_Sij(val1, val2, val3);

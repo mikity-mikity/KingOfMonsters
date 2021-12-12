@@ -250,7 +250,7 @@ namespace KingOfMonsters {
 		void _solveI_gpu(KingOfMonsters::cuda* cuda, _mySparse* ret);
 		std::string _solveI_gpu_omp(KingOfMonsters::cuda* cuda, _mySparse* ret);
 		std::string _solveI_gpu_single(KingOfMonsters::cuda* cuda, _mySparse* ret);
-
+		void plus(Eigen::SparseMatrix<double, Eigen::ColMajor>* m);
 		//void _solveI_gpu_mg(KingOfMonsters::cuda* cuda, _mySparse* ret);
 		void __solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		Eigen::MatrixXd inv();
@@ -261,6 +261,7 @@ namespace KingOfMonsters {
 		void begin_construct();
 		void end_construct(int c);
 		int numBlocks();
+		void _plus(int i, int j, double val);
 		static std::string _testopenmp();
 		//Eigen::SparseMatrix<double>* e = 0;
 		//Eigen::SparseMatrix<double>* e2 = 0;

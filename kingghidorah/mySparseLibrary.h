@@ -491,8 +491,8 @@ namespace KingOfMonsters {
 			return ret;
 		}
 		void plus(mySparse^ B,double sc)
-		{
-			this->dat->_mat[0] += B->dat->_mat[0] * sc;
+		{			
+			this->dat->_mat[0] = this->dat->_mat[0]+B->dat->_mat[0];// *sc;
 		}
 		void freeze(bool _do) {
 			this->dat->freeze(_do);
@@ -820,8 +820,12 @@ namespace KingOfMonsters {
 		double at(int i, int j) {
 			return dat->__at(i, j);
 		}
-		void _plus(int i, int j, double val) {
+		/*void _plus(int i, int j, double val) {
 			this->dat->_mat[0].coeffRef(i,j) += val;
+		}*/
+		void _plus(int i, int j, double val) {
+			this->dat->_plus(i, j, val);
+			//this->dat->_mat[0].coeffRef(i, j) += val;
 		}
 		void _set(int i, int j, double val) {
 			this->dat->_mat[0].coeffRef(i,j) = val;

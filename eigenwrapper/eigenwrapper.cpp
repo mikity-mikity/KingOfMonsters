@@ -718,6 +718,9 @@ void KingOfMonsters::_mySparse::plus(_mySparse* m, double sc, bool dense, bool s
 		_dmat += m->_mat[0] * sc;
 	}
 }
+void KingOfMonsters::_mySparse::plus(Eigen::SparseMatrix<double, Eigen::ColMajor> *m) {
+	this->_mat[0] += *m;
+}
 void KingOfMonsters::_mySparse::setmat(Eigen::SparseMatrix<double, Eigen::ColMajor> &mat, int ii) {
 	this->_mat[ii] = mat;
 }
@@ -1012,13 +1015,15 @@ int KingOfMonsters::_mySparse::resize(int n, int m) {
 		_mat.resize(_nt);
 		coeff.resize(_nt);
 		_mat[0].resize(n, m);
+		_mat[0].setZero();
+		_mat[0].makeCompressed();
 		//_mat[0].reserve(n * m / 10);
 	}
 
 	return this->_nt;
 }
 void KingOfMonsters::_mySparse::reserve(int n) {
-	_mat.reserve(n);
+	_mat[0].reserve(n);
 }
 void KingOfMonsters::_mySparse::addemptyrow(int ii) {
 	eigen_assert(_coeff[0].size() == ii );
@@ -2503,9 +2508,9 @@ void KingOfMonsters::_mySparse::_ofBtAB_qr(_mySparse* B, Eigen::VectorXd* b, _my
 	Eigen::SparseQR<Eigen::SparseMatrix<double, Eigen::ColMajor>, Eigen::COLAMDOrdering<int>> qr;
 	qr.setPivotThreshold(0.00000000001);
 	qr.compute(_a);
-	q = qr.m_Q;
-	tmp = q * B->_mat[0];
-	C->_dmat = tmp.transpose() * tmp;
+	//q = qr.m_Q;
+	//tmp = q * B->_mat[0];
+	//C->_dmat = tmp.transpose() * tmp;
 }
 void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret)
 {
@@ -2821,7 +2826,10 @@ void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)
 	ss << "sum:" << (*e)[0].sum() << std::endl;
 	return;// ss.str();
 }
-
+void KingOfMonsters::_mySparse::_plus(int i, int j, double val)
+{
+	this->_mat[0].coeffRef(i, j) += val;
+}
 void KingOfMonsters::_mySparse::Atb(double* ptr, double* ptr2, double sc,int N, Eigen::VectorXd* c)
 {
 	static std::map<int, std::vector<Eigen::VectorXd>> __dict;
