@@ -2392,7 +2392,7 @@ namespace KingOfMonsters {
 		{
 			const static int kk[3]{ 0,1,2 };
 			const static int ll[2]{ 0,1 };
-			double _sc = sc * _ref->refDv;
+			//double _sc = sc * _ref->refDv;
 			//Eigen::SparseMatrix<double, Eigen::ColMajor> _mat(mat->_mat[0].rows(), mat->_mat[0].cols());
 			std::vector<Eigen::Triplet<double>> dat;//
 			dat.resize(_nNode * 3 * _nNode * 3);
@@ -2414,7 +2414,7 @@ namespace KingOfMonsters {
 						for (int k2 = 0; k2 < 3; k2++)
 						{
 							double _val3 = 0;
-							for (int l = 0; l < 2; l++)
+							/*for (int l = 0; l < 2; l++)
 							{
 								for (int m = 0; m < 2; m++)
 								{
@@ -2429,9 +2429,9 @@ namespace KingOfMonsters {
 										}
 									}
 								}
-							}
-							//_val3 = K(i, k, j, k2, _la, _mu);
-							dat[(i*3+k) * (_nNode * 3) + (j*3 + k2)] = Eigen::Triplet<double>(I + k, J + k2, _val3 * _sc);
+							}*/
+							_val3 = K(i, k, j, k2, _la, _mu);
+							dat[(i*3+k) * (_nNode * 3) + (j*3 + k2)] = Eigen::Triplet<double>(I + k, J + k2, _val3 * sc);
 
 							//dat.push_back(Eigen::Triplet<double>(I+k, J+k2, _val3 * _sc));
 						}
@@ -2594,7 +2594,7 @@ namespace KingOfMonsters {
 		{
 			const static int kk[3]{ 0,1,2 };
 			const static int ll[2]{ 0,1 };
-			double _sc = sc * _ref->refDv * 0.25;
+			//double _sc = sc * _ref->refDv * 0.25;
 			std::vector<Eigen::Triplet<double>> dat;//
 			dat.resize(_nNode * 3 * _nNode * 3);
 			//dat.clear();
@@ -2632,7 +2632,7 @@ namespace KingOfMonsters {
 							}
 							//_val4 = H(i, k, j, k2, _la, _mu);
 							//_mat.insert(I + k, J + k2) = _val4 * _sc;
-							dat[(i*3+k)*(_nNode*3)+(j*3+k2)]=Eigen::Triplet<double>(I + k, J + k2, _val4 * _sc);
+							dat[(i*3+k)*(_nNode*3)+(j*3+k2)]=Eigen::Triplet<double>(I + k, J + k2, _val4 * sc);
 							//mat->_plus(I+k, J+k2, _val4 * _sc);
 						}
 					}
