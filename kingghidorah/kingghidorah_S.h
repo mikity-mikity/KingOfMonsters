@@ -2014,32 +2014,33 @@ namespace KingOfMonsters {
 			S[1] = 0;
 			S[2] = 0;
 			S[3] = 0;
-			for (int k = 0; k < 2; k++) {
-				for (int l = 0; l < 2; l++) {
+			//for (int k = 0; k < 2; k++) {
+				//for (int l = 0; l < 2; l++) {
 					double val = 0;
 					for (int m = 0; m < 2; m++) {
 						for (int n = 0; n < 2; n++) {
 
 
-							double A = _la * _ref->get__Gij(l, k) * _ref->get__Gij(n, m) +2*_mu* _ref->get__Gij(l, n) * _ref->get__Gij(k, m);
+							//double A = _la * _ref->get__Gij(l, k) * _ref->get__Gij(n, m) +2*_mu* _ref->get__Gij(l, n) * _ref->get__Gij(k, m);
 							//A = 1.0;
 
 							double D = 0;
 							//double E = 0;
 							for (int s = 0; s < 3; s++)
 							{
-								D += _ref->get__gi(m, s) * (get_gi(n, s) - _ref->get__gi(n, s));
-								D += _ref->get__gi(n, s) * (get_gi(m, s) - _ref->get__gi(m, s));
+								D += _ref->get__gi(m, s) * (get_gi(n, s) -_ref->get__gi(n, s));
+								D += _ref->get__gi(n, s) * (get_gi(m, s) -_ref->get__gi(m, s));
 							}
-							double D2=get_gij(n, m) - _ref->get__gij(n, m);
-							val += A * D;
-							//S[(m << 1) + n] = D;
+							//double D2 = /*get_gij(n, m) - */ _ref->get__gij(n, m);
+							//val += A * (/D2;
+							
+							S[(m << 1) + n] = D;
 
 						}
 					}
-					S[(k<<1) + l] = val;
-				}
-			}
+					//S[(k << 1) + l] = get_gij(k, l);// -_ref->get__gij(k, l);
+				//}
+			//}
 			*a = S[0];
 			*b = S[1];
 			*c = S[2];
@@ -2393,7 +2394,7 @@ namespace KingOfMonsters {
 			}
 			return _val3 * _ref->refDv;
 		}
-		void K(_mySparse* M,_mySparse* mat, int* _index, double _la, double _mu, double sc)
+		void K(_mySparse* M,_mySparse* mat, int* _index, double _la, double _mu, double __sc)
 		{
 			const static int kk[3]{ 0,1,2 };
 			const static int ll[2]{ 0,1 };
@@ -2436,7 +2437,7 @@ namespace KingOfMonsters {
 								}
 							}*/
 							_val3 = K(i, k, j, k2, _la, _mu);
-							dat[(i*3+k) * (_nNode * 3) + (j*3 + k2)] = Eigen::Triplet<double>(I + k, J + k2, _val3 * sc);
+							dat[(i*3+k) * (_nNode * 3) + (j*3 + k2)] = Eigen::Triplet<double>(I + k, J + k2, _val3 * __sc);
 
 							//dat.push_back(Eigen::Triplet<double>(I+k, J+k2, _val3 * _sc));
 						}
@@ -2595,7 +2596,7 @@ namespace KingOfMonsters {
 			}
 			return _val4 * _ref->refDv * 0.25;
 		}
-		void H(_mySparse* M,_mySparse * mat,int* _index,double _la, double _mu,double sc)
+		void H(_mySparse* M,_mySparse * mat,int* _index,double _la, double _mu,double __sc)
 		{
 			const static int kk[3]{ 0,1,2 };
 			const static int ll[2]{ 0,1 };
@@ -2637,7 +2638,7 @@ namespace KingOfMonsters {
 							}*/
 							_val4 = H(i, k, j, k2, _la, _mu);
 							//_mat.insert(I + k, J + k2) = _val4 * _sc;
-							dat[(i*3+k)*(_nNode*3)+(j*3+k2)]=Eigen::Triplet<double>(I + k, J + k2, _val4 * sc);
+							dat[(i*3+k)*(_nNode*3)+(j*3+k2)]=Eigen::Triplet<double>(I + k, J + k2, _val4 * __sc);
 							//mat->_plus(I+k, J+k2, _val4 * _sc);
 						}
 					}
