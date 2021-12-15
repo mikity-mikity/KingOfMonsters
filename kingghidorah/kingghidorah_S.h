@@ -2006,7 +2006,7 @@ namespace KingOfMonsters {
 			return da;
 		}
 
-		double fM(double _la,double _mu)
+		void fM(double _la,double _mu,double*a,double*b,double*c,double*d)
 		{
 			//vector<double> ret;
 			double S[4]; //covariant
@@ -2030,9 +2030,8 @@ namespace KingOfMonsters {
 							{
 								D += _ref->get__gi(m, s) * (get_gi(n, s) - _ref->get__gi(n, s));
 								D += _ref->get__gi(n, s) * (get_gi(m, s) - _ref->get__gi(m, s));
-								//E += _ref->get__gi(k, s) * (get_gi(l, s) - _ref->get__gi(l, s));
-								//E += _ref->get__gi(l, s) * (get_gi(k, s) - _ref->get__gi(k, s));
 							}
+							double D2=get_gij(n, m) - _ref->get__gij(n, m);
 							val += A * D;
 							//S[(m << 1) + n] = D;
 
@@ -2041,12 +2040,17 @@ namespace KingOfMonsters {
 					S[(k<<1) + l] = val;
 				}
 			}
+			*a = S[0];
+			*b = S[1];
+			*c = S[2];
+			*d = S[3];
+
 			/*S[0] = get_gij(0, 0) - _ref->get__gij(0, 0);
 			S[1] = get_gij(1, 0) - _ref->get__gij(1, 0);
 			S[2] = get_gij(0, 1) - _ref->get__gij(0, 1);
 			S[3] = get_gij(1, 1) - _ref->get__gij(1, 1);*/
 
-			return (S[0] * S[3] - S[1] * S[2]);// *(_ref->get__gij(0, 0) * _ref->get__gij(1, 1) - _ref->get__gij(0, 1) * _ref->get__gij(0, 1));
+			//return (S[0] * S[3] - S[1] * S[2]);// *(_ref->get__gij(0, 0) * _ref->get__gij(1, 1) - _ref->get__gij(0, 1) * _ref->get__gij(0, 1));
 		}
 	    double eM(double _la, double _mu) {
 			double membrane = 0;
@@ -2369,7 +2373,8 @@ namespace KingOfMonsters {
 		double K(int i, int k2, int j, int k,double _la, double _mu)
 		{
 			double _val3 = 0;			
-			
+	
+
 			for (int l = 0; l < 2; l++)
 			{
 				for (int m = 0; m < 2; m++)
@@ -2613,7 +2618,7 @@ namespace KingOfMonsters {
 						for (int k2 = 0; k2 < 3; k2++)
 						{
 							double _val4 = 0;
-							for (int l = 0; l<2; l++)
+							/*for (int l = 0; l<2; l++)
 							{
 								for (int m = 0; m < 2; m++)
 								{
@@ -2629,8 +2634,8 @@ namespace KingOfMonsters {
 										}
 									}
 								}
-							}
-							//_val4 = H(i, k, j, k2, _la, _mu);
+							}*/
+							_val4 = H(i, k, j, k2, _la, _mu);
 							//_mat.insert(I + k, J + k2) = _val4 * _sc;
 							dat[(i*3+k)*(_nNode*3)+(j*3+k2)]=Eigen::Triplet<double>(I + k, J + k2, _val4 * sc);
 							//mat->_plus(I+k, J+k2, _val4 * _sc);
@@ -2866,9 +2871,16 @@ public:
 	void U_phi(myDoubleArray^ x) {
 		memcpy(x->_arr->__v.data(), __mem->__grad_phi, sizeof(double) * __mem->_nNode);
 	}
-	double fM(double _la, double _mu)
+	array<double>^ fM(double _la, double _mu)
 	{
-		return __mem->fM(_la,_mu);
+		double a, b, c, d;
+		__mem->fM(_la,_mu,&a,&b,&c,&d);
+		array<double>^ arr = gcnew array<double>(4);
+		arr[0] = a;
+		arr[1] = b;
+		arr[2] = c;
+		arr[3] = d;
+		return arr;
 	}
 		/*void fM(array<double>^ ret) {
 			vector<double> _ret = __mem->fM();
