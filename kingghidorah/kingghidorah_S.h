@@ -1492,13 +1492,7 @@ namespace KingOfMonsters {
 				for (int i = 0; i < nNode; i++) {
 					dd[i] = new int[2];
 				}*/
-				if (mode == "SHELL" || mode == "SENSITIVITY")
-				{
-					gradN[0] = new double[3 * _nNode];
-					gradN[1] = new double[3 * _nNode];
-					gradN[2] = new double[3 * _nNode];
-					gradG = new double[8 * _nNode];
-				}
+
 			}
 		}
 	private:
