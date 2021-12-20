@@ -2052,10 +2052,12 @@ namespace KingOfMonsters {
 					S[(k << 1) + l] = val;// get_gij(k, l);// -_ref->get__gij(k, l);
 				}
 			}
-			*a = S[0] * _ref->get__gij(0, 0) + S[1] * _ref->get__gij(1, 0);
-			*b = S[0] * _ref->get__gij(0, 1) + S[1] * _ref->get__gij(1, 1);
-			*c = S[2] * _ref->get__gij(0, 0) + S[3] * _ref->get__gij(1, 0);
-			*d = S[2] * _ref->get__gij(0, 1) + S[3] * _ref->get__gij(1, 1);
+			*a = S[0] * _ref->get__gi(0, 0) * _ref->get__gi(0, 0) + S[1] * _ref->get__gi(0, 0) * _ref->get__gi(1, 0) + S[2] * _ref->get__gi(1, 0) * _ref->get__gi(0, 0) + S[3] * _ref->get__gi(1, 0) * _ref->get__gi(1, 0);
+			*b = S[0] * _ref->get__gi(0, 0) * _ref->get__gi(0, 1) + S[1] * _ref->get__gi(0, 0) * _ref->get__gi(1, 1) + S[2] * _ref->get__gi(1, 0) * _ref->get__gi(0, 1) + S[3] * _ref->get__gi(1, 0) * _ref->get__gi(1, 1);
+			*c = S[0] * _ref->get__gi(0, 1) * _ref->get__gi(0, 0) + S[1] * _ref->get__gi(0, 1) * _ref->get__gi(1, 0) + S[2] * _ref->get__gi(1, 1) * _ref->get__gi(0, 0) + S[3] * _ref->get__gi(1, 1) * _ref->get__gi(1, 0);
+			*d = S[0] * _ref->get__gi(0, 1) * _ref->get__gi(0, 1) + S[1] * _ref->get__gi(0, 1) * _ref->get__gi(1, 1) + S[2] * _ref->get__gi(1, 1) * _ref->get__gi(0, 1) + S[3] * _ref->get__gi(1, 1) * _ref->get__gi(1, 1);
+
+			
 
 			/*S[0] = get_gij(0, 0) - _ref->get__gij(0, 0);
 			S[1] = get_gij(1, 0) - _ref->get__gij(1, 0);
@@ -2674,7 +2676,7 @@ namespace KingOfMonsters {
 							}*/
 							_val4 = H(i, k, j, k2, _la, _mu);
 							//_mat.insert(I + k, J + k2) = _val4 * _sc;
-							dat[(i*3+k)*(_nNode*3)+(j*3+k2)]=Eigen::Triplet<double>(I + k, J + k2, _val4 * __sc);
+							dat[(i*3+k)*(_nNode*3)+(j*3+k2)]=Eigen::Triplet<double>(I + k, J + k2, _val4 * sc);
 							//mat->_plus(I+k, J+k2, _val4 * _sc);
 						}
 					}
