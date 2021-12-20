@@ -1412,7 +1412,13 @@ namespace KingOfMonsters {
 					_K = new double[nNode*2];
 				}
 				_F3 = new double[nNode * 2];
-
+				if (mode == "SENSITIVITY" || mode == "SHELL")
+				{
+					gradN[0] = new double[3 * _nNode];
+					gradN[1] = new double[3 * _nNode];
+					gradN[2] = new double[3 * _nNode];
+					gradG = new double[8 * _nNode];
+				}
 				/*d0 = new double[nNode];
 
 				d1[0] = new double[nNode];
@@ -1464,10 +1470,7 @@ namespace KingOfMonsters {
 				hh2[5] = new double[vDim];
 				hh2[6] = new double[uDim];
 				hh2[7] = new double[vDim];
-				gradN[0] = new double[3 * _nNode];
-				gradN[1] = new double[3 * _nNode];
-				gradN[2] = new double[3 * _nNode];
-				gradG = new double[8 * _nNode];
+		
 
 
 				M[0] = new double* [uDim];
