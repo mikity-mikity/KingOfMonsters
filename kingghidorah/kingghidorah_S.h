@@ -944,6 +944,24 @@ namespace KingOfMonsters {
 			Gi[3] = Fx;
 			Gi[4] = Fy;
 			Gi[5] = Fz;
+
+			double gx = get_gi(0, 0);
+			double gy = get_gi(0, 1);
+			double gz = get_gi(0, 2);
+			double hx = get_gi(1, 0);
+			double hy = get_gi(1, 1);
+			double hz = get_gi(1, 2);
+			double Nx = gy * hz - gz * hy;
+			double Ny = gz * hx - gx * hz;
+			double Nz = gx * hy - gy * hx;
+			double  norm = sqrt(Nx * Nx + Ny * Ny + Nz * Nz);
+			Nx = Nx / norm;
+			Ny = Ny / norm;
+			Nz = Nz / norm;
+			N[0] = Nx;
+			N[1] = Ny;
+			N[2] = Nz;
+
 			double **ptr = _ref->d2;
 			for (auto const& j : ___ee) {
 				for (auto const& k : ___ee) {
@@ -1019,7 +1037,7 @@ namespace KingOfMonsters {
 			if (mode == "U") {
 
 				double* ptr4;
-				for (auto const& j : ___ee) {
+				/*for (auto const& j : ___ee) {
 					double fx = 0, fy = 0, fz = 0;
 					ptr2 = _ref->d1[j];
 					ptr3 = _ref->node;
@@ -1045,7 +1063,7 @@ namespace KingOfMonsters {
 				gij[3] = gi[3] * gi[3] + gi[4] * gi[4]+ gi[5] * gi[5];
 
 
-				dv = sqrt(_det2(gij));
+				dv = sqrt(_det2(gij));*/
 
 
 				double val = 0;
@@ -1208,22 +1226,7 @@ namespace KingOfMonsters {
 			for (auto const& l : ___ee) {
 				_F3_z[l] = __F3_z(l);
 			}
-			double gx = get_gi(0, 0);
-			double gy = get_gi(0, 1);
-			double gz = get_gi(0, 2);
-			double hx = get_gi(1, 0);
-			double hy = get_gi(1, 1);
-			double hz = get_gi(1, 2);
-			double Nx = gy * hz - gz * hy;
-			double Ny = gz * hx - gx * hz;
-			double Nz = gx * hy - gy * hx;
-			double  norm = sqrt(Nx * Nx + Ny * Ny + Nz * Nz);
-			Nz = Nz / norm;
-			Nx = Nx / norm;
-			Ny = Ny / norm;
-			N[0] = Nx;
-			N[1] = Ny;
-			N[2] = Nz;
+
 
 		}
 		void del() {
@@ -1464,10 +1467,7 @@ namespace KingOfMonsters {
 				hh2[5] = new double[vDim];
 				hh2[6] = new double[uDim];
 				hh2[7] = new double[vDim];
-				gradN[0] = new double[3 * _nNode];
-				gradN[1] = new double[3 * _nNode];
-				gradN[2] = new double[3 * _nNode];
-				gradG = new double[8 * _nNode];
+		
 
 
 				M[0] = new double* [uDim];
@@ -1482,6 +1482,13 @@ namespace KingOfMonsters {
 				for (int i = 0; i < nNode; i++) {
 					dd[i] = new int[2];
 				}*/
+				if (mode == "SHELL" || mode == "SENSITIVITY")
+				{
+					gradN[0] = new double[3 * _nNode];
+					gradN[1] = new double[3 * _nNode];
+					gradN[2] = new double[3 * _nNode];
+					gradG = new double[8 * _nNode];
+				}
 			}
 		}
 	private:
@@ -2372,9 +2379,10 @@ namespace KingOfMonsters {
 		//bending term
 		double K(int i, int k2, int j, int k,double _la, double _mu)
 		{
-			double _val3 = 0;			
-	
-
+			double _val3 = 0;
+			double _val4 = 0;
+			double _val5 = 0;
+			double _val6 = 0;
 			for (int l = 0; l < 2; l++)
 			{
 				for (int m = 0; m < 2; m++)
@@ -2383,15 +2391,39 @@ namespace KingOfMonsters {
 					{
 						for (int h = 0; h < 2; h++)
 						{
-							double A = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(m, l) + 2*_mu*_ref->get__Gij(h, m) * _ref->get__Gij(g, l));
-							double D = (_ref->d2[g * 2 + h][j] - Gammaijk[(g * 2 + h) * 2 + 0] * _ref->d1[0][j] - Gammaijk[(g * 2 + h) * 2 + 1] * _ref->d1[1][j]);
-							double E = (_ref->d2[l * 2 + m][i] - Gammaijk[(l * 2 + m) * 2 + 0] * _ref->d1[0][i] - Gammaijk[(l * 2 + m) * 2 + 1] * _ref->d1[1][i]);
-							_val3 += A*N[k] * N[k2] * (D) * (E);
+							double A = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(m, l) + 2 * _mu * _ref->get__Gij(h, m) * _ref->get__Gij(g, l));
+							double D = (_ref->d2[g * 2 + h][j] + this->get_bij(g, h, k) * gradN[k][j]); // -Gammaijk[(g * 2 + h) * 2 + 0] * _ref->d1[0][j] - Gammaijk[(g * 2 + h) * 2 + 1] * _ref->d1[1][j]);
+							double E = (_ref->d2[l * 2 + m][i] + this->get_bij(l, m, k2) * gradN[k2][i]);// - Gammaijk[(l * 2 + m) * 2 + 0] * _ref->d1[0][i] - Gammaijk[(l * 2 + m) * 2 + 1] * _ref->d1[1][i]);
+							_val3 += A * N[k] * N[k2] * (D) * (E);
+							//_val4 += A * this->gradN[k][j] * get_bij(g, h, k) * this->gradN[k2][i] * get_bij(l, m, k2);
+							//_val5 += A * this->gradN[k][j] * get_bij(g, h, k) * N[k2] * E;
+							//_val6 += A * this->gradN[k2][i] * get_bij(l, m, k2) * N[k] * D;
 						}
 					}
 				}
 			}
-			return _val3 * _ref->refDv;
+			return (_val4 + _val3 + _val5 + _val6) * this->dv;
+		}
+		double dK(int i, int k, double _la, double _mu)
+		{
+			double _val3 = 0;
+			for (int l = 0; l < 2; l++)
+			{
+				for (int m = 0; m < 2; m++)
+				{
+					for (int g = 0; g < 2; g++)
+					{
+						for (int h = 0; h < 2; h++)
+						{
+							double A = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(m, l) + 2 * _mu * _ref->get__Gij(h, m) * _ref->get__Gij(g, l));
+							double D = _ref->get__bij(g,h,k);
+							double E = (_ref->d2[l * 2 + m][i] - Gammaijk[(l * 2 + m) * 2 + 0] * _ref->d1[0][i] - Gammaijk[(l * 2 + m) * 2 + 1] * _ref->d1[1][i]);
+							_val3 += A * N[k]* (D) * (E);
+						}
+					}
+				}
+			}
+			return (_val3) * this->dv;
 		}
 		void K(_mySparse* M,_mySparse* mat, int* _index, double _la, double _mu, double sc)
 		{
@@ -2400,9 +2432,9 @@ namespace KingOfMonsters {
 			//double _sc = sc * _ref->refDv;
 			//Eigen::SparseMatrix<double, Eigen::ColMajor> _mat(mat->_mat[0].rows(), mat->_mat[0].cols());
 			std::vector<Eigen::Triplet<double>> dat;//
-			dat.resize(_nNode * 3 * _nNode * 3);
+			//dat.resize(_nNode * 3 * _nNode * 3);
 			//dat.clear();
-			//dat.reserve(_nNode * 3 * _nNode * 3);
+			dat.reserve(_nNode * 3 * _nNode * 3);
 			Eigen::SparseMatrix<double, Eigen::ColMajor>* _mat = &mat->_mat[0];
 			_mat->setZero();
 			_mat->makeCompressed();
@@ -2436,7 +2468,7 @@ namespace KingOfMonsters {
 								}
 							}*/
 							_val3 = K(i, k, j, k2, _la, _mu);
-							dat[(i*3+k) * (_nNode * 3) + (j*3 + k2)] = Eigen::Triplet<double>(I + k, J + k2, _val3 * sc);
+							dat.push_back(Eigen::Triplet<double>(I + k, J + k2, _val3 * sc));
 
 							//dat.push_back(Eigen::Triplet<double>(I+k, J+k2, _val3 * _sc));
 						}
@@ -2593,7 +2625,35 @@ namespace KingOfMonsters {
 					}
 				}
 			}
-			return _val4 * _ref->refDv * 0.25;
+			return _val4 * this->dv * 0.25;
+		}
+		//membrane term
+		double dH(int i, int k, double _la, double _mu)
+		{
+			const static int kk[3]{ 0,1,2 };
+			const static int ll[2]{ 0,1 };
+
+			double _val4 = 0;
+
+			for (auto l : ll)
+			{
+				for (auto m : ll)
+				{
+					for (auto g : ll)
+					{
+						for (auto h : ll)
+						{
+
+							double A = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(m, l) + 2 * _mu * _ref->get__Gij(h, m) * _ref->get__Gij(g, l));
+
+							double FF = this->get_gij(g,h);
+							double GG = (_ref->d1[l][i] * get_gi(m, k) + _ref->d1[m][i] * get_gi(l, k));
+							_val4 += A * FF * GG;
+						}
+					}
+				}
+			}
+			return _val4 * this->dv * 0.25;
 		}
 		void H(_mySparse* M,_mySparse * mat,int* _index,double _la, double _mu,double sc)
 		{
@@ -3138,6 +3198,10 @@ public:
 				__mem = new _memS("U");
 			else if (ultimate == "SLOPE")
 				__mem = new _memS("SLOPE");
+			else if (ultimate == "SHELL")
+				__mem = new _memS("SHELL");
+			else if (ultimate == "SENSITIVITY")
+				__mem = new _memS("SENSITIVITY");
 			else
 				__mem = new _memS("");
 		}
