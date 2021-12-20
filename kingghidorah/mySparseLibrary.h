@@ -513,6 +513,14 @@ namespace KingOfMonsters {
 				delete(dat);
 			dat = 0;
 		}
+		double sum()
+		{
+			return this->dat->_mat[0].sum();
+		}
+		double _sum()
+		{
+			return this->dat->_dmat.sum();
+		}
 		void ofDat()
 		{
 			dat->ofDat();
