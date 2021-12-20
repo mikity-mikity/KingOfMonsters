@@ -1492,13 +1492,7 @@ namespace KingOfMonsters {
 				for (int i = 0; i < nNode; i++) {
 					dd[i] = new int[2];
 				}*/
-				if (mode == "SHELL" || mode == "SENSITIVITY")
-				{
-					gradN[0] = new double[3 * _nNode];
-					gradN[1] = new double[3 * _nNode];
-					gradN[2] = new double[3 * _nNode];
-					gradG = new double[8 * _nNode];
-				}
+
 			}
 		}
 	private:
@@ -2058,10 +2052,12 @@ namespace KingOfMonsters {
 					S[(k << 1) + l] = val;// get_gij(k, l);// -_ref->get__gij(k, l);
 				}
 			}
-			*a = S[0] * _ref->get__gij(0, 0) + S[1] * _ref->get__gij(1, 0);
-			*b = S[0] * _ref->get__gij(0, 1) + S[1] * _ref->get__gij(1, 1);
-			*c = S[2] * _ref->get__gij(0, 0) + S[3] * _ref->get__gij(1, 0);
-			*d = S[2] * _ref->get__gij(0, 1) + S[3] * _ref->get__gij(1, 1);
+			*a = S[0] * _ref->get__gi(0, 0) * _ref->get__gi(0, 0) + S[1] * _ref->get__gi(0, 0) * _ref->get__gi(1, 0) + S[2] * _ref->get__gi(1, 0) * _ref->get__gi(0, 0) + S[3] * _ref->get__gi(1, 0) * _ref->get__gi(1, 0);
+			*b = S[0] * _ref->get__gi(0, 0) * _ref->get__gi(0, 1) + S[1] * _ref->get__gi(0, 0) * _ref->get__gi(1, 1) + S[2] * _ref->get__gi(1, 0) * _ref->get__gi(0, 1) + S[3] * _ref->get__gi(1, 0) * _ref->get__gi(1, 1);
+			*c = S[0] * _ref->get__gi(0, 1) * _ref->get__gi(0, 0) + S[1] * _ref->get__gi(0, 1) * _ref->get__gi(1, 0) + S[2] * _ref->get__gi(1, 1) * _ref->get__gi(0, 0) + S[3] * _ref->get__gi(1, 1) * _ref->get__gi(1, 0);
+			*d = S[0] * _ref->get__gi(0, 1) * _ref->get__gi(0, 1) + S[1] * _ref->get__gi(0, 1) * _ref->get__gi(1, 1) + S[2] * _ref->get__gi(1, 1) * _ref->get__gi(0, 1) + S[3] * _ref->get__gi(1, 1) * _ref->get__gi(1, 1);
+
+			
 
 			/*S[0] = get_gij(0, 0) - _ref->get__gij(0, 0);
 			S[1] = get_gij(1, 0) - _ref->get__gij(1, 0);
