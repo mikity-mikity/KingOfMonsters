@@ -2680,7 +2680,7 @@ namespace KingOfMonsters {
 							}*/
 							_val4 = H(i, k, j, k2, _la, _mu);
 							//_mat.insert(I + k, J + k2) = _val4 * _sc;
-							dat[(i*3+k)*(_nNode*3)+(j*3+k2)]=Eigen::Triplet<double>(I + k, J + k2, _val4 * __sc);
+							dat[(i*3+k)*(_nNode*3)+(j*3+k2)]=Eigen::Triplet<double>(I + k, J + k2, _val4 * sc);
 							//mat->_plus(I+k, J+k2, _val4 * _sc);
 						}
 					}

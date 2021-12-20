@@ -105,12 +105,16 @@ namespace KingOfMonsters {
 			_arr->__v *= sc;
 		}
 		void resize(int N)
-		{
-			_arr->__v.conservativeResize(N);
-			if (N > _N)
+		{	
+			Eigen::VectorXd v(N);
+			v.setZero();
+			v.middleRows(0, _N) = this->_arr->__v;
+			this->_arr->__v = v;
+			//_arr->__v.conservativeResize(N);
+			/*if (N > _N)
 			{
 				_arr->__v.middleRows(_N, N - _N).setZero();
-			}
+			}*/
 			_N = N;
 		}
 		void reset(int N)
