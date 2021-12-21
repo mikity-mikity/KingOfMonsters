@@ -482,10 +482,11 @@ namespace KingOfMonsters {
 			this->dat->copycoefffrom(m->dat);
 		}
 		double sum() {
-			return this->dat->_mat[0].sum();
+			if(this->dat->_mat[0].nonZeros()>0)
+			return this->dat->_mat[0].cwiseAbs() .sum();
 		}
 		double _sum() {
-			return this->dat->_dmat.sum();
+			return this->dat->_dmat.cwiseAbs().sum();
 		}
 
 		void ofDuplicate(mySparse^ m)
@@ -533,14 +534,7 @@ namespace KingOfMonsters {
 				delete(dat);
 			dat = 0;
 		}
-		double sum()
-		{
-			return this->dat->_mat[0].sum();
-		}
-		double _sum()
-		{
-			return this->dat->_dmat.sum();
-		}
+	
 		void ofDat()
 		{
 			dat->ofDat();
