@@ -106,10 +106,19 @@ namespace KingOfMonsters {
 		}
 		void resize(int N)
 		{	
-			Eigen::VectorXd v(N);
+ 			Eigen::VectorXd v(N);
 			v.setZero();
-			v.middleRows(0, _N) = this->_arr->__v;
-			this->_arr->__v = v;
+			if (_N < N)
+			{
+				v.middleRows(0, _N) = this->_arr->__v;
+				this->_arr->__v.resize(N);
+				this->_arr->__v = v;
+			}
+			else if(N<_N){
+				v = this->_arr->__v.middleRows(0, N);
+				this->_arr->__v.resize(N);
+				this->_arr->__v = v;
+			}
 			//_arr->__v.conservativeResize(N);
 			/*if (N > _N)
 			{
@@ -472,6 +481,13 @@ namespace KingOfMonsters {
 			this->dat->OfDuplicate(m->dat);
 			this->dat->copycoefffrom(m->dat);
 		}
+		double sum() {
+			return this->dat->_mat[0].sum();
+		}
+		double _sum() {
+			return this->dat->_dmat.sum();
+		}
+
 		void ofDuplicate(mySparse^ m)
 		{
 			dat->init(m->rows(), m->cols());
