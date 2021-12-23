@@ -2399,9 +2399,9 @@ namespace KingOfMonsters {
 						for (int h = 0; h < 2; h++)
 						{
 							double A = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(m, l) + 2 * _mu * _ref->get__Gij(h, m) * _ref->get__Gij(g, l));
-							double D = (_ref->d2[g * 2 + h][j] + this->get_bij(g, h, k) * gradN[k][j]); // -Gammaijk[(g * 2 + h) * 2 + 0] * _ref->d1[0][j] - Gammaijk[(g * 2 + h) * 2 + 1] * _ref->d1[1][j]);
-							double E = (_ref->d2[l * 2 + m][i] + this->get_bij(l, m, k2) * gradN[k2][i]);// - Gammaijk[(l * 2 + m) * 2 + 0] * _ref->d1[0][i] - Gammaijk[(l * 2 + m) * 2 + 1] * _ref->d1[1][i]);
-							_val3 += A * N[k] * N[k2] * (D) * (E);
+							double D = _ref->d2[g * 2 + h][j]/**N[k]+_ref->get__bij(g,h,k)*gradN[k][j];//*/ -Gammaijk[(g * 2 + h) * 2 + 0] * _ref->d1[0][j] - Gammaijk[(g * 2 + h) * 2 + 1] * _ref->d1[1][j];
+							double E = _ref->d2[l * 2 + m][i] /** N[k2] + _ref->get__bij(l, m, k2) * gradN[k2][i];//*/ -Gammaijk[(l * 2 + m) * 2 + 0] * _ref->d1[0][i] - Gammaijk[(l * 2 + m) * 2 + 1] * _ref->d1[1][i];
+							_val3 += A * (D) *N[k]*N[k2]* (E);
 							//_val4 += A * this->gradN[k][j] * get_bij(g, h, k) * this->gradN[k2][i] * get_bij(l, m, k2);
 							//_val5 += A * this->gradN[k][j] * get_bij(g, h, k) * N[k2] * E;
 							//_val6 += A * this->gradN[k2][i] * get_bij(l, m, k2) * N[k] * D;
@@ -2475,9 +2475,9 @@ namespace KingOfMonsters {
 								}
 							}*/
 							_val3 = K(i, k, j, k2, _la, _mu);
-							dat[(i*3+k) * (_nNode * 3) + (j*3 + k2)] = Eigen::Triplet<double>(I + k, J + k2, _val3 * sc);
+							//dat[(i*3+k) * (_nNode * 3) + (j*3 + k2)] = Eigen::Triplet<double>(I + k, J + k2, _val3 * sc);
 
-							//dat.push_back(Eigen::Triplet<double>(I+k, J+k2, _val3 * _sc));
+							dat.push_back(Eigen::Triplet<double>(I+k, J+k2, _val3 * __sc));
 						}
 					}
 				}
@@ -2614,13 +2614,13 @@ namespace KingOfMonsters {
 
 			double _val4 = 0;
 			
-			for (auto l:ll)
+			for(int l=0;l<2;l++)
 			{
-				for (auto m : ll)
+				for (int m = 0; m < 2; m++)
 				{
-					for (auto g:ll)
+					for (int g = 0; g < 2; g++)
 					{
-						for (auto h:ll)
+						for (int h= 0; h < 2; h++)
 						{
 
 							double A = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(m, l) +2*_mu* _ref->get__Gij(h, m) * _ref->get__Gij(g, l));
