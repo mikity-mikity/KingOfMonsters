@@ -13,7 +13,7 @@ using std::string;
 namespace KingOfMonsters {
 	
 	public class _buffer {
-	public
+	public:
 		double mem[12000];
 	};
 	public ref class buffer {
