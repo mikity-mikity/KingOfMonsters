@@ -502,10 +502,10 @@ double* KingOfMonsters::cuda::work(int N, int device) {
 	else {
 		if (__work[device] != 0)
 		{
-			//cudaSetDevice(device);
+			cudaSetDevice(device);
 			cudaFree(__work[device]);
-			cudaMalloc(&__work[device], N * sizeof(double));
 		}
+		cudaMalloc(&__work[device], N * sizeof(double));
 		work_size[device] = N;
 		return __work[device];
 	}
@@ -513,16 +513,15 @@ double* KingOfMonsters::cuda::work(int N, int device) {
 double* KingOfMonsters::cuda::work(int N, int device, cudaStream_t stream) {
 	if (N < work_size[device])
 	{
-		//do nothing
 		return __work[device];
 	}
 	else {
 		if (__work[device] != 0)
 		{
-			//cudaSetDevice(device);
-			cudaFreeAsync(__work[device], stream);
-			cudaMallocAsync(&__work[device], N * sizeof(double), stream);
+			cudaSetDevice(device);
+			cudaFree(__work[device]);
 		}
+		cudaMalloc(&__work[device], N * sizeof(double));
 		work_size[device] = N;
 		return __work[device];
 	}
@@ -2974,15 +2973,16 @@ void KingOfMonsters::_mySparse::solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* re
 }
 
 
-void KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int device) {
+std::string KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int device) {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
+	std::stringstream ss;
 	Eigen::VectorXd x = *ret;
 	//this->_freeze();
 	int N = rhs->rows();
 	if (!cuda->valid())
 	{
 		x(0) = 10;
-		return;
+		return "";
 	}
 	cudaSetDevice(device);
 	auto solver = cuda->solver(device, 0);
@@ -2997,21 +2997,35 @@ void KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, Eigen::V
 
 	double* gpu_rhs = cuda->work_rhs(device);
 	double* gpu_matrix = cuda->work_M(device);
-	cudaMemcpy(gpu_matrix, _dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
-	cudaMemcpy(gpu_rhs, rhs->data(), N * sizeof(double), cudaMemcpyHostToDevice);
+	auto err=cudaMemcpy(gpu_matrix, _dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
+	ss << "," << err;
+	err=cudaMemcpy(gpu_rhs, rhs->data(), N * sizeof(double), cudaMemcpyHostToDevice);
+	ss << "," << err;
 
 	int work_size = 0;
 	int* devInfo_on_gpu = cuda->info(device);
 	//cudaMalloc(&devInfo_on_gpu, sizeof(int));
 
 	// --- CUDA CHOLESKY initialization
-	cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, &work_size);
+	auto err2=cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, &work_size);
+	ss << "," << err2;
 
 	// --- CUDA POTRF execution
-	double* work = cuda->work(work_size, device);
-
+	double* work = 0;
+	work	= cuda->work(work_size, device);
+	//cudaMalloc(&work, sizeof(double) * work_size);
+	err=cudaMemset(work, 0, sizeof(double) * work_size);
+	ss << "," << err;
+	cudaDeviceSynchronize();
+	err=cudaGetLastError();
+	ss << "," << err;
 	//auto now = std::chrono::high_resolution_clock::now();
-	cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, work, work_size, devInfo_on_gpu);
+	err2=cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, work, work_size, devInfo_on_gpu);
+	ss << "," << err2;
+	int devInfo_on_cpu;
+	cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
+	ss << "devInfo," << devInfo_on_cpu;
+
 	//int devInfo_on_cpu = 0;
 	//cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
 
@@ -3022,13 +3036,15 @@ void KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, Eigen::V
 	//}
 
 
-	cusolverDnDpotrs(solver, CUBLAS_FILL_MODE_LOWER, N, 1, gpu_matrix, N, gpu_rhs, N, devInfo_on_gpu);
+	err2=cusolverDnDpotrs(solver, CUBLAS_FILL_MODE_LOWER, N, 1, gpu_matrix, N, gpu_rhs, N, devInfo_on_gpu);
+	ss << "," << err2;
+	
 	// auto end = std::chrono::high_resolution_clock::now();
 	//auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - now);
 	//std::cout << "Dn:" << duration.count() << "ms" << std::endl;
-
-	//cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
-
+	devInfo_on_cpu;
+	cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
+	ss << "devInfo," << devInfo_on_cpu;
 	//if (devInfo_on_cpu != 0) {
 	//	x(0) = 24;
 	//	return;
@@ -3041,8 +3057,99 @@ void KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, Eigen::V
 	//cudaFree(devInfo_on_gpu);
 
 	cudaDeviceSynchronize();
+	ss << "size()" << ret->size();
+	ss << "norm"<<ret->norm();
 	//cudaStreamDestroy(stream);
-	return;
+	return ss.str();
+}
+std::string KingOfMonsters::_mySparse::_solveLU_gpu(KingOfMonsters::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int device) {
+	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
+	std::stringstream ss;
+	Eigen::VectorXd x = *ret;
+	//this->_freeze();
+	int N = rhs->rows();
+	if (!cuda->valid())
+	{
+		x(0) = 10;
+		return "";
+	}
+	cudaSetDevice(device);
+	auto solver = cuda->solver(device, 0);
+	auto blas = cuda->blas(device);
+	//auto stream=streams[device];
+	//cudaStreamCreate(&stream);
+	//cusolverDnSetStream(solver, stream);
+	//Eigen::Map<Eigen::VectorXd> b(rhs, N);
+	x.resize(N);
+	//x.setZero();
+
+
+	double* gpu_rhs = cuda->work_rhs(device);
+	double* gpu_matrix = cuda->work_M(device);
+	auto err = cudaMemcpy(gpu_matrix, _dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
+	ss << "," << err;
+	err = cudaMemcpy(gpu_rhs, rhs->data(), N * sizeof(double), cudaMemcpyHostToDevice);
+	ss << "," << err;
+
+	int work_size = 0;
+	int* devInfo_on_gpu = cuda->info(device);
+	//cudaMalloc(&devInfo_on_gpu, sizeof(int));
+
+	// --- CUDA CHOLESKY initialization
+	auto err2 = cusolverDnDgetrf_bufferSize (solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, &work_size);
+	ss << "," << err2;
+
+	// --- CUDA POTRF execution
+	double* work = 0;
+	work = cuda->work(work_size, device);
+	//cudaMalloc(&work, sizeof(double) * work_size);
+	err = cudaMemset(work, 0, sizeof(double) * work_size);
+	ss << "," << err;
+	cudaDeviceSynchronize();
+	err = cudaGetLastError();
+	ss << "," << err;
+	//auto now = std::chrono::high_resolution_clock::now();
+	err2 = cusolverDnDgetrf (solver, N, N, gpu_matrix, N, work, NULL, devInfo_on_gpu);
+	ss << "," << err2;
+	int devInfo_on_cpu;
+	cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
+	ss << "devInfo," << devInfo_on_cpu;
+
+	//int devInfo_on_cpu = 0;
+	//cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
+
+
+	//if (0 != devInfo_on_cpu) {
+	//	x(0) = devInfo_on_cpu;
+	//	return;
+	//}
+
+
+	err2 = cusolverDnDgetrs(solver, cublasOperation_t::CUBLAS_OP_N, N, 1, gpu_matrix, N,NULL, gpu_rhs, N, devInfo_on_gpu);
+	ss << "," << err2;
+
+	// auto end = std::chrono::high_resolution_clock::now();
+	//auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - now);
+	//std::cout << "Dn:" << duration.count() << "ms" << std::endl;
+	devInfo_on_cpu;
+	cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
+	ss << "devInfo," << devInfo_on_cpu;
+	//if (devInfo_on_cpu != 0) {
+	//	x(0) = 24;
+	//	return;
+	//}
+
+	cudaMemcpy(ret->data(), gpu_rhs, sizeof(double) * N, cudaMemcpyDeviceToHost);
+
+	//cudaFree(work);
+
+	//cudaFree(devInfo_on_gpu);
+
+	cudaDeviceSynchronize();
+	ss << "size()" << ret->size();
+	ss << "norm" << ret->norm();
+	//cudaStreamDestroy(stream);
+	return ss.str();
 }
 Eigen::MatrixXd KingOfMonsters::_mySparse::_solve0(_myLLT* LLT, _mySparse* mat)
 {
@@ -3554,10 +3661,10 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu_omp(KingOfMonsters::cuda* cud
 	return sss.str();
 }
 
-void KingOfMonsters::_mySparse::_solveI_gpu(KingOfMonsters::cuda* cuda, _mySparse* ret)
+std::string KingOfMonsters::_mySparse::_solveI_gpu(KingOfMonsters::cuda* cuda, _mySparse* ret)
 {
 	//this->_freeze();
-
+	std::stringstream ss;
 	int N = _dmat.cols();// __c;
 	/*if (ret->__r == 0)
 	{
@@ -3577,48 +3684,64 @@ void KingOfMonsters::_mySparse::_solveI_gpu(KingOfMonsters::cuda* cuda, _mySpars
 	ret->_dmat.setZero(N, N);
 	//ret->_tmp.setZero(N, N);
 	//initidentiy(cuda, N);
-	if (!cuda->valid())return;
+	if (!cuda->valid())return ss.str();
 
 	int ii = cuda->fastest();
 	auto solver = cuda->solver(ii, 0);
 	//cudaStream_t stream = streams[ii];
-	//cusolverDnSetStream(solver, stream);
+	cusolverDnSetStream(solver, cuda->__streams(cuda->fastest(), 0));
 	cudaSetDevice(ii);
 	double* m_gpu = cuda->work_M(ii);
 
-	cudaMemcpyAsync(m_gpu, _dmat.data(), sizeof(double) * N * N, cudaMemcpyHostToDevice, cuda->__streams(cuda->fastest(), 0));
+	auto err=cudaMemcpyAsync(m_gpu, _dmat.data(), sizeof(double) * N * N, cudaMemcpyHostToDevice, cuda->__streams(cuda->fastest(), 0));
+	ss << "," << err;
 	double* work;
 	int work_size;
 	int work_size1 = 0;
 	int work_size2 = 0;
-	cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, &work_size1);
-	cusolverDnDpotri_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, &work_size2);
+	auto err2=cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, &work_size1);
+	ss << "," << err2;
+	err2=cusolverDnDpotri_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, &work_size2);
+	ss << "," << err2;
 	work_size = N * N;// std::max(work_size1, work_size2);
-	work = cuda->work(work_size, ii, cuda->__streams(cuda->fastest(), 1));
+	work = cuda->work(work_size, ii, cuda->__streams(cuda->fastest(), 0));
+	//cudaMalloc(&work, work_size1 * sizeof(double));
 	//cudaMallocAsync(&work, sizeof(double) * work_size, stream);
-	cudaMemset(work, 0, sizeof(double) * work_size1);
+	cudaDeviceSynchronize();
+	err=cudaMemset(work, 0, sizeof(double) * work_size1);
+	ss << "," << err;
+	cudaDeviceSynchronize();
+	err = cudaGetLastError();
+	ss << "," << err;
+	ss << "," << work_size << "," << work_size1 << "," << work_size2;
 	int* devInfo = cuda->info(ii);
 
-	cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, work, work_size1, devInfo);
+	err2=cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, work, work_size1, devInfo);
+	ss << "," << err2;
 	double* work2 = cuda->work_rhs(ii);
 	//cudaMalloc(&work2, sizeof(double) * work_size2);
-	cudaMemset(work2, 0, sizeof(double) * work_size2);
-	cusolverDnDpotri(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, work2, work_size2, devInfo);
+	err=cudaMemset(work2, 0, sizeof(double) * work_size2);
+	ss << "," << err;
+	err2=cusolverDnDpotri(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, work2, work_size2, devInfo);
+	ss << "," << err2;
 	//cudaFree(work2);
 
-	cudaMemcpy(ret->_dmat.data(), m_gpu, sizeof(double) * N * N, cudaMemcpyDeviceToHost);
+	err=cudaMemcpy(ret->_dmat.data(), m_gpu, sizeof(double) * N * N, cudaMemcpyDeviceToHost);
+	ss << "," << err2;
 	cudaDeviceSynchronize();
-
+	//cudaFree(work);
+	ss << "sum" << ret->_dmat.sum();
 	ret->_dmat.triangularView<Eigen::Upper>() = ret->_dmat.triangularView<Eigen::Lower>().transpose();
-/*#pragma omp parallel for
-	for (int i = 0; i < N; i++)
+	ss << "sum2" << ret->_dmat.sum();
+	/*auto llt = ret->_dmat.llt();
+	if(llt.info()== Eigen::NumericalIssue)
 	{
-		for (int j = 0; j < i; j++)
-		{
-			ret_dmat(j, i) = ret_dmat(i, j);
-		}
+		ss << "possibly non poositive definite matrix";
+	}
+	else {
+		ss << "positive deinite";
 	}*/
-
+	return ss.str();
 }
 
 void KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, _mySparse* mat, _mySparse* ret)
@@ -3662,7 +3785,8 @@ void KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, _mySpars
 	cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, &work_size);
 
 	// --- CUDA POTRF execution	
-	cudaMalloc(&work, work_size * sizeof(double));
+	work = cuda->work(work_size, cuda->fastest());
+	//cudaMalloc(&work, work_size * sizeof(double));
 	auto now = std::chrono::high_resolution_clock::now();
 	cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, work, work_size, devInfo_on_gpu);
 	int devInfo_on_cpu = 0;
@@ -3673,7 +3797,7 @@ void KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, _mySpars
 		return;
 	}
 	cudaMemcpy(_dmat.data(), gpu_matrix, N * N * sizeof(double), cudaMemcpyDeviceToHost);
-	cudaFree(work);
+	//cudaFree(work);
 	cudaFree(devInfo_on_gpu);
 	bool exit = false;
 
