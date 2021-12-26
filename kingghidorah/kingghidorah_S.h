@@ -1101,14 +1101,10 @@ namespace KingOfMonsters {
 						for (int j = 0; j < _nNode; j++) {
 							double val = 0;
 							for (auto const& k : sss) {
-								if (k == 2)
 								{
-									val *= 2.0;
-								}
-								else {
 									//double tmp = ;
-										val += _ref->star2[k] * (_ref->d2[_ref->_star[k]][i] - Gammaijk[((_ref->_star[k]) << 1) + 0] * _ref->d1[0][i] - Gammaijk[((_ref->_star[k]) << 1) + 1] * _ref->d1[1][i]) *
-										(_ref->d2[k][j] - Gammaijk[((k) << 1) + 0] * _ref->d1[0][j] - Gammaijk[((k) << 1) + 1] * _ref->d1[1][j]);
+									val += _ref->star2[k] * (_ref->d2[_ref->_star[k]][i] - Gammaijk[((_ref->_star[k]) << 1) + 0] * _ref->d1[0][i] - Gammaijk[((_ref->_star[k]) << 1) + 1] * _ref->d1[1][i]) *
+									(_ref->d2[k][j] - Gammaijk[((k) << 1) + 0] * _ref->d1[0][j] - Gammaijk[((k) << 1) + 1] * _ref->d1[1][j]);
 								}
 							}
 							*pptr = val;
@@ -1120,6 +1116,7 @@ namespace KingOfMonsters {
 				pptr = &_ref->__mat[0];
 				pptr1 = &_ref->buf_phi[0];
 				static const int sss[4]{ 1,2,0,3 };
+				val3 = 0;
 				for (int i = 0; i < _nNode; i++)
 				{
 					pptr2 = &_ref->buf_z[0];
