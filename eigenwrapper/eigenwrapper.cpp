@@ -505,8 +505,9 @@ double* KingOfMonsters::cuda::work(int N, int device) {
 			cudaSetDevice(device);
 			cudaFree(__work[device]);
 		}
-		cudaMalloc(&__work[device], N * sizeof(double));
-		work_size[device] = N;
+		int _N = (int)N * 1.3;
+		cudaMalloc(&__work[device], _N * sizeof(double));
+		work_size[device] = _N;
 		return __work[device];
 	}
 }
@@ -521,8 +522,9 @@ double* KingOfMonsters::cuda::work(int N, int device, cudaStream_t stream) {
 			cudaSetDevice(device);
 			cudaFree(__work[device]);
 		}
-		cudaMalloc(&__work[device], N * sizeof(double));
-		work_size[device] = N;
+		int _N = (int)N * 1.3;
+		cudaMalloc(&__work[device], _N * sizeof(double));
+		work_size[device] = _N;
 		return __work[device];
 	}
 }
@@ -3703,7 +3705,7 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu(KingOfMonsters::cuda* cuda, _
 	ss << "," << err2;
 	err2=cusolverDnDpotri_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, &work_size2);
 	ss << "," << err2;
-	work_size = N * N;// std::max(work_size1, work_size2);
+	work_size = std::max(work_size1, work_size2);
 	work = cuda->work(work_size, ii, cuda->__streams(cuda->fastest(), 0));
 	//cudaMalloc(&work, work_size1 * sizeof(double));
 	//cudaMallocAsync(&work, sizeof(double) * work_size, stream);
