@@ -322,9 +322,11 @@ namespace KingOfMonsters {
 			vec->_arr->__v.applyOnTheLeft(this->p->perm.transpose());
 		}
 	};
+	
 	public ref class mySparse {
 	public:
 		_mySparse* dat = 0;
+		
 		myDoubleArray^ contract()
 		{
 			myDoubleArray^ vec = gcnew myDoubleArray(this->dat->_mat[0].cols());
@@ -943,6 +945,22 @@ namespace KingOfMonsters {
 				}
 			}
 			return str;
+		}
+	};
+	public ref class helper {
+	public:
+		static array<double>^ computeeigen(mySparse^ i1, mySparse^ i2, mySparse^ t1, mySparse^ t2)
+		{
+			Eigen::VectorXcd ff=_mySparse::computeeigen(i1->dat, i2->dat, t1->dat, t2->dat);
+
+			
+			array<double>^ ret = gcnew array<double>(ff.size());
+			for (int i = 0; i < ff.size(); i++)
+			{
+				ret[i] = ff[i].real();
+			}
+			return ret;
+			//auto vv = mat.eigenvalues();
 		}
 	};
 }

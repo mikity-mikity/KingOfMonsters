@@ -1262,50 +1262,36 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 				}*/
 				//(*e)[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
 //#pragma omp critical
-				{
-
-					e2[_ii] = this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
-					/*index[_ii].resize(e2[_ii].nonZeros());
+				
 					if (_map == 0)
 					{
+						e2[_ii] = this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
+						(*e)[_ii] += e2[_ii];
 					}
 					else {
+						auto cc = coeff[ii].asDiagonal();
+						/*for (int k = 0; k < mm; ++k) {
+							for (Eigen::SparseMatrix<double, Eigen::ColMajor>::InnerIterator it((*e)[_ii], k); it; ++it) {
+								double val = this->_mat[ii].col(it.row()).dot( (cc * this->_mat[ii].col(it.col())));
+								it.valueRef() += val;
+							}
+						}*/
+						e2[_ii] = this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
 						if (e2[_ii].nonZeros() > 0)
 						{
-							int count = 0;
-							for (int k = 0; k < nn; ++k) {
+							//int* ptr = &index[_ii][0];
+							for (int k = 0; k < mm; ++k) {
 								for (Eigen::SparseMatrix<double, Eigen::ColMajor>::InnerIterator it(e2[_ii], k); it; ++it) {
 									//e[0].coeffRef(it.row(), it.col()) += it.value();
-									index[_ii][count] = (*_map)[it.row() * nn + it.col()];
-									count++;
+									*((*e)[_ii].valuePtr() + (*_map)[it.row() * mm + it.col()]) += it.value();
+									//ptr++;
 								}
 							}
 						}
 						//e[_ii].makeCompressed();
-					}*/
 
-//#pragma omp critical
-					{
-						if (_map == 0)
-						{
-							(*e)[_ii] += e2[_ii];
-						}
-						else {
-							if (e2[_ii].nonZeros() > 0)
-							{
-								//int* ptr = &index[_ii][0];
-								for (int k = 0; k < mm; ++k) {
-									for (Eigen::SparseMatrix<double, Eigen::ColMajor>::InnerIterator it(e2[_ii], k); it; ++it) {
-										//e[0].coeffRef(it.row(), it.col()) += it.value();
-										*((*e)[_ii].valuePtr() + (*_map)[it.row() * mm + it.col()]) += it.value();
-										//ptr++;
-									}
-								}
-							}
-							//e[_ii].makeCompressed();
-						}
 					}
-				}
+				
 			}
 		}
 		//e[_ii].makeCompressed();
@@ -1427,6 +1413,15 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 
 std::string KingOfMonsters::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool sparse)
 {
+	auto prevmat = &dict2[this];
+	auto __index = map[prevmat];
+	int nnz = prevmat->nonZeros();
+	int* cols = new int[nnz];
+	int* rows = new int[nnz];
+	
+	for (int i = 0; i < _nt; i++)
+	{
+	}
 /*	static std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor>> e;
 	static std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor>> tmp;
 	static std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor>> tmp2;
@@ -3063,6 +3058,17 @@ std::string KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, E
 	ss << "norm"<<ret->norm();
 	//cudaStreamDestroy(stream);
 	return ss.str();
+}
+Eigen::VectorXcd KingOfMonsters::_mySparse::computeeigen(_mySparse* i1, _mySparse* i2, _mySparse *f1,_mySparse *f2)
+{
+	auto xX = i1->_dmat * f1->_mat[0];
+	auto Xx = i2->_dmat * f2->_mat[0];
+	auto xXXx = xX * Xx;
+	Eigen::MatrixXd mat;
+	mat = xXXx;
+	Eigen::EigenSolver<Eigen::MatrixXd > eigen(xXXx);
+	return eigen.eigenvalues();
+
 }
 std::string KingOfMonsters::_mySparse::_solveLU_gpu(KingOfMonsters::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int device) {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);

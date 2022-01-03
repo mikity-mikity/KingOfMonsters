@@ -176,6 +176,7 @@ namespace KingOfMonsters {
 		vector<vector<Eigen::Triplet<double>>> dat;
 		//vector<Eigen::Triplet<double>> dat2;
 	public:
+		static Eigen::VectorXcd computeeigen(_mySparse* i1, _mySparse* i2, _mySparse* f1, _mySparse* f2);
 		_mySparse();
 		~_mySparse();
 		void freeze(bool _do);

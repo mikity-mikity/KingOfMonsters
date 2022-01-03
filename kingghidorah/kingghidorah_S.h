@@ -121,25 +121,25 @@ namespace KingOfMonsters {
 		inline void set_def(const int &i, const int &s, const double &val) {
 			def[___ll[i]  + s] = val;
 		}
-		inline double get_node(const int &i, const int &s) {
+		inline double& get_node(const int &i, const int &s) {
 			return node[___ll[i] + s];
 		}
-		inline double get__gi(const int &i, const int &s) {
+		inline double& get__gi(const int &i, const int &s) {
 			return _gi[___ll[i] + s];
 		}
-		inline double get__Gi(const int &i, const int &s) {
+		inline double& get__Gi(const int &i, const int &s) {
 			return _Gi[___ll[i] + s];
 		}
-		inline double get__gij(const int &i, const int &j) {
+		inline double& get__gij(const int &i, const int &j) {
 			return _gij[(i<<1) + j];
 		}
-		inline double get__Gij(const int &i, const int &j) {
+		inline double& get__Gij(const int &i, const int &j) {
 			return _Gij[(i<<1) + j];
 		}
-		inline double get__bij(const int &i, const int &j, const int &s) {
+		inline double& get__bij(const int &i, const int &j, const int &s) {
 			return _bij[___ll[((i<<1) + j)] + s];
 		}
-		inline double get__Gammaijk(const int &i, const int &j, const int &k) {
+		inline double& get__Gammaijk(const int &i, const int &j, const int &k) {
 			return _Gammaijk[(((i<<1) + j) <<1) + k];
 		}
 	public:
@@ -461,7 +461,9 @@ namespace KingOfMonsters {
 		double Gammaijk[8];
 		double _ss[4];
 		double _Sij[4];
+	public:
 		double sc;
+	private:
 		//double* d0;
 		//double* d1[2];
 		//double* d2[4];
@@ -502,41 +504,41 @@ namespace KingOfMonsters {
 			_Sij[2] = component(Gi, &(Gi[3]));
 		}
 
-		inline double get_gi(const int &i, const int &s) {
+		inline double& get_gi(const int &i, const int &s) {
 			return gi[___ll[i] + s];
 		}
-		inline double get_Gi(const int &i, const int &s) {
+		inline double& get_Gi(const int &i, const int &s) {
 			return Gi[___ll[i] + s];
 		}
-		inline double get_gij(const int &i, const int &j) {
+		inline double& get_gij(const int &i, const int &j) {
 			return gij[(i<<1) + j];
 		}
-		inline double get_Gij(const int &i, const int &j) {
+		inline double& get_Gij(const int &i, const int &j) {
 			return Gij[(i<<1) + j];
 		}
-		inline double get_bij(const int &i, const int &j, const int &s) {
+		inline double& get_bij(const int &i, const int &j, const int &s) {
 			return bij[___ll[((i << 1) + j)] + s];
 		}
-		inline double get_Gammaijk(const int &i, const int &j, const int &k) {
+		inline double& get_Gammaijk(const int &i, const int &j, const int &k) {
 			return Gammaijk[(((i<<1) + j) <<1)+ k];
 		}
 
-		inline double get_tt0(const int &i, const int &s) {
+		inline double& get_tt0(const int &i, const int &s) {
 			return _ref->tt0[i][s];
 		}
-		inline double get_hh0(const int &i, const int &s) {
+		inline double& get_hh0(const int &i, const int &s) {
 			return _ref->hh0[i][s];
 		}
-		inline double get_tt1(const int &i, const int &j, const int &s) {
+		inline double& get_tt1(const int &i, const int &j, const int &s) {
 			return _ref->tt1[(i<<1) + j][s];
 		}
-		inline double get_hh1(const int &i, const int &j, const int &s) {
+		inline double& get_hh1(const int &i, const int &j, const int &s) {
 			return _ref->hh1[(i<<1) + j][s];
 		}
-		inline double get_tt2(const int &i, const int &j, const int &k, const int &s) {
+		inline double& get_tt2(const int &i, const int &j, const int &k, const int &s) {
 			return _ref->tt2[(((i<<1) + j) <<1) + k][s];
 		}
-		inline double get_hh2(const int &i, const int &j, const int &k, const int &s) {
+		inline double& get_hh2(const int &i, const int &j, const int &k, const int &s) {
 			return _ref->hh2[(((i<<1) + j) <<1) + k][s];
 		}
 
@@ -762,7 +764,7 @@ namespace KingOfMonsters {
 					for (int j = 0; j < 2; j++)
 					{
 						for (int k = 0; k < dim[j]; k++) {
-							_ref->hh1[m * 2 + j][k] = __hh1(m, j, k);
+							_ref->hh1[(m<<1) + j][k] = __hh1(m, j, k);
 						}
 					}
 				}
@@ -1091,11 +1093,12 @@ namespace KingOfMonsters {
 					pptr2++;
 				}
 				this->phi = val;*/
+				static const int sss[4]{ 1,2,0,3 };
 				if (_ref->__mat == 0)
 				{
 					_ref->__mat = new double[_nNode * _nNode];
 					pptr = &_ref->__mat[0];
-					static const int sss[4]{ 1,2,0,3 };
+					
 					for (int i = 0; i < _nNode; i++)
 					{
 						for (int j = 0; j < _nNode; j++) {
@@ -1115,7 +1118,6 @@ namespace KingOfMonsters {
 	
 				pptr = &_ref->__mat[0];
 				pptr1 = &_ref->buf_phi[0];
-				static const int sss[4]{ 1,2,0,3 };
 				val3 = 0;
 				for (int i = 0; i < _nNode; i++)
 				{
@@ -2614,13 +2616,13 @@ namespace KingOfMonsters {
 
 			double _val4 = 0;
 			
-			for(int l=0;l<2;l++)
+			for (const auto& l : ll)
 			{
-				for (int m = 0; m < 2; m++)
+				for (const auto& m : ll)
 				{
-					for (int g = 0; g < 2; g++)
+					for (const auto& g : ll)
 					{
-						for (int h= 0; h < 2; h++)
+						for (const auto& h : ll)
 						{
 
 							double A = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(m, l) +2*_mu* _ref->get__Gij(h, m) * _ref->get__Gij(g, l));
@@ -2652,28 +2654,12 @@ namespace KingOfMonsters {
 				for (int j = 0; j < _nNode; j++)
 				{
 					int J = _index[j] * 3;
-					for (int k=0;k<3;k++)
+					for (const auto& k : kk)
 					{
-						for (int k2 = 0; k2 < 3; k2++)
+						for (const auto & k2:kk)
 						{
 							double _val4 = 0;
-							/*for (int l = 0; l<2; l++)
-							{
-								for (int m = 0; m < 2; m++)
-								{
-									for (int g = 0; g < 2; g++)
-									{
-										for (int h = 0; h < 2; h++)
-										{
-											double A = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(m, l) + 2 * _mu * _ref->get__Gij(h, m) * _ref->get__Gij(g, l));
-
-											double FF = (_ref->d1[g][j] * get_gi(h, k2) + _ref->d1[h][j] * get_gi(g, k2));
-											double GG = (_ref->d1[l][i] * get_gi(m, k) + _ref->d1[m][i] * get_gi(l, k));
-											_val4 += A * FF * GG;
-										}
-									}
-								}
-							}*/
+							
 							_val4 = H(i, k, j, k2, _la, _mu);
 							//_mat.insert(I + k, J + k2) = _val4 * _sc;
 							dat[(i*3+k)*(_nNode*3)+(j*3+k2)]=Eigen::Triplet<double>(I + k, J + k2, _val4 * sc);
@@ -3105,16 +3091,16 @@ public:
 		}
 
 		double bodyF() {
-			double sc = 1.0/__mem->_ref->_refDv/ __mem->_ref->_refDv;
-			return sc*__mem->bodyF;
+			//double sc = 1.0/__mem->_ref->_refDv/ __mem->_ref->_refDv;
+			return __mem->sc *  __mem->bodyF;
 		}
 		double BCF(int l) {
-			double sc = 1.0 / __mem->_ref->_refDv / __mem->_ref->_refDv;
-			return  sc*__mem->BCF[l];
+			//double sc = 1.0 / __mem->_ref->_refDv / __mem->_ref->_refDv;
+			return  __mem->sc *__mem->BCF[l];
 		}
 		double BCF2(int l) {
-			double sc = 1.0 / __mem->_ref->_refDv / __mem->_ref->_refDv;
-			return sc*__mem->BCF2[l];
+			//double sc = 1.0 / __mem->_ref->_refDv / __mem->_ref->_refDv;
+			return __mem->sc *__mem->BCF2[l];
 		}
 		double BCF6(int l) {
 			return __mem->BCF6[l];
