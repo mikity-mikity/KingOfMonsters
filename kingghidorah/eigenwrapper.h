@@ -30,6 +30,7 @@
 #include <vector>
 #include <map>
 //#define EIGEN_DONT_PARALLELIZE
+//#define EIGEN_MALLOC_ALREADY_ALIGNED  0
 //#define EIGEN_DONT_ALIGN
 
 #define MAXDEVICE 4
@@ -37,7 +38,6 @@ using namespace std::chrono;
 using std::vector;
 using std::string;
 
-//#define EIGEN_MALLOC_ALREADY_ALIGNED  0
 //void kernel(double* A, double* work, int N, cudaStream_t stream);
 void kernel(double* value, int* row, int* col, int N, int M, double* value2, int* index, cudaStream_t stream);
 namespace KingOfMonsters {
