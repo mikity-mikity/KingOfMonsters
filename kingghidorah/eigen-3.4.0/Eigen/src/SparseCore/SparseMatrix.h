@@ -1056,7 +1056,7 @@ void set_from_triplets(const InputIterator& begin, const InputIterator& end, Spa
       trMat.insertBackUncompressed(it->row(),it->col()) = it->value();
 
     // pass 3:
-    //trMat.collapseDuplicates(dup_func);
+    trMat.collapseDuplicates(dup_func);
   }
 
   // pass 4: transposed copy -> implicit sorting
