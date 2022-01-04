@@ -19,6 +19,10 @@ namespace KingOfMonsters {
 		_myDoubleArray *_arr=0;
 		int _N = 0;
 	public:
+		double dot(myDoubleArray^ v)
+		{
+			return this->_arr->__v.dot(v->_arr->__v);
+		}
 		myDoubleArray^ subVector(int i, int N)
 		{
 			myDoubleArray^ ret = gcnew myDoubleArray(N);
