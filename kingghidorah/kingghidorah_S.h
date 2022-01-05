@@ -1621,7 +1621,7 @@ namespace KingOfMonsters {
 			return 0.5*(_Sij[0] * _ref->B[0][e] + 2 * _Sij[1] * _ref->B[1][e] + _Sij[3] * _ref->B[3][e]) * _ref->refDv;
 		}
 		void F(_mySparse* mat, _mySparse* m,int* index, double sc) {
-			static std::map<_mySparse*, std::vector<Eigen::Triplet<double>>> dict;
+			/*static std::map<_mySparse*, std::vector<Eigen::Triplet<double>>> dict;
 			std::vector<Eigen::Triplet<double>>* dat;
 			if (dict.find(mat)!=dict.end())
 			{
@@ -1641,19 +1641,20 @@ namespace KingOfMonsters {
 				_mat->resize(mat->_mat[0].rows(), mat->_mat[0].cols());
 			}
 			_mat->setZero();
-			_mat->makeCompressed();
+			_mat->makeCompressed();*/
 			for (int i = 0; i < _nNode; i++)
 			{
 				int I = index[i];
 				for (int j = 0; j < _nNode; j++)
 				{
 					int J = index[j];
+					mat->_mat[0].coeffRef(I, J) += F(i, j) * sc;
 					//mat->_mat[0].coeffRef(I, J) += F(i, j) * sc;
-					(*dat)[i + j * _nNode] = Eigen::Triplet<double>(I, J, F(i, j) * sc);
+					//(*dat)[i + j * _nNode] = Eigen::Triplet<double>(I, J, F(i, j) * sc);
 				}
 			}
-			_mat->setFromTriplets(dat->begin(), dat->end());
-			mat->_mat[0] += *_mat;
+			//_mat->setFromTriplets(dat->begin(), dat->end());
+			//mat->_mat[0] += *_mat;
 
 		}
 
@@ -1666,7 +1667,7 @@ namespace KingOfMonsters {
 
 		}
 		void F2(_mySparse* mat, _mySparse* m,int* index,double sc) {
-			static std::map<_mySparse*, std::vector<Eigen::Triplet<double>>> dict;
+			/*static std::map<_mySparse*, std::vector<Eigen::Triplet<double>>> dict;
 			std::vector<Eigen::Triplet<double>>* dat;
 			if (dict.find(mat) != dict.end())
 			{
@@ -1687,19 +1688,19 @@ namespace KingOfMonsters {
 			}
 			_mat->setZero();
 			_mat->makeCompressed();
-
+			*/
 			for (int i = 0; i < _nNode; i++)
 			{
 				int I = index[i];
 				for (int j = 0; j < _nNode; j++)
 				{
 					int J = index[j];
-					(*dat)[i + j * _nNode] = Eigen::Triplet<double>(I, J, F2(i, j) * sc);
-					//mat->_mat[0].coeffRef(I, J) += F2(i, j) * sc;
+					//(*dat)[i + j * _nNode] = Eigen::Triplet<double>(I, J, F2(i, j) * sc);
+					mat->_mat[0].coeffRef(I, J) += F2(i, j) * sc;
 				}
 			}
-			_mat->setFromTriplets(dat->begin(),dat->end());
-			mat->_mat[0] += *_mat;
+			//_mat->setFromTriplets(dat->begin(),dat->end());
+			//mat->_mat[0] += *_mat;
 		}
 		double __F3(int i, int I) {
 			double val = 0;
@@ -2024,7 +2025,7 @@ namespace KingOfMonsters {
 			return _ref->d0[i] * _ref->d0[j] * _ref->_refDv;
 		}
 		void MASS(_mySparse* mat, _mySparse* m,int* index, double sc) {
-			static std::map<_mySparse*, std::vector<Eigen::Triplet<double>>> dict;
+			/*static std::map<_mySparse*, std::vector<Eigen::Triplet<double>>> dict;
 			std::vector<Eigen::Triplet<double>>* dat;
 			if (dict.find(mat) != dict.end())
 			{
@@ -2043,19 +2044,19 @@ namespace KingOfMonsters {
 			}
 			_mat->setZero();
 			_mat->makeCompressed();
-
+			*/
 			for (int i = 0; i < _nNode; i++)
 			{
 				int I = index[i];
 				for (int j = 0; j < _nNode; j++)
 				{
 					int J = index[j];
-					(*dat)[i + j * _nNode] = Eigen::Triplet<double>(I, J, MASS(i, j) * sc);
-					//mat->_mat[0].coeffRef(I, J) += MASS(i, j) * sc;
+					//(*dat)[i + j * _nNode] = Eigen::Triplet<double>(I, J, MASS(i, j) * sc);
+					mat->_mat[0].coeffRef(I, J) += MASS(i, j) * sc;
 				}
 			}
-			_mat->setFromTriplets(dat->begin(), dat->end());
-			mat->_mat[0] += *_mat;
+			//_mat->setFromTriplets(dat->begin(), dat->end());
+			//mat->_mat[0] += *_mat;
 		}
 		double SMOOTH(int I, int J) {
 			double val = 0;
