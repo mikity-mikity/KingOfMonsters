@@ -101,7 +101,7 @@
       <ConformanceMode>false</ConformanceMode>
       <ForceConformanceInForLoopScope>false</ForceConformanceInForLoopScope>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp14</LanguageStandard>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <SupportJustMyCode>true</SupportJustMyCode>
       <AdditionalOptions> /bigobj %(AdditionalOptions)</AdditionalOptions>
