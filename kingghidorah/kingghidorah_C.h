@@ -15,6 +15,7 @@ namespace KingOfMonsters {
 		double* buf_phi = 0;
 		double* buf_b = 0;
 		double* buf_D = 0;
+		double* buf_W = 0;
 
 		double _gi[3];
 		double _Gi[3];
@@ -26,7 +27,7 @@ namespace KingOfMonsters {
 		const double _up[3]{ 0,0,1 };
 	public:
 		double refDv,_refDv;
-		double _x, _y, _z,__z;
+		double _x, _y, _z,__z,w;
 		inline void set_z(double z) {
 			this->_z = z;
 		}
@@ -41,6 +42,7 @@ namespace KingOfMonsters {
 			buf_phi = &buf[6000];
 			buf_b = &buf[8000];
 			buf_D = &buf[10000];
+			buf_W = &buf[12000];
 		}
 		inline void set_node(int i, int s, double val) {
 			node[i * 3 + s] = val;
@@ -50,6 +52,9 @@ namespace KingOfMonsters {
 		}
 		inline void set_buf_phi(int i, double val) {
 			buf_phi[i] = val;
+		}
+		inline void set_buf_W(int i, double val) {
+			buf_W[i] = val;
 		}
 		inline void set_def(int i, int s, double val) {
 			def[i * 3 + s] = val;
@@ -339,21 +344,32 @@ namespace KingOfMonsters {
 				*ptr = _shape(j);
 				ptr++;
 			}
+			_ref->w = 0;
+			double W = 0;
+			for (int j = 0; j < _nNode; j++) {
+				W += d0[j] * _ref->buf_W[j];
+			}
+			_ref->w = W;
+
+			for (int j = 0; j < _nNode; j++) {
+				d0[j]*=_ref->buf_W[j]/_ref->w;
+			}
+
 			ptr = d1;
 			for (int j = 0; j < _nNode; j++) {
-				*ptr = _C(j);
+				*ptr = _ref->buf_W[j] * _C(j) / _ref->w;
 				ptr++;
 			}
 
 			ptr = d2;
 			for (int j = 0; j < _nNode; j++) {
-				*ptr = _D(j);
+				*ptr = _ref->buf_W[j] * _ref->w*_D(j) / _ref->w;
 				ptr++;
 			}
 			ptr = B;
 			for (int j = 0; j < _nNode; j++) {
 				for (int jj = 0; jj < _nNode; jj++) {
-					*ptr = _B(j, jj);
+					*ptr = _ref->buf_W[j] * _ref->buf_W[jj] * _B(j, jj) / _ref->w / _ref->w;
 					ptr++;
 				}
 			}
@@ -1078,7 +1094,7 @@ namespace KingOfMonsters {
 				}
 			}
 		}
-		void update3(int nNode, KingOfMonsters::myDoubleArray^ node, array<double>^ def,bool ignorez) {
+		void update3(int nNode, KingOfMonsters::myDoubleArray^ node, KingOfMonsters::myDoubleArray^ weights, array<double>^ def,bool ignorez) {
 			if (node != nullptr) {
 				for (int i = 0; i < nNode; i++) {
 					int e = i * 3;
@@ -1090,6 +1106,7 @@ namespace KingOfMonsters {
 					else {
 						__mem->set_node(i, 2, 0);
 					}
+					__mem->set_buf_W(i, (weights->_arr->__v)(i));
 				}
 			}
 			if (def != nullptr)
@@ -1107,8 +1124,8 @@ namespace KingOfMonsters {
 				}
 			}
 		}
-		void update3(int nNode, KingOfMonsters::myDoubleArray^ node, array<double>^ def) {
-			update3(nNode, node, def, false);
+		void update3(int nNode, KingOfMonsters::myDoubleArray^ node, KingOfMonsters::myDoubleArray^ weights,array<double>^ def) {
+			update3(nNode, node, weights, def, false);
 		}
 		void update(int nNode, int Dim) {
 			__mem->update(nNode, Dim);

@@ -5,8 +5,6 @@
 using namespace System;
 #include <cstring>
 #include <string>
-//using namespace Alea;
-//using namespace Alea::Parallel;
 using std::vector;
 using std::string;
 #include "mySparseLibrary.h"
@@ -14,7 +12,7 @@ namespace KingOfMonsters {
 	
 	public class _buffer {
 	public:
-		double mem[12000];
+		double mem[14000];
 	};
 	public ref class buffer {
 	public:
@@ -45,6 +43,7 @@ namespace KingOfMonsters {
 		double* buf_phi = 0;
 		double* buf_b = 0;
 		double* buf_D = 0;
+		double* buf_W = 0;
 
 		double _gi[6];
 		double _Gi[6];
@@ -78,6 +77,7 @@ namespace KingOfMonsters {
 		bool initialized=false;
 		double refDv=0,_refDv=0;
 		double _x=0, _y=0, _z=0, __z=0, Z=0, _Z=0;
+		double w = 0;
 		inline void set_z(double &z) {
 			this->_z = z;
 		}
@@ -92,6 +92,7 @@ namespace KingOfMonsters {
 			buf_phi = &buf[6000];
 			buf_b = &buf[8000];
 			buf_D = &buf[10000];
+			buf_W = &buf[12000];
 		}
 		inline void set_node(const int &i, const int &s, const double val) {
 			node[___ll[i] + s] = val;
@@ -107,15 +108,19 @@ namespace KingOfMonsters {
 			//buf_z[i] = val;
 			memcpy(buf_z, ptr, sizeof(double) * N);
 		}
-		inline void set_buf_phi(double* ptr, const int &N) {
+		inline void set_buf_phi(double* ptr, const int& N) {
 			//buf_z[i] = val;
 			memcpy(buf_phi, ptr, sizeof(double) * N);
+		}
+		inline void set_buf_W(double* ptr, const int& N) {
+			//buf_z[i] = val;
+			memcpy(buf_W, ptr, sizeof(double) * N);
 		}
 		inline void set_def(double* ptr, const int &N) {
 			//buf_z[i] = val;
 			memcpy(def, ptr, sizeof(double) * N);
 		}
-		inline void set_buf_phi(const int &i, const double val) {
+		inline void set_buf_phi(const int& i, const double val) {
 			buf_phi[i] = val;
 		}
 		inline void set_def(const int &i, const int &s, const double &val) {
@@ -817,12 +822,25 @@ namespace KingOfMonsters {
 					*ptr2 = _shape(j);
 					ptr2++;
 				}
+				_ref->w = 0;
+				double W = 0;
+				for (int j = 0; j < _nNode; j++) {
+					W += _ref->d0[j] * _ref->buf_W[j];
+				}
+				_ref->w = W;
+
+				for (int i = 0; i < _nNode; i++)
+				{
+					_ref->d0[i] *= _ref->buf_W[i] / _ref->w;
+				}
+
+
 				ptr = _ref->d1;
 				for (auto const& i : ___ee) {
 					ptr2 = *ptr;
 					for (int j = 0; j < _nNode; j++) {
 						//d1[i][j] = _C(i, j);
-						*ptr2 = _C(i, j);
+						*ptr2 =_ref->buf_W[j] * _C(i, j) / _ref->w;
 						ptr2++;
 					}
 					ptr++;
@@ -833,7 +851,7 @@ namespace KingOfMonsters {
 						ptr2 = *ptr;
 						for (int j = 0; j < _nNode; j++) {
 							//d2[i * 2 + ii][j] = _D(i, ii, j);
-							*ptr2 = _D(i, ii, j);
+							*ptr2 = _ref->buf_W[j]*_D(i, ii, j) / _ref->w;
 							ptr2++;
 						}
 						ptr++;
@@ -847,7 +865,7 @@ namespace KingOfMonsters {
 						for (int j = 0; j < _nNode; j++) {
 							for (int jj = 0; jj < _nNode; jj++) {
 								//B[i * 2 + ii][j * _nNode + jj] = _B(i, ii, j, jj);
-								*ptr2 = _B(i, ii, j, jj);
+								*ptr2 = _ref->buf_W[j] * _ref->buf_W[jj] * _B(i, ii, j, jj) / _ref->w / _ref->w;
 								ptr2++;
 							}
 						}
@@ -855,7 +873,7 @@ namespace KingOfMonsters {
 					}
 				}
 			}
-			double X = 0, Y = 0, ZZ = 0;
+			double X = 0, Y = 0, ZZ = 0, W = 0;
 			double *ptr2 = _ref->d0;
 			double* ptr3;
 			ptr3 = _ref->node;
@@ -872,7 +890,7 @@ namespace KingOfMonsters {
 			x = X;
 			y = Y;
 			z = ZZ;
-
+			
 			ZZ = 0;
 			ptr2 = _ref->d0;
 			ptr3 = _ref->buf_z;
@@ -2753,40 +2771,18 @@ public:
 			}*/
 		}
 	}
-	void update3(int nNode, KingOfMonsters::myDoubleArray^ node, KingOfMonsters::myDoubleArray^ def,bool ignoreZ) {
+	void update3(int nNode, KingOfMonsters::myDoubleArray^ node, KingOfMonsters::myDoubleArray^ weights,KingOfMonsters::myDoubleArray^ def,bool ignoreZ) {
 		if (node != nullptr) {
 			__mem->set_node(node->_arr->__v.data(), nNode * 3);
-			/*for (int i = 0; i < nNode; i++) {
-				int e = i * 3;
-				__mem->set_node(i, 0, (*node->_arr)(e + 0));
-				__mem->set_node(i, 1, (*node->_arr)(e + 1));
-				if (!ignoreZ) {
-					__mem->set_node(i, 2, (*node->_arr)(e + 2));
-				}
-				else{
-					__mem->set_node(i, 2, 0);
-				}
-			}*/
+			__mem->set_buf_W(weights->_arr->__v.data(), nNode);
 		}
 		if (def != nullptr)
 		{
-			__mem->set_def(def->_arr->__v.data(), nNode * 3);
-
-			/*for (int i = 0; i < nNode; i++) {
-				int e = i * 3;
-				__mem->set_def(i, 0, def[e + 0]);
-				__mem->set_def(i, 1, def[e + 1]);
-				if (!ignoreZ) {
-					__mem->set_def(i, 2, def[e + 2]);
-				}
-				else {
-					__mem->set_def(i, 2, 0);
-				}
-			}*/
+			__mem->set_def(def->_arr->__v.data(), nNode);
 		}
 	}
-	void update3(int nNode, KingOfMonsters::myDoubleArray^ node, KingOfMonsters::myDoubleArray^  def) {
-		update3(nNode, node, def, false);
+	void update3(int nNode, KingOfMonsters::myDoubleArray^ node, KingOfMonsters::myDoubleArray^ weights, KingOfMonsters::myDoubleArray^  def) {
+		update3(nNode, node, weights,def, false);
 	}
 	void update(int nNode, int uDim, int vDim) {
 		__mem->update(nNode, uDim, vDim);
