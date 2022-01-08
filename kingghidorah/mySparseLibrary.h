@@ -187,6 +187,10 @@ namespace KingOfMonsters {
 		{
 			_arr[i] = val;
 		}
+		int at(int i)
+		{
+			return _arr[i];
+		}
 	};
 	public ref class myCuda {
 	private:
@@ -331,6 +335,16 @@ namespace KingOfMonsters {
 	public:
 		_mySparse* dat = 0;
 		
+		void setFromList(System::Collections::Generic::List<System::Tuple<int, int>^>^ tt)
+		{
+			std::vector<Eigen::Triplet<double>> dat;
+			dat.resize(tt->Count);
+			for (int i = 0; i < tt->Count; i++)
+			{
+				dat[i] = Eigen::Triplet<double>(tt[i]->Item1,tt[i]->Item2,0);
+			}
+			this->dat->_mat[0].setFromTriplets(dat.begin(), dat.end());
+		}
 		myDoubleArray^ contract()
 		{
 			myDoubleArray^ vec = gcnew myDoubleArray(this->dat->_mat[0].cols());
@@ -870,7 +884,14 @@ namespace KingOfMonsters {
 			//this->dat->_mat[0].coeffRef(i, j) += val;
 		}
 		void _set(int i, int j, double val) {
-			this->dat->_mat[0].coeffRef(i,j) = val;
+			this->dat->_mat[0].coeffRef(i, j) = val;
+		}
+		void increaseCapacityBy(int nn)
+		{
+			if (this->dat->_mat[0].data().allocatedSize() - this->dat->_mat[0].nonZeros() < nn)
+			{
+				this->dat->_mat[0].reserve(this->dat->_mat[0].nonZeros() + nn * 2);
+			}
 		}
 		int nonZeros() {
 			return dat->nonzeros();

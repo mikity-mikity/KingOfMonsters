@@ -8,6 +8,9 @@ using namespace System;
 using std::vector;
 using std::string;
 #include "mySparseLibrary.h"
+//#define EIGEN_DONT_PARALLELIZE
+//#define EIGEN_MALLOC_ALREADY_ALIGNED  0
+
 namespace KingOfMonsters {
 	
 	public class _buffer {
@@ -1638,6 +1641,21 @@ namespace KingOfMonsters {
 			int e = i * _nNode + j;
 			return 0.5*(_Sij[0] * _ref->B[0][e] + 2 * _Sij[1] * _ref->B[1][e] + _Sij[3] * _ref->B[3][e]) * _ref->refDv;
 		}
+		void F(_mySparse* mat, int* index, double sc) {		
+			for (int i = 0; i < _nNode; i++)
+			{
+				int I = index[i];
+				for (int j = 0; j < _nNode; j++)
+				{
+					int J = index[j];
+					double val = F(i, j) * sc;
+					mat->_mat[0].coeffRef(i * 3 + 0, j * 3 + 0) += val;
+					mat->_mat[0].coeffRef(i * 3 + 0, j * 3 + 0) += val;
+					mat->_mat[0].coeffRef(i * 3 + 0, j * 3 + 0) += val;
+				}
+			}
+		}
+
 		//stress function L2
 		double F2(int i, int j) {
 			return
@@ -1645,6 +1663,22 @@ namespace KingOfMonsters {
 				(_Sij[0] * (_ref->d2[0][i] - this->_ref->get__Gammaijk(0, 0, 0) * _ref->d1[0][i] - this->_ref->get__Gammaijk(0, 0, 1) * _ref->d1[1][i]) + 2 * _Sij[1] * (_ref->d2[1][i] - this->_ref->get__Gammaijk(0, 1, 0) * _ref->d1[0][i] - this->_ref->get__Gammaijk(0, 1, 1) * _ref->d1[1][i]) + _Sij[3] * (_ref->d2[3][i] - this->_ref->get__Gammaijk(1, 1, 0) * _ref->d1[0][i] - this->_ref->get__Gammaijk(1, 1, 1) * _ref->d1[1][i]))
 				* (_Sij[0] * (_ref->d2[0][j] - this->_ref->get__Gammaijk(0, 0, 0) * _ref->d1[0][j] - this->_ref->get__Gammaijk(0, 0, 1) * _ref->d1[1][j]) + 2 * _Sij[1] * (_ref->d2[1][j] - this->_ref->get__Gammaijk(0, 1, 0) * _ref->d1[0][j] - this->_ref->get__Gammaijk(0, 1, 1) * _ref->d1[1][j]) + _Sij[3] * (_ref->d2[3][j] - this->_ref->get__Gammaijk(1, 1, 0) * _ref->d1[0][j] - this->_ref->get__Gammaijk(1, 1, 1) * _ref->d1[1][j])) * _ref->refDv;// / _ref->refDv / _ref->refDv;
 
+		}
+		std::string F2(_mySparse* mat, int* index,double sc) {
+			Eigen::initParallel();
+			std::stringstream ss;
+			auto start = high_resolution_clock::now();
+
+			for (int i = 0; i < _nNode; i++)
+			{
+				int I = index[i];
+				for (int j = 0; j < _nNode; j++)
+				{
+					int J = index[j];
+					mat->_mat[0].coeffRef(I, J) += F2(i, j) * sc;
+				}
+			}
+			return ss.str();
 		}
 		double __F3(int i, int I) {
 			double val = 0;
@@ -1929,6 +1963,15 @@ namespace KingOfMonsters {
 			return (_Sij[0] * (_ref->d2[0][i] - this->_ref->get__Gammaijk(0, 0, 0) * _ref->d1[0][i] - this->_ref->get__Gammaijk(0, 0, 1) * _ref->d1[1][i]) + 2 * _Sij[1] * (_ref->d2[1][i] - this->_ref->get__Gammaijk(0, 1, 0) * _ref->d1[0][i] - this->_ref->get__Gammaijk(0, 1, 1) * _ref->d1[1][i]) + _Sij[3] * (_ref->d2[3][i] - this->_ref->get__Gammaijk(1, 1, 0) * _ref->d1[0][i] - this->_ref->get__Gammaijk(1, 1, 1) * _ref->d1[1][i])) * _ref->refDv;// / _ref->refDv / _ref->refDv;
 
 		}
+		void G3(_myDoubleArray * vec, int* index, double sc) {
+			for (int i = 0; i < _nNode; i++)
+			{
+				int I = index[i];
+				vec->__v.coeffRef(I) += G3(i) * sc;
+			}
+
+		}
+
 		//Hessian
 		double _B(int i, int j) {
 			double val = 0;
@@ -1958,6 +2001,18 @@ namespace KingOfMonsters {
 		}
 		double MASS(int i, int j) {
 			return _ref->d0[i] * _ref->d0[j] * _ref->_refDv;
+		}
+		void MASS(_mySparse* mat, int* index, double sc) {			
+			for (int i = 0; i < _nNode; i++)
+			{
+				int I = index[i];
+				for (int j = 0; j < _nNode; j++)
+				{
+					int J = index[j];
+					//(*dat)[i + j * _nNode] = Eigen::Triplet<double>(I, J, MASS(i, j) * sc);
+					mat->_mat[0].coeffRef(I, J) += MASS(i, j) * sc;
+				}
+			}			
 		}
 		double SMOOTH(int I, int J) {
 			double val = 0;
@@ -2456,12 +2511,23 @@ namespace KingOfMonsters {
 		{
 			const static int kk[3]{ 0,1,2 };
 			const static int ll[2]{ 0,1 };
-			//double _sc = sc * _ref->refDv;
-			//Eigen::SparseMatrix<double, Eigen::ColMajor> _mat(mat->_mat[0].rows(), mat->_mat[0].cols());
-			std::vector<Eigen::Triplet<double>> dat;//
-			//dat.resize(_nNode * 3 * _nNode * 3);
-			//dat.clear();
-			dat.reserve(_nNode * 3 * _nNode * 3);
+			//static std::map<_mySparse*, std::vector<Eigen::Triplet<double>>> dict;
+			std::vector<Eigen::Triplet<double>>* dat;
+			std::vector<Eigen::Triplet<double>> _dat;
+			dat = &_dat;
+			/*if (dict.find(mat) != dict.end())
+			{
+				dat = &dict[M];
+			}
+			else {
+				std::vector<Eigen::Triplet<double>> _dat;
+				dict[mat] = _dat;
+				dat = &dict[mat];
+
+			}*/
+			//dat->resize(_nNode * 3 * _nNode * 3);
+			dat->clear();
+			dat->reserve(_nNode * 3 * _nNode * 3);
 			Eigen::SparseMatrix<double, Eigen::ColMajor>* _mat = &mat->_mat[0];
 			_mat->setZero();
 			_mat->makeCompressed();
@@ -2497,12 +2563,12 @@ namespace KingOfMonsters {
 							_val3 = K(i, k, j, k2, _la, _mu);
 							//dat[(i*3+k) * (_nNode * 3) + (j*3 + k2)] = Eigen::Triplet<double>(I + k, J + k2, _val3 * sc);
 
-							dat.push_back(Eigen::Triplet<double>(I+k, J+k2, _val3 * __sc));
+							dat->push_back(Eigen::Triplet<double>(I+k, J+k2, _val3 * __sc));
 						}
 					}
 				}
 			}
-			_mat->setFromTriplets(dat.begin(),dat.end());
+			_mat->setFromTriplets(dat->begin(),dat->end());
 			M->_mat[0] += *_mat;
 			//_mat->makeCompressed();
 			//_mat->finalize();
@@ -2658,10 +2724,24 @@ namespace KingOfMonsters {
 		{
 			const static int kk[3]{ 0,1,2 };
 			const static int ll[2]{ 0,1 };
-			//double _sc = sc * _ref->refDv * 0.25;
-			std::vector<Eigen::Triplet<double>> dat;//
-			dat.resize(_nNode * 3 * _nNode * 3);
-			//dat.clear();
+			//static std::map<_mySparse*, std::vector<Eigen::Triplet<double>>> dict;
+			std::vector<Eigen::Triplet<double>>* dat;
+			std::vector<Eigen::Triplet<double>> _dat;
+			dat = &_dat;
+			
+			/*if (dict.find(mat) != dict.end())
+			{
+				dat = &dict[M];
+			}
+			else {
+				std::vector<Eigen::Triplet<double>> _dat;
+				dict[mat] = _dat;
+				dat = &dict[mat];
+
+			}*/
+			//dat.resize(_nNode * 3 * _nNode * 3);
+			dat->resize(_nNode * 3 * _nNode * 3);
+
 			Eigen::SparseMatrix<double,Eigen::ColMajor>*_mat = &mat->_mat[0];
 			_mat->setZero();
 			_mat->makeCompressed();
@@ -2680,13 +2760,13 @@ namespace KingOfMonsters {
 							
 							_val4 = H(i, k, j, k2, _la, _mu);
 							//_mat.insert(I + k, J + k2) = _val4 * _sc;
-							dat[(i*3+k)*(_nNode*3)+(j*3+k2)]=Eigen::Triplet<double>(I + k, J + k2, _val4 * sc);
+							(*dat)[(i*3+k)*(_nNode*3)+(j*3+k2)]=Eigen::Triplet<double>(I + k, J + k2, _val4 * sc);
 							//mat->_plus(I+k, J+k2, _val4 * _sc);
 						}
 					}
 				}
 			}
-			_mat->setFromTriplets(dat.begin(),dat.end());
+			_mat->setFromTriplets(dat->begin(),dat->end());
 			M->_mat[0] += *_mat;
 			//_mat->makeCompressed();
 			//_mat->finalize();
@@ -2798,6 +2878,7 @@ public:
 	double refDv;
 	double _refDv;
 	double dv;
+	double _dv;
 public:
 	double orient(memS^ another) {
 		double dot = another->__mem->N[0] * this->__mem->N[0] + another->__mem->N[1] * this->__mem->N[1] + another->__mem->N[2] * this->__mem->N[2];
@@ -2821,6 +2902,10 @@ public:
 	double G3(int i) {
 		return __mem->G3(i);
 	}
+	void G3(myDoubleArray^ vec, myIntArray^ index, double sc) {
+		__mem->G3(vec->_arr, index->data(), sc);
+	}
+
 	//body force projected area
 	double G4(int i) {
 		return __mem->G4(i);
@@ -2843,6 +2928,10 @@ public:
 	double MASS(int i, int j) {
 		return __mem->MASS(i, j);
 	}
+	void MASS(mySparse^ mat, myIntArray^ index, double sc) {
+		__mem->MASS(mat->dat,index->data(), sc);
+	}
+
 	double SMOOTH(int i, int j) {
 		return __mem->SMOOTH(i, j);
 	}
@@ -2966,9 +3055,16 @@ public:
 		double F(int i,int j) {
 			return __mem->F(i,j);
 		}
+		void F(mySparse^ mat,myIntArray^ index, double sc) {
+			__mem->F(mat->dat,index->data(), sc);
+		}
 		//least squares
 		double F2(int i, int j) {
 			return __mem->F2(i, j);
+		}
+		System::String^ F2(mySparse^ mat,myIntArray^ index,double sc) {
+			auto str=__mem->F2(mat->dat, index->data(), sc);
+			return gcnew System::String(str.c_str());
 		}
 		double F3(int i, int I) {
 			return __mem->F3(i, I);
@@ -3113,6 +3209,7 @@ public:
 			Z = __mem->Z;
 			phi = __mem->phi;
 			dv = __mem->dv;
+			_dv = __mem->_dv;
 			_refDv = __mem->_dv;
 			refDv = __mem->dv;
 		}
