@@ -55,14 +55,14 @@ namespace KingOfMonsters {
 		cublasHandle_t cublas_handle[MAXDEVICE];
 		double* __mgM[MAXDEVICE];
 		double* __mgrhs[MAXDEVICE];
-		double* __mgM2 = 0;
-		double* __mgrhs2 = 0;
+		//double* __mgM2 = 0;
+		//double* __mgrhs2 = 0;
 		double* __mgC[MAXDEVICE];
 		double* __work[MAXDEVICE];
 		int work_size[MAXDEVICE];
-		double* _array_d_A[MAXDEVICE];
-		double* _array_d_B[MAXDEVICE];
-		double* _array_d_work[MAXDEVICE];
+		//double* _array_d_A[MAXDEVICE];
+		//double* _array_d_B[MAXDEVICE];
+		//double* _array_d_work[MAXDEVICE];
 		int* __info[MAXDEVICE];
 		int _deviceList[MAXDEVICE];
 		//double* _L=0;
@@ -73,13 +73,13 @@ namespace KingOfMonsters {
 		std::vector< std::vector<cudaStream_t>> _streams;
 
 	public:
-		cudaLibMgMatrixDesc_t descrA;
-		cudaLibMgGrid_t gridA;
-		cusolverMgGridMapping_t mapping = CUDALIBMG_GRID_MAPPING_COL_MAJOR;
+		//cudaLibMgMatrixDesc_t descrA;
+		//cudaLibMgGrid_t gridA;
+		//cusolverMgGridMapping_t mapping = CUDALIBMG_GRID_MAPPING_COL_MAJOR;
 
-		int prevT_A = 0;
-		int prevN = 0;
-		int prevwn = 0;
+		//int prevT_A = 0;
+		//int prevN = 0;
+		//int prevwn = 0;
 		static void disable();
 		cuda(int N);
 		~cuda();
@@ -93,8 +93,8 @@ namespace KingOfMonsters {
 		int* info(int i);
 		double* work_M(int i);
 		double* work_rhs(int i);
-		double* work_M2();
-		double* work_rhs2();
+		//double* work_M2();
+		//double* work_rhs2();
 		double* work_C(int i);
 		double* work(int N, int i);
 		double* work(int N, int i, cudaStream_t stream);
@@ -102,10 +102,10 @@ namespace KingOfMonsters {
 		int& fastest();
 		void dispose();
 		cudaStream_t& __streams(int i, int j);
-		bool canpeeraccess(int i, int j);
-		double** array_d_A();
-		double** array_d_B();
-		double** array_d_work();
+		//bool canpeeraccess(int i, int j);
+		//double** array_d_A();
+		//double** array_d_B();
+		//double** array_d_work();
 		int* devicelist();
 	};
 

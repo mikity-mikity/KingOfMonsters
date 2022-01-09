@@ -40,9 +40,9 @@ KingOfMonsters::cuda::cuda(int N) {
 	I.resize(0, 0);
 	omp_set_dynamic(false);
 	//omp_set_num_threads(16);
-	prevT_A = 0;
-	prevN = 0;
-	prevwn = 0;
+	//prevT_A = 0;
+	//prevN = 0;
+	//prevwn = 0;
 	CUresult res;
 	res = cuInit(0);
 	previdentiyN = 0;
@@ -129,8 +129,8 @@ KingOfMonsters::cuda::cuda(int N) {
 	if (!initialized || failed)return;
 
 
-	__mgM2 = 0;
-	__mgrhs2 = 0;
+	//__mgM2 = 0;
+	//__mgrhs2 = 0;
 
 	for (int i = 0; i < MAXDEVICE; i++)
 	{
@@ -148,11 +148,11 @@ KingOfMonsters::cuda::cuda(int N) {
 	{
 		cudaSetDevice(ii);
 		cudaMalloc(&__mgM[ii], sizeof(double) * _N * _N);
-		cudaMalloc(&__mgrhs[ii], sizeof(double) * _N * _N);
-		cudaMalloc(&__mgC[ii], sizeof(double) * _N * _N);
+		cudaMalloc(&__mgrhs[ii], sizeof(double) * _N * _N/2);
+		cudaMalloc(&__mgC[ii], sizeof(double) * _N * _N/2);
 	}
-	cudaMallocHost(&__mgM2, sizeof(double) * _N * _N);
-	cudaMallocHost(&__mgrhs2, sizeof(double) * _N * _N);
+	//cudaMallocHost(&__mgM2, sizeof(double) * _N * _N);
+	//cudaMallocHost(&__mgrhs2, sizeof(double) * _N * _N);
 
 	//for (int ii = 0; ii < count(); ii++)
 	{
@@ -199,23 +199,23 @@ KingOfMonsters::cuda::cuda(int N) {
 		cudaFree(__mgrhs[ii]);
 		cudaFree(__mgC[ii]);
 	}
-	cudaFreeHost(__mgM2);
-	cudaFreeHost(__mgrhs2);
+	//cudaFreeHost(__mgM2);
+	//cudaFreeHost(__mgrhs2);
 	for (int ii = 0; ii < count(); ii++)
 	{
 		cudaSetDevice(ii);
 		cudaMalloc(&__mgM[ii], sizeof(double) * N * N);
-		cudaMalloc(&__mgrhs[ii], sizeof(double) * N * N);
-		cudaMalloc(&__mgC[ii], sizeof(double) * N * N);
+		cudaMalloc(&__mgrhs[ii], sizeof(double) * N * N/2);
+		cudaMalloc(&__mgC[ii], sizeof(double) * N * N/2);
 		cudaMalloc(&__info[ii], sizeof(int) * 10);
 	}
-	cudaMallocHost(&__mgM2, sizeof(double) * N * N);
-	cudaMallocHost(&__mgrhs2, sizeof(double) * N * N);
+	//cudaMallocHost(&__mgM2, sizeof(double) * N * N);
+	//cudaMallocHost(&__mgrhs2, sizeof(double) * N * N);
 	for (int i = 0; i < MAXDEVICE; i++)
 	{
-		_array_d_A[i] = 0;// = new double* [count()];
-		_array_d_B[i] = 0;
-		_array_d_work[i] = 0;
+		//_array_d_A[i] = 0;// = new double* [count()];
+		//_array_d_B[i] = 0;
+		//_array_d_work[i] = 0;
 	}
 
 
@@ -322,6 +322,7 @@ int* KingOfMonsters::cuda::devicelist()
 {
 	return _deviceList;
 }
+/*
 double** KingOfMonsters::cuda::array_d_A()
 {
 	return this->_array_d_A;
@@ -339,7 +340,7 @@ bool KingOfMonsters::cuda::canpeeraccess(int i, int j)
 	int canAccessPeer = 0;
 	cudaDeviceCanAccessPeer(&canAccessPeer, i, j);
 	return canAccessPeer;
-}
+}*/
 /*double* KingOfMonsters::cuda::L()
 {
 	return this->_L;
@@ -355,7 +356,7 @@ cudaStream_t& KingOfMonsters::cuda::__streams(int i, int j)
 void KingOfMonsters::cuda::dispose() {
 	if (valid())
 	{
-		if (prevwn != 0)
+		/*if (prevwn != 0)
 		{
 			workspaceFree(_count, _deviceList, (void**)array_d_work());
 			prevwn = 0;
@@ -368,7 +369,7 @@ void KingOfMonsters::cuda::dispose() {
 				prevN,
 				prevT_A,
 				(void**)array_d_A());
-		}
+		}*/
 		for (int ii = 0; ii < _count; ii++)
 		{
 			cudaSetDevice(ii);
@@ -379,7 +380,7 @@ void KingOfMonsters::cuda::dispose() {
 		/*if (_L != 0)
 			delete[] _L;
 		_L = 0;*/
-		if (prevN != 0)
+		/*if (prevN != 0)
 			destroyMat(
 				_count,
 				_deviceList,
@@ -406,7 +407,7 @@ void KingOfMonsters::cuda::dispose() {
 			cudaFree(__mgrhs2);
 		}
 		__mgM2 = 0;
-		__mgrhs2 = 0;
+		__mgrhs2 = 0;*/
 		for (int i = 0; i < count(); i++)
 		{
 			cudaSetDevice(i);
@@ -484,12 +485,12 @@ double* KingOfMonsters::cuda::work_M(int i) {
 double* KingOfMonsters::cuda::work_rhs(int i) {
 	return __mgrhs[i];
 }
-double* KingOfMonsters::cuda::work_M2() {
+/*double* KingOfMonsters::cuda::work_M2() {
 	return __mgM2;
 }
 double* KingOfMonsters::cuda::work_rhs2() {
 	return __mgrhs2;
-}
+}*/
 double* KingOfMonsters::cuda::work_C(int i) {
 	return __mgC[i];
 }
@@ -551,13 +552,13 @@ string  KingOfMonsters::cuda::device_name() {
 		if (count() > 1)
 		{
 			ss << "multiple GPUs available!" << std::endl;
-			for (int i = 0; i < count(); i++)
+			/*for (int i = 0; i < count(); i++)
 			{
 				for (int j = i + 1; j < count(); j++)
 				{
 					ss << "peer access" << "(" << i << "," << j << ")" << canpeeraccess(i, j) << std::endl;
 				}
-			}
+			}*/
 
 		}
 		return ss.str();

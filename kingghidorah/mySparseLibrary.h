@@ -237,10 +237,10 @@ namespace KingOfMonsters {
 		int count() {
 			return _cuda->count();
 		}
-		bool canpeeraccess(int i, int j)
+		/*bool canpeeraccess(int i, int j)
 		{
 			return _cuda->canpeeraccess(i, j);
-		}
+		}*/
 	};
 	public ref class myLLT {
 	public:
