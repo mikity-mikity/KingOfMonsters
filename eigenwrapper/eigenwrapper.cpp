@@ -2851,7 +2851,7 @@ void KingOfMonsters::_mySparse::Atb(double* ptr, double* ptr2, double sc,int N, 
 	int job = 0;
 	int ss = _nt / _mt / 4;
 	if (ss == 0)ss = 1;
-#pragma omp parallel for
+//#pragma omp parallel for
 	for (int ii = 0; ii < _mt; ii++)
 	{
 
@@ -2862,7 +2862,7 @@ void KingOfMonsters::_mySparse::Atb(double* ptr, double* ptr2, double sc,int N, 
 		tmp.setZero();
 		for (int kk = 0; kk < 200; kk++)
 		{
-#pragma omp critical
+//#pragma omp critical
 			{
 				S = job;
 				E = S + ss;
@@ -2885,20 +2885,22 @@ void KingOfMonsters::_mySparse::Atb(double* ptr, double* ptr2, double sc,int N, 
 				Eigen::Map<Eigen::VectorXd> b2(ptr2 + offset, ee);
 				if (this->_mat[i].rows() > 0 && this->_mat[i].cols() > 0)
 				{
-					tmp += _mat[i].transpose() * coeff[i].asDiagonal() * (b + sc * b2);
+					
+					tmp += _mat[i].transpose() * coeff[i].asDiagonal() * (b +sc * b2);
+					
 				}
 				offset += ee;
 			}
 		}
-#pragma omp critical
+//#pragma omp critical
 		{
 			*c += tmp;// _mat[ii].transpose()* coeff[ii].asDiagonal()* (b + sc * b2);
 		}
-
+		//double sum = (*c).sum();
 		//offset += ee;
 	}
 	//return ret;
-}
+ }
 Eigen::VectorXd KingOfMonsters::_mySparse::Atb(double* ptr, int N)
 {
 	Eigen::VectorXd ret(this->cols());
