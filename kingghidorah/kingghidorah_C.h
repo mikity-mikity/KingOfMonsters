@@ -352,24 +352,27 @@ namespace KingOfMonsters {
 			_ref->w = W;
 
 			for (int j = 0; j < _nNode; j++) {
-				d0[j]*=_ref->buf_W[j]/_ref->w;
+				//d0[j]*=_ref->buf_W[j]/_ref->w;
 			}
 
 			ptr = d1;
 			for (int j = 0; j < _nNode; j++) {
-				*ptr = _ref->buf_W[j] * _C(j) / _ref->w;
+				//*ptr = _ref->buf_W[j] * _C(j) / _ref->w;
+				*ptr = _C(j);
 				ptr++;
 			}
 
 			ptr = d2;
 			for (int j = 0; j < _nNode; j++) {
-				*ptr = _ref->buf_W[j] * _ref->w*_D(j) / _ref->w;
+				//*ptr = _ref->buf_W[j] * _ref->w * _D(j) / _ref->w;
+				*ptr = _D(j);
 				ptr++;
 			}
 			ptr = B;
 			for (int j = 0; j < _nNode; j++) {
 				for (int jj = 0; jj < _nNode; jj++) {
-					*ptr = _ref->buf_W[j] * _ref->buf_W[jj] * _B(j, jj) / _ref->w / _ref->w;
+					//*ptr = _ref->buf_W[j] * _ref->buf_W[jj] * _B(j, jj) / _ref->w / _ref->w;
+					*ptr = _B(j, jj);
 					ptr++;
 				}
 			}
