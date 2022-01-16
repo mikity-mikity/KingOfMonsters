@@ -176,7 +176,8 @@ namespace KingOfMonsters {
 		vector<vector<Eigen::Triplet<double>>> dat;
 		//vector<Eigen::Triplet<double>> dat2;
 	public:
-		static Eigen::VectorXcd computeeigen(_mySparse* i1, _mySparse* i2, _mySparse* f1, _mySparse* f2);
+		static double computeeigen(_mySparse* i1, _mySparse* i2, _mySparse* f1, int N);
+		static double computeeigen2(_mySparse* i1, _mySparse* i2, _mySparse* f1, int N);
 		_mySparse();
 		~_mySparse();
 		void freeze(bool _do);
@@ -213,7 +214,8 @@ namespace KingOfMonsters {
 		void reserve(int n);
 		void addemptyrow(int ii);
 		void addrow(int ii, int* ptr, double* data, double sc, int N);
-		void addrow(int ii, int* ptr, double* data, int shift, double sc, int N, bool add);
+		void addrow(int ii, int* ptr, double* data, double sc, int N, double _coeff);
+		void addrow(int ii, int* ptr, double* data, int shift, double sc, int N, bool add, double __coeff);
 		void adddat(int ii, int j, double value);
 		void addcoeff(double sc);
 		void addmat(_mySparse* mat);

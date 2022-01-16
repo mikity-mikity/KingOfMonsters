@@ -687,7 +687,7 @@ namespace KingOfMonsters {
 			int* _ptr = ptr;
 			double* _dat = dat;
 
-			this->dat->addrow(ii, _ptr, _dat, shift, sc, N, add);
+			this->dat->addrow(ii, _ptr, _dat, shift, sc, N, add,1.0);
 			ptr = nullptr;
 			dat = nullptr;
 		}
@@ -699,11 +699,19 @@ namespace KingOfMonsters {
 			//ptr = nullptr;
 			//dat = nullptr;
 		}
+		void addrow(int ii, myIntArray^ index, myDoubleArray^ data, double sc, int N,double coeff) {
+			//pin_ptr<int> ptr = &index[0];
+			//pin_ptr<double> dat = &data[0];
+
+			this->dat->addrow(ii, index->_arr, data->_arr->__v.data(), sc, N, coeff);
+			//ptr = nullptr;
+			//dat = nullptr;
+		}
 		void addrow(int ii, myIntArray^ index, myDoubleArray^ data, int shift, double sc, int N, bool add) {
 			//pin_ptr<int> ptr = &index[0];
 			//pin_ptr<double> dat = &data[0];
 
-			this->dat->addrow(ii, index->_arr, data->_arr->__v.data(), shift, sc, N, add);
+			this->dat->addrow(ii, index->_arr, data->_arr->__v.data(), shift, sc, N, add,1.0);
 			//ptr = nullptr;
 			//dat = nullptr;
 		}
@@ -972,19 +980,23 @@ namespace KingOfMonsters {
 			return str;
 		}
 	};
+
 	public ref class helper {
 	public:
-		static array<double>^ computeeigen(mySparse^ i1, mySparse^ i2, mySparse^ t1, mySparse^ t2)
+		static double computeeigen(mySparse^ i1, mySparse^ i2, mySparse^ t1, int N)
 		{
-			Eigen::VectorXcd ff=_mySparse::computeeigen(i1->dat, i2->dat, t1->dat, t2->dat);
+			double maxval = _mySparse::computeeigen(i1->dat, i2->dat, t1->dat, N);
 
-			
-			array<double>^ ret = gcnew array<double>(ff.size());
-			for (int i = 0; i < ff.size(); i++)
-			{
-				ret[i] = ff[i].real();
-			}
-			return ret;
+
+			return maxval;
+			//auto vv = mat.eigenvalues();
+		}
+		static double computeeigen2(mySparse^ i1, mySparse^ i2, mySparse^ t1, int N)
+		{
+			double maxval = _mySparse::computeeigen2(i1->dat, i2->dat, t1->dat, N);
+
+
+			return maxval;
 			//auto vv = mat.eigenvalues();
 		}
 	};

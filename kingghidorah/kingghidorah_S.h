@@ -1664,7 +1664,7 @@ namespace KingOfMonsters {
 				* (_Sij[0] * (_ref->d2[0][j] - this->_ref->get__Gammaijk(0, 0, 0) * _ref->d1[0][j] - this->_ref->get__Gammaijk(0, 0, 1) * _ref->d1[1][j]) + 2 * _Sij[1] * (_ref->d2[1][j] - this->_ref->get__Gammaijk(0, 1, 0) * _ref->d1[0][j] - this->_ref->get__Gammaijk(0, 1, 1) * _ref->d1[1][j]) + _Sij[3] * (_ref->d2[3][j] - this->_ref->get__Gammaijk(1, 1, 0) * _ref->d1[0][j] - this->_ref->get__Gammaijk(1, 1, 1) * _ref->d1[1][j])) * _ref->refDv;// / _ref->refDv / _ref->refDv;
 
 		}
-		std::string F2(_mySparse* mat, int* index,double sc) {
+		std::string F2(_mySparse* mat, int* index, double sc) {
 			Eigen::initParallel();
 			std::stringstream ss;
 			auto start = high_resolution_clock::now();
@@ -1676,6 +1676,28 @@ namespace KingOfMonsters {
 				{
 					int J = index[j];
 					mat->_mat[0].coeffRef(I, J) += F2(i, j) * sc;
+				}
+			}
+			return ss.str();
+		}
+		double F2A(int i, int j) {
+			return
+				//return  (_Sij[0] * (d2[0][i] - this->_ref->get__Gammaijk(0, 0, 0) * d1[0][i] - this->_ref->get__Gammaijk(0, 0, 1) * d1[1][i]) + 2 * _Sij[1] * (d2[1][i] - this->_ref->get__Gammaijk(0, 1, 0) * d1[0][i] - this->_ref->get__Gammaijk(0, 1, 1) * d1[1][i]) + _Sij[3] * (d2[3][i] - this->_ref->get__Gammaijk(1, 1, 0) * d1[0][i] - this->_ref->get__Gammaijk(1, 1, 1) * d1[1][i]))*
+				(_Sij[0] * (_ref->d2[0][i] - this->_ref->get__Gammaijk(0, 0, 0) * _ref->d1[0][i] - this->_ref->get__Gammaijk(0, 0, 1) * _ref->d1[1][i]) + 2 * _Sij[1] * (_ref->d2[1][i] - this->_ref->get__Gammaijk(0, 1, 0) * _ref->d1[0][i] - this->_ref->get__Gammaijk(0, 1, 1) * _ref->d1[1][i]) + _Sij[3] * (_ref->d2[3][i] - this->_ref->get__Gammaijk(1, 1, 0) * _ref->d1[0][i] - this->_ref->get__Gammaijk(1, 1, 1) * _ref->d1[1][i]))
+				* (_ref->d2[0][j]) * _ref->refDv;// / _ref->refDv / _ref->refDv;
+		}
+		std::string F2A(_mySparse* mat, int* index, double sc) {
+			Eigen::initParallel();
+			std::stringstream ss;
+			auto start = high_resolution_clock::now();
+
+			for (int i = 0; i < _nNode; i++)
+			{
+				int I = index[i];
+				for (int j = 0; j < _nNode; j++)
+				{
+					int J = index[j];
+					mat->_mat[0].coeffRef(I, J) += F2A(i, j) * sc;
 				}
 			}
 			return ss.str();
@@ -2957,16 +2979,22 @@ public:
 	{
 		mat->dat->addrow(ii, index->_arr, __mem->_ref->d0, sc, __mem->_nNode);
 	}
-	void U_z(mySparse^ mat, int ii, myIntArray^ index,double sc)
+	void U_z(mySparse^ mat, int ii, myIntArray^ index, double sc)
 	{
 
-		mat->dat->addrow(ii, index->_arr, __mem->__grad_z, sc,__mem->_nNode);
+		mat->dat->addrow(ii, index->_arr, __mem->__grad_z, sc, __mem->_nNode);
 
 	}
-	void U_phi(mySparse^ mat, int ii, myIntArray^ index,double sc)
+	void U_z(mySparse^ mat, int ii, myIntArray^ index, double sc,double coeff)
 	{
 
-		mat->dat->addrow(ii, index->_arr, __mem->__grad_phi, sc, __mem->_nNode);
+		mat->dat->addrow(ii, index->_arr, __mem->__grad_z, sc, __mem->_nNode,coeff);
+
+	}
+	void U_phi(mySparse^ mat, int ii, myIntArray^ index,double sc,double coeff)
+	{
+
+		mat->dat->addrow(ii, index->_arr, __mem->__grad_phi, sc, __mem->_nNode,coeff);
 
 	}
 	void U_z(array<double>^ X) {
@@ -3062,8 +3090,12 @@ public:
 		double F2(int i, int j) {
 			return __mem->F2(i, j);
 		}
-		System::String^ F2(mySparse^ mat,myIntArray^ index,double sc) {
-			auto str=__mem->F2(mat->dat, index->data(), sc);
+		System::String^ F2(mySparse^ mat, myIntArray^ index, double sc) {
+			auto str = __mem->F2(mat->dat, index->data(), sc);
+			return gcnew System::String(str.c_str());
+		}
+		System::String^ F2A(mySparse^ mat, myIntArray^ index, double sc) {
+			auto str = __mem->F2A(mat->dat, index->data(), sc);
 			return gcnew System::String(str.c_str());
 		}
 		double F3(int i, int I) {

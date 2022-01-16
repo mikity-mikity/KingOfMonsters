@@ -1032,9 +1032,13 @@ void KingOfMonsters::_mySparse::addemptyrow(int ii) {
 }
 void KingOfMonsters::_mySparse::addrow(int ii, int* ptr, double* data, double sc, int N)
 {
-	addrow(ii, ptr, data, 0, sc, N, true);
+	addrow(ii, ptr, data, 0, sc, N, true, 1.0);
 }
-void KingOfMonsters::_mySparse::addrow(int ii, int* ptr, double* data, int shift, double sc, int N, bool add)
+void KingOfMonsters::_mySparse::addrow(int ii, int* ptr, double* data, double sc, int N,double coeff)
+{
+	addrow(ii, ptr, data, 0, sc, N, true, coeff);
+}
+void KingOfMonsters::_mySparse::addrow(int ii, int* ptr, double* data, int shift, double sc, int N, bool add,double __coeff)
 {
 	data += shift;
 	ptr += shift;
@@ -1049,7 +1053,7 @@ void KingOfMonsters::_mySparse::addrow(int ii, int* ptr, double* data, int shift
 		//eigen_assert(*ptr < _mat[0].cols());
 		//eigen_assert(*ptr >= 0);
 		//if(*data!=0 && *data<100&&*data>-100)
-			dat[0].push_back(Eigen::Triplet<double>(ii, *ptr, (*data)));
+			dat[0].push_back(Eigen::Triplet<double>(ii, *ptr, (*data)*__coeff));
 		ptr++;
 		data++;
 	}
@@ -3059,16 +3063,80 @@ std::string KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, E
 	//cudaStreamDestroy(stream);
 	return ss.str();
 }
-Eigen::VectorXcd KingOfMonsters::_mySparse::computeeigen(_mySparse* i1, _mySparse* i2, _mySparse *f1,_mySparse *f2)
+double KingOfMonsters::_mySparse::computeeigen(_mySparse* i1, _mySparse* i2, _mySparse* f1, int N)
 {
 	auto xX = i1->_dmat * f1->_mat[0];
-	auto Xx = i2->_dmat * f2->_mat[0];
+	auto Xx = i2->_dmat * f1->_mat[0].transpose();
 	auto xXXx = xX * Xx;
 	Eigen::MatrixXd mat;
 	mat = xXXx;
-	Eigen::EigenSolver<Eigen::MatrixXd > eigen(xXXx);
-	return eigen.eigenvalues();
 
+	int D = xXXx.cols();
+	static Eigen::VectorXd vec(D);
+
+	vec(0) = 1;
+	vec.normalize();
+
+	for (int i = 0; i < N; i++)
+	{
+		vec = xXXx * vec;
+	}
+	vec.normalize();
+	vec = xXXx * vec;
+	return vec.norm();
+	/*Eigen::EigenSolver<Eigen::MatrixXd > eigen(xXXx);
+	for (int i = 0; i < D; i++)
+	{
+		vec(i) = eigen.eigenvalues()(i).real();
+	}
+	std::sort(vec.data(), vec.data() + vec.size());
+	return (vec(vec.size() - 1) - vec(vec.size() - 2));*/
+	//return eigen.eigenvalues();
+
+}
+double KingOfMonsters::_mySparse::computeeigen2(_mySparse* i1, _mySparse* i2, _mySparse* f1, int N)
+{
+
+	int n1 = i1->_dmat.cols();
+	int n2 = i2->_dmat.cols();
+
+	Eigen::MatrixXd mat(n1 + n2, n1 + n2);
+
+	mat.setZero();
+
+	mat.topLeftCorner(n1, n1) = i1->_dmat;
+	mat.bottomRightCorner(n2, n2) = i2->_dmat;
+	mat.topRightCorner(n1, n2) = f1->_mat[0];
+	mat.bottomLeftCorner(n2, n1) = f1->_mat[0].transpose();
+
+	double max = 0;
+	double min = 0;
+	static Eigen::VectorXd vec(n1+n2);
+	vec(0) = 1;
+	vec.normalize();
+	for (int i = 0; i < N; i++)
+	{
+		vec = mat* vec;
+		vec.normalize();
+	}
+	vec.normalize();
+	vec = mat * vec;
+	max=vec.norm();
+	
+	Eigen::MatrixXd inv=mat.inverse();
+
+	vec(0) = 1;
+	vec.normalize();
+	for (int i = 0; i < N; i++)
+	{
+		vec = inv * vec;
+		vec.normalize();
+	}
+	vec.normalize();
+	vec = inv  * vec;
+	min = 1.0/vec.norm();
+
+	return min;
 }
 std::string KingOfMonsters::_mySparse::_solveLU_gpu(KingOfMonsters::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int device) {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
