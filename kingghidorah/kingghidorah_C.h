@@ -1109,6 +1109,12 @@ namespace KingOfMonsters {
 					else {
 						__mem->set_node(i, 2, 0);
 					}
+					
+				}
+			}
+			if (weights != nullptr)
+			{
+				for (int i = 0; i < nNode; i++) {
 					__mem->set_buf_W(i, (weights->_arr->__v)(i));
 				}
 			}

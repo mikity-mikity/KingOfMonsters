@@ -931,7 +931,7 @@ namespace KingOfMonsters {
 						ptr3++;
 						fy += *ptr2 * *ptr3;
 						ptr3++;
-						//fz += *ptr2 * _ref->buf_z[i];
+						fz += *ptr2 * _ref->buf_z[i];
 						ptr3++;
 						ptr2++;
 					}
@@ -976,7 +976,10 @@ namespace KingOfMonsters {
 
 			_inv2(gij, Gij);
 			dv = sqrt(_det2(gij));
-
+			if (mode == "U") {
+				gi[2] = 0;
+				gi[5] = 0;
+			}
 			//contravatiant base vectors
 			double Fx = 0, Fy = 0, Fz = 0;
 			Fx += get_gi(0, 0) * Gij[0] + get_gi(1, 0) * Gij[1];
@@ -2901,6 +2904,9 @@ public:
 	void update3(int nNode, KingOfMonsters::myDoubleArray^ node, KingOfMonsters::myDoubleArray^ weights,KingOfMonsters::myDoubleArray^ def,bool ignoreZ) {
 		if (node != nullptr) {
 			__mem->set_node(node->_arr->__v.data(), nNode * 3);
+		}
+		if (weights != nullptr)
+		{
 			__mem->set_buf_W(weights->_arr->__v.data(), nNode);
 		}
 		if (def != nullptr)
