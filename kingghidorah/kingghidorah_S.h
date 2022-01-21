@@ -931,7 +931,7 @@ namespace KingOfMonsters {
 						ptr3++;
 						fy += *ptr2 * *ptr3;
 						ptr3++;
-						//fz += *ptr2 * _ref->buf_z[i];
+						fz += *ptr2 * _ref->buf_z[i];
 						ptr3++;
 						ptr2++;
 					}
