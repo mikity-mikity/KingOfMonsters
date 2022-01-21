@@ -2594,7 +2594,7 @@ namespace KingOfMonsters {
 							double _val3 = 0;
 							_val3 = K(i, k, j, k2, _la, _mu);
 
-							M->_mat[0].coeffRef(I+k,J+k2)=_val3 * __sc;
+							M->_mat[0].coeffRef(I+k,J+k2)+=_val3 * __sc;
 						}
 					}
 				}
@@ -2764,7 +2764,7 @@ namespace KingOfMonsters {
 						{
 							double _val4 = 0;							
 							_val4 = H(i, k, j, k2, _la, _mu);
-							M->_mat[0].coeffRef(I + k, J + k2) = _val4 * sc;
+							M->_mat[0].coeffRef(I + k, J + k2) += _val4 * sc;
 						}
 					}
 				}
