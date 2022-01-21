@@ -931,7 +931,7 @@ namespace KingOfMonsters {
 						ptr3++;
 						fy += *ptr2 * *ptr3;
 						ptr3++;
-						fz += *ptr2 * _ref->buf_z[i];
+						//fz += *ptr2 * _ref->buf_z[i];
 						ptr3++;
 						ptr2++;
 					}
@@ -960,25 +960,26 @@ namespace KingOfMonsters {
 					gi[j * 3 + 2] = fz;
 				}
 			}
-			gij[0] = gi[0] * gi[0] + gi[1] * gi[1];
-			gij[1] = gi[0] * gi[3] + gi[1] * gi[4];
-			gij[2] = gij[1];
-			gij[3] = gi[3] * gi[3] + gi[4] * gi[4];
-
-
-			_dv = sqrt(_det2(gij));
 			//sc = 1 / _dv / _dv;
 			sc = 1.0 / _det2(gij);
 			gij[0] = gi[0] * gi[0] + gi[1] * gi[1] + gi[2] * gi[2];
 			gij[1] = gi[0] * gi[3] + gi[1] * gi[4] + gi[2] * gi[5];
 			gij[2] = gij[1];
 			gij[3] = gi[3] * gi[3] + gi[4] * gi[4] + gi[5] * gi[5];
-
-			_inv2(gij, Gij);
 			dv = sqrt(_det2(gij));
+
 			if (mode == "U") {
 				gi[2] = 0;
 				gi[5] = 0;
+				gij[0] = gi[0] * gi[0] + gi[1] * gi[1];
+				gij[1] = gi[0] * gi[3] + gi[1] * gi[4];
+				gij[2] = gij[1];
+				gij[3] = gi[3] * gi[3] + gi[4] * gi[4];
+				_dv = sqrt(_det2(gij));
+				_inv2(gij, Gij);
+			}
+			else {
+				_inv2(gij, Gij);
 			}
 			//contravatiant base vectors
 			double Fx = 0, Fy = 0, Fz = 0;
