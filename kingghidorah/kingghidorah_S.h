@@ -982,7 +982,7 @@ namespace KingOfMonsters {
 				_inv2(gij, Gij);
 			}
 			else {
-				_inv2(gij, Gij);
+				
 				gij[0] = gi[0] * gi[0] + gi[1] * gi[1];
 				gij[1] = gi[0] * gi[3] + gi[1] * gi[4];
 				gij[2] = gij[1];
