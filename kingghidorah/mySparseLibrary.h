@@ -829,9 +829,8 @@ namespace KingOfMonsters {
 		void solve0_gpu(myCuda^ gpu, mySparse^ rhs, mySparse^ ret) {
 			this->dat->_solve0_gpu(gpu->cuda(), rhs->dat, ret->dat);
 		}
-		mySparse^ solveI(mySparse^ ret) {
-			this->dat->_solveI(ret->dat);
-			return ret;
+		int solveI(mySparse^ ret) {
+			return this->dat->_solveI(ret->dat);
 		}
 		System::String^ solveI_gpu(myCuda^ gpu, mySparse^ ret) {
 			auto _ss=this->dat->_solveI_gpu(gpu->cuda(), ret->dat);

@@ -894,7 +894,7 @@ void KingOfMonsters::_mySparse::_shrink(int M, bool sparse, bool dense)
 		{
 			//if ((_mat[0].rows() == _dmat.rows()) && (_mat[0].cols() == _dmat.cols()))
 			{
-				_mat[0].conservativeResize(M, M);
+				_mat[0] = _mat[0].block(0, 0, M, M);
 			}
 		}
 	}
@@ -907,6 +907,15 @@ void KingOfMonsters::_mySparse::_shrink(int M, bool sparse, bool dense)
 		_dmat = _mat[0];
 		//_resize(M, M);
 		//_dmat.conservativeResize(M, M);
+	}
+	int count = 0;
+	int count2 = 0;
+
+	for (int i = 0; i < M; i++)
+	{
+		if (_mat[0].coeff(i, i) < 0)count++;
+		if(dense)if (_dmat.coeff(i, i) < 0)count2++;
+
 	}
 }
 void KingOfMonsters::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>& perm, Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>& perm2)
@@ -1177,6 +1186,18 @@ int KingOfMonsters::_mySparse::numBlocks()
 
 std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 {
+	/*auto ss = std::stringstream();
+	int nn = this->cols();
+	int mm = this->cols();
+	Eigen::SparseMatrix<double> tmp(nn, nn);
+	for (int ii = 0; ii < _nt; ii++)
+	{
+		//coeff[ii].setOnes();
+		tmp+= this->_mat[ii].transpose() *coeff[ii].asDiagonal()* this->_mat[ii];
+	}
+	this->_mat[0] = tmp;
+	return ss.str();*/
+	
 	static std::vector<std::vector<int>> index;
 	static std::map<_mySparse*,std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor>>> ___e;
 	static std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor>> e2;
@@ -1260,11 +1281,7 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 			if (S >= _nt)break;
 			for (int ii = S; ii < E; ii++)
 			{
-				/*Eigen::SparseMatrix<double> __coeff(coeff[ii].size(), coeff[ii].size());
-				for (int k = 0; k < coeff[ii].size(); k++)
-				{
-					__coeff.insert(k, k) = coeff[ii](k);
-				}*/
+				
 				//(*e)[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
 //#pragma omp critical
 				
@@ -1275,12 +1292,7 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 					}
 					else {
 						auto cc = coeff[ii].asDiagonal();
-						/*for (int k = 0; k < mm; ++k) {
-							for (Eigen::SparseMatrix<double, Eigen::ColMajor>::InnerIterator it((*e)[_ii], k); it; ++it) {
-								double val = this->_mat[ii].col(it.row()).dot( (cc * this->_mat[ii].col(it.col())));
-								it.valueRef() += val;
-							}
-						}*/
+						
 						e2[_ii] = this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
 						if (e2[_ii].nonZeros() > 0)
 						{
@@ -1385,23 +1397,10 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 	if (!sparse) {
 		//this->_dmat.setZero(nn, nn);
 		//this->_tmp.setZero(nn, nn);
-		/*if (__r == 0 || __c == 0)
-		{
-			if (false)//__cuinit)
-			{
-				cudaMallocHost(&___dmat, sizeof(double) * nn * nn * 2);
-			}
-			else {
-				___dmat = (double*)malloc(sizeof(double) * nn * nn * 2);
-			}
-		}*/
+		
 		//__r = nn;
 		//__c = nn;
-		/*Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, nn, nn);
-		_dmat = e[0];
-		for (int i = 1; i < _mt; i ++) {
-			_dmat += e[i];
-		}*/
+		
 		//this->_dmat = x;
 	}
 	end = high_resolution_clock::now();
@@ -2855,7 +2854,7 @@ void KingOfMonsters::_mySparse::Atb(double* ptr, double* ptr2, double sc,int N, 
 	int job = 0;
 	int ss = _nt / _mt / 4;
 	if (ss == 0)ss = 1;
-//#pragma omp parallel for
+#pragma omp parallel for
 	for (int ii = 0; ii < _mt; ii++)
 	{
 
@@ -2866,7 +2865,7 @@ void KingOfMonsters::_mySparse::Atb(double* ptr, double* ptr2, double sc,int N, 
 		tmp.setZero();
 		for (int kk = 0; kk < 200; kk++)
 		{
-//#pragma omp critical
+#pragma omp critical
 			{
 				S = job;
 				E = S + ss;
@@ -2889,14 +2888,13 @@ void KingOfMonsters::_mySparse::Atb(double* ptr, double* ptr2, double sc,int N, 
 				Eigen::Map<Eigen::VectorXd> b2(ptr2 + offset, ee);
 				if (this->_mat[i].rows() > 0 && this->_mat[i].cols() > 0)
 				{
-					
-					tmp += _mat[i].transpose() * coeff[i].asDiagonal() * (b +sc * b2);
+					tmp += _mat[i].transpose() * coeff[i].asDiagonal() *(b + sc * b2);
 					
 				}
 				offset += ee;
 			}
 		}
-//#pragma omp critical
+#pragma omp critical
 		{
 			*c += tmp;// _mat[ii].transpose()* coeff[ii].asDiagonal()* (b + sc * b2);
 		}
@@ -3423,22 +3421,22 @@ void KingOfMonsters::_mySparse::_solveI_gpu_mg(KingOfMonsters::cuda* cuda, _mySp
 
 }
 */
-void KingOfMonsters::_mySparse::_solveI(_mySparse* ret)
+int KingOfMonsters::_mySparse::_solveI(_mySparse* ret)
 {
+	ret->_dmat = this->_dmat.inverse();
+	return 0;
 	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);	
-	Eigen::SimplicialLLT<Eigen::SparseMatrix<double>, Eigen::ColMajor> llt;
-	llt.compute(this->_mat[0]);
-	int nn = this->_mat[0].rows();
-	/*if(ret->__r == 0)
+	//Eigen::SimplicialLLT<Eigen::SparseMatrix<double>, Eigen::ColMajor> llt;
+	//Eigen::SparseLU<Eigen::SparseMatrix<double,Eigen::ColMajor>> llt;
+	//Eigen::FullPivLU<
+	/*int nn = this->_mat[0].rows();
+	int count = 0;
+	for (int i = 0; i < nn; i++)
 	{
-		if (false)//__cuinit)
-		{
-			cudaMallocHost(&ret->___dmat, sizeof(double) * nn * nn*2);
-		}
-		else {
-			ret->___dmat = (double*)malloc(sizeof(double) * nn * nn * 2);
-		}
-	}*/
+		if (this->_mat[0].coeff(i,i) < 0)count++;
+	}
+	
+	llt.compute(this->_mat[0]);
 	//ret->__r = nn;
 	//ret->__c = nn;
 	//Eigen::Map<Eigen::MatrixXd> ret_dmat(ret->___dmat, nn, nn);
@@ -3448,6 +3446,7 @@ void KingOfMonsters::_mySparse::_solveI(_mySparse* ret)
 		I.resize(nn, nn);
 		I.setIdentity();
 	}
+	if (count > 0)return count;
 	//int mt = omp_get_max_threads();
 	int ee = _mt * 2;
 #pragma omp parallel for
@@ -3457,6 +3456,7 @@ void KingOfMonsters::_mySparse::_solveI(_mySparse* ret)
 		int E = (i + 1) * nn / ee;
 		ret->_dmat.middleCols(S, E - S) = llt.solve(I.middleCols(S, E - S));
 	}
+	return 0;*/
 }
 
 void initidentiy(KingOfMonsters::cuda* cuda, int N) {
@@ -3745,7 +3745,16 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu(KingOfMonsters::cuda* cuda, _
 	//this->_freeze();
 	std::stringstream ss;
 	int N = _dmat.cols();// __c;
-	/*if (ret->__r == 0)
+
+
+	int count = 0;
+	for (int i = 0; i < N; i++)
+	{
+		if (this->_mat[0].coeff(i, i) < 0)count++;
+	}
+	ss << "negative diagonal count=" << count << ",";
+
+						 /*if (ret->__r == 0)
 	{
 		if (false)//__cuinit)
 		{

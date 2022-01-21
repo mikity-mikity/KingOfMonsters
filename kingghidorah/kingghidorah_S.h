@@ -919,24 +919,46 @@ namespace KingOfMonsters {
 			}
 			this->phi = val;
 			//covariant base vectors
-
-			for (auto const& j : ___ee) {
-				double fx = 0, fy = 0, fz = 0;
-				ptr2 = _ref->d1[j];
-				ptr3 = _ref->node;
-				for (int i = 0; i < _nNode; i++)
-				{
-					fx += *ptr2 * *ptr3;
-					ptr3++;
-					fy += *ptr2 * *ptr3;
-					ptr3++;
-					fz += *ptr2 * *ptr3;
-					ptr3++;
-					ptr2++;
+			if (mode == "U")
+			{
+				for (auto const& j : ___ee) {
+					double fx = 0, fy = 0, fz = 0;
+					ptr2 = _ref->d1[j];
+					ptr3 = _ref->node;
+					for (int i = 0; i < _nNode; i++)
+					{
+						fx += *ptr2 * *ptr3;
+						ptr3++;
+						fy += *ptr2 * *ptr3;
+						ptr3++;
+						//fz += *ptr2 * _ref->buf_z[i];
+						ptr3++;
+						ptr2++;
+					}
+					gi[j * 3 + 0] = fx;
+					gi[j * 3 + 1] = fy;
+					gi[j * 3 + 2] = fz;
 				}
-				gi[j * 3 + 0] = fx;
-				gi[j * 3 + 1] = fy;
-				gi[j * 3 + 2] = fz;
+			}
+			else {
+				for (auto const& j : ___ee) {
+					double fx = 0, fy = 0, fz = 0;
+					ptr2 = _ref->d1[j];
+					ptr3 = _ref->node;
+					for (int i = 0; i < _nNode; i++)
+					{
+						fx += *ptr2 * *ptr3;
+						ptr3++;
+						fy += *ptr2 * *ptr3;
+						ptr3++;
+						fz += *ptr2 * *ptr3;
+						ptr3++;
+						ptr2++;
+					}
+					gi[j * 3 + 0] = fx;
+					gi[j * 3 + 1] = fy;
+					gi[j * 3 + 2] = fz;
+				}
 			}
 			gij[0] = gi[0] * gi[0] + gi[1] * gi[1];
 			gij[1] = gi[0] * gi[3] + gi[1] * gi[4];
