@@ -961,25 +961,43 @@ namespace KingOfMonsters {
 				}
 			}
 			//sc = 1 / _dv / _dv;
-			sc = 1.0 / _det2(gij);
-			gij[0] = gi[0] * gi[0] + gi[1] * gi[1] + gi[2] * gi[2];
-			gij[1] = gi[0] * gi[3] + gi[1] * gi[4] + gi[2] * gi[5];
-			gij[2] = gij[1];
-			gij[3] = gi[3] * gi[3] + gi[4] * gi[4] + gi[5] * gi[5];
-			dv = sqrt(_det2(gij));
 
 			if (mode == "U") {
+				gij[0] = gi[0] * gi[0] + gi[1] * gi[1] + gi[2] * gi[2];
+				gij[1] = gi[0] * gi[3] + gi[1] * gi[4] + gi[2] * gi[5];
+				gij[2] = gij[1];
+				gij[3] = gi[3] * gi[3] + gi[4] * gi[4] + gi[5] * gi[5];
+				dv = sqrt(_det2(gij));
+
 				gi[2] = 0;
 				gi[5] = 0;
+
 				gij[0] = gi[0] * gi[0] + gi[1] * gi[1];
 				gij[1] = gi[0] * gi[3] + gi[1] * gi[4];
 				gij[2] = gij[1];
 				gij[3] = gi[3] * gi[3] + gi[4] * gi[4];
 				_dv = sqrt(_det2(gij));
+
+				sc = 1.0 / _det2(gij);
 				_inv2(gij, Gij);
 			}
 			else {
 				_inv2(gij, Gij);
+				gij[0] = gi[0] * gi[0] + gi[1] * gi[1];
+				gij[1] = gi[0] * gi[3] + gi[1] * gi[4];
+				gij[2] = gij[1];
+				gij[3] = gi[3] * gi[3] + gi[4] * gi[4];
+				_dv = sqrt(_det2(gij));
+
+				gij[0] = gi[0] * gi[0] + gi[1] * gi[1] + gi[2] * gi[2];
+				gij[1] = gi[0] * gi[3] + gi[1] * gi[4] + gi[2] * gi[5];
+				gij[2] = gij[1];
+				gij[3] = gi[3] * gi[3] + gi[4] * gi[4] + gi[5] * gi[5];
+				dv = sqrt(_det2(gij));
+
+				sc = 1.0 / _det2(gij);
+				_inv2(gij, Gij);
+
 			}
 			//contravatiant base vectors
 			double Fx = 0, Fy = 0, Fz = 0;
