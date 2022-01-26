@@ -998,5 +998,15 @@ namespace KingOfMonsters {
 			return maxval;
 			//auto vv = mat.eigenvalues();
 		}
+		static void minilla(mySparse^ i1, mySparse^ i2, mySparse^ i3, myDoubleArray^ grad,myDoubleArray^ ret1, myDoubleArray^ ret2)
+		{
+			Eigen::VectorXd v = _mySparse::minilla(i1->dat, i2->dat, i3->dat, grad->_arr);
+
+			ret1->_arr->__v = v.topRows(i1->dat->cols());
+			ret2->_arr->__v = v.bottomRows(i2->dat->cols());
+
+			//auto vv = mat.eigenvalues();
+		}
+
 	};
 }

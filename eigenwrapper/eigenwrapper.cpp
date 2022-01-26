@@ -1269,7 +1269,7 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 		int E = 0;
 		//int K = 0;
 		//auto _e = e[_ii];
-		for (int tt = 0; tt < 40; tt++)
+		for (int tt = 0; tt < 4000; tt++)
 		{
 #pragma omp critical
 			{
@@ -1320,7 +1320,7 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 	now = high_resolution_clock::now();
 	//Eigen::setNbThreads(_mt);
 
-	for (int tt = 0; tt < 40; tt++)
+	for (int tt = 0; tt < 4000; tt++)
 	{
 #pragma omp parallel for schedule(static,1)
 		for (int i = 0; i < __mt; i += 2)
@@ -2647,7 +2647,7 @@ void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)
 		int E = 0;
 		//int K = 0;
 		//auto _e = e[_ii];
-		for (int tt = 0; tt < 40; tt++)
+		for (int tt = 0; tt < 4000; tt++)
 		{
 #pragma omp critical
 			{
@@ -2721,7 +2721,7 @@ void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)
 	now = high_resolution_clock::now();
 	//Eigen::setNbThreads(_mt);
 
-	for (int tt = 0; tt < 40; tt++)
+	for (int tt = 0; tt < 4000; tt++)
 	{
 #pragma omp parallel for schedule(static,1)
 		for (int i = 0; i < __mt; i += 2)
@@ -3094,6 +3094,28 @@ double KingOfMonsters::_mySparse::computeeigen(_mySparse* i1, _mySparse* i2, _my
 	return (vec(vec.size() - 1) - vec(vec.size() - 2));*/
 	//return eigen.eigenvalues();
 
+}
+Eigen::VectorXd KingOfMonsters::_mySparse::minilla(_mySparse* i1, _mySparse* i2, _mySparse* i3,_myDoubleArray* grad)
+{
+	int n1 = i1->_dmat.cols();
+	int n2 = i2->_dmat.cols();
+
+	Eigen::MatrixXd mat(n1 + n2, n1 + n2);
+	mat.topLeftCorner(n1, n1) = i1->_dmat;
+	mat.bottomRightCorner(n2, n2) = i2->_dmat;
+	mat.topRightCorner(n1, n2) = i3->_mat[0];
+	mat.bottomLeftCorner(n2, n1) = i3->_mat[0].transpose();
+	mat += Eigen::MatrixXd::Identity(n1 + n2, n1 + n2) * 0.00000000000000001;
+	mat = mat.inverse();
+
+
+	Eigen::VectorXd v2(n1 + n2);
+	v2.bottomRows(n2) = grad->__v;
+	double original = v2.norm();
+	v2=mat*v2;
+	v2.normalize();
+	v2 *= original;
+	return v2;
 }
 double KingOfMonsters::_mySparse::computeeigen2(_mySparse* i1, _mySparse* i2, _mySparse* f1, int N)
 {

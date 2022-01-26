@@ -178,6 +178,7 @@ namespace KingOfMonsters {
 	public:
 		static double computeeigen(_mySparse* i1, _mySparse* i2, _mySparse* f1, int N);
 		static double computeeigen2(_mySparse* i1, _mySparse* i2, _mySparse* f1, int N);
+		static Eigen::VectorXd minilla(_mySparse* i1, _mySparse* i2, _mySparse* i3,_myDoubleArray* grad);
 		_mySparse();
 		~_mySparse();
 		void freeze(bool _do);
