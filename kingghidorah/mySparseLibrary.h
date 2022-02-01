@@ -13,6 +13,40 @@ using namespace System;
 using namespace System::Threading::Tasks;
 //#define EIGEN_DONT_ALIGN
 namespace KingOfMonsters {
+	public ref class mySparseVector {
+	public:
+		_mySparseVector* _vec=0;
+		mySparseVector()
+		{
+			this->_vec = new _mySparseVector();
+		}
+		mySparseVector(int N)
+		{
+			this->_vec = new _mySparseVector();
+			this->_vec->_vec.resize(N);
+			this->_vec->_vec.setZero();
+		}
+		void plus(int i, double val)
+		{
+			this->_vec->_vec.coeffRef(i) += val;
+		}
+		~mySparseVector()
+		{
+			if (_vec != 0)
+			{
+				delete _vec;
+			}
+			_vec = 0;
+		}
+		!mySparseVector()
+		{
+			if (_vec != 0)
+			{
+				delete _vec;
+			}
+			_vec = 0;
+		}
+	};
 	public ref class myDoubleArray {
 	public:
 		//double* _arr = 0;
@@ -534,6 +568,10 @@ namespace KingOfMonsters {
 		void plus(mySparse^ B,double sc)
 		{			
 			this->dat->_mat[0] = this->dat->_mat[0]+B->dat->_mat[0];// *sc;
+		}
+		void plus(mySparseVector ^vec, double sc)
+		{
+			this->dat->_mat[0] += vec->_vec->_vec * vec->_vec->_vec.transpose() * sc;
 		}
 		void freeze(bool _do) {
 			this->dat->freeze(_do);

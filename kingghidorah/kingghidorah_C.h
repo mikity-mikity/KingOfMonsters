@@ -1003,7 +1003,7 @@ namespace KingOfMonsters {
 			return _val3 * _ref->refDv;
 		}
 		//bending boundary term
-		double KB(int i, int k2, int j, int k)
+		double KB(int j, int k,int s)
 		{
 			double _val3 = 0;
 
@@ -1013,12 +1013,43 @@ namespace KingOfMonsters {
 				{
 					double A = (0.0 * _ref->get__Gij() * _ref->get__Gij() + _ref->get__Gij() * _ref->get__Gij());
 					double D = (d2[j] - Gammaijk[0] * d1[j]);
-					_val3 += A * N[k] * (D);
+					_val3 += A * N[k] * (D)*H[s];
+					_val3 += A * H[k] * (D)*N[s];
 				}
 			}
 
 			return _val3;// *_ref->refDv;
 		}
+		//angle term
+		double T(int i, int s, int s2) {
+			double val = 0;
+			val += d1[i] * N[s] * _ref->get__Gij() * H[s2];
+			val += d1[i] * H[s] * _ref->get__Gij() * N[s2];
+
+			return val * _ref->refDv;
+		}
+		/*//bending boundary term
+		double KB(int j, int k, int l, int m, double _la, double _mu)
+		{
+			double _val3 = 0;
+
+
+			for (int g = 0; g < 2; g++)
+			{
+				for (int h = 0; h < 2; h++)
+				{
+					double A = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(m, l) + 2 * _mu * _ref->get__Gij(h, m) * _ref->get__Gij(g, l));
+					double D = (_ref->d2[g * 2 + h][j] - Gammaijk[(g * 2 + h) * 2 + 0] * _ref->d1[0][j] - Gammaijk[(g * 2 + h) * 2 + 1] * _ref->d1[1][j]);
+					_val3 += A * N[k] * (D);
+				}
+			}
+
+			return _val3 * _ref->refDv * _ref->refDv;
+		}
+		//angle term
+		*/
+
+
 
 		//membrane term
 		double _H(int i, int k2, int j, int k)
@@ -1264,8 +1295,11 @@ namespace KingOfMonsters {
 			return __mem->KH(i, s, j, k);
 		}
 		//bending boundary term -- to be corrected
-		double KB(int i, int s, int j, int k) {
-			return __mem->KB(i, s, j, k);
+		double KB(int j, int k,int s2) {
+			return __mem->KB(j, k,s2);
+		}
+		double T(int i, int s, int s2) {
+			return __mem->T(i, s, s2);
 		}
 		//axial force
 		double H(int i, int s, int j, int k) {

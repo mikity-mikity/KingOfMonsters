@@ -153,6 +153,11 @@ namespace KingOfMonsters {
 		void* dBuffer1 = NULL, * dBuffer2 = NULL;
 		size_t bufferSize1 = 0, bufferSize2 = 0;
 	};
+	class _mySparseVector
+	{
+	public:
+		Eigen::SparseVector<double> _vec;
+	};
 	class _mySparse {
 
 	public:
