@@ -30,6 +30,9 @@ namespace KingOfMonsters {
 		{
 			this->_vec->_vec.coeffRef(i) += val;
 		}
+		void Zeros() {
+			this->_vec->_vec.setZero();
+		}
 		~mySparseVector()
 		{
 			if (_vec != 0)
@@ -93,7 +96,6 @@ namespace KingOfMonsters {
 		void plus(myDoubleArray^ a, double sc) {
 			_arr->__v += a->_arr->__v * sc;
 		}
-
 		!myDoubleArray()
 		{
 			if (_arr != 0)
@@ -572,6 +574,10 @@ namespace KingOfMonsters {
 		void plus(mySparseVector ^vec, double sc)
 		{
 			this->dat->_mat[0] += vec->_vec->_vec * vec->_vec->_vec.transpose() * sc;
+		}
+		void plus(mySparseVector^ vec, mySparseVector^ vec2,double sc)
+		{
+			this->dat->_mat[0] += vec->_vec->_vec * vec2->_vec->_vec.transpose() * sc;
 		}
 		void freeze(bool _do) {
 			this->dat->freeze(_do);

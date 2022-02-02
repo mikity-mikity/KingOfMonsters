@@ -2576,7 +2576,7 @@ namespace KingOfMonsters {
 			}
 			return (_val3) * this->dv;
 		}
-		void K(_mySparse* M,_mySparse* mat, int* _index, double _la, double _mu, double __sc)
+		void K(_mySparse* M, int* _index, double _la, double _mu, double __sc)
 		{
 			const static int kk[3]{ 0,1,2 };
 			const static int ll[2]{ 0,1 };
@@ -2746,7 +2746,7 @@ namespace KingOfMonsters {
 			}
 			return _val4 * _ref->refDv * 0.25;
 		}
-		void H(_mySparse* M,_mySparse * mat,int* _index,double _la, double _mu,double sc)
+		void H(_mySparse* M,int* _index,double _la, double _mu,double sc)
 		{
 			const static int kk[3]{ 0,1,2 };
 			const static int ll[2]{ 0,1 };
@@ -3180,13 +3180,13 @@ public:
 		{
 			return __mem->K_phi(j);
 		}
-		void H(mySparse^ M, mySparse^ mat, myIntArray^ index, double _la, double _mu, double sc)
+		void H(mySparse^ M, myIntArray^ index, double _la, double _mu, double sc)
 		{
-			__mem->H(M->dat,mat->dat, index->data(), _la, _mu, sc);
+			__mem->H(M->dat,index->data(), _la, _mu, sc);
 		}
-		void K(mySparse^ M,mySparse^ mat, myIntArray^ index, double _la, double _mu, double sc)
+		void K(mySparse^ M, myIntArray^ index, double _la, double _mu, double sc)
 		{
-			__mem->K(M->dat,mat->dat, index->data(), _la, _mu, sc);
+			__mem->K(M->dat, index->data(), _la, _mu, sc);
 		}
 		void S(double val1, double val2, double val3) {
 			__mem->set_Sij(val1, val2, val3);

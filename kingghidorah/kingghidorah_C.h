@@ -989,6 +989,27 @@ namespace KingOfMonsters {
 
 			return _val3 * _ref->refDv;
 		}
+		void KN(_mySparse* M, int* _index, double sc)
+		{
+			for (int i = 0; i < _nNode; i++)
+			{
+				int I = _index[i] * 3;
+				for (int s = 0; s < 3; s++)
+				{
+					for (int j = 0; j < _nNode; j++)
+					{
+						int J = _index[j] * 3;
+						for (int ss = 0; ss < 3; ss++)
+						{
+
+							double _val4 = KN(i, s, j, ss);
+							M->_mat[0].coeffRef(I + s, J + ss) += _val4 * sc;
+						}
+					}
+				}
+			}
+
+		}
 		//bending term weak axis
 		double KH(int i, int k2, int j, int k)
 		{
@@ -1001,6 +1022,27 @@ namespace KingOfMonsters {
 			_val3 += A * H[k] * H[k2] * (D) * (E);
 
 			return _val3 * _ref->refDv;
+		}
+		void KH(_mySparse* M, int* _index, double sc)
+		{
+			for (int i = 0; i < _nNode; i++)
+			{
+				int I = _index[i] * 3;
+				for (int s = 0; s < 3; s++)
+				{
+					for (int j = 0; j < _nNode; j++)
+					{
+						int J = _index[j] * 3;
+						for (int ss = 0; ss < 3; ss++)
+						{
+
+							double _val4 = KH(i, s, j, ss);
+							M->_mat[0].coeffRef(I + s, J + ss) += _val4 * sc;
+						}
+					}
+				}
+			}
+
 		}
 		//bending boundary term
 		double KB(int j, int k,int s)
@@ -1061,6 +1103,26 @@ namespace KingOfMonsters {
 			double GG = (d1[i] * get_gi(k2) + d1[i] * get_gi(k2));
 			_val4 += A * FF * GG;
 			return _val4 * _ref->refDv * 0.25;
+		}
+		void _H(_mySparse* M, int* _index, double sc)
+		{
+			for (int i = 0; i < _nNode; i++)
+			{
+				int I = _index[i] * 3;
+				for (int s = 0; s < 3; s++)
+				{
+					for (int j = 0; j < _nNode; j++)
+					{
+						int J = _index[j] * 3;
+						for (int ss = 0; ss < 3; ss++)
+						{
+
+							double _val4 = _H(i, s, j, ss);
+							M->_mat[0].coeffRef(I + s, J + ss) += _val4 * sc;
+						}
+					}
+				}
+			}
 		}
 		void memory(_memC_ref* __mem) {
 			if (__mem->__z < -1000) {
@@ -1290,10 +1352,20 @@ namespace KingOfMonsters {
 		double KN(int i, int s, int j, int k) {
 			return __mem->KN(i, s, j, k);
 		}
+		void KN(mySparse^ M, myIntArray^ index, double sc)
+		{
+			__mem->KN(M->dat, index->data(), sc);
+		}
+
 		//bending around the weak axis
 		double KH(int i, int s, int j, int k) {
 			return __mem->KH(i, s, j, k);
 		}
+		void KH(mySparse^ M, myIntArray^ index, double sc)
+		{
+			__mem->KH(M->dat, index->data(), sc);
+		}
+
 		//bending boundary term -- to be corrected
 		double KB(int j, int k,int s2) {
 			return __mem->KB(j, k,s2);
@@ -1304,6 +1376,10 @@ namespace KingOfMonsters {
 		//axial force
 		double H(int i, int s, int j, int k) {
 			return __mem->_H(i, s, j, k);
+		}
+		void H(mySparse^ M, myIntArray^ index, double sc)
+		{
+			__mem->_H(M->dat, index->data(), sc);
 		}
 		void L(double val1) {
 			__mem->set_L(val1);
