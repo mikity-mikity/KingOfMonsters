@@ -1702,7 +1702,18 @@ namespace KingOfMonsters {
 				}
 			}
 		}
-
+		void getMat(_mySparse* mat,int *index,int c,int m)
+		{
+			for (int i = 0; i < _nNode; i++)
+			{
+				for (int j = 0; j < _nNode; j++)
+				{
+					int I = index[i];
+					int J = index[j];
+					mat->_mat[0].coeffRef(c, I*m + J) = _ref->__mat[i*_nNode + j];
+				}
+			}
+		}
 		//stress function L2
 		double F2(int i, int j) {
 			return
@@ -2169,8 +2180,10 @@ namespace KingOfMonsters {
 			for (int k = 0; k < 2; k++) {
 				for (int l = 0; l < 2; l++) {
 					double val = 0;
-					for (int m = 0; m < 2; m++) {
-						for (int n = 0; n < 2; n++) {
+					for (int m = 0; m < 2; m++)
+					{
+						for (int n = 0; n < 2; n++)
+						{
 
 
 							double A = _la * _ref->get__Gij(l, k) * _ref->get__Gij(n, m) +2*_mu* _ref->get__Gij(l, n) * _ref->get__Gij(k, m);
@@ -3191,7 +3204,9 @@ public:
 		void S(double val1, double val2, double val3) {
 			__mem->set_Sij(val1, val2, val3);
 		}
-
+		void getMat(mySparse^ mat, myIntArray^ index, int c, int m) {
+			__mem->getMat(mat->dat, index->data(), c, m);
+		}
 		double bodyF() {
 			//double sc = 1.0/__mem->_ref->_refDv/ __mem->_ref->_refDv;
 			return __mem->sc *  __mem->bodyF;

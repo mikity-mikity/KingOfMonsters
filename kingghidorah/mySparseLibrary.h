@@ -370,7 +370,19 @@ namespace KingOfMonsters {
 	public ref class mySparse {
 	public:
 		_mySparse* dat = 0;
-		
+		mySparse^ computeKernel()
+		{
+			Eigen::SparseMatrix<double> ff = (this->dat->_mat[0] * this->dat->_mat[0].transpose());
+			Eigen::SparseLU<Eigen::SparseMatrix<double>> lu;
+			lu.compute(ff);
+			auto I = Eigen::SparseMatrix<double>(ff.rows(), ff.cols());
+			Eigen::MatrixXd ret=lu.solve(I);
+			auto II = Eigen::SparseMatrix<double>(this->dat->_mat[0].cols(), this->dat->_mat[0].cols());
+
+			mySparse^ kernel = gcnew mySparse();
+			kernel->dat->_dmat= II - this->dat->_mat[0].transpose() * ret * this->dat->_mat[0];
+			return kernel;
+		}
 		void setFromList(System::Collections::Generic::List<System::Tuple<int, int>^>^ tt)
 		{
 			std::vector<Eigen::Triplet<double>> dat;

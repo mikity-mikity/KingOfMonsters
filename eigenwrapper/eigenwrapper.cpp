@@ -148,8 +148,8 @@ KingOfMonsters::cuda::cuda(int N) {
 	{
 		cudaSetDevice(ii);
 		cudaMalloc(&__mgM[ii], sizeof(double) * _N * _N);
-		cudaMalloc(&__mgrhs[ii], sizeof(double) * _N * _N/2);
-		cudaMalloc(&__mgC[ii], sizeof(double) * _N * _N/2);
+		cudaMalloc(&__mgrhs[ii], sizeof(double) * _N * 10);
+		cudaMalloc(&__mgC[ii], sizeof(double) * _N * 10);
 	}
 	//cudaMallocHost(&__mgM2, sizeof(double) * _N * _N);
 	//cudaMallocHost(&__mgrhs2, sizeof(double) * _N * _N);
