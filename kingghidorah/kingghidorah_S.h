@@ -832,10 +832,10 @@ namespace KingOfMonsters {
 				}
 				_ref->w = W;
 
-				for (int i = 0; i < _nNode; i++)
-				{
+				//for (int i = 0; i < _nNode; i++)
+				//{
 					//_ref->d0[i] *= _ref->buf_W[i] / _ref->w;
-				}
+				//}
 
 
 				ptr = _ref->d1;
