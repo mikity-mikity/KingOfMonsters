@@ -146,10 +146,10 @@ KingOfMonsters::cuda::cuda(int N) {
 	int _N = 1000;
 	for (int ii = 0; ii < count(); ii++)
 	{
-		cudaSetDevice(ii);
+		cudaSetDevice(ii);		
 		cudaMalloc(&__mgM[ii], sizeof(double) * _N * _N);
-		cudaMalloc(&__mgrhs[ii], sizeof(double) * _N * 10);
-		cudaMalloc(&__mgC[ii], sizeof(double) * _N * 10);
+		cudaMalloc(&__mgrhs[ii], sizeof(double) * _N * (1));
+		//cudaMalloc(&__mgC[ii], sizeof(double) * _N * (10 + (_N / count())));
 	}
 	//cudaMallocHost(&__mgM2, sizeof(double) * _N * _N);
 	//cudaMallocHost(&__mgrhs2, sizeof(double) * _N * _N);
@@ -197,16 +197,18 @@ KingOfMonsters::cuda::cuda(int N) {
 		cudaSetDevice(ii);
 		cudaFree(__mgM[ii]);
 		cudaFree(__mgrhs[ii]);
-		cudaFree(__mgC[ii]);
+		//cudaFree(__mgC[ii]);
 	}
 	//cudaFreeHost(__mgM2);
 	//cudaFreeHost(__mgrhs2);
 	for (int ii = 0; ii < count(); ii++)
 	{
 		cudaSetDevice(ii);
+		
 		cudaMalloc(&__mgM[ii], sizeof(double) * N * N);
-		cudaMalloc(&__mgrhs[ii], sizeof(double) * N * N/2);
-		cudaMalloc(&__mgC[ii], sizeof(double) * N * N/2);
+		
+		cudaMalloc(&__mgrhs[ii], sizeof(double) * N*(1));
+		cudaMalloc(&__mgC[ii], sizeof(double) * N * (1 + (N) / count()));
 		cudaMalloc(&__info[ii], sizeof(int) * 10);
 	}
 	//cudaMallocHost(&__mgM2, sizeof(double) * N * N);
@@ -3481,7 +3483,7 @@ int KingOfMonsters::_mySparse::_solveI(_mySparse* ret)
 	return 0;*/
 }
 
-void initidentiy(KingOfMonsters::cuda* cuda, int N) {
+void initidentiy(KingOfMonsters::cuda* cuda, int N,bool mp) {
 	double _a = 0;
 	double _b = 1;
 	//if (I.cols() != N || I.rows() != N)
@@ -3490,14 +3492,20 @@ void initidentiy(KingOfMonsters::cuda* cuda, int N) {
 #pragma omp parallel for
 		for (int ii = 0; ii < cuda->count(); ii++)
 		{
+			int S = N * ii / cuda->count();
+			int E = N * (ii+1) / cuda->count();
+			if (!mp)S = 0;
+			if (!mp)E = N;
+
 			cudaSetDevice(ii);
+
 			double* gpu_rhs = cuda->work_C(ii);
 			auto stream = cuda->__streams(ii, 0);
 			//cudaMemcpyAsync(gpu_rhs, I.data(), sizeof(double) * N * N, cudaMemcpyHostToDevice, stream);
-			cudaMemsetAsync(gpu_rhs, 0, N * N * sizeof(double), stream);
-			for (int i = 0; i < N; i++)
+			cudaMemsetAsync(gpu_rhs, 0, N * (E-S) * sizeof(double), stream);
+			for (int i = S; i < E; i++)
 			{
-				cudaMemcpyAsync(gpu_rhs + (i + i * N), &_b, 1 * sizeof(double), cudaMemcpyHostToDevice, stream);
+				cudaMemcpyAsync(gpu_rhs + (i + (i-S) * N), &_b, 1 * sizeof(double), cudaMemcpyHostToDevice, stream);
 			}
 		}
 	}
@@ -3525,7 +3533,7 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu_single(KingOfMonsters::cuda* 
 
 	if (!cuda->valid())return "";
 	int nn = cuda->count();
-	initidentiy(cuda, N);
+	initidentiy(cuda, N,false);
 	//Eigen::Map<Eigen::MatrixXd> ret_dmat(ret->___dmat, N, N);
 	ret->_dmat.setZero(N, N);
 	//ret->_tmp.setZero(N, N);
@@ -3604,7 +3612,7 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu_omp(KingOfMonsters::cuda* cud
 
 	if (!cuda->valid())return "";
 	int nn = cuda->count();
-	initidentiy(cuda, N);
+	initidentiy(cuda, N,true);
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 	//Eigen::Map<Eigen::MatrixXd> ret_dmat(ret->___dmat, N, N);
 	ret->_dmat.setZero(N, N);
@@ -3704,6 +3712,9 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu_omp(KingOfMonsters::cuda* cud
 #pragma omp parallel for
 	for (int ii = 0; ii < nn; ii++)
 	{
+		int S = N * ii / nn;
+		int E = N * (ii+1) / nn;
+
 		auto solver = cuda->solver(ii, 0);
 
 		cudaSetDevice(ii);
@@ -3717,37 +3728,37 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu_omp(KingOfMonsters::cuda* cud
 		int devInfo_on_cpu = 0;
 
 		bool exit = false;
-		while (true)
-		{
-#pragma omp parallel for
-			for (int kk = 0; kk < STREAMCOUNT; kk++)
-			{
-				int S = 0;
-				int E = 0;
+		//while (true)
+		//{
+//#pragma omp parallel for
+			//for (int kk = 0; kk < STREAMCOUNT; kk++)
+			//{
+				//int S = 0;
+				//int E = 0;
 
-#pragma omp critical
-				{
-					S = job;
-					E = S + ss;
-					if (E > N)E = N;
-					job = E;
-				}
-				if (S >= N) {
-					exit = true;
-					break;
-				}
-				count[ii]++;
+//#pragma omp critical
+//				{
+//					S = job;
+//					E = S + ss;
+//					if (E > N)E = N;
+//					job = E;
+//				}
+//				if (S >= N) {
+//					exit = true;
+//					break;
+//				}
+//				count[ii]++;
 				//int S = _S + (_E - _S) * kk / 4;
 				//int E = _S + (_E - _S) * (kk+1) / 4;
-				cudaStream_t _stream = cuda->__streams(ii, kk);
-				auto _solver = cuda->solver(ii, kk);
+				cudaStream_t _stream = cuda->__streams(ii, 0);
+				auto _solver = cuda->solver(ii, 0);
 				cusolverDnSetStream(_solver, _stream);
 
-				cusolverDnDpotrs(_solver, CUBLAS_FILL_MODE_LOWER, N, E - S, gpu_matrix, N, gpu_rhs + S * N, N, devInfo_on_gpu);
-				cudaMemcpyAsync(ret->_dmat.data() + S * N, gpu_rhs + S * N, (E - S) * N * sizeof(double), cudaMemcpyDeviceToHost, _stream);
-			}
-			if (exit)break;
-		}
+				cusolverDnDpotrs(_solver, CUBLAS_FILL_MODE_LOWER, N, E - S, gpu_matrix, N, gpu_rhs, N, devInfo_on_gpu);
+				cudaMemcpyAsync(ret->_dmat.data() + S * N, gpu_rhs, (E - S) * N * sizeof(double), cudaMemcpyDeviceToHost, _stream);
+			//}
+			//if (exit)break;
+		//}
 
 		//cusolverDnDestroy(_solver);
 		//cusolverDnSetStream(solver,streams[ii]);
