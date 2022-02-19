@@ -3972,14 +3972,42 @@ void KingOfMonsters::_mySparse::_solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* r
 }
 void KingOfMonsters::_mySparse::_solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret) {
 	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);
-	Eigen::SparseLU<Eigen::SparseMatrix<double,Eigen::ColMajor>> lu;
-	lu.compute(_mat[0]);
+	//Eigen::SparseLU<Eigen::SparseMatrix<double,Eigen::ColMajor>> lu;
+	Eigen::PartialPivLU<Eigen::MatrixXd> lu;
+	Eigen::MatrixXd m = _mat[0];
+	lu.compute(m);
 	//Eigen::Map<Eigen::VectorXd> b(rhs, N);
 	ret->conservativeResize(_mat[0].cols());
 	ret->setZero();
 	//Eigen::VectorXd x(_mat[0].rows());
 	//x.setZero();
 	*ret = lu.solve(*rhs);
+	//return x;
+}
+void KingOfMonsters::_mySparse::solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret) {
+	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);
+	//Eigen::SparseLU<Eigen::SparseMatrix<double,Eigen::ColMajor>> lu;
+	Eigen::PartialPivLU<Eigen::MatrixXd> lu;
+	lu.compute(this->_dmat);
+	//Eigen::Map<Eigen::VectorXd> b(rhs, N);
+	ret->conservativeResize(_mat[0].cols());
+	ret->setZero();
+	//Eigen::VectorXd x(_mat[0].rows());
+	//x.setZero();
+	*ret = lu.solve(*rhs);
+	//return x;
+}
+void KingOfMonsters::_mySparse::_solve0_lu_cg(Eigen::VectorXd* rhs, Eigen::VectorXd* ret) {
+	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);
+	//Eigen::SparseLU<Eigen::SparseMatrix<double, Eigen::ColMajor>> lu;
+	Eigen::ConjugateGradient<Eigen::SparseMatrix<double>, Eigen::Lower | Eigen::Upper> cg;
+	cg.compute(_mat[0]);
+	//Eigen::Map<Eigen::VectorXd> b(rhs, N);
+	ret->conservativeResize(_mat[0].cols());
+	ret->setZero();
+	//Eigen::VectorXd x(_mat[0].rows());
+	//x.setZero();
+	*ret = cg.solve(*rhs);
 	//return x;
 }
 void KingOfMonsters::_mySparse::__solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret) {

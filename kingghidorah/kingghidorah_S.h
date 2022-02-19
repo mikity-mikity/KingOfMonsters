@@ -35,8 +35,10 @@ namespace KingOfMonsters {
 			_buf = 0;
 		}
 	};
+	const int ___ll[4]{ 0,3,6,9 };
 	public class _memS_ref {
 	public:
+		std::string RAM;
 		int _nNode;
 		int dim[2]{ 0,0 };
 		int _uDim, _vDim;
@@ -59,23 +61,24 @@ namespace KingOfMonsters {
 		double** M[2]{ 0,0 };
 		int** dd=0;
 		double* d0=0;
-		double* d1[2]{ 0,0 };
-		double* d2[4]{ 0,0,0,0 };
-		double* d2_star[4]{ 0,0,0,0 };
-		const int star2[4]{ 1,-1,-1,1 };
-		const int _star[4]{ 3,1,2,0 };
-		/*star2[0] = 1;
-		star2[1] = -1;
-		star2[2] = -1;
-		star2[3] = 1;
+		
+		
+		//double* d1[2]{ 0,0 };
+		//double* d2[4]{ 0,0,0,0 };
+		//double* d2_star[4]{ 0,0,0,0 };
 
-		_star[0] = 3;
-		_star[1] = 1;
-		_star[2] = 2;
-		_star[3] = 0;*/
-		double* B[4]{ 0,0,0,0 };
-		double* tt0[2]{ 0,0 }, * hh0[2]{ 0,0 }, * tt1[4]{ 0,0,0,0 }, * hh1[4]{ 0,0,0,0 }, * tt2[8]{ 0,0,0,0,0,0,0,0 }, * hh2[8]{ 0,0,0,0,0,0,0,0 };
-		const int ___ll[4]{ 0,3,6,9 };
+		//double* B[4]{ 0,0,0,0 };
+		//double* tt0[2]{ 0,0 }, * hh0[2]{ 0,0 }, * tt1[4]{ 0,0,0,0 }, * hh1[4]{ 0,0,0,0 }, * tt2[8]{ 0,0,0,0,0,0,0,0 }, * hh2[8]{ 0,0,0,0,0,0,0,0 };
+
+		double** d1=0; //2
+		double** d2 = 0; //4
+		double** d2_star = 0;  //4
+
+		double** B = 0; //4
+		double** tt0 = 0, ** hh0 = 0;//2
+		double** tt1 = 0, ** hh1 = 0; //4
+		double** tt2 = 0, ** hh2 = 0;//8
+
 	public:
 		bool initialized=false;
 		double refDv=0,_refDv=0;
@@ -163,7 +166,10 @@ namespace KingOfMonsters {
 			dd = 0;
 
 			d0 = 0;
-			d1[0] = 0;
+			d1 = 0;
+			d2 = 0;
+			d2_star = 0;
+			/*d1[0] = 0;
 			d1[1] = 0;
 			d2[0] = 0;
 			d2[1] = 0;
@@ -179,7 +185,17 @@ namespace KingOfMonsters {
 			B[0] = 0;
 			B[1] = 0;
 			B[2] = 0;
-			B[3] = 0;
+			B[3] = 0;*/
+			
+			B = 0;
+			tt0 = 0;
+			hh0 = 0;
+			tt1 = 0;
+			hh1 = 0;
+			tt2 = 0;
+			hh2 = 0;
+
+			/*
 			tt0[0] = 0;
 			tt0[1] = 0;
 			hh0[0] = 0;
@@ -208,136 +224,166 @@ namespace KingOfMonsters {
 			hh2[5] = 0;
 			hh2[6] = 0;
 			hh2[7] = 0;
+			*/
 		}
 		~_memS_ref() {
 			del();
 		}
 		
-		void del() {		
-			if (__mat != 0)delete[] __mat;
-			__mat = 0;
-			if (dd != 0)
+		void del() {
+			if (RAM == "MAX")
 			{
+
+				if (__mat != 0)delete[] __mat;
+				__mat = 0;
+				if (d0 != 0) {
+					delete[] d0;
+					d0 = 0;
+				}
+				if (d1 != 0)
+				{
+					delete[] d1[0];
+					delete[] d1[1];
+					//d1[0] = 0;
+					//d1[1] = 0;
+					delete[] d1;
+					d1 = 0;
+
+				}
+				if (d2 != 0)
+				{
+					delete[] d2[0];
+					delete[] d2[1];
+					delete[] d2[2];
+					delete[] d2[3];
+					//d2[0] = 0;
+					//d2[1] = 0;
+					//d2[2] = 0;
+					//d2[3] = 0;
+					delete[] d2;
+					d2 = 0;
+					delete[] d2_star[0];
+					delete[] d2_star[1];
+					delete[] d2_star[2];
+					delete[] d2_star[3];
+					//d2_star[0] = 0;
+					//d2_star[1] = 0;
+					//d2_star[2] = 0;
+					//d2_star[3] = 0;
+					delete[] d2_star;
+					d2_star = 0;
+				}
+
+				if (B != 0) {
+					delete[] B[0];
+					delete[] B[1];
+					delete[] B[2];
+					delete[] B[3];
+					//B[0] = 0;
+					//B[1] = 0;
+					//B[2] = 0;
+					//B[3] = 0;
+					delete[] B;
+					B = 0;
+				}
+				if (tt0 != 0) {
+					delete[] tt0[0];
+					//tt0[0] = 0;
+					delete[] tt0[1];
+					//tt0[1] = 0;
+					delete[] tt0;
+					tt0 = 0;
+
+					delete[] hh0[0];
+					delete[] hh0[1];
+					//hh0[0] = 0;
+					//hh0[1] = 0;
+					delete[] hh0;
+					hh0 = 0;
+
+					delete[] tt1[0];
+					delete[] tt1[1];
+					delete[] tt1[2];
+					delete[] tt1[3];
+					//tt1[0] = 0;
+					//tt1[1] = 0;
+					//tt1[2] = 0;
+					//tt1[3] = 0;
+					delete[] tt1;
+					tt1 = 0;
+
+					delete[] hh1[0];
+					delete[] hh1[1];
+					delete[] hh1[2];
+					delete[] hh1[3];
+					//hh1[0] = 0;
+					//hh1[1] = 0;
+					//hh1[2] = 0;
+					//hh1[3] = 0;
+					delete[] hh1;
+					hh1 = 0;
+
+					delete[] tt2[0];
+					delete[] tt2[1];
+					delete[] tt2[2];
+					delete[] tt2[3];
+					delete[] tt2[4];
+					delete[] tt2[5];
+					delete[] tt2[6];
+					delete[] tt2[7];
+					//tt2[0] = 0;
+					//tt2[1] = 0;
+					//tt2[2] = 0;
+					//tt2[3] = 0;
+					//tt2[4] = 0;
+					//tt2[5] = 0;
+					//tt2[6] = 0;
+					//tt2[7] = 0;
+					delete[] tt2;
+					tt2 = 0;
+
+					delete[] hh2[0];
+					delete[] hh2[1];
+					delete[] hh2[2];
+					delete[] hh2[3];
+					delete[] hh2[4];
+					delete[] hh2[5];
+					delete[] hh2[6];
+					delete[] hh2[7];
+					//hh2[0] = 0;
+					//hh2[1] = 0;
+					//hh2[2] = 0;
+					//hh2[3] = 0;
+					//hh2[4] = 0;
+					//hh2[5] = 0;
+					//hh2[6] = 0;
+					//hh2[7] = 0;
+					delete[] hh2;
+					hh2 = 0;
+					//if (M[0] != 0) {
+					for (int i = 0; i < _uDim; i++) {
+						delete[] M[0][i];
+					}
+					for (int i = 0; i < _vDim; i++) {
+						delete[] M[1][i];
+					}
+					
+					//}
+				}
+				delete[] M[0];
+				delete[] M[1];
+				M[0] = 0;
+				M[1] = 0;
+				//}
+				//if (dd != 0)
+				//{
 				for (int i = 0; i < _nNode; i++) {
 					delete[] dd[i];
 				}
 				delete[] dd;
 				dd = 0;
 			}
-			if (d0 != 0) {
-				delete[] d0;
-				d0 = 0;
-			}
-			if (d1[0] != 0)
-			{
-				delete[] d1[0];
-				delete[] d1[1];
-				d1[0] = 0;
-				d1[1] = 0;
-			}
-			if (d2[0] != 0)
-			{
-				delete[] d2[0];
-				delete[] d2[1];
-				delete[] d2[2];
-				delete[] d2[3];
-				d2[0] = 0;
-				d2[1] = 0;
-				d2[2] = 0;
-				d2[3] = 0;
-				delete[] d2_star[0];
-				delete[] d2_star[1];
-				delete[] d2_star[2];
-				delete[] d2_star[3];
-				d2_star[0] = 0;
-				d2_star[1] = 0;
-				d2_star[2] = 0;
-				d2_star[3] = 0;
-			}
 
-			if (B[0] != 0) {
-				delete[] B[0];
-				delete[] B[1];
-				delete[] B[2];
-				delete[] B[3];
-				B[0] = 0;
-				B[1] = 0;
-				B[2] = 0;
-				B[3] = 0;
-
-			}
-			if (tt0[0] != 0) {
-				delete[] tt0[0];
-				tt0[0] = 0;
-				delete[] tt0[1];
-				tt0[1] = 0;
-				delete[] hh0[0];
-				delete[] hh0[1];
-				hh0[0] = 0;
-				hh0[1] = 0;
-				delete[] tt1[0];
-				delete[] tt1[1];
-				delete[] tt1[2];
-				delete[] tt1[3];
-				tt1[0] = 0;
-				tt1[1] = 0;
-				tt1[2] = 0;
-				tt1[3] = 0;
-				delete[] hh1[0];
-				delete[] hh1[1];
-				delete[] hh1[2];
-				delete[] hh1[3];
-				hh1[0] = 0;
-				hh1[1] = 0;
-				hh1[2] = 0;
-				hh1[3] = 0;
-				delete[] tt2[0];
-				delete[] tt2[1];
-				delete[] tt2[2];
-				delete[] tt2[3];
-				delete[] tt2[4];
-				delete[] tt2[5];
-				delete[] tt2[6];
-				delete[] tt2[7];
-				tt2[0] = 0;
-				tt2[1] = 0;
-				tt2[2] = 0;
-				tt2[3] = 0;
-				tt2[4] = 0;
-				tt2[5] = 0;
-				tt2[6] = 0;
-				tt2[7] = 0;
-
-				delete[] hh2[0];
-				delete[] hh2[1];
-				delete[] hh2[2];
-				delete[] hh2[3];
-				delete[] hh2[4];
-				delete[] hh2[5];
-				delete[] hh2[6];
-				delete[] hh2[7];
-				hh2[0] = 0;
-				hh2[1] = 0;
-				hh2[2] = 0;
-				hh2[3] = 0;
-				hh2[4] = 0;
-				hh2[5] = 0;
-				hh2[6] = 0;
-				hh2[7] = 0;
-
-			}
-			if (M[0] != 0) {
-				for (int i = 0; i < _uDim; i++) {
-					delete[] M[0][i];
-				}
-				for (int i = 0; i < _vDim; i++) {
-					delete[] M[1][i];
-				}
-				delete[] M[0];
-				delete[] M[1];
-				M[0] = 0;
-				M[1] = 0;
-			}
 			/*_nNode = 0;
 			__z = -10000000;
 			_nNode = 0;
@@ -354,59 +400,75 @@ namespace KingOfMonsters {
 				_vDim = vDim;
 				dim[0] = _uDim;
 				dim[1] = _vDim;
-				//__mat = new double[nNode * nNode];
-				d0 = new double[nNode];
+				if (RAM == "MAX" && d0==0)
+				{
+					__mat = new double[_nNode * _nNode];
+					d0 = new double[nNode];
 
-				d1[0] = new double[nNode];
-				d1[1] = new double[nNode];
+					d1 = new double* [2];
+					d1[0] = new double[nNode];
+					d1[1] = new double[nNode];
 
-				d2[0] = new double[nNode];
-				d2[1] = new double[nNode];
-				d2[2] = new double[nNode];
-				d2[3] = new double[nNode];
+					d2 = new double* [4];
+					d2[0] = new double[nNode];
+					d2[1] = new double[nNode];
+					d2[2] = new double[nNode];
+					d2[3] = new double[nNode];
 
-				d2_star[0] = new double[nNode];
-				d2_star[1] = new double[nNode];
-				d2_star[2] = new double[nNode];
-				d2_star[3] = new double[nNode];
+					d2_star = new double* [4];
+					d2_star[0] = new double[nNode];
+					d2_star[1] = new double[nNode];
+					d2_star[2] = new double[nNode];
+					d2_star[3] = new double[nNode];
 
-				B[0] = new double[nNode * nNode];
-				B[1] = new double[nNode * nNode];
-				B[2] = new double[nNode * nNode];
-				B[3] = new double[nNode * nNode];
+					B = new double* [4];
+					B[0] = new double[nNode * nNode];
+					B[1] = new double[nNode * nNode];
+					B[2] = new double[nNode * nNode];
+					B[3] = new double[nNode * nNode];
 
-				tt0[0] = new double[uDim];
-				tt0[1] = new double[vDim];
+					tt0 = new double* [2];
+					tt0[0] = new double[uDim];
+					tt0[1] = new double[vDim];
 
-				hh0[0] = new double[uDim];
-				hh0[1] = new double[vDim];
+					hh0 = new double* [2];
+					hh0[0] = new double[uDim];
+					hh0[1] = new double[vDim];
 
-				tt1[0] = new double[uDim];
-				tt1[1] = new double[vDim];
-				tt1[2] = new double[uDim];
-				tt1[3] = new double[vDim];
-				hh1[0] = new double[uDim];
-				hh1[1] = new double[vDim];
-				hh1[2] = new double[uDim];
-				hh1[3] = new double[vDim];
+					tt1 = new double* [4];
+					tt1[0] = new double[uDim];
+					tt1[1] = new double[vDim];
+					tt1[2] = new double[uDim];
+					tt1[3] = new double[vDim];
+					hh1 = new double* [4];
+					hh1[0] = new double[uDim];
+					hh1[1] = new double[vDim];
+					hh1[2] = new double[uDim];
+					hh1[3] = new double[vDim];
 
-				tt2[0] = new double[uDim];
-				tt2[1] = new double[vDim];
-				tt2[2] = new double[uDim];
-				tt2[3] = new double[vDim];
-				tt2[4] = new double[uDim];
-				tt2[5] = new double[vDim];
-				tt2[6] = new double[uDim];
-				tt2[7] = new double[vDim];
-				hh2[0] = new double[uDim];
-				hh2[1] = new double[vDim];
-				hh2[2] = new double[uDim];
-				hh2[3] = new double[vDim];
-				hh2[4] = new double[uDim];
-				hh2[5] = new double[vDim];
-				hh2[6] = new double[uDim];
-				hh2[7] = new double[vDim];
+					tt2 = new double* [8];
+					tt2[0] = new double[uDim];
+					tt2[1] = new double[vDim];
+					tt2[2] = new double[uDim];
+					tt2[3] = new double[vDim];
+					tt2[4] = new double[uDim];
+					tt2[5] = new double[vDim];
+					tt2[6] = new double[uDim];
+					tt2[7] = new double[vDim];
+					hh2 = new double* [8];
+					hh2[0] = new double[uDim];
+					hh2[1] = new double[vDim];
+					hh2[2] = new double[uDim];
+					hh2[3] = new double[vDim];
+					hh2[4] = new double[uDim];
+					hh2[5] = new double[vDim];
+					hh2[6] = new double[uDim];
+					hh2[7] = new double[vDim];
 
+
+					
+
+				}
 
 				M[0] = new double* [uDim];
 				M[1] = new double* [vDim];
@@ -420,7 +482,6 @@ namespace KingOfMonsters {
 				for (int i = 0; i < nNode; i++) {
 					dd[i] = new int[2];
 				}
-				
 
 			}
 			else {
@@ -433,6 +494,8 @@ namespace KingOfMonsters {
 	public class _memS {
 	public:
 		std::string mode;
+		std::string RAM;
+
 		_memS_ref* _ref=0;
 		double N[3];
 		double bodyF;
@@ -457,8 +520,8 @@ namespace KingOfMonsters {
 		double _K_phi[2];
 		double* _K = 0;
 		double lo[2]{ 0,0, };
-		//double** M[2];
-		//int** dd;
+		
+		
 		int dim[2];
 		int _uDim, _vDim;
 		double gi[6];
@@ -471,15 +534,21 @@ namespace KingOfMonsters {
 		double _Sij[4];
 	public:
 		double sc;
-	private:
-		//double* d0;
-		//double* d1[2];
-		//double* d2[4];
-		//double* d2_star[4];
-		//double star2[4];
-		//int _star[4];
-		//double* B[4];
-		//double* tt0[2], * hh0[2], * tt1[4], * hh1[4], * tt2[8], * hh2[8];
+	public:
+		///////shared memory//////
+		//double** M[2];
+		//int** dd;
+		double* __mat = 0;
+		double* d0;
+		double* d1[2];
+		double* d2[4];
+		double* d2_star[4];
+		const int star2[4]{ 1,-1,-1,1 };
+		const int _star[4]{ 3,1,2,0 };
+		double* B[4];
+		double* tt0[2], * hh0[2], * tt1[4], * hh1[4], * tt2[8], * hh2[8];
+		///////shared memory//////
+
 		double* gradN[3]{ 0,0,0 };
 		double* gradG = 0;
 		const int ___ll[4]{ 0,3,6,9 };
@@ -666,8 +735,9 @@ namespace KingOfMonsters {
 			return val;
 		}
 	public:
-		_memS(string ultimate) {
+		_memS(string ultimate,string RAM) {
 			this->mode = ultimate;
+			this->RAM = RAM;
 			if (mode=="U") {
 				__grad_z = 0;
 				__grad_phi = 0;
@@ -690,69 +760,65 @@ namespace KingOfMonsters {
 			gradN[1] = 0;
 			gradN[2] = 0;
 			gradG = 0;
-			/*d0 = 0;
-			d1[0] = 0;
-			d1[1] = 0;
-			d2[0] = 0;
-			d2[1] = 0;
-			d2[2] = 0;
-			d2[3] = 0;
-			d2_star[0] = 0;
-			d2_star[1] = 0;
-			d2_star[2] = 0;
-			d2_star[3] = 0;
 
-			star2[0] = 1;
-			star2[1] = -1;
-			star2[2] = -1;
-			star2[3] = 1;
+			if (RAM == "SAVE")
+			{
+				__mat = 0;
+				d0 = 0;
+				d1[0] = 0;
+				d1[1] = 0;
+				d2[0] = 0;
+				d2[1] = 0;
+				d2[2] = 0;
+				d2[3] = 0;
+				d2_star[0] = 0;
+				d2_star[1] = 0;
+				d2_star[2] = 0;
+				d2_star[3] = 0;
 
-			_star[0] = 3;
-			_star[1] = 1;
-			_star[2] = 2;
-			_star[3] = 0;
 
-			B[0] = 0;
-			B[1] = 0;
-			B[2] = 0;
-			B[3] = 0;
-			tt0[0] = 0;
-			tt0[1] = 0;
-			hh0[0] = 0;
-			hh0[1] = 0;
-			tt1[0] = 0;
-			tt1[1] = 0;
-			tt1[2] = 0;
-			tt1[3] = 0;
-			hh1[0] = 0;
-			hh1[1] = 0;
-			hh1[2] = 0;
-			hh1[3] = 0;
-			tt2[0] = 0;
-			tt2[1] = 0;
-			tt2[2] = 0;
-			tt2[3] = 0;
-			tt2[4] = 0;
-			tt2[5] = 0;
-			tt2[6] = 0;
-			tt2[7] = 0;
-			hh2[0] = 0;
-			hh2[1] = 0;
-			hh2[2] = 0;
-			hh2[3] = 0;
-			hh2[4] = 0;
-			hh2[5] = 0;
-			hh2[6] = 0;
-			hh2[7] = 0;*/
+				B[0] = 0;
+				B[1] = 0;
+				B[2] = 0;
+				B[3] = 0;
+				tt0[0] = 0;
+				tt0[1] = 0;
+				hh0[0] = 0;
+				hh0[1] = 0;
+				tt1[0] = 0;
+				tt1[1] = 0;
+				tt1[2] = 0;
+				tt1[3] = 0;
+				hh1[0] = 0;
+				hh1[1] = 0;
+				hh1[2] = 0;
+				hh1[3] = 0;
+				tt2[0] = 0;
+				tt2[1] = 0;
+				tt2[2] = 0;
+				tt2[3] = 0;
+				tt2[4] = 0;
+				tt2[5] = 0;
+				tt2[6] = 0;
+				tt2[7] = 0;
+				hh2[0] = 0;
+				hh2[1] = 0;
+				hh2[2] = 0;
+				hh2[3] = 0;
+				hh2[4] = 0;
+				hh2[5] = 0;
+				hh2[6] = 0;
+				hh2[7] = 0;
+			}
 
 		}
 		~_memS() {
 			del();
 		}
 		void update2() {
-			if (!_ref->initialized)
+			if (!_ref->initialized||RAM=="SAVE")
 			{
-				_ref->initialized = true;
+				
 
 				for (auto const& j:___ee)
 				{
@@ -1162,9 +1228,8 @@ namespace KingOfMonsters {
 				}
 				this->phi = val;*/
 				static const int sss[4]{ 1,2,0,3 };
-				if (_ref->__mat == 0)
+				if (!_ref->initialized ||RAM=="SAVE")
 				{
-					_ref->__mat = new double[_nNode * _nNode];
 					pptr = &_ref->__mat[0];
 					
 					for (int i = 0; i < _nNode; i++)
@@ -1174,7 +1239,7 @@ namespace KingOfMonsters {
 							for (auto const& k : sss) {
 								{
 									//double tmp = ;
-									val += _ref->star2[k] * (_ref->d2[_ref->_star[k]][i] - Gammaijk[((_ref->_star[k]) << 1) + 0] * _ref->d1[0][i] - Gammaijk[((_ref->_star[k]) << 1) + 1] * _ref->d1[1][i]) *
+									val += star2[k] * (_ref->d2[_star[k]][i] - Gammaijk[((_star[k]) << 1) + 0] * _ref->d1[0][i] - Gammaijk[((_star[k]) << 1) + 1] * _ref->d1[1][i]) *
 									(_ref->d2[k][j] - Gammaijk[((k) << 1) + 0] * _ref->d1[0][j] - Gammaijk[((k) << 1) + 1] * _ref->d1[1][j]);
 								}
 							}
@@ -1183,7 +1248,7 @@ namespace KingOfMonsters {
 						}
 					}
 				}
-	
+				
 				pptr = &_ref->__mat[0];
 				pptr1 = &_ref->buf_phi[0];
 				val3 = 0;
@@ -1233,6 +1298,7 @@ namespace KingOfMonsters {
 					pptr1++;
 				}
 			}
+			_ref->initialized = true;
 			if ( mode == "SLOPE") {
 				for (auto const& l : ___ee) {
 					_SLOPE_phi[l] = __SLOPE_phi(l);
@@ -1393,65 +1459,88 @@ namespace KingOfMonsters {
 
 			}
 			if (gradG != 0)delete[] gradG;
-			/*if (tt0[0] != 0) {
-				delete[] tt0[0];
-				tt0[0] = 0;
-				delete[] tt0[1];
-				tt0[1] = 0;
-				delete[] hh0[0];
-				delete[] hh0[1];
-				hh0[0] = 0;
-				hh0[1] = 0;
-				delete[] tt1[0];
-				delete[] tt1[1];
-				delete[] tt1[2];
-				delete[] tt1[3];
-				tt1[0] = 0;
-				tt1[1] = 0;
-				tt1[2] = 0;
-				tt1[3] = 0;
-				delete[] hh1[0];
-				delete[] hh1[1];
-				delete[] hh1[2];
-				delete[] hh1[3];
-				hh1[0] = 0;
-				hh1[1] = 0;
-				hh1[2] = 0;
-				hh1[3] = 0;
-				delete[] tt2[0];
-				delete[] tt2[1];
-				delete[] tt2[2];
-				delete[] tt2[3];
-				delete[] tt2[4];
-				delete[] tt2[5];
-				delete[] tt2[6];
-				delete[] tt2[7];
-				tt2[0] = 0;
-				tt2[1] = 0;
-				tt2[2] = 0;
-				tt2[3] = 0;
-				tt2[4] = 0;
-				tt2[5] = 0;
-				tt2[6] = 0;
-				tt2[7] = 0;
+			if (RAM == "SAVE")
+			{
+				if (tt0[0] != 0) {
+					delete[] __mat;
+					delete[] tt0[0];
+					tt0[0] = 0;
+					delete[] tt0[1];
+					tt0[1] = 0;
+					delete[] hh0[0];
+					delete[] hh0[1];
+					hh0[0] = 0;
+					hh0[1] = 0;
+					delete[] tt1[0];
+					delete[] tt1[1];
+					delete[] tt1[2];
+					delete[] tt1[3];
+					tt1[0] = 0;
+					tt1[1] = 0;
+					tt1[2] = 0;
+					tt1[3] = 0;
+					delete[] hh1[0];
+					delete[] hh1[1];
+					delete[] hh1[2];
+					delete[] hh1[3];
+					hh1[0] = 0;
+					hh1[1] = 0;
+					hh1[2] = 0;
+					hh1[3] = 0;
+					delete[] tt2[0];
+					delete[] tt2[1];
+					delete[] tt2[2];
+					delete[] tt2[3];
+					delete[] tt2[4];
+					delete[] tt2[5];
+					delete[] tt2[6];
+					delete[] tt2[7];
+					tt2[0] = 0;
+					tt2[1] = 0;
+					tt2[2] = 0;
+					tt2[3] = 0;
+					tt2[4] = 0;
+					tt2[5] = 0;
+					tt2[6] = 0;
+					tt2[7] = 0;
 
-				delete[] hh2[0];
-				delete[] hh2[1];
-				delete[] hh2[2];
-				delete[] hh2[3];
-				delete[] hh2[4];
-				delete[] hh2[5];
-				delete[] hh2[6];
-				delete[] hh2[7];
-				hh2[0] = 0;
-				hh2[1] = 0;
-				hh2[2] = 0;
-				hh2[3] = 0;
-				hh2[4] = 0;
-				hh2[5] = 0;
-				hh2[6] = 0;
-				hh2[7] = 0;
-			}*/
+					delete[] hh2[0];
+					delete[] hh2[1];
+					delete[] hh2[2];
+					delete[] hh2[3];
+					delete[] hh2[4];
+					delete[] hh2[5];
+					delete[] hh2[6];
+					delete[] hh2[7];
+					hh2[0] = 0;
+					hh2[1] = 0;
+					hh2[2] = 0;
+					hh2[3] = 0;
+					hh2[4] = 0;
+					hh2[5] = 0;
+					hh2[6] = 0;
+					hh2[7] = 0;
+					
+					/*for (int i = 0; i < _uDim; i++) {
+						delete[] M[0][i];
+					}
+					for (int i = 0; i < _vDim; i++) {
+						delete[] M[1][i];
+					}
+					delete[] M[0];
+					delete[] M[1];
+					M[0] = 0;
+					M[1] = 0;
+					
+					for (int i = 0; i < _nNode; i++) {
+						delete[] dd[i];
+					}
+					delete[] dd;
+					dd = 0;*/
+					
+
+				}
+			}
 		}
 
 		void update(int nNode, int uDim, int vDim) {
@@ -1489,57 +1578,75 @@ namespace KingOfMonsters {
 					gradN[2] = new double[3 * _nNode];
 					gradG = new double[8 * _nNode];
 				}
-				/*d0 = new double[nNode];
+				if (RAM == "SAVE")
+				{
+					__mat = new double[nNode * nNode];
+					d0 = new double[nNode];
 
-				d1[0] = new double[nNode];
-				d1[1] = new double[nNode];
+					d1[0] = new double[nNode];
+					d1[1] = new double[nNode];
 
-				d2[0] = new double[nNode];
-				d2[1] = new double[nNode];
-				d2[2] = new double[nNode];
-				d2[3] = new double[nNode];
+					d2[0] = new double[nNode];
+					d2[1] = new double[nNode];
+					d2[2] = new double[nNode];
+					d2[3] = new double[nNode];
 
-				d2_star[0] = new double[nNode];
-				d2_star[1] = new double[nNode];
-				d2_star[2] = new double[nNode];
-				d2_star[3] = new double[nNode];
+					d2_star[0] = new double[nNode];
+					d2_star[1] = new double[nNode];
+					d2_star[2] = new double[nNode];
+					d2_star[3] = new double[nNode];
 
-				B[0] = new double[nNode * nNode];
-				B[1] = new double[nNode * nNode];
-				B[2] = new double[nNode * nNode];
-				B[3] = new double[nNode * nNode];
+					B[0] = new double[nNode * nNode];
+					B[1] = new double[nNode * nNode];
+					B[2] = new double[nNode * nNode];
+					B[3] = new double[nNode * nNode];
 
-				tt0[0] = new double[uDim];
-				tt0[1] = new double[vDim];
+					tt0[0] = new double[uDim];
+					tt0[1] = new double[vDim];
 
-				hh0[0] = new double[uDim];
-				hh0[1] = new double[vDim];
+					hh0[0] = new double[uDim];
+					hh0[1] = new double[vDim];
 
-				tt1[0] = new double[uDim];
-				tt1[1] = new double[vDim];
-				tt1[2] = new double[uDim];
-				tt1[3] = new double[vDim];
-				hh1[0] = new double[uDim];
-				hh1[1] = new double[vDim];
-				hh1[2] = new double[uDim];
-				hh1[3] = new double[vDim];
+					tt1[0] = new double[uDim];
+					tt1[1] = new double[vDim];
+					tt1[2] = new double[uDim];
+					tt1[3] = new double[vDim];
+					hh1[0] = new double[uDim];
+					hh1[1] = new double[vDim];
+					hh1[2] = new double[uDim];
+					hh1[3] = new double[vDim];
 
-				tt2[0] = new double[uDim];
-				tt2[1] = new double[vDim];
-				tt2[2] = new double[uDim];
-				tt2[3] = new double[vDim];
-				tt2[4] = new double[uDim];
-				tt2[5] = new double[vDim];
-				tt2[6] = new double[uDim];
-				tt2[7] = new double[vDim];
-				hh2[0] = new double[uDim];
-				hh2[1] = new double[vDim];
-				hh2[2] = new double[uDim];
-				hh2[3] = new double[vDim];
-				hh2[4] = new double[uDim];
-				hh2[5] = new double[vDim];
-				hh2[6] = new double[uDim];
-				hh2[7] = new double[vDim];
+					tt2[0] = new double[uDim];
+					tt2[1] = new double[vDim];
+					tt2[2] = new double[uDim];
+					tt2[3] = new double[vDim];
+					tt2[4] = new double[uDim];
+					tt2[5] = new double[vDim];
+					tt2[6] = new double[uDim];
+					tt2[7] = new double[vDim];
+					hh2[0] = new double[uDim];
+					hh2[1] = new double[vDim];
+					hh2[2] = new double[uDim];
+					hh2[3] = new double[vDim];
+					hh2[4] = new double[uDim];
+					hh2[5] = new double[vDim];
+					hh2[6] = new double[uDim];
+					hh2[7] = new double[vDim];
+
+					/*M[0] = new double* [uDim];
+					M[1] = new double* [vDim];
+					for (int i = 0; i < uDim; i++) {
+						M[0][i] = new double[uDim];
+					}
+					for (int i = 0; i < vDim; i++) {
+						M[1][i] = new double[vDim];
+					}
+					dd = new int* [nNode];
+					for (int i = 0; i < nNode; i++) {
+						dd[i] = new int[2];
+					}*/
+				}
+				/*
 				gradN[0] = new double[3 * _nNode];
 				gradN[1] = new double[3 * _nNode];
 				gradN[2] = new double[3 * _nNode];
@@ -1836,7 +1943,7 @@ namespace KingOfMonsters {
 			for (int ii = 0; ii < 2; ii++)
 			{
 				int ij = ii * 2 + i;
-				val += _ref->star2[ij]*(_ref->d2[_ref->_star[ij]][I]- Gammaijk[(_ref->_star[ij])*2+0]* _ref->d1[0][I] - Gammaijk[(_ref->_star[ij]) * 2 + 1] * _ref->d1[1][I]) * _ref->d1[ii][J];
+				val += star2[ij]*(_ref->d2[_star[ij]][I]- Gammaijk[(_star[ij])*2+0]* _ref->d1[0][I] - Gammaijk[(_star[ij]) * 2 + 1] * _ref->d1[1][I]) * _ref->d1[ii][J];
 			}
 			return sc*val;
 		}
@@ -1906,7 +2013,7 @@ namespace KingOfMonsters {
 				for (int ii = 0; ii < 2; ii++)
 				{
 					int ij = ii * 2 + i;
-					val += _ref->star2[ij] * (_ref->d2[_ref->_star[ij]][I] - Gammaijk[((_ref->_star[ij]) <<1) + 0] * _ref->d1[0][I] - Gammaijk[((_ref->_star[ij]) <<1) + 1] * _ref->d1[1][I]) * _ref->d1[ii][J];
+					val += star2[ij] * (_ref->d2[_star[ij]][I] - Gammaijk[((_star[ij]) <<1) + 0] * _ref->d1[0][I] - Gammaijk[((_star[ij]) <<1) + 1] * _ref->d1[1][I]) * _ref->d1[ii][J];
 				}
 				val2 += val * _ref->buf_z[J];
 			}
@@ -1921,7 +2028,7 @@ namespace KingOfMonsters {
 				for (int ii = 0; ii < 2; ii++)
 				{
 					int ij = (ii<<1) + i;
-					val += _ref->star2[ij] * (_ref->d2[_ref->_star[ij]][I] - Gammaijk[((_ref->_star[ij]) <<1) + 0] * _ref->d1[0][I] - Gammaijk[((_ref->_star[ij]) <<1) + 1] * _ref->d1[1][I]) * _ref->d1[ii][J];
+					val +=star2[ij] * (_ref->d2[_star[ij]][I] - Gammaijk[((_star[ij]) <<1) + 0] * _ref->d1[0][I] - Gammaijk[((_star[ij]) <<1) + 1] * _ref->d1[1][I]) * _ref->d1[ii][J];
 				}
 				val2 += val * _ref->buf_phi[I];
 			}
@@ -1936,7 +2043,7 @@ namespace KingOfMonsters {
 				for (int ii = 0; ii < 2; ii++)
 				{
 					int ij = (ii<<1) + i;
-					val += _ref->star2[ij] * (_ref->d2[_ref->_star[ij]][I] - Gammaijk[((_ref->_star[ij]) <<1)+ 0] * _ref->d1[0][I] - Gammaijk[((_ref->_star[ij]) <<1) + 1] * _ref->d1[1][I]) * _ref->d1[ii][J];
+					val += star2[ij] * (_ref->d2[_star[ij]][I] - Gammaijk[((_star[ij]) <<1)+ 0] * _ref->d1[0][I] - Gammaijk[((_star[ij]) <<1) + 1] * _ref->d1[1][I]) * _ref->d1[ii][J];
 				}
 				val2 += val * _ref->buf_z[I];
 			}
@@ -1951,7 +2058,7 @@ namespace KingOfMonsters {
 				for (int ii = 0; ii < 2; ii++)
 				{
 					int ij = (ii<<1) + i;
-					val += _ref->star2[ij] * (_ref->d2[_ref->_star[ij]][I] - Gammaijk[((_ref->_star[ij]) <<1) + 0] * _ref->d1[0][I] - Gammaijk[((_ref->_star[ij]) <<1) + 1] * _ref->d1[1][I]) * _ref->d1[ii][J];
+					val += star2[ij] * (_ref->d2[_star[ij]][I] - Gammaijk[((_star[ij]) <<1) + 0] * _ref->d1[0][I] - Gammaijk[((_star[ij]) <<1) + 1] * _ref->d1[1][I]) * _ref->d1[ii][J];
 				}
 				val2 += val * _ref->buf_phi[J];
 			}
@@ -2900,6 +3007,9 @@ public:
 	}
 	void setRef(memS_ref^ _mem_) {
 		__mem->_ref = _mem_->__mem;
+		__mem->_ref->RAM = __mem->RAM;
+
+		
 	}
 	void computeGrads() {
 		__mem->computeGrads();
@@ -3227,6 +3337,23 @@ public:
 			return x* __mem->get_gi(i, 0) + y * __mem->get_gi(i, 1);
 		}
 		void compute() {
+			if (__mem->RAM == "SAVE")
+			{
+				__mem->_ref->__mat = __mem->__mat;
+				__mem->_ref->d0 = __mem->d0;
+
+				__mem->_ref->d1 = __mem->d1;
+				__mem->_ref->d2 = __mem->d2;
+				__mem->_ref->d2_star = __mem->d2_star;
+				__mem->_ref->B = __mem->B;
+				__mem->_ref->tt0 = __mem->tt0;
+				__mem->_ref->hh0 = __mem->hh0;
+				__mem->_ref->tt1 = __mem->tt1;
+				__mem->_ref->hh1 = __mem->hh1;
+				__mem->_ref->tt2 = __mem->tt2;
+				__mem->_ref->hh2 = __mem->hh2;
+
+			}
 			__mem->update2();
 			x = __mem->x;
 			y = __mem->y;
@@ -3243,6 +3370,13 @@ public:
 		}
 		void update_elem(int nNode, int uDim, int vDim,array<double, 3>^ M, array<int, 2>^ dd) {
 			__mem->update(nNode, uDim, vDim);
+			if (__mem->RAM == "SAVE")
+			{
+				//__mem->_ref->M[0] = __mem->M[0];
+				//__mem->_ref->M[1] = __mem->M[1];
+				//__mem->_ref->dd = __mem->dd;
+				
+			}
 			int i = 0;
 			for (int j = 0; j < uDim; j++) {
 				for (int k = 0; k < uDim; k++) {
@@ -3269,24 +3403,31 @@ public:
 			Z = __mem->_ref->Z;
 			//phi = __mem->phi;
 		}
-		memS() {
-			__mem = new _memS(std::string(""));
+		memS(System::String^ RAM) {
+			string _RAM = "";
+			if (RAM == "SAVE")_RAM = "SAVE";
+			if (RAM == "MAX")_RAM = "MAX";
+			__mem = new _memS(std::string(""), _RAM);//MAX=cosume memory more but fast, SAVE=save memory and a little slow
 		}
 		void static func(int i) {
 
 		}
-		memS(System::String ^ultimate) {
+		memS(System::String ^ultimate, System::String^ RAM) {
 			
+			string _RAM = "";
+			if (RAM == "SAVE")_RAM = "SAVE";
+			if (RAM == "MAX")_RAM = "MAX";
+
 			if (ultimate == "U")
-				__mem = new _memS("U");
+				__mem = new _memS("U",_RAM);
 			else if (ultimate == "SLOPE")
-				__mem = new _memS("SLOPE");
+				__mem = new _memS("SLOPE", _RAM);
 			else if (ultimate == "SHELL")
-				__mem = new _memS("SHELL");
+				__mem = new _memS("SHELL", _RAM);
 			else if (ultimate == "SENSITIVITY")
-				__mem = new _memS("SENSITIVITY");
+				__mem = new _memS("SENSITIVITY", _RAM);
 			else
-				__mem = new _memS("");
+				__mem = new _memS("", _RAM);
 		}
 		void dispose() {
 			if(__mem!=0)

@@ -822,6 +822,28 @@ namespace KingOfMonsters {
 			//ptr = nullptr;
 			//return ret;
 		}
+		void solve0_lu(myDoubleArray^ rhs, myDoubleArray^ ret) {
+			//pin_ptr<double> ptr = &rhs[0];
+
+			dat->solve0_lu(&rhs->_arr->__v, &ret->_arr->__v);
+
+			//array<double>^ ret = gcnew array<double>(_ret.rows());
+			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
+
+			//ptr = nullptr;
+			//return ret;
+		}
+		void _solve0_lu_cg(myDoubleArray^ rhs, myDoubleArray^ ret) {
+			//pin_ptr<double> ptr = &rhs[0];
+
+			dat->_solve0_lu_cg(&rhs->_arr->__v, &ret->_arr->__v);
+
+			//array<double>^ ret = gcnew array<double>(_ret.rows());
+			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
+
+			//ptr = nullptr;
+			//return ret;
+		}
 		void _solve0(myDoubleArray^ rhs, myDoubleArray^ ret) {
 			//pin_ptr<double> ptr = &rhs[0];
 
