@@ -1795,7 +1795,7 @@ namespace KingOfMonsters {
 			int e = i * _nNode + j;
 			return 0.5*(_Sij[0] * _ref->B[0][e] + 2 * _Sij[1] * _ref->B[1][e] + _Sij[3] * _ref->B[3][e]) * _ref->refDv;
 		}
-		void F(_mySparse* mat, int* index, double sc) {		
+		void F(_mySparse* mat,int64_t* index, double sc) {		
 			for (int i = 0; i < _nNode; i++)
 			{
 				int I = index[i];
@@ -1809,7 +1809,7 @@ namespace KingOfMonsters {
 				}
 			}
 		}
-		void getMat(_mySparse* mat,int *index,int c,int m)
+		void getMat(_mySparse* mat,int64_t *index,int c,int m)
 		{
 			for (int i = 0; i < _nNode; i++)
 			{
@@ -1829,7 +1829,7 @@ namespace KingOfMonsters {
 				* (_Sij[0] * (_ref->d2[0][j] - this->_ref->get__Gammaijk(0, 0, 0) * _ref->d1[0][j] - this->_ref->get__Gammaijk(0, 0, 1) * _ref->d1[1][j]) + 2 * _Sij[1] * (_ref->d2[1][j] - this->_ref->get__Gammaijk(0, 1, 0) * _ref->d1[0][j] - this->_ref->get__Gammaijk(0, 1, 1) * _ref->d1[1][j]) + _Sij[3] * (_ref->d2[3][j] - this->_ref->get__Gammaijk(1, 1, 0) * _ref->d1[0][j] - this->_ref->get__Gammaijk(1, 1, 1) * _ref->d1[1][j])) * _ref->refDv;// / _ref->refDv / _ref->refDv;
 
 		}
-		std::string F2(_mySparse* mat, int* index, double sc) {
+		std::string F2(_mySparse* mat, int64_t* index, double sc) {
 			Eigen::initParallel();
 			std::stringstream ss;
 			auto start = high_resolution_clock::now();
@@ -1851,7 +1851,7 @@ namespace KingOfMonsters {
 				(_Sij[0] * (_ref->d2[0][i] - this->_ref->get__Gammaijk(0, 0, 0) * _ref->d1[0][i] - this->_ref->get__Gammaijk(0, 0, 1) * _ref->d1[1][i]) + 2 * _Sij[1] * (_ref->d2[1][i] - this->_ref->get__Gammaijk(0, 1, 0) * _ref->d1[0][i] - this->_ref->get__Gammaijk(0, 1, 1) * _ref->d1[1][i]) + _Sij[3] * (_ref->d2[3][i] - this->_ref->get__Gammaijk(1, 1, 0) * _ref->d1[0][i] - this->_ref->get__Gammaijk(1, 1, 1) * _ref->d1[1][i]))
 				* (_ref->d2[0][j]) * _ref->refDv;// / _ref->refDv / _ref->refDv;
 		}
-		std::string F2A(_mySparse* mat, int* index, double sc) {
+		std::string F2A(_mySparse* mat, int64_t* index, double sc) {
 			Eigen::initParallel();
 			std::stringstream ss;
 			auto start = high_resolution_clock::now();
@@ -2150,7 +2150,7 @@ namespace KingOfMonsters {
 			return (_Sij[0] * (_ref->d2[0][i] - this->_ref->get__Gammaijk(0, 0, 0) * _ref->d1[0][i] - this->_ref->get__Gammaijk(0, 0, 1) * _ref->d1[1][i]) + 2 * _Sij[1] * (_ref->d2[1][i] - this->_ref->get__Gammaijk(0, 1, 0) * _ref->d1[0][i] - this->_ref->get__Gammaijk(0, 1, 1) * _ref->d1[1][i]) + _Sij[3] * (_ref->d2[3][i] - this->_ref->get__Gammaijk(1, 1, 0) * _ref->d1[0][i] - this->_ref->get__Gammaijk(1, 1, 1) * _ref->d1[1][i])) * _ref->refDv;// / _ref->refDv / _ref->refDv;
 
 		}
-		void G3(_myDoubleArray * vec, int* index, double sc) {
+		void G3(_myDoubleArray * vec, int64_t* index, double sc) {
 			for (int i = 0; i < _nNode; i++)
 			{
 				int I = index[i];
@@ -2189,7 +2189,7 @@ namespace KingOfMonsters {
 		double MASS(int i, int j) {
 			return _ref->d0[i] * _ref->d0[j] * _ref->_refDv;
 		}
-		void MASS(_mySparse* mat, int* index, double sc) {			
+		void MASS(_mySparse* mat, int64_t* index, double sc) {			
 			for (int i = 0; i < _nNode; i++)
 			{
 				int I = index[i];
@@ -2696,7 +2696,7 @@ namespace KingOfMonsters {
 			}
 			return (_val3) * this->dv;
 		}
-		void K(_mySparse* M, int* _index, double _la, double _mu, double __sc)
+		void K(_mySparse* M, int64_t* _index, double _la, double _mu, double __sc)
 		{
 			const static int kk[3]{ 0,1,2 };
 			const static int ll[2]{ 0,1 };
@@ -2866,7 +2866,7 @@ namespace KingOfMonsters {
 			}
 			return _val4 * _ref->refDv * 0.25;
 		}
-		void H(_mySparse* M,int* _index,double _la, double _mu,double sc)
+		void H(_mySparse* M,int64_t* _index,double _la, double _mu,double sc)
 		{
 			const static int kk[3]{ 0,1,2 };
 			const static int ll[2]{ 0,1 };
