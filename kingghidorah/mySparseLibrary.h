@@ -817,11 +817,12 @@ namespace KingOfMonsters {
 			//ptr = nullptr;
 			//return ret;
 		}
-		void _solve0_lu(myDoubleArray^ rhs, myDoubleArray^ ret) {
+		void _solve0_lu(myDoubleArray^ rhs, myDoubleArray^ ret,int ordering) {
 			//pin_ptr<double> ptr = &rhs[0];
-
-			dat->_solve0_lu(&rhs->_arr->__v, &ret->_arr->__v);
-
+			//dat->_mat[0].setIdentity();
+			std::string str=dat->_solve0_lu(&rhs->_arr->__v, &ret->_arr->__v,ordering);
+			if (str == "")str = "success";
+			System::Console::WriteLine(gcnew System::String(str.c_str()));
 			//array<double>^ ret = gcnew array<double>(_ret.rows());
 			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
 

@@ -29,6 +29,7 @@
 #include <chrono>
 #include <vector>
 #include <map>
+#include <string>
 //#define EIGEN_DONT_PARALLELIZE
 //#define EIGEN_MALLOC_ALREADY_ALIGNED  0
 //#define EIGEN_DONT_ALIGN
@@ -251,7 +252,7 @@ namespace KingOfMonsters {
 		void setmiddlecolum(Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t> &f, int64_t start, int64_t end);
 		void solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void _solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
-		void _solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
+		std::string _solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret,int ordering);
 		void solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void _solve0_lu_cg(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		std::string _solve0_gpu(KingOfMonsters::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int64_t device);

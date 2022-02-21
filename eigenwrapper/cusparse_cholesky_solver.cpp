@@ -46,7 +46,7 @@ struct CusparseMatDescriptor
 		cusparseCreateMatDescr(&desc);
 		cusparseSetMatType(desc, CUSPARSE_MATRIX_TYPE_GENERAL);
 		cusparseSetMatIndexBase(desc, CUSPARSE_INDEX_BASE_ZERO);
-		cusparseSetMatDiagType(desc, CUSPARSE_DIAG_TYPE_NON_UNIT);
+		cusparseSetMatDiagType(desc, CUSPARSE_DIAG_TYPE_NON_UNIT);		
 	}
 
 	void destroy() { cusparseDestroyMatDescr(desc); }
@@ -100,7 +100,7 @@ public:
 
 	cusparseMatDescr_t desc() const { return desc_; }
 
-private:
+public:
 
 	DeviceBuffer<T> values_;
 	DeviceBuffer<int> rowPtr_;
@@ -110,7 +110,7 @@ private:
 };
 
 template <typename T>
-class SparseCholesky
+class Sparsecholesky
 {
 
 public:
@@ -120,58 +120,79 @@ public:
 		handle_ = handle;
 
 		// create info
-		cusolverSpCreateCsrcholInfo(&info_);
+		cusolverSpCreateCsrluInfoHost(&info_);
 	}
 
-	void allocateBuffer(const SparseSquareMatrixCSR<T>& A)
+	std::string allocateBuffer(const SparseSquareMatrixCSR<T>& A, const int* csrRowPtr, const int* csrColInd)
 	{
 		size_t internalData, workSpace;
-		cusolverSpXcsrcholBufferInfo(handle_, A.size(), A.nnz(), A.desc(),
-			A.val(), A.rowPtr(), A.colInd(), info_, &internalData, &workSpace);
-		buffer_.allocate(workSpace);
+		cusolverSpDcsrluBufferInfoHost(handle_, A.size(), A.nnz(), A.desc(),
+			(double*) A.val(), csrRowPtr, csrColInd, info_, &internalData, &workSpace);
+		//std::cout << "cusparse workspace size=" << workSpace << std::endl;
+		std::string res=buffer_.allocate(workSpace);
+		return res;
 	}
 
 	bool hasZeroPivot(int* position = nullptr) const
 	{
 		const T tol = static_cast<T>(1e-14);
 		int singularity = -1;
-		cusolverSpXcsrcholZeroPivot(handle_, info_, tol, &singularity);
+		cusolverSpXcsrluZeroPivot(handle_, info_, tol, &singularity);
 		if (position)
 			*position = singularity;
 		return singularity >= 0;
 	}
 
-	bool analyze(const SparseSquareMatrixCSR<T>& A)
+	std::string analyze(const SparseSquareMatrixCSR<T>& A, const int* csrRowPtr, const int* csrColInd)
 	{
-		cusolverSpXcsrcholAnalysis(handle_, A.size(), A.nnz(), A.desc(), A.rowPtr(), A.colInd(), info_);
-		allocateBuffer(A);
-		return true;
+		//auto err=cusolverSpXcsrluAnalysisHost(handle_, A.size(), A.nnz(), A.desc(), csrRowPtr, csrColInd, info_);
+		//std::string res=allocateBuffer(A, csrRowPtr, csrColInd );
+		//return res;
+		return "p";
 	}
 
-	bool factorize(SparseSquareMatrixCSR<T>& A)
+	std::string factorize(SparseSquareMatrixCSR<T>& A, double* val,  const int* csrRowPtr, const int* csrColInd,double* rhs, double* ret,int ordering)
 	{
-		cusolverSpXcsrcholFactor(handle_, A.size(), A.nnz(), A.desc(),
-			A.val(), A.rowPtr(), A.colInd(), info_, buffer_.data);
+		/*cusolverSpXcsrluFactor(handle_, A.size(), A.nnz(), A.desc(),
+			val, csrRowPtr, csrColInd, info_, buffer_.data);
+		int zeropivot = -1;
+		if (!hasZeroPivot(&zeropivot))return "SUCCESS";
+		*/
+		int singularity = -1;
+		auto err = cusolverSpDcsrlsvchol(
 
-		return !hasZeroPivot();
+			handle_, A.size(), A.nnz(), A.desc(),
+			val, csrRowPtr, csrColInd,
+			rhs,
+			0.0000000001,
+			ordering,
+			ret,
+			&singularity);
+		if (singularity >= 0)
+		{
+			return "found pivot = " + std::to_string(singularity)+"err "+std::to_string(err)+"nnz="+std::to_string(A.nnz());
+		}
+		else {
+			return "SUCCESS";
+		}
 	}
 
 	void solve(int size, const T* b, T* x)
 	{
-		cusolverSpXcsrcholSolve(handle_, size, b, x, info_, buffer_.data);
+		cusolverSpXcsrluSolve(handle_, size, b, x, info_, (void*)buffer_.data);
 	}
 
 	void destroy()
 	{
-		cusolverSpDestroyCsrcholInfo(info_);
+		cusolverSpDestroyCsrluInfoHost(info_);
 	}
 
-	~SparseCholesky() { destroy(); }
+	~Sparsecholesky() { destroy(); }
 
 private:
 
 	cusolverSpHandle_t handle_;
-	csrcholInfo_t info_;
+	csrluInfoHost_t info_;
 	DeviceBuffer<unsigned char> buffer_;
 };
 
@@ -283,39 +304,55 @@ public:
 		doOrdering = true;
 	}
 
-	void analyze(int nnz, const int* csrRowPtr, const int* csrColInd) override
+	std::string analyze(int nnz, double* vals, const int* csrRowPtr, const int* csrColInd) override
 	{
 		// if permutation is set, apply permutation to A (P*A*PT)
-		if (doOrdering)
-		{
-			twist(Acsr.size(), nnz, csrRowPtr, csrColInd, h_P, permRowPtr, permColInd, h_map);
-			d_map.assign(nnz, h_map.data());
-			csrRowPtr = permRowPtr.data();
-			csrColInd = permColInd.data();
-		}
+		//if (doOrdering)
+		//{
+		//	twist(Acsr.size(), nnz, csrRowPtr, csrColInd, h_P, permRowPtr, permColInd, h_map);
+		//	d_map.assign(nnz, h_map.data());
+		//	csrRowPtr = permRowPtr.data();
+		//	csrColInd = permColInd.data();
+		//}
 
 		// copy input data to device memory
 		Acsr.resizeNonZeros(nnz);
-		Acsr.upload(nullptr, csrRowPtr, csrColInd);
+		Acsr.upload((T*)vals, csrRowPtr, csrColInd);
 
-		cholesky.analyze(Acsr);
+		return cholesky.analyze(Acsr, csrRowPtr, csrColInd);
 	}
 
-	void factorize(const T* A) override
+	std::string factorize(const T* A,const int* csrRowPtr, const int* csrColInd,double *rhs,double *ret,int ordering) override
 	{
-		if (doOrdering)
+		double a1[3];
+		d_b.upload((T*)rhs);
+
+		/*if (doOrdering)
 		{
 			d_values.assign(Acsr.nnz(), A);
 			permute(Acsr.nnz(), d_values.data, Acsr.val(), d_map.data);
 		}
-		else
+		else*/
 		{
-			Acsr.upload(A);
+			//Acsr.upload(A);
+			
+			CUDA_CHECK(cudaMemcpy(&a1, Acsr.values_.data, sizeof(T) * 3, cudaMemcpyDeviceToHost));
+
 		}
 
 		// M = L * LT
-		if (!cholesky.factorize(Acsr))
+		std::string fff = cholesky.factorize(Acsr, (double*) Acsr.val(), Acsr.rowPtr(), Acsr.colInd(),(double*)d_b.data,(double*)d_x.data,ordering);
+
+		if (fff== "SUCCESS")
+		{
+			information = Info::SUCCESS;
+			d_x.download((T*)ret);
+			return "FACTORIZE SUCCESS" +fff;
+		}
+		else {
 			information = Info::NUMERICAL_ISSUE;
+			return "FACTORIZE FAILED"+fff+","+std::to_string(a1[0])+","+std::to_string(a1[1])+ "," + std::to_string(a1[2]);
+		}
 	}
 
 	void solve(const T* b, T* x) override
@@ -349,7 +386,7 @@ public:
 
 	void permute(int size, const T* src, T* dst, const int* P)
 	{
-		cusparseXgthr(cusparse, size, src, dst, P, CUSPARSE_INDEX_BASE_ZERO);
+		//cusparseXgthr(cusparse, size, src, dst, P, CUSPARSE_INDEX_BASE_ZERO);
 	}
 
 	void destroy()
@@ -375,7 +412,7 @@ private:
 	CusparseHandle cusparse;
 	CusolverHandle cusolver;
 
-	SparseCholesky<T> cholesky;
+	Sparsecholesky<T> cholesky;
 
 	Twist twist;
 	std::vector<int> h_P, h_PT, h_map, permRowPtr, permColInd;

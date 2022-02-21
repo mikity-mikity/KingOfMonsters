@@ -2,43 +2,52 @@
 
 /* Description: Gather of non-zero elements from dense vector y into
    sparse vector x. */
-cusparseStatus_t CUSPARSEAPI cusparseXgthr(cusparseHandle_t handle,
-	int nnz,
-	const float *y,
-	float *xVal,
-	const int *xInd,
-	cusparseIndexBase_t idxBase)
-{
-	return
-		cusparseSgthr(handle,
-			nnz,
-			y,
-			xVal,
-			xInd,
-			idxBase);
-}
+//cusparseStatus_t CUSPARSEAPI cusparseXgthr(cusparseHandle_t handle,
+//	int nnz,/
+// const float *y,
+//	float *xVal,
+//	const int *xInd,
+//	cusparseIndexBase_t idxBase)
+//{
+//	return
+//		cusparseSgthr(handle,
+//			nnz,
+//			y,
+//			xVal,
+//			xInd,
+//			idxBase);
+//}
 
 /*
- * Low level API for GPU Cholesky
+ * Low level API for GPU luesky
  *
  */
-cusparseStatus_t CUSPARSEAPI cusparseXgthr(cusparseHandle_t handle,
-	int nnz,
-	const double *y,
-	double *xVal,
-	const int *xInd,
-	cusparseIndexBase_t idxBase)
-{
-	return
-		cusparseDgthr(handle,
+//cusparseStatus_t CUSPARSEAPI cusparseXgthr(cusparseHandle_t handle,
+//	int nnz,
+//	const double *y,
+//	double *xVal,
+//	const int *xInd,
+//	cusparseIndexBase_t idxBase)
+//{
+	//cusparseDnVecDescr_t vecY;
+	//cusparseSpVecDescr_t vecX;
+	//CHECK_CUSPARSE(cusparseCreateSpVec(&vecX, size, nnz, dX_indices, dX_values,
+//		CUSPARSE_INDEX_32I,
+//		CUSPARSE_INDEX_BASE_ZERO, CUDA_R_32F));
+		// Create dense vector y
+	//CHECK_CUSPARSE(cusparseCreateDnVec(&vecY, size, dY, CUDA_R_32F));
+	//*/
+	//return CUSPARSE_STATUS_SUCCESS;
+		//cusparseGather(handle, vecY, vecX);
+		/*cusparseDgthr(handle,
 			nnz,
 			y,
 			xVal,
 			xInd,
-			idxBase);
-}
+			idxBase);*/
+//}
 
-cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholBufferInfo(
+cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluBufferInfo(
 	cusolverSpHandle_t handle,
 	int n,
 	int nnzA,
@@ -46,12 +55,12 @@ cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholBufferInfo(
 	const float *csrValA,
 	const int *csrRowPtrA,
 	const int *csrColIndA,
-	csrcholInfo_t info,
+	csrluInfoHost_t info,
 	size_t *internalDataInBytes,
 	size_t *workspaceInBytes)
 {
 	return
-		cusolverSpScsrcholBufferInfo(
+		cusolverSpScsrluBufferInfoHost(
 			handle,
 			n,
 			nnzA,
@@ -64,7 +73,7 @@ cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholBufferInfo(
 			workspaceInBytes);
 }
 
-cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholBufferInfo(
+cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluBufferInfo(
 	cusolverSpHandle_t handle,
 	int n,
 	int nnzA,
@@ -72,12 +81,12 @@ cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholBufferInfo(
 	const double *csrValA,
 	const int *csrRowPtrA,
 	const int *csrColIndA,
-	csrcholInfo_t info,
+	csrluInfoHost_t info,
 	size_t *internalDataInBytes,
 	size_t *workspaceInBytes)
 {
 	return
-		cusolverSpDcsrcholBufferInfo(
+		cusolverSpDcsrluBufferInfoHost(
 			handle,
 			n,
 			nnzA,
@@ -90,7 +99,7 @@ cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholBufferInfo(
 			workspaceInBytes);
 }
 
-cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholFactor(
+cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluFactor(
 	cusolverSpHandle_t handle,
 	int n,
 	int nnzA,
@@ -98,11 +107,11 @@ cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholFactor(
 	const float *csrValA,
 	const int *csrRowPtrA,
 	const int *csrColIndA,
-	csrcholInfo_t info,
+	csrluInfoHost_t info,
 	void *pBuffer)
 {
 	return
-		cusolverSpScsrcholFactor(handle,
+		cusolverSpScsrluFactorHost(handle,
 			n,
 			nnzA,
 			descrA,
@@ -110,10 +119,11 @@ cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholFactor(
 			csrRowPtrA,
 			csrColIndA,
 			info,
+			0.00000001,
 			pBuffer);
 }
 
-cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholFactor(
+cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluFactor(
 	cusolverSpHandle_t handle,
 	int n,
 	int nnzA,
@@ -121,11 +131,11 @@ cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholFactor(
 	const double *csrValA,
 	const int *csrRowPtrA,
 	const int *csrColIndA,
-	csrcholInfo_t info,
+	csrluInfoHost_t info,
 	void *pBuffer)
 {
 	return
-		cusolverSpDcsrcholFactor(handle,
+		cusolverSpDcsrluFactorHost(handle,
 			n,
 			nnzA,
 			descrA,
@@ -133,47 +143,48 @@ cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholFactor(
 			csrRowPtrA,
 			csrColIndA,
 			info,
+			0.0000000001,
 			pBuffer);
 }
 
-cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholZeroPivot(
+cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluZeroPivot(
 	cusolverSpHandle_t handle,
-	csrcholInfo_t info,
+	csrluInfoHost_t info,
 	float tol,
 	int *position)
 {
 	return
-		cusolverSpScsrcholZeroPivot(
+		cusolverSpScsrluZeroPivotHost(
 			handle,
 			info,
 			tol,
 			position);
 }
 
-cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholZeroPivot(
+cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluZeroPivot(
 	cusolverSpHandle_t handle,
-	csrcholInfo_t info,
+	csrluInfoHost_t info,
 	double tol,
 	int *position)
 {
 	return
-		cusolverSpDcsrcholZeroPivot(
+		cusolverSpDcsrluZeroPivotHost(
 			handle,
 			info,
 			tol,
 			position);
 }
 
-cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholSolve(
+cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluSolve(
 	cusolverSpHandle_t handle,
 	int n,
 	const float *b,
 	float *x,
-	csrcholInfo_t info,
+	csrluInfoHost_t info,
 	void *pBuffer)
 {
 	return
-		cusolverSpScsrcholSolve(
+		cusolverSpScsrluSolveHost(
 			handle,
 			n,
 			b,
@@ -182,16 +193,16 @@ cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholSolve(
 			pBuffer);
 }
 
-cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholSolve(
+cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluSolve(
 	cusolverSpHandle_t handle,
 	int n,
 	const double *b,
 	double *x,
-	csrcholInfo_t info,
+	csrluInfoHost_t info,
 	void *pBuffer)
 {
 	return
-		cusolverSpDcsrcholSolve(
+		cusolverSpDcsrluSolveHost(
 			handle,
 			n,
 			b,

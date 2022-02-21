@@ -2,7 +2,7 @@
 #define __DEVICE_BUFFER_H__
 
 #include <cuda_runtime.h>
-
+#include<string>
 #include "macro.h"
 
 template <typename T>
@@ -12,14 +12,22 @@ struct DeviceBuffer
 	DeviceBuffer(size_t size) : data(nullptr), size(0) { allocate(size); }
 	~DeviceBuffer() { destroy(); }
 
-	void allocate(size_t _size)
+	std::string allocate(size_t _size)
 	{
 		if (data && size >= _size)
-			return;
+			return "already good shape";
 
 		destroy();
-		CUDA_CHECK(cudaMalloc(&data, sizeof(T) * _size));
+		//CUDA_CHECK(
+		auto err = cudaMalloc(&data, sizeof(T) * _size);//);
+		if (err != cudaSuccess)
+		{
+			size = _size;
+			return "memory allocation fialed" + std::to_string(sizeof(T) * _size) + " Bytes";
+		}
+
 		size = _size;
+		return "SUCCESS";
 	}
 
 	void destroy()
@@ -63,6 +71,7 @@ struct DeviceBuffer
 		upload(h_data);
 	}
 
+public:
 	T* data;
 	size_t size;
 };

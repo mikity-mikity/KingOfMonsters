@@ -4,10 +4,12 @@
 #include <cusparse.h>
 #include <cusolverSp.h>
 #include <cusolverSp_LOWLEVEL_PREVIEW.h>
-
+#include <stdlib.h>
+#include <stdio.h>
+#include <iostream>
 /* Description: Gather of non-zero elements from dense vector y into
    sparse vector x. */
-cusparseStatus_t CUSPARSEAPI cusparseXgthr(cusparseHandle_t handle,
+/*cusparseStatus_t CUSPARSEAPI cusparseXgthr(cusparseHandle_t handle,
 	int nnz,
 	const float *y,
 	float *xVal,
@@ -20,12 +22,12 @@ cusparseStatus_t CUSPARSEAPI cusparseXgthr(cusparseHandle_t handle,
 	double *xVal,
 	const int *xInd,
 	cusparseIndexBase_t idxBase);
-
+*/
 /*
- * Low level API for GPU Cholesky
+ * Low level API for GPU luesky
  *
  */
-cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholBufferInfo(
+cusolverStatus_t CUSOLVERAPI cusolverSpScsrluBufferInfoHost(
 	cusolverSpHandle_t handle,
 	int n,
 	int nnzA,
@@ -33,11 +35,11 @@ cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholBufferInfo(
 	const float *csrValA,
 	const int *csrRowPtrA,
 	const int *csrColIndA,
-	csrcholInfo_t info,
+	csrluInfoHost_t info,
 	size_t *internalDataInBytes,
 	size_t *workspaceInBytes);
 
-cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholBufferInfo(
+cusolverStatus_t CUSOLVERAPI cusolverSpDcsrluBufferInfoHost(
 	cusolverSpHandle_t handle,
 	int n,
 	int nnzA,
@@ -45,11 +47,11 @@ cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholBufferInfo(
 	const double *csrValA,
 	const int *csrRowPtrA,
 	const int *csrColIndA,
-	csrcholInfo_t info,
+	csrluInfoHost_t info,
 	size_t *internalDataInBytes,
 	size_t *workspaceInBytes);
 
-cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholFactor(
+cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluFactor(
 	cusolverSpHandle_t handle,
 	int n,
 	int nnzA,
@@ -57,10 +59,10 @@ cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholFactor(
 	const float *csrValA,
 	const int *csrRowPtrA,
 	const int *csrColIndA,
-	csrcholInfo_t info,
+	csrluInfoHost_t info,
 	void *pBuffer);
 
-cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholFactor(
+cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluFactor(
 	cusolverSpHandle_t handle,
 	int n,
 	int nnzA,
@@ -68,35 +70,35 @@ cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholFactor(
 	const double *csrValA,
 	const int *csrRowPtrA,
 	const int *csrColIndA,
-	csrcholInfo_t info,
+	csrluInfoHost_t info,
 	void *pBuffer);
 
-cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholZeroPivot(
+cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluZeroPivot(
 	cusolverSpHandle_t handle,
-	csrcholInfo_t info,
+	csrluInfoHost_t info,
 	float tol,
 	int *position);
 
-cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholZeroPivot(
+cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluZeroPivot(
 	cusolverSpHandle_t handle,
-	csrcholInfo_t info,
+	csrluInfoHost_t info,
 	double tol,
 	int *position);
 
-cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholSolve(
+cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluSolve(
 	cusolverSpHandle_t handle,
 	int n,
 	const float *b,
 	float *x,
-	csrcholInfo_t info,
+	csrluInfoHost_t info,
 	void *pBuffer);
 
-cusolverStatus_t CUSOLVERAPI cusolverSpXcsrcholSolve(
+cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluSolve(
 	cusolverSpHandle_t handle,
 	int n,
 	const double *b,
 	double *x,
-	csrcholInfo_t info,
+	csrluInfoHost_t info,
 	void *pBuffer);
 
 #endif // !__CUSPARSE_WRAPPER_H__

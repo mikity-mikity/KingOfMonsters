@@ -5,7 +5,7 @@
 #include<iostream>
 #include<stdlib.h>
 #include<stdio.h>
-
+#include "cusparse_cholesky_solver.h"
 #include "eigenwrapper.h"
 #include "utill.h"
 #include <omp.h> 
@@ -2652,19 +2652,43 @@ void KingOfMonsters::_mySparse::_solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* r
 	*ret = LLT.solve(*rhs);
 	//return x;
 }
-void KingOfMonsters::_mySparse::_solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret) {
-	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);
-	Eigen::SparseLU<Eigen::SparseMatrix<double,Eigen::ColMajor>> lu;
-	//Eigen::PartialPivLU<Eigen::MatrixXd> lu;
-	//Eigen::MatrixXd m = _mat[0];
-	//lu.compute(m);
-	lu.compute(_mat[0]);
+std::string KingOfMonsters::_mySparse::_solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret,int ordering) {
+	//Eigen::SparseLU<Eigen::SparseMatrix<double,Eigen::ColMajor>> lu;
+	//lu.compute(_mat[0]);
+	//ret->conservativeResize(_mat[0].cols());
+	//ret->setZero();
+	//*ret = lu.solve(*rhs);
+
+	using Scalar = double;
+	using SparseMatrixCSC = Eigen::SparseMatrix<Scalar, Eigen::StorageOptions::ColMajor>;
+	using SparseMatrixCSR = Eigen::SparseMatrix<Scalar, Eigen::StorageOptions::RowMajor>;
+	using Triplet = Eigen::Triplet<Scalar>;
+	using VectorR = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
+
+	SparseMatrixCSR Acsr = _mat[0]; // solver supports CSR format
+	auto solver = CuSparseCholeskySolver<Scalar>::create(_mat[0].cols());
+	std::string res=solver->analyze(_mat[0].nonZeros(), Acsr.valuePtr(), Acsr.outerIndexPtr(), Acsr.innerIndexPtr());
+	
+
+
+	// if (res != "SUCCESS")return res;
+	//VectorR xhatGPU(_mat[0].cols());
 	ret->conservativeResize(_mat[0].cols());
 	ret->setZero();
-	//Eigen::VectorXd x(_mat[0].rows());
-	//x.setZero();
-	*ret = lu.solve(*rhs);
-	//return x;
+	std::string pivot=solver->factorize(Acsr.valuePtr(), Acsr.outerIndexPtr(), Acsr.innerIndexPtr(), rhs->data(), ret->data(), ordering);
+	auto info=solver->info();
+	
+	if (info == CuSparseCholeskySolver<Scalar>::Info::SUCCESS) {
+
+		//solver->solve(rhs->data(), ret->data());
+		return "SUCCESS";
+	}
+	else {
+
+		return ("FAILED PIVOT "+pivot);
+
+	}
+
 }
 void KingOfMonsters::_mySparse::solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret) {
 	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);

@@ -179,13 +179,19 @@
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="cusparse_cholesky_solver.h" />
+    <ClInclude Include="cusparse_wrapper.h" />
+    <ClInclude Include="device_buffer.h" />
     <ClInclude Include="eigenwrapper.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="macro.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="utill.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cudatest.cpp" />
+    <ClCompile Include="cusparse_cholesky_solver.cpp" />
+    <ClCompile Include="cusparse_wrapper.cpp" />
     <ClCompile Include="eigenwrapper.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
