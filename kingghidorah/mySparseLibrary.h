@@ -986,6 +986,12 @@ namespace KingOfMonsters {
 
 			return ss;
 		}
+		System::String^ solveI_gpu_sparse(myCuda^ gpu, mySparse^ ret) {
+			auto _ss = this->dat->_solveI_gpu_sparse(gpu->cuda(), ret->dat);
+			auto ss = gcnew System::String(_ss.c_str());
+
+			return ss;
+		}
 		System::String^ solveI_gpu_omp(myCuda^ gpu, mySparse^ ret) {
 			std::string ss = this->dat->_solveI_gpu_omp(gpu->cuda(), ret->dat);
 			auto ee = gcnew System::String(ss.c_str());

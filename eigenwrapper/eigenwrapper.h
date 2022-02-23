@@ -24,6 +24,7 @@
 #include <cusolverSp.h>
 #include <cusparse_v2.h>
 #include <cublas_v2.h>
+#include <cusolverSp_LOWLEVEL_PREVIEW.h>
 #include<cuda.h>
 #include <cuda_runtime_api.h>
 #include <chrono>
@@ -53,7 +54,10 @@ namespace KingOfMonsters {
 		int _count = 0;
 		int _fastest = 0;
 		std::vector<std::vector<cusolverDnHandle_t>> solver_handle;
-		cublasHandle_t cublas_handle[MAXDEVICE];
+		std::vector<std::vector<cusolverSpHandle_t>> solver_handleSp;
+		std::vector<std::vector<cusparseHandle_t>> cusparse_handle;
+
+		//cublasHandle_t cublas_handle[MAXDEVICE];
 		double* __mgM[MAXDEVICE];
 		double* __mgrhs[MAXDEVICE];
 		//double* __mgM2 = 0;
@@ -85,7 +89,8 @@ namespace KingOfMonsters {
 		cuda(int64_t N);
 		~cuda();
 		cusolverDnHandle_t& solver(int64_t ii, int64_t kk);
-		cublasHandle_t& blas(int64_t ii);
+		cusolverSpHandle_t& solverSp(int64_t ii, int64_t kk);
+		//cublasHandle_t& blas(int64_t ii);
 		//cusolverMgHandle_t mgsolver();
 		//double* L();
 		bool valid();
@@ -262,6 +267,7 @@ namespace KingOfMonsters {
 		Eigen::MatrixXd _solve0(_myLLT* LLT, _mySparse* rhs);
 		void _solve0_gpu(KingOfMonsters::cuda* cuda, _mySparse* rhs, _mySparse* ret);
 		int64_t _solveI(_mySparse* ret);
+		std::string _solveI_gpu_sparse(KingOfMonsters::cuda* cuda, _mySparse* ret);
 		std::string _solveI_gpu(KingOfMonsters::cuda* cuda, _mySparse* ret);
 		std::string _solveI_gpu_omp(KingOfMonsters::cuda* cuda, _mySparse* ret);
 		std::string _solveI_gpu_single(KingOfMonsters::cuda* cuda, _mySparse* ret);
