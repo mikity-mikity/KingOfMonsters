@@ -168,15 +168,47 @@ public:
 			ordering,
 			ret,
 			&singularity);
+		if (err == 2)
+		{
+			return "ALLOCERR";
+		}
 		if (singularity >= 0)
 		{
-			return "found pivot = " + std::to_string(singularity)+"err "+std::to_string(err)+"nnz="+std::to_string(A.nnz());
+			return "PIVOT";// "found pivot = " + std::to_string(singularity) + "err " + std::to_string(err) + "nnz=" + std::to_string(A.nnz());
 		}
-		else {
+		{
 			return "SUCCESS";
 		}
 	}
+	std::string factorize_cpu(SparseSquareMatrixCSR<T>& A, double* val, const int* csrRowPtr, const int* csrColInd, double* rhs, double* ret, int ordering)
+	{
+		/*cusolverSpXcsrluFactor(handle_, A.size(), A.nnz(), A.desc(),
+			val, csrRowPtr, csrColInd, info_, buffer_.data);
+		int zeropivot = -1;
+		if (!hasZeroPivot(&zeropivot))return "SUCCESS";
+		*/
+		int singularity = -1;
+		auto err = cusolverSpDcsrlsvcholHost(
 
+			handle_, A.size(), A.nnz(), A.desc(),
+			val, csrRowPtr, csrColInd,
+			rhs,
+			0.0000000001,
+			ordering,
+			ret,
+			&singularity);
+		if (err == 2)
+		{
+			return "ALLOCERR";
+		}
+		if (singularity >= 0)
+		{
+			return "PIVOT";// "found pivot = " + std::to_string(singularity) + "err " + std::to_string(err) + "nnz=" + std::to_string(A.nnz());
+		}
+		{
+			return "SUCCESS";
+		}
+	}
 	void solve(int size, const T* b, T* x)
 	{
 		cusolverSpXcsrluSolve(handle_, size, b, x, info_, (void*)buffer_.data);
@@ -321,6 +353,11 @@ public:
 
 		return cholesky.analyze(Acsr, csrRowPtr, csrColInd);
 	}
+	std::string analyze_cpu(int nnz) override
+	{
+		Acsr.resizeNonZeros(nnz);
+		return "";
+	}
 
 	std::string factorize(const T* A,const int* csrRowPtr, const int* csrColInd,double *rhs,double *ret,int ordering) override
 	{
@@ -354,7 +391,38 @@ public:
 			return "FACTORIZE FAILED"+fff+","+std::to_string(a1[0])+","+std::to_string(a1[1])+ "," + std::to_string(a1[2]);
 		}
 	}
+	std::string factorize_cpu(const T* A, const int* csrRowPtr, const int* csrColInd, double* rhs, double* ret, int ordering) override
+	{
+		double a1[3];
+		//d_b.upload((T*)rhs);
 
+		/*if (doOrdering)
+		{
+			d_values.assign(Acsr.nnz(), A);
+			permute(Acsr.nnz(), d_values.data, Acsr.val(), d_map.data);
+		}
+		else*/
+		{
+			//Acsr.upload(A);
+
+			//CUDA_CHECK(cudaMemcpy(&a1, Acsr.values_.data, sizeof(T) * 3, cudaMemcpyDeviceToHost));
+
+		}
+
+		// M = L * LT
+		std::string fff = cholesky.factorize_cpu(Acsr, (double*)A, csrRowPtr, csrColInd, (double*)rhs, (double*)ret, ordering);
+
+		if (fff == "SUCCESS")
+		{
+			information = Info::SUCCESS;
+			//d_x.download((T*)ret);
+			return "FACTORIZE SUCCESS" + fff;
+		}
+		else {
+			information = Info::NUMERICAL_ISSUE;
+			return "FACTORIZE FAILED" + fff + "," + std::to_string(a1[0]) + "," + std::to_string(a1[1]) + "," + std::to_string(a1[2]);
+		}
+	}
 	void solve(const T* b, T* x) override
 	{
 		d_b.upload(b);
@@ -398,10 +466,11 @@ public:
 		destroy();
 	}
 
+
+	public:
+		SparseSquareMatrixCSR<T> Acsr;
+
 private:
-
-	SparseSquareMatrixCSR<T> Acsr;
-
 	DeviceBuffer<T> d_b;
 	DeviceBuffer<T> d_x;
 	DeviceBuffer<T> d_y;

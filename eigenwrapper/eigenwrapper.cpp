@@ -2121,7 +2121,7 @@ std::string KingOfMonsters::_mySparse::_solveLU_gpu(KingOfMonsters::cuda* cuda, 
 	err2 = cusolverDnDgetrf (solver, N, N, gpu_matrix, N, work, NULL, devInfo_on_gpu);
 	ss << "," << err2;
 	int devInfo_on_cpu;
-	cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int64_t), cudaMemcpyDeviceToHost);
+	cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
 	ss << "devInfo," << devInfo_on_cpu;
 
 	//int64_t devInfo_on_cpu = 0;
@@ -2140,8 +2140,7 @@ std::string KingOfMonsters::_mySparse::_solveLU_gpu(KingOfMonsters::cuda* cuda, 
 	// auto end = std::chrono::high_resolution_clock::now();
 	//auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - now);
 	//std::cout << "Dn:" << duration.count() << "ms" << std::endl;
-	devInfo_on_cpu;
-	cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int64_t), cudaMemcpyDeviceToHost);
+	cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
 	ss << "devInfo," << devInfo_on_cpu;
 	//if (devInfo_on_cpu != 0) {
 	//	x(0) = 24;
@@ -2274,7 +2273,7 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu_single(KingOfMonsters::cuda* 
 	double* gpu_rhs = cuda->work_C(cuda->fastest());
 
 
-	int64_t devInfo_on_cpu = 0;
+	int devInfo_on_cpu = 0;
 	//int64_t _S = 0;
 	//int64_t _E = 0;
 
@@ -2581,8 +2580,8 @@ void KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, _mySpars
 	//cudaMalloc(&work, work_size * sizeof(double));
 	auto now = std::chrono::high_resolution_clock::now();
 	cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, work, work_size, devInfo_on_gpu);
-	int64_t devInfo_on_cpu = 0;
-	cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int64_t), cudaMemcpyDeviceToHost);
+	int  devInfo_on_cpu = 0;
+	cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
 
 	if (0 != devInfo_on_cpu) {
 		ret->_dmat(0, 0) = 2;
@@ -2606,7 +2605,7 @@ void KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, _mySpars
 		cudaMemcpy(gpu_rhs, mat->_dmat.data(), N * nn * sizeof(double), cudaMemcpyHostToDevice);
 		int* _devInfo_on_gpu = 0;
 		int _devInfo_on_cpu = 0;
-		cudaMalloc(&_devInfo_on_gpu, sizeof(int64_t));
+		cudaMalloc(&_devInfo_on_gpu, sizeof(int));
 		while (true)
 		{
 			int64_t nextjob = -1;
@@ -2620,7 +2619,7 @@ void KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, _mySpars
 			int64_t end = nextjob + S;
 			if (end > nn)end = nn;
 			cusolverDnDpotrs(solver, CUBLAS_FILL_MODE_LOWER, N, end - start, _gpu_matrix, N, gpu_rhs + nextjob * N, N, _devInfo_on_gpu);
-			cudaMemcpy(&_devInfo_on_cpu, _devInfo_on_gpu, sizeof(int64_t), cudaMemcpyDeviceToHost);
+			cudaMemcpy(&_devInfo_on_cpu, _devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
 			if (_devInfo_on_cpu != 0) {
 				exit = true;
 				break;
@@ -2685,7 +2684,82 @@ std::string KingOfMonsters::_mySparse::_solve0_lu(Eigen::VectorXd* rhs, Eigen::V
 	}
 	else {
 
-		return ("FAILED PIVOT "+pivot);
+		return ("FAILED "+pivot);
+
+	}
+
+}
+std::string KingOfMonsters::_mySparse::_solve0_chol_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering) {
+
+	using Scalar = double;
+	using SparseMatrixCSC = Eigen::SparseMatrix<Scalar, Eigen::StorageOptions::ColMajor>;
+	using SparseMatrixCSR = Eigen::SparseMatrix<Scalar, Eigen::StorageOptions::RowMajor>;
+	using Triplet = Eigen::Triplet<Scalar>;
+	using VectorR = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
+
+	SparseMatrixCSR Acsr = _mat[0]; // solver supports CSR format
+	auto solver = CuSparseCholeskySolver<Scalar>::create(_mat[0].cols());
+	//std::string res = solver->analyze(_mat[0].nonZeros(), Acsr.valuePtr(), Acsr.outerIndexPtr(), Acsr.innerIndexPtr());
+
+	solver->analyze_cpu(_mat[0].nonZeros());
+
+	// if (res != "SUCCESS")return res;
+	//VectorR xhatGPU(_mat[0].cols());
+	ret->conservativeResize(_mat[0].cols());
+	ret->setZero();
+	std::string pivot = solver->factorize_cpu(Acsr.valuePtr(), Acsr.outerIndexPtr(), Acsr.innerIndexPtr(), rhs->data(), ret->data(), ordering);
+	auto info = solver->info();
+	
+	if (info== CuSparseCholeskySolver<double>::Info::SUCCESS) {
+
+		ret->conservativeResize(_mat[0].cols());
+		ret->setZero();
+		//*ret = lu.solve(*rhs);
+		solver->solve(rhs->data(), ret->data());
+		return "SUCCESS";
+	}
+	else {
+
+		return ("FAILED ");
+
+	}
+
+}
+std::string KingOfMonsters::_mySparse::_solve0_lu_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering) {
+	//Eigen::SparseLU<Eigen::SparseMatrix<double,Eigen::ColMajor, int64_t>,Eigen::COLAMDOrdering<int64_t>> lu;
+	Eigen::SimplicialLDLT< Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>, Eigen::Lower, Eigen::COLAMDOrdering<int64_t>> lu;
+	lu.compute(_mat[0]);
+
+	/*using Scalar = double;
+	using SparseMatrixCSC = Eigen::SparseMatrix<Scalar, Eigen::StorageOptions::ColMajor>;
+	using SparseMatrixCSR = Eigen::SparseMatrix<Scalar, Eigen::StorageOptions::RowMajor>;
+	using Triplet = Eigen::Triplet<Scalar>;
+	using VectorR = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
+
+	SparseMatrixCSR Acsr = _mat[0]; // solver supports CSR format
+	auto solver = CuSparseCholeskySolver<Scalar>::create(_mat[0].cols());
+	//std::string res = solver->analyze(_mat[0].nonZeros(), Acsr.valuePtr(), Acsr.outerIndexPtr(), Acsr.innerIndexPtr());
+
+	solver->analyze_cpu(_mat[0].nonZeros());
+
+	// if (res != "SUCCESS")return res;
+	//VectorR xhatGPU(_mat[0].cols());
+	ret->conservativeResize(_mat[0].cols());
+	ret->setZero();
+	std::string pivot = solver->factorize_cpu(Acsr.valuePtr(), Acsr.outerIndexPtr(), Acsr.innerIndexPtr(), rhs->data(), ret->data(), ordering);
+	auto info = solver->info();
+	*/
+	if (lu.info()== Eigen::ComputationInfo::Success) {
+
+		ret->conservativeResize(_mat[0].cols());
+		ret->setZero();
+		*ret = lu.solve(*rhs);
+		//solver->solve(rhs->data(), ret->data());
+		return "SUCCESS";
+	}
+	else {
+
+		return ("FAILED ");
 
 	}
 

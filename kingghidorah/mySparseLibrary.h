@@ -9,6 +9,7 @@
 #include <omp.h> 
 using std::vector;
 using std::string;
+using std::basic_string;
 using namespace System;
 using namespace System::Threading::Tasks;
 //#define EIGEN_DONT_ALIGN
@@ -817,17 +818,79 @@ namespace KingOfMonsters {
 			//ptr = nullptr;
 			//return ret;
 		}
-		void _solve0_lu(myDoubleArray^ rhs, myDoubleArray^ ret,int ordering) {
+		void _solve0_lu(myDoubleArray^ rhs, myDoubleArray^ ret,int ordering,bool meh) {
 			//pin_ptr<double> ptr = &rhs[0];
 			//dat->_mat[0].setIdentity();
-			std::string str=dat->_solve0_lu(&rhs->_arr->__v, &ret->_arr->__v,ordering);
-			if (str == "")str = "success";
-			System::Console::WriteLine(gcnew System::String(str.c_str()));
-			//array<double>^ ret = gcnew array<double>(_ret.rows());
-			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
+			if (meh) {
+				rhs->_arr->__v = this->dat->_mat[0].transpose() * rhs->_arr->__v;
+				this->dat->_mat[0] = this->dat->_mat[0].transpose() * this->dat->_mat[0];
+			}
+			double nn = 0.00000000001;
+			bool allocerr = false;
+			std::string _str = "";
+			for (int i = 0; i < 50; i++)
+			{
+				std::string str = dat->_solve0_lu(&rhs->_arr->__v, &ret->_arr->__v, ordering);
+				_str += str;
+				if (str.find("PIVOT") != string::npos) {
 
-			//ptr = nullptr;
-			//return ret;
+					nn *= 100;
+					this->dat->addsmallidentity(nn, true, false);
+				}
+				else {
+					if (str.find("ALLOCERR") != string::npos) {
+						allocerr = true;
+					}
+					break;
+
+				}
+			}
+			if (allocerr)
+			{
+				_str += std::string("\n") + std::string("swithing to CPU") + std::string("\n");
+				for (int i = 0; i < 50; i++)
+				{
+					std::string str = dat->_solve0_lu_cpu(&rhs->_arr->__v, &ret->_arr->__v, ordering);
+					_str += str;
+					if (str.find("PIVOT") != string::npos) {
+
+						nn *= 100;
+						this->dat->addsmallidentity(nn, true, false);
+					}
+					else {
+						break;
+					}
+				}
+			}
+			if (_str == "")_str = "success";
+			System::Console::WriteLine(gcnew System::String(_str.c_str()));
+		}
+		void _solve0_lu_cpu(myDoubleArray^ rhs, myDoubleArray^ ret, int ordering, bool meh) {
+			if (meh) {
+				rhs->_arr->__v = this->dat->_mat[0].transpose() * rhs->_arr->__v;
+				this->dat->_mat[0] = this->dat->_mat[0].transpose() * this->dat->_mat[0];
+			}
+			double nn = 0.00000000001;
+			bool allocerr = false;
+			std::string _str = "";
+			
+			for (int i = 0; i < 10; i++)
+			{
+				std::string str = dat->_solve0_lu_cpu(&rhs->_arr->__v, &ret->_arr->__v, ordering);
+				
+				//lu.compute(this->dat->_mat[0]);
+				_str += str;
+				if(str.find("SUCCESS") == string::npos) 
+				{
+					nn *= 100;
+					this->dat->addsmallidentity(nn, true, false);
+				}
+				else {					
+					break;
+				}
+			}
+			if (_str == "")_str = "success";
+			System::Console::WriteLine(gcnew System::String(_str.c_str()));
 		}
 		void solve0_lu(myDoubleArray^ rhs, myDoubleArray^ ret) {
 			//pin_ptr<double> ptr = &rhs[0];

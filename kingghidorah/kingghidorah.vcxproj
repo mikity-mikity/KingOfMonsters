@@ -138,7 +138,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <AdditionalOptions> /bigobj %(AdditionalOptions)</AdditionalOptions>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>cublas.lib;cusolver.lib;cusolverMg.lib;cudart.lib;cuda.lib;cusparse.lib</AdditionalDependencies>

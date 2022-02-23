@@ -1,12 +1,13 @@
 ﻿#pragma once
 #include <cmath>
 #include<vector>
-
+#include<math.h>
 using namespace System;
 #include <cstring>
 #include <string>
 using std::vector;
 using std::string;
+
 #include "mySparseLibrary.h"
 //#define EIGEN_DONT_PARALLELIZE
 //#define EIGEN_MALLOC_ALREADY_ALIGNED  0
@@ -233,7 +234,21 @@ namespace KingOfMonsters {
 		void del() {
 			if (RAM == "MAX")
 			{
-
+				if (dd != 0)
+				{
+					delete[] M[0];
+					delete[] M[1];
+					M[0] = 0;
+					M[1] = 0;
+					//}
+					//if (dd != 0)
+					//{
+					for (int i = 0; i < _nNode; i++) {
+						delete[] dd[i];
+					}
+					delete[] dd;
+					dd = 0;
+				}
 				if (__mat != 0)delete[] __mat;
 				__mat = 0;
 				if (d0 != 0) {
@@ -359,29 +374,9 @@ namespace KingOfMonsters {
 					//hh2[6] = 0;
 					//hh2[7] = 0;
 					delete[] hh2;
-					hh2 = 0;
-					//if (M[0] != 0) {
-					for (int i = 0; i < _uDim; i++) {
-						delete[] M[0][i];
-					}
-					for (int i = 0; i < _vDim; i++) {
-						delete[] M[1][i];
-					}
-					
+					hh2 = 0;					
 					//}
-				}
-				delete[] M[0];
-				delete[] M[1];
-				M[0] = 0;
-				M[1] = 0;
-				//}
-				//if (dd != 0)
-				//{
-				for (int i = 0; i < _nNode; i++) {
-					delete[] dd[i];
-				}
-				delete[] dd;
-				dd = 0;
+				}				
 			}
 
 			/*_nNode = 0;
@@ -400,7 +395,7 @@ namespace KingOfMonsters {
 				_vDim = vDim;
 				dim[0] = _uDim;
 				dim[1] = _vDim;
-				if (RAM == "MAX" && d0==0)
+				if (RAM == "MAX")
 				{
 					__mat = new double[_nNode * _nNode];
 					d0 = new double[nNode];
@@ -466,22 +461,22 @@ namespace KingOfMonsters {
 					hh2[7] = new double[vDim];
 
 
-					
+					M[0] = new double* [uDim];
+					M[1] = new double* [vDim];
+					for (int i = 0; i < uDim; i++) {
+						M[0][i] = new double[uDim];
+					}
+					for (int i = 0; i < vDim; i++) {
+						M[1][i] = new double[vDim];
+					}
+					dd = new int* [nNode];
+					for (int i = 0; i < nNode; i++) {
+						dd[i] = new int[2];
+					}
+
 
 				}
 
-				M[0] = new double* [uDim];
-				M[1] = new double* [vDim];
-				for (int i = 0; i < uDim; i++) {
-					M[0][i] = new double[uDim];
-				}
-				for (int i = 0; i < vDim; i++) {
-					M[1][i] = new double[vDim];
-				}
-				dd = new int* [nNode];
-				for (int i = 0; i < nNode; i++) {
-					dd[i] = new int[2];
-				}
 
 			}
 			else {
@@ -536,8 +531,8 @@ namespace KingOfMonsters {
 		double sc;
 	public:
 		///////shared memory//////
-		//double** M[2];
-		//int** dd;
+		double** M[2];
+		int** dd;
 		double* __mat = 0;
 		double* d0;
 		double* d1[2];
@@ -562,6 +557,12 @@ namespace KingOfMonsters {
 		}
 		inline void set_M(int i, int j, int k, double val) {
 			_ref->M[i][j][k] = val;
+		}
+		inline void set_dd_save(int i, int j, int val) {
+			dd[i][j] = val;
+		}
+		inline void set_M_save(int i, int j, int k, double val) {
+			M[i][j][k] = val;
 		}
 		inline void set_dd(int i, int j, int val) {
 			_ref->dd[i][j] = val;
@@ -1521,7 +1522,7 @@ namespace KingOfMonsters {
 					hh2[6] = 0;
 					hh2[7] = 0;
 					
-					/*for (int i = 0; i < _uDim; i++) {
+					for (int i = 0; i < _uDim; i++) {
 						delete[] M[0][i];
 					}
 					for (int i = 0; i < _vDim; i++) {
@@ -1536,18 +1537,19 @@ namespace KingOfMonsters {
 						delete[] dd[i];
 					}
 					delete[] dd;
-					dd = 0;*/
+					dd = 0;
 					
 
 				}
 			}
 		}
-
-		void update(int nNode, int uDim, int vDim) {
+		void update_ref(int nNode, int uDim, int vDim) {
 			if (!_ref->initialized)
 			{
 				_ref->update(nNode, uDim, vDim);
 			}
+		}
+		void update(int nNode, int uDim, int vDim) {
 			if (_nNode != nNode || _uDim != uDim || _vDim != vDim) {
 
 				del();
@@ -1633,7 +1635,7 @@ namespace KingOfMonsters {
 					hh2[6] = new double[uDim];
 					hh2[7] = new double[vDim];
 
-					/*M[0] = new double* [uDim];
+					M[0] = new double* [uDim];
 					M[1] = new double* [vDim];
 					for (int i = 0; i < uDim; i++) {
 						M[0][i] = new double[uDim];
@@ -1644,7 +1646,7 @@ namespace KingOfMonsters {
 					dd = new int* [nNode];
 					for (int i = 0; i < nNode; i++) {
 						dd[i] = new int[2];
-					}*/
+					}
 				}
 				/*
 				gradN[0] = new double[3 * _nNode];
@@ -2820,6 +2822,25 @@ namespace KingOfMonsters {
 
 			return _val3 * _ref->refDv * _ref->refDv;
 		}
+		//membrane boundary term
+		double HB(int j, int k, int l, int m, double _la, double _mu)
+		{
+			double _val3 = 0;
+
+
+			for (int g = 0; g < 2; g++)
+			{
+				for (int h = 0; h < 2; h++)
+				{
+					double A = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(m, l) + 2 * _mu * _ref->get__Gij(h, m) * _ref->get__Gij(g, l));
+					//double D = (_ref->d2[g * 2 + h][j] - Gammaijk[(g * 2 + h) * 2 + 0] * _ref->d1[0][j] - Gammaijk[(g * 2 + h) * 2 + 1] * _ref->d1[1][j]);
+					double D = (_ref->d1[g][j] * get_gi(h, k) + _ref->d1[h][j] * get_gi(g, k)); 
+					_val3 += A *  (D);
+				}
+			}
+
+			return 0.5* _val3;// * _ref->refDv * _ref->refDv;
+		}
 		//angle term
 		double T(int i, int s,int m) {
 			double val = 0;
@@ -2838,6 +2859,7 @@ namespace KingOfMonsters {
 			}
 			return val;
 		}
+
 		//membrane term
 		double H(int i, int k2, int j, int k, double _la, double _mu)
 		{
@@ -2931,6 +2953,9 @@ public:
 	}
 	double _Z() {
 		return __mem->_Z;
+	}
+	double _gi(int l,int s) {
+		return __mem->get__gi(l,s);
 	}
 	memS_ref() {
 		__mem = new _memS_ref();
@@ -3173,8 +3198,11 @@ public:
 		double d2(int l,int i) {
 			return __mem->_d2(l,i);
 		}
-		double gi(int i,int s){
+		double gi(int i, int s) {
 			return __mem->get_gi(i, s);
+		}
+		double Gi(int i, int s) {
+			return __mem->get_Gi(i, s);
 		}
 		///error norm
 		double error() {
@@ -3283,6 +3311,9 @@ public:
 		double KB(int j, int k, int l, int m, double _la, double _mu) {
 			return __mem->KB(j, k, l, m,_la,_mu);
 		}
+		double HB(int j, int k, int l, int m, double _la, double _mu) {
+			return __mem->HB(j, k, l, m, _la, _mu);
+		}
 		//rotation angle at boundary
 		double T(int i, int s, int m) {
 			return __mem->T(i, s, m);
@@ -3336,6 +3367,12 @@ public:
 		{
 			return x* __mem->get_gi(i, 0) + y * __mem->get_gi(i, 1);
 		}
+		double norm(double d1, double d2) {
+			double x = __mem->get_Gi(0, 0) * d1 + __mem->get_Gi(1, 0) * d2;
+			double y = __mem->get_Gi(0, 1) * d1 + __mem->get_Gi(1, 1) * d2;
+			double z = __mem->get_Gi(0, 2) * d1 + __mem->get_Gi(1, 2) * d2;
+			return sqrt(x * x + y * y + z * z);
+		}
 		void compute() {
 			if (__mem->RAM == "SAVE")
 			{
@@ -3368,30 +3405,57 @@ public:
 		void update_lo(array<double>^ lo) {
 			__mem->set_lo(lo[0], lo[1]);
 		}
-		void update_elem(int nNode, int uDim, int vDim,array<double, 3>^ M, array<int, 2>^ dd) {
-			__mem->update(nNode, uDim, vDim);
+		void update_elem_ref(int nNode, int uDim, int vDim, array<double, 3>^ M, array<int, 2>^ dd) {
+			__mem->update_ref(nNode, uDim, vDim);
 			if (__mem->RAM == "SAVE")
 			{
-				//__mem->_ref->M[0] = __mem->M[0];
-				//__mem->_ref->M[1] = __mem->M[1];
-				//__mem->_ref->dd = __mem->dd;
-				
+				__mem->_ref->M[0] = __mem->M[0];
+				__mem->_ref->M[1] = __mem->M[1];
+				__mem->_ref->dd = __mem->dd;
+
 			}
-			int i = 0;
-			for (int j = 0; j < uDim; j++) {
-				for (int k = 0; k < uDim; k++) {
-					__mem->set_M(i, j, k, M[i, j, k]);
+			if (__mem->RAM == "MAX"&&(!__mem->_ref->initialized))
+			{
+				int i = 0;
+				for (int j = 0; j < uDim; j++) {
+					for (int k = 0; k < uDim; k++) {
+						__mem->set_M(i, j, k, M[i, j, k]);
+					}
+				}
+				i = 1;
+				for (int j = 0; j < vDim; j++) {
+					for (int k = 0; k < vDim; k++) {
+						__mem->set_M(i, j, k, M[i, j, k]);
+					}
+				}
+				for (int i = 0; i < nNode; i++) {
+					for (int j = 0; j < 2; j++) {
+						__mem->set_dd(i, j, dd[i, j]);
+					}
 				}
 			}
-			i = 1;
-			for (int j = 0; j < vDim; j++) {
-				for (int k = 0; k < vDim; k++) {
-					__mem->set_M(i, j, k, M[i, j, k]);
+		}
+		void update_elem(int nNode, int uDim, int vDim,array<double, 3>^ M, array<int, 2>^ dd) {
+			__mem->update(nNode, uDim, vDim);
+
+			if (__mem->RAM == "SAVE")
+			{
+				int i = 0;
+				for (int j = 0; j < uDim; j++) {
+					for (int k = 0; k < uDim; k++) {
+						__mem->set_M_save(i, j, k, M[i, j, k]);
+					}
 				}
-			}
-			for (int i = 0; i < nNode; i++) {
-				for (int j = 0; j < 2; j++) {
-					__mem->set_dd(i, j, dd[i, j]);
+				i = 1;
+				for (int j = 0; j < vDim; j++) {
+					for (int k = 0; k < vDim; k++) {
+						__mem->set_M_save(i, j, k, M[i, j, k]);
+					}
+				}
+				for (int i = 0; i < nNode; i++) {
+					for (int j = 0; j < 2; j++) {
+						__mem->set_dd_save(i, j, dd[i, j]);
+					}
 				}
 			}
 		}
