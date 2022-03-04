@@ -1091,6 +1091,20 @@ void KingOfMonsters::_mySparse::begin_construct()
 {
 	_dat_count = 0;
 }
+double KingOfMonsters::_mySparse::mulboth(Eigen::VectorXd& u,Eigen::VectorXd& v)
+{
+	return (u.transpose() * this->_mat[0]) * v;
+}
+	
+void KingOfMonsters::_mySparse::mulright(Eigen::VectorXd& v, Eigen::VectorXd& ret,double sc)
+{
+	ret+=this->_mat[0] * v*sc;
+}
+		
+void KingOfMonsters::_mySparse::mulleft(Eigen::VectorXd& v, Eigen::VectorXd& ret, double sc)
+{
+	ret+=(v.transpose() * this->_mat[0]).transpose()*sc;
+}
 void KingOfMonsters::_mySparse::end_construct(int64_t cc)
 {
 	_nt = _dat_count;
@@ -1156,6 +1170,33 @@ void KingOfMonsters::_mySparse::ofDat()
 			_mat[ii].setZero();
 		}
 	}
+}
+void KingOfMonsters::_mySparse::computeQR() {
+	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
+	int count = 0;
+	int nnz = 0;
+	for (auto f : _mat)
+	{
+		count += f.rows();
+		nnz += f.nonZeros();
+	}
+
+	Eigen::SparseMatrix<double, Eigen::RowMajor, int64_t> M(count, _mat[0].cols());
+	Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t> N(count, _mat[0].cols());
+	M.reserve(nnz);
+	int offset = 0;
+	for (auto f : _mat)
+	{
+		M.middleRows(offset, f.rows()) = f;
+		offset += f.rows();
+	}
+	N = M;
+
+
+	Eigen::SparseQR<Eigen::SparseMatrix<double, Eigen::RowMajor, int64_t>, Eigen::COLAMDOrdering<int64_t>> qr;
+	qr.setPivotThreshold(0.00000000001);
+	qr.compute(N);
+
 }
 void KingOfMonsters::_mySparse::freezecoeff() {
 #pragma omp parallel for schedule(dynamic,1)
@@ -1866,12 +1907,6 @@ void KingOfMonsters::_mySparse::merge()
 {
 	this->ofDat();
 }
-void KingOfMonsters::_mySparse::computeQR()
-{
-	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
-	Eigen::HouseholderQR<Eigen::MatrixXd> qr;
-	qr.compute(_dmat);
-}
 void KingOfMonsters::_mySparse::computeLU()
 {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
@@ -2018,72 +2053,38 @@ double KingOfMonsters::_mySparse::computeeigen(_mySparse* i1, _mySparse* i2, _my
 	//return eigen.eigenvalues();
 
 }
-
-Eigen::VectorXd KingOfMonsters::_mySparse::minilla(_mySparse* i1, _mySparse* i2, _mySparse* i3,_myDoubleArray* grad)
+void  KingOfMonsters::_mySparse::project(_mySparse* i1/*JxxJ*/, _mySparse* i2/*JXXJ*/, _mySparse* f1/*JxJX*/,_myDoubleArray* v1,_myDoubleArray* v2, _myDoubleArray* _ret1, _myDoubleArray* _ret2)
 {
-	int64_t n1 = i1->_dmat.cols();
-	int64_t n2 = i2->_dmat.cols();
+	Eigen::MatrixXd JxxJ = i1->_mat[0];
+	Eigen::MatrixXd JXXJ = i2->_mat[0];
+	auto JxXJ = f1->_mat[0];
+	JxxJ += 0.000001 * Eigen::MatrixXd::Identity(v2->__v.size(), v2->__v.size());
+	JXXJ += 0.000001 * Eigen::MatrixXd::Identity(v1->__v.size(), v1->__v.size());
+	Eigen::MatrixXd xX = JxxJ.inverse() * JxXJ;
+	Eigen::MatrixXd Xx = JXXJ.inverse() * JxXJ.transpose();
 
-	Eigen::MatrixXd mat(n1 + n2, n1 + n2);
-	mat.topLeftCorner(n1, n1) = i1->_dmat;
-	mat.bottomRightCorner(n2, n2) = i2->_dmat;
-	mat.topRightCorner(n1, n2) = i3->_mat[0];
-	mat.bottomLeftCorner(n2, n1) = i3->_mat[0].transpose();
-	mat += Eigen::MatrixXd::Identity(n1 + n2, n1 + n2) * 0.00000000000000001;
-	mat = mat.inverse();
+	Eigen::MatrixXd xXXx = xX * Xx;
+	Eigen::MatrixXd XxxX = Xx * xX;
 
-
-	Eigen::VectorXd v2(n1 + n2);
-	v2.bottomRows(n2) = grad->__v;
-	double original = v2.norm();
-	v2=mat*v2;
-	v2.normalize();
-	v2 *= original;
-	return v2;
-}
-double KingOfMonsters::_mySparse::computeeigen2(_mySparse* i1, _mySparse* i2, _mySparse* f1, int64_t N)
-{
-
-	int64_t n1 = i1->_dmat.cols();
-	int64_t n2 = i2->_dmat.cols();
-
-	Eigen::MatrixXd mat(n1 + n2, n1 + n2);
-
-	mat.setZero();
-
-	mat.topLeftCorner(n1, n1) = i1->_dmat;
-	mat.bottomRightCorner(n2, n2) = i2->_dmat;
-	mat.topRightCorner(n1, n2) = f1->_mat[0];
-	mat.bottomLeftCorner(n2, n1) = f1->_mat[0].transpose();
-
-	double max = 0;
-	double min = 0;
-	static Eigen::VectorXd vec(n1+n2);
-	vec(0) = 1;
-	vec.normalize();
-	for (int64_t i = 0; i < N; i++)
+	auto I = Eigen::MatrixXd::Identity(v1->__v.size(), v1->__v.size());
+	double lambda = 0;
+	Eigen::FullPivHouseholderQR<Eigen::MatrixXd> qr;
+	for (int i = 0; i < 6; i++)
 	{
-		vec = mat* vec;
-		vec.normalize();
+		qr.compute((XxxX - I).transpose() * (XxxX - I) + lambda * I);
+		double norm1 = v1->__v.transpose() * qr.solve(qr.solve(v1->__v));
+		double norm2 = v1->__v.transpose() * qr.solve(v1->__v);
+		lambda = norm2 / norm1;
 	}
-	vec.normalize();
-	vec = mat * vec;
-	max=vec.norm();
+	qr.compute((XxxX - I).transpose() * (XxxX - I) + lambda * I);
+	Eigen::VectorXd ret = qr.solve(v1->__v);// +(xX).transpose() * v2->__v);
+	//ret.normalize();
+	ret *= lambda;// lambda;
+	Eigen::VectorXd ret2 = xX*ret;
 	
-	Eigen::MatrixXd inv=mat.inverse();
-
-	vec(0) = 1;
-	vec.normalize();
-	for (int64_t i = 0; i < N; i++)
-	{
-		vec = inv * vec;
-		vec.normalize();
-	}
-	vec.normalize();
-	vec = inv  * vec;
-	min = 1.0/vec.norm();
-
-	return min;
+	_ret1->__v = ret;
+	_ret2->__v = ret2;
+	
 }
 std::string KingOfMonsters::_mySparse::_solveLU_gpu(KingOfMonsters::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int64_t device) {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);

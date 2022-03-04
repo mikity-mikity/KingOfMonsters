@@ -37,9 +37,14 @@ namespace KingOfMonsters {
 		}
 	};
 	const int ___ll[4]{ 0,3,6,9 };
+	enum _RAM {
+		SAVE = 1,
+		MAX = 2
+	};
+
 	public class _memS_ref {
 	public:
-		std::string RAM;
+		_RAM RAM;
 		int _nNode;
 		int dim[2]{ 0,0 };
 		int _uDim, _vDim;
@@ -57,7 +62,8 @@ namespace KingOfMonsters {
 		double _Gij[4];
 		double _bij[12];
 		double _Sij[4];
-		double _Gammaijk[8];
+		double _Gammaijk[8] ;
+
 		double* __mat = 0;
 		double** M[2]{ 0,0 };
 		int** dd=0;
@@ -232,7 +238,7 @@ namespace KingOfMonsters {
 		}
 		
 		void del() {
-			if (RAM == "MAX")
+			if (RAM == MAX)
 			{
 				if (dd != 0)
 				{
@@ -395,7 +401,7 @@ namespace KingOfMonsters {
 				_vDim = vDim;
 				dim[0] = _uDim;
 				dim[1] = _vDim;
-				if (RAM == "MAX")
+				if (RAM == MAX)
 				{
 					__mat = new double[_nNode * _nNode];
 					d0 = new double[nNode];
@@ -489,7 +495,7 @@ namespace KingOfMonsters {
 	public class _memS {
 	public:
 		std::string mode;
-		std::string RAM;
+		_RAM RAM;
 
 		_memS_ref* _ref=0;
 		double N[3];
@@ -736,7 +742,7 @@ namespace KingOfMonsters {
 			return val;
 		}
 	public:
-		_memS(string ultimate,string RAM) {
+		_memS(string ultimate,_RAM RAM) {
 			this->mode = ultimate;
 			this->RAM = RAM;
 			if (mode=="U") {
@@ -762,7 +768,7 @@ namespace KingOfMonsters {
 			gradN[2] = 0;
 			gradG = 0;
 
-			if (RAM == "SAVE")
+			if (RAM == SAVE)
 			{
 				__mat = 0;
 				d0 = 0;
@@ -817,7 +823,7 @@ namespace KingOfMonsters {
 			del();
 		}
 		void update2() {
-			if (!_ref->initialized||RAM=="SAVE")
+			if (!_ref->initialized||RAM==SAVE)
 			{
 				
 
@@ -1229,24 +1235,34 @@ namespace KingOfMonsters {
 				}
 				this->phi = val;*/
 				static const int sss[4]{ 1,2,0,3 };
-				if (!_ref->initialized ||RAM=="SAVE")
+				if (!_ref->initialized ||RAM==SAVE)
 				{
 					pptr = &_ref->__mat[0];
-					
+					double* _pt00 = &_ref->d1[0][0];
+					double* _pt01 = &_ref->d1[1][0];
+
 					for (int i = 0; i < _nNode; i++)
 					{
+						double* _pt0 = &_ref->d1[0][0];
+						double* _pt1 = &_ref->d1[1][0];
 						for (int j = 0; j < _nNode; j++) {
 							double val = 0;
 							for (auto const& k : sss) {
 								{
-									//double tmp = ;
-									val += star2[k] * (_ref->d2[_star[k]][i] - Gammaijk[((_star[k]) << 1) + 0] * _ref->d1[0][i] - Gammaijk[((_star[k]) << 1) + 1] * _ref->d1[1][i]) *
-									(_ref->d2[k][j] - Gammaijk[((k) << 1) + 0] * _ref->d1[0][j] - Gammaijk[((k) << 1) + 1] * _ref->d1[1][j]);
+									int mm = (_star[k]) << 1;
+									int nn = (k) << 1;
+
+									val += star2[k] * (_ref->d2[_star[k]][i] - Gammaijk[mm] * (*_pt00) - Gammaijk[mm+1] * (*_pt01)) *
+									(_ref->d2[k][j] - Gammaijk[nn] * (*_pt0) - Gammaijk[nn+1] * (*_pt1));
 								}
 							}
 							*pptr = val;
 							pptr++;
+							_pt0++;
+							_pt1++;
 						}
+						_pt00++;
+						_pt01++;
 					}
 				}
 				
@@ -1460,7 +1476,7 @@ namespace KingOfMonsters {
 
 			}
 			if (gradG != 0)delete[] gradG;
-			if (RAM == "SAVE")
+			if (RAM == SAVE)
 			{
 				if (tt0[0] != 0) {
 					delete[] __mat;
@@ -1580,7 +1596,7 @@ namespace KingOfMonsters {
 					gradN[2] = new double[3 * _nNode];
 					gradG = new double[8 * _nNode];
 				}
-				if (RAM == "SAVE")
+				if (RAM == SAVE)
 				{
 					__mat = new double[nNode * nNode];
 					d0 = new double[nNode];
@@ -1811,17 +1827,29 @@ namespace KingOfMonsters {
 				}
 			}
 		}
-		void getMat(_mySparse* mat,int64_t *index,int c,int m)
-		{
+		void getMat(int64_t *index, std::vector<Eigen::Triplet<double>> *_dat)
+		{	
+			//mat->_mat[0].setZero();
+			//mat->_mat[0].reserve(_nNode * _nNode);
+			double* ptr = &_ref->__mat[0];
+			int64_t* ptr2 = &index[0];
+			_dat->clear();
+			_dat->reserve(_nNode * _nNode);
 			for (int i = 0; i < _nNode; i++)
 			{
+				int64_t* ptr3 = &index[0];
 				for (int j = 0; j < _nNode; j++)
 				{
-					int I = index[i];
-					int J = index[j];
-					mat->_mat[0].coeffRef(c, I*m + J) = _ref->__mat[i*_nNode + j];
+					//int I = index[i];
+					//int J = index[j];
+					//mat->_mat[0].coeffRef(*ptr2, *ptr3) = *ptr;// _ref->__mat[i * _nNode + j];
+					_dat->push_back(Eigen::Triplet<double>(*ptr2, *ptr3, *ptr));
+					ptr++;
+					ptr3++;
 				}
+				ptr2++;
 			}
+			//mat->_mat[0].setFromTriplets(_dat->begin(), _dat->end());
 		}
 		//stress function L2
 		double F2(int i, int j) {
@@ -3345,8 +3373,8 @@ public:
 		void S(double val1, double val2, double val3) {
 			__mem->set_Sij(val1, val2, val3);
 		}
-		void getMat(mySparse^ mat, myIntArray^ index, int c, int m) {
-			__mem->getMat(mat->dat, index->data(), c, m);
+		void getmat(myIntArray^ index, workspace^ _dat) {
+			__mem->getMat(index->data(),_dat->_dat);
 		}
 		double bodyF() {
 			//double sc = 1.0/__mem->_ref->_refDv/ __mem->_ref->_refDv;
@@ -3374,7 +3402,7 @@ public:
 			return sqrt(x * x + y * y + z * z);
 		}
 		void compute() {
-			if (__mem->RAM == "SAVE")
+			if (__mem->RAM == SAVE)
 			{
 				__mem->_ref->__mat = __mem->__mat;
 				__mem->_ref->d0 = __mem->d0;
@@ -3407,14 +3435,14 @@ public:
 		}
 		void update_elem_ref(int nNode, int uDim, int vDim, array<double, 3>^ M, array<int, 2>^ dd) {
 			__mem->update_ref(nNode, uDim, vDim);
-			if (__mem->RAM == "SAVE")
+			if (__mem->RAM == SAVE)
 			{
 				__mem->_ref->M[0] = __mem->M[0];
 				__mem->_ref->M[1] = __mem->M[1];
 				__mem->_ref->dd = __mem->dd;
 
 			}
-			if (__mem->RAM == "MAX"&&(!__mem->_ref->initialized))
+			if (__mem->RAM == MAX&&(!__mem->_ref->initialized))
 			{
 				int i = 0;
 				for (int j = 0; j < uDim; j++) {
@@ -3438,7 +3466,7 @@ public:
 		void update_elem(int nNode, int uDim, int vDim,array<double, 3>^ M, array<int, 2>^ dd) {
 			__mem->update(nNode, uDim, vDim);
 
-			if (__mem->RAM == "SAVE")
+			if (__mem->RAM == SAVE)
 			{
 				int i = 0;
 				for (int j = 0; j < uDim; j++) {
@@ -3468,30 +3496,30 @@ public:
 			//phi = __mem->phi;
 		}
 		memS(System::String^ RAM) {
-			string _RAM = "";
-			if (RAM == "SAVE")_RAM = "SAVE";
-			if (RAM == "MAX")_RAM = "MAX";
-			__mem = new _memS(std::string(""), _RAM);//MAX=cosume memory more but fast, SAVE=save memory and a little slow
+			_RAM __RAM = SAVE;
+			if (RAM == "SAVE")__RAM = SAVE;
+			if (RAM == "MAX")__RAM = MAX;
+			__mem = new _memS(std::string(""), __RAM);//MAX=cosume memory more but fast, SAVE=save memory and a little slow
 		}
 		void static func(int i) {
 
 		}
 		memS(System::String ^ultimate, System::String^ RAM) {
 			
-			string _RAM = "";
-			if (RAM == "SAVE")_RAM = "SAVE";
-			if (RAM == "MAX")_RAM = "MAX";
+			_RAM __RAM = SAVE;
+			if (RAM == "SAVE")__RAM = SAVE;
+			if (RAM == "MAX")__RAM = MAX;
 
 			if (ultimate == "U")
-				__mem = new _memS("U",_RAM);
+				__mem = new _memS("U",__RAM);
 			else if (ultimate == "SLOPE")
-				__mem = new _memS("SLOPE", _RAM);
+				__mem = new _memS("SLOPE", __RAM);
 			else if (ultimate == "SHELL")
-				__mem = new _memS("SHELL", _RAM);
+				__mem = new _memS("SHELL", __RAM);
 			else if (ultimate == "SENSITIVITY")
-				__mem = new _memS("SENSITIVITY", _RAM);
+				__mem = new _memS("SENSITIVITY", __RAM);
 			else
-				__mem = new _memS("", _RAM);
+				__mem = new _memS("", __RAM);
 		}
 		void dispose() {
 			if(__mem!=0)

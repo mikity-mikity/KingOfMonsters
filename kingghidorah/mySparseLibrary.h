@@ -416,6 +416,9 @@ namespace KingOfMonsters {
 			}
 			return vec;
 		}
+		void setZero() {
+			this->dat->_mat[0].setZero();
+		}
 		void ofStack(mySparse^ A, mySparse^ B)
 		{
 			std::vector<Eigen::Triplet<double>> dat;
@@ -1133,7 +1136,96 @@ namespace KingOfMonsters {
 			return str;
 		}
 	};
-
+	public ref class denseMatrix {
+	private:
+		Eigen::MatrixXd* mat=0;
+	public:
+		Eigen::MatrixXd& get()
+		{
+			return *mat;
+		}
+		void set(Eigen::MatrixXd _m)
+		{
+			*mat = _m;
+		}
+		void resie(int n,int m)
+		{
+			mat->resize(n, m);
+		}
+		denseMatrix(int n, int m)
+		{
+			if (mat != 0)del();
+			mat = new Eigen::MatrixXd();
+			mat->resize(n, m);
+			mat->setZero();
+		}
+		denseMatrix()
+		{
+			if (mat != 0)del();
+			mat = new Eigen::MatrixXd();
+		}
+		!denseMatrix()
+		{
+			del();
+		}
+		~denseMatrix()
+		{
+			del();
+		}
+		void del() {
+			if (mat != 0)
+			{
+				delete mat;
+			}
+			mat = 0;
+		}
+	};
+	public ref class workspace {
+	public:
+		std::vector<Eigen::Triplet<double>>* _dat=0;
+		workspace()
+		{
+			if (_dat != 0)del();
+			_dat = new std::vector<Eigen::Triplet<double>>();
+		}
+		void mulright(Eigen::VectorXd* v, Eigen::VectorXd* ret,double sc)
+		{
+			for (const auto& triplet : *_dat)
+			{
+				ret->coeffRef(triplet.row()) += sc*((*v)(triplet.col()) * triplet.value());
+			}
+		}
+		void mulleft(Eigen::VectorXd* u, Eigen::VectorXd* ret,double sc)
+		{
+			for (const auto& triplet : *_dat)
+			{
+				ret->coeffRef(triplet.col()) += sc* ((*u)(triplet.row()) * triplet.value());
+			}
+		}
+		double mulboth(Eigen::VectorXd* u, Eigen::VectorXd* v)
+		{
+			double val = 0;
+			for (const auto& triplet : *_dat)
+			{
+				val+= ((*u)(triplet.row())) * ((*v)(triplet.col()))*triplet.value();
+			}
+			return val;
+		}
+		~workspace() {
+			if (_dat != 0)
+				del();
+			_dat = 0;
+		}
+		!workspace() {
+			if (_dat != 0)
+				del();
+			_dat = 0;
+		}
+		void del() {
+			if (_dat != 0)delete _dat;
+			_dat = 0;
+		}
+	};
 	public ref class helper {
 	public:
 		static double computeeigen(mySparse^ i1, mySparse^ i2, mySparse^ t1, Int64 N)
@@ -1144,22 +1236,138 @@ namespace KingOfMonsters {
 			return maxval;
 			//auto vv = mat.eigenvalues();
 		}
-		static double computeeigen2(mySparse^ i1, mySparse^ i2, mySparse^ t1, Int64 N)
+		static void project(mySparse^ i1, mySparse^ i2, mySparse^ t1, myDoubleArray^ v1, myDoubleArray^ v2, myDoubleArray^ ret1, myDoubleArray^ ret2)
 		{
-			double maxval = _mySparse::computeeigen2(i1->dat, i2->dat, t1->dat, N);
-
-
-			return maxval;
-			//auto vv = mat.eigenvalues();
+			_mySparse::project(i1->dat, i2->dat, t1->dat, v1->_arr, v2->_arr, ret1->_arr, ret2->_arr);
 		}
-		static void minilla(mySparse^ i1, mySparse^ i2, mySparse^ i3, myDoubleArray^ grad,myDoubleArray^ ret1, myDoubleArray^ ret2)
+		static void computeKlylovSubspace(System::Collections::Generic::List<workspace^>^ _mats,denseMatrix ^_U, denseMatrix^ _V, denseMatrix^ _W,int n, int r)
 		{
-			Eigen::VectorXd v = _mySparse::minilla(i1->dat, i2->dat, i3->dat, grad->_arr);
+			int m = _mats->Count;
+			Eigen::VectorXd ui(n);
+			ui.setOnes();
+			Eigen::VectorXd vi(n);
+			vi.setOnes();
+			Eigen::VectorXd wi(m);
+			wi.setOnes();
 
-			ret1->_arr->__v = v.topRows(i1->dat->cols());
-			ret2->_arr->__v = v.bottomRows(i2->dat->cols());
+			ui.normalize();
+			vi.normalize();
+			wi.normalize();
+			Eigen::MatrixXd U(n, r);
+			Eigen::MatrixXd V(n, r);
+			Eigen::MatrixXd W(m, r);
 
-			//auto vv = mat.eigenvalues();
+			U.setZero();
+			V.setZero();
+			W.setZero();
+			U.col(0) = ui;
+			V.col(0) = vi;
+			W.col(0) = wi;
+			Eigen::VectorXd u2(n);
+			Eigen::VectorXd v2(n);
+			Eigen::VectorXd w2(m);
+			u2.setZero();
+			v2.setZero();
+			w2.setZero();
+			int _mt = omp_get_max_threads();
+#pragma omp parallel
+			{
+#pragma omp single
+				_mt = omp_get_num_threads();
+			}
+			/*Eigen::SparseMatrix<double> __M(_mats[0]->dat->_mat[0].rows(), _mats[0]->dat->_mat[0].cols());
+			__M.setZero();
+#pragma omp parallel for
+			for (int ii = 0; ii < _mt; ii++)
+			{
+				int S = ii * m / _mt;
+				int E = (ii + 1) * m / _mt;
+				Eigen::SparseMatrix<double> ___M(_mats[0]->dat->_mat[0].rows(), _mats[0]->dat->_mat[0].cols());
+				for (int i = S; i < E; i++)
+				{
+					auto M = _mats[i]->dat->_mat[0];
+					___M += M;
+				}
+#pragma omp critical
+				{
+					__M += ___M;
+				}
+			}
+			memset(__M.valuePtr(), 0, sizeof(double) * __M.nonZeros());
+			std::vector< Eigen::SparseMatrix<double>> mm(_mt);
+			for (int ii = 0; ii < _mt; ii++)
+			{
+				mm[ii] = __M;
+			}*/
+			for (int j =0;j<r-1;j++ )
+			{
+				ui = U.col(j);
+				vi = V.col(j);
+				wi = W.col(j);
+				u2.setZero();
+				v2.setZero();
+				w2.setZero();
+				Console::WriteLine("task#:"+j.ToString() + "/" + r.ToString());
+				//int count = 0;
+#pragma omp parallel for
+				for (int ii = 0; ii < _mt; ii++)
+				{
+					int S = ii * m / _mt;
+					int E = (ii + 1) * m / _mt;
+					Eigen::VectorXd _u2(n);
+					Eigen::VectorXd _v2(n);
+					_u2.setZero();
+					_v2.setZero();
+					double* ptr = &w2.coeffRef(S);
+					double* ptr2 = &wi.coeffRef(S);
+					//Eigen::SparseMatrix<double> ___M=mm[ii];
+					//memset(___M.valuePtr(), 0, sizeof(double) * ___M.nonZeros());
+					for (int i = S; i < E; i++)
+					{
+						auto M = _mats[i];
+						*ptr = M->mulboth(&ui, &vi);// (ui.transpose() * M)* vi;
+						ptr++;
+
+						//___M += *ptr2 * M;
+						M->mulright(&vi, &_u2, *ptr2);
+						M->mulleft(&ui, &_v2, *ptr2);// (ui.transpose() * M).transpose();
+						ptr2++;
+//#pragma omp critical
+						//{
+							//count++;
+							//Console::WriteLine("subtask#:" + i.ToString() + "/" + m.ToString());
+						//}
+
+					}
+					//_u2 = ___M * vi;
+					//_v2 = (ui.transpose() * ___M).transpose();
+#pragma omp critical
+					{
+						u2 += _u2;
+						v2 += _v2;
+					}
+				}
+				Eigen::VectorXd hu = U.leftCols(j + 1).transpose() * u2;
+				Eigen::VectorXd hv = V.leftCols(j + 1).transpose() * v2;
+				Eigen::VectorXd hw = W.leftCols(j + 1).transpose() * w2;
+				u2 = u2 - U.leftCols(j + 1) * hu;
+				v2 = v2 - V.leftCols(j + 1) * hv;
+				w2 = w2 - W.leftCols(j + 1) * hw;
+
+				u2.normalize();
+				v2.normalize();
+				w2.normalize();
+
+				U.col(j + 1) = u2;
+				V.col(j + 1) = v2;
+				W.col(j + 1) = w2;
+			}
+			_U->resie(n, r);
+			_V->resie(n, r);
+			_W->resie(m, r);
+			_U->set(U);
+			_V->set(V);
+			_W->set(W);
 		}
 
 	};

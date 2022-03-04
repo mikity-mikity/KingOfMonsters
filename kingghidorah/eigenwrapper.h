@@ -187,9 +187,12 @@ namespace KingOfMonsters {
 		vector<vector<Eigen::Triplet<double>>> dat;
 		//vector<Eigen::Triplet<double>> dat2;
 	public:
+		double mulboth(Eigen::VectorXd& u, Eigen::VectorXd& v);
+		void mulleft(Eigen::VectorXd& u, Eigen::VectorXd& ret, double sc);
+		void mulright(Eigen::VectorXd& u, Eigen::VectorXd& ret, double sc);
+
 		static double computeeigen(_mySparse* i1, _mySparse* i2, _mySparse* f1, int64_t N);
-		static double computeeigen2(_mySparse* i1, _mySparse* i2, _mySparse* f1, int64_t N);
-		static Eigen::VectorXd minilla(_mySparse* i1, _mySparse* i2, _mySparse* i3, _myDoubleArray* grad);
+		static void project(_mySparse* i1, _mySparse* i2, _mySparse* f1, _myDoubleArray* v1, _myDoubleArray* v2, _myDoubleArray* _ret1, _myDoubleArray* _ret2);
 		_mySparse();
 		~_mySparse();
 		void freeze(bool _do);

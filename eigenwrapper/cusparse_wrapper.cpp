@@ -175,7 +175,7 @@ cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluZeroPivot(
 			position);
 }
 
-cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluSolve(
+cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluSolve    (
 	cusolverSpHandle_t handle,
 	int n,
 	const float *b,
