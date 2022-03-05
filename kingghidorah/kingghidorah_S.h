@@ -1703,6 +1703,39 @@ namespace KingOfMonsters {
 			return m[0] * m[3] - m[1] * m[2];
 		}
 	public:
+		void getMat_slope(int64_t* index, std::vector<_Triplet<double>>* _dat,double dcdt1,double dcdt2,bool airy)
+		{
+			_dat->clear();
+			_dat->reserve(_nNode);
+			if (airy)
+			{
+				int64_t* ptr2 = &index[0];
+				for (int i = 0; i < _nNode; i++)
+				{
+					double val = 0;
+					for (int k = 0; k < 2; k++)
+					{
+						val += _ref->d1[k][i] * get_Gij(k, 0) * dcdt1;
+						val += _ref->d1[k][i] * get_Gij(k, 1) * dcdt2;
+					}
+					_dat->push_back(_Triplet<double>(*ptr2, -1, val));
+					ptr2++;
+				}
+			}else {
+				int64_t* ptr2 = &index[0];
+				for (int i = 0; i < _nNode; i++)
+				{
+					double val = 0;
+					for (int k = 0; k < 2; k++)
+					{
+						val += _ref->d1[k][i] * get_Gij(k, 0) * dcdt1;
+						val += _ref->d1[k][i] * get_Gij(k, 1) * dcdt2;
+					}
+					_dat->push_back(_Triplet<double>(-1, *ptr2, val));
+					ptr2++;
+				}
+			}			
+		}
 		inline double __SLOPE_phi(int l) {
 			double val = 0;
 			for (int k = 0; k < 2; k++)
@@ -1827,7 +1860,7 @@ namespace KingOfMonsters {
 				}
 			}
 		}
-		void getMat(int64_t *index, std::vector<Eigen::Triplet<double>> *_dat)
+		void getMat(int64_t *index, std::vector<_Triplet<double>> *_dat)
 		{	
 			//mat->_mat[0].setZero();
 			//mat->_mat[0].reserve(_nNode * _nNode);
@@ -1843,10 +1876,26 @@ namespace KingOfMonsters {
 					//int I = index[i];
 					//int J = index[j];
 					//mat->_mat[0].coeffRef(*ptr2, *ptr3) = *ptr;// _ref->__mat[i * _nNode + j];
-					_dat->push_back(Eigen::Triplet<double>(*ptr2, *ptr3, *ptr));
+					_dat->push_back(_Triplet<double>(*ptr2, *ptr3, *ptr));
 					ptr++;
 					ptr3++;
 				}
+				ptr2++;
+			}
+			//mat->_mat[0].setFromTriplets(_dat->begin(), _dat->end());
+		}
+		void getMat_d0(int64_t* index, std::vector<_Triplet<double>>* _dat)
+		{
+			//mat->_mat[0].setZero();
+			//mat->_mat[0].reserve(_nNode * _nNode);
+			double* ptr = &_ref->d0[0];
+			int64_t* ptr2 = &index[0];
+			_dat->clear();
+			_dat->reserve(_nNode * _nNode);
+			for (int i = 0; i < _nNode; i++)
+			{
+				_dat->push_back(_Triplet<double>(-1, *ptr2, *ptr));
+				ptr++;
 				ptr2++;
 			}
 			//mat->_mat[0].setFromTriplets(_dat->begin(), _dat->end());
@@ -3374,8 +3423,15 @@ public:
 			__mem->set_Sij(val1, val2, val3);
 		}
 		void getmat(myIntArray^ index, workspace^ _dat) {
-			__mem->getMat(index->data(),_dat->_dat);
+			__mem->getMat(index->data(), _dat->_dat);
 		}
+		void getmat_d0(myIntArray^ index, workspace^ _dat) {
+			__mem->getMat_d0(index->data(), _dat->_dat);
+		}
+		void getmat_slope(myIntArray^ index, workspace^ _dat,double dcdt1,double dcdt2,bool airy) {
+			__mem->getMat_slope(index->data(), _dat->_dat, dcdt1, dcdt2, airy);
+		}
+
 		double bodyF() {
 			//double sc = 1.0/__mem->_ref->_refDv/ __mem->_ref->_refDv;
 			return __mem->sc *  __mem->bodyF;
