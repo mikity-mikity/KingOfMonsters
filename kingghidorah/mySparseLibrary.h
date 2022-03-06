@@ -1290,21 +1290,21 @@ namespace KingOfMonsters {
 			{
 				for (auto& triplet : (*_dat))
 				{
-					triplet._col() = pV.indices()(triplet.col());
+					triplet.m_col = pV.indices()(triplet.col());
 				}
 			}
 			else if((*_dat)[0].col() == -1)
 			{
 				for (auto& triplet : (*_dat))
 				{
-					triplet._row() = pU.indices()(triplet.row());
+					triplet.m_row = pU.indices()(triplet.row());
 				}
 			}
 			else {
 				for (auto& triplet : (*_dat))
 				{
-					triplet._col() = pV.indices()(triplet.col());
-					triplet._row() = pU.indices()(triplet.row());
+					triplet.m_col = pV.indices()(triplet.col());
+					triplet.m_row = pU.indices()(triplet.row());
 				}
 			}
 			
@@ -1530,22 +1530,7 @@ namespace KingOfMonsters {
 
 			_U->get().applyOnTheLeft(mU->p->perm.transpose());
 			_V->get().applyOnTheLeft(mV->p->perm.transpose());
-
-			/*_U->get().setRandom();
-			_V->get().setRandom();
-			for (int i = 0; i < _U->get().cols(); i++)
-			{
-				_U->get().col(i).normalize();
-				_V->get().col(i).normalize();
-			}
-			_U->get().col(0)(20) = 10;
-			_U->get().col(0)(40) = -10;
-			_U->get().col(0)(60) = 30;
-			_V->get().col(0)(20) = 10;
-			_V->get().col(0)(40) = -10;
-			_V->get().col(0)(60) = 30;
-			_U->get().col(0).normalize();
-			_V->get().col(0).normalize();*/
+			
 		}
 		static void VarPro( myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^  __V, denseMatrix^  __W, System::Collections::Generic::List<denseMatrix^>^ _mats, myDoubleArray ^ _r1, myDoubleArray^ _r2, int _C,double dt)
 		{
@@ -1585,9 +1570,26 @@ namespace KingOfMonsters {
 			
 			auto r1 = __W->get().transpose() * _r1->_arr->__v;
 			auto r2 = __W->get().transpose() * _r2->_arr->__v;
+
 			Eigen::VectorXd b1(n),b2(n);
 			b1.setZero();
 			b2.setZero();
+			Eigen::VectorXd __r1(m), __r2(m);
+			__r1.setConstant(2);
+			__r2.setConstant(2);
+			__r1(0) = 5;//phi
+			__r1(1) = 12;
+			__r1(2) = -4;
+			__r1(3) = 2;
+			__r2(0) = 5;//zz
+			__r2(1) = 12;
+			__r2(2) = -4;
+			__r2(3) = 2;
+
+			Eigen::VectorXd ___r1(n), ___r2(n);
+			___r1 = __W->get().transpose() * __r1;
+			___r2 = __W->get().transpose() * __r2;
+
 			Eigen::MatrixXd Jx(n,n);
 			Eigen::MatrixXd JX(n, n);
 			Jx.setZero();
@@ -1606,8 +1608,8 @@ namespace KingOfMonsters {
 					auto M = _mats[i]->get();
 					if (M.rows() != 1 && M.cols() != 1)
 					{
-						Jx.row(i) = M * v0;
-						JX.row(i) = (M.transpose()) * u0;
+						Jx.row(i) = (M * v0).transpose();
+						JX.row(i) = u0.transpose()*M;
 						b1(i) = u0.transpose() * M * v0;
 						b2(i) = u0.transpose() * M * v0;
 					}
@@ -1618,9 +1620,9 @@ namespace KingOfMonsters {
 
 			JX += _mats[n]->get();
 			Jx += _mats[n + 1]->get();
-			
-			rhsx=(b1-r1).transpose()* Jx;
-			rhsX=(b2-r2).transpose()* JX;
+			rhsx=(b1-___r1).transpose()* Jx;
+			rhsX=(b2-___r2).transpose()* JX;
+			Console::WriteLine("residual norm="+rhsX.norm().ToString());
 			Eigen::MatrixXd I(n, n);
 			I.setIdentity();
 			Eigen::VectorXd dx = -(Jx.transpose() * Jx + 0.000000001 * I).inverse() * rhsx;
@@ -1649,7 +1651,12 @@ namespace KingOfMonsters {
 			
 			//ui.setOnes();
 			//vi.setOnes();
-			wi.setOnes();
+			//wi.setOnes();
+
+			ui.setRandom();
+			vi.setRandom();
+			wi.setRandom();
+
 
 			ui.normalize();
 			vi.normalize();
