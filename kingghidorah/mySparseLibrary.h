@@ -1283,13 +1283,117 @@ namespace KingOfMonsters {
 			if (_dat != 0)del();
 			_dat = new std::vector<_Triplet<double>>();
 		}
-		Eigen::SparseMatrix<double> contract(denseMatrix^ U, denseMatrix^ V, int n,int m)
+		Eigen::SparseMatrix<double> tosparse(int n, bool flip, bool both)
 		{
-			Eigen::SparseMatrix<double> newmat;
-			if (U == nullptr)
+			Eigen::SparseMatrix<double> newmat(n, n);
+			if (both)
 			{
-				auto _V = V->get();
-				if ((*_dat)[0].row() == -1)
+				if ((*_dat)[0].col() == -1)
+				{
+					newmat.resize(n, 1);
+					newmat.setZero();
+					newmat.reserve(_dat->size());
+					
+					for (auto tr : *_dat)
+					{
+						newmat.coeffRef(tr.row(),0) = tr.value();
+					}
+					
+				}
+				else if ((*_dat)[0].row() == -1)
+				{
+					newmat.resize(1, n);
+					newmat.setZero();
+					newmat.reserve(_dat->size());
+					for (auto tr : *_dat)
+					{
+						newmat.coeffRef(0, tr.col()) = tr.value();
+					}
+				}
+				else {
+					newmat.setZero();
+					newmat.reserve(_dat->size());
+					for (auto tr : *_dat)
+					{
+						newmat.coeffRef(tr.row(), tr.col()) = tr.value();
+					}
+				}
+			}
+			else {
+				if (flip)//U,oV
+				{
+					if ((*_dat)[0].col() == -1)
+					{
+						newmat.resize(1, n);
+						newmat.setZero();
+						newmat.reserve(_dat->size());
+						for (auto tr : *_dat)
+						{
+							newmat.coeffRef(0, tr.row()) = tr.value();
+						}
+					}
+					else if ((*_dat)[0].row() == -1)
+					{
+						newmat.resize(0, 0);
+						newmat.setZero();
+					}
+					else {
+						newmat.setZero();
+						newmat.reserve(_dat->size());
+						for (auto tr : *_dat)
+						{
+							newmat.coeffRef(tr.col(), tr.row()) = tr.value();
+						}
+					}
+				}
+				else {//U,oV
+					if ((*_dat)[0].col() == -1)
+					{
+						newmat.resize(0, 0);
+						newmat.setZero();
+					}
+					else if ((*_dat)[0].row() == -1)
+					{
+						newmat.resize(1, n);
+						newmat.setZero();
+						newmat.reserve(_dat->size());
+						for (auto tr : *_dat)
+						{
+							newmat.coeffRef(0, tr.col()) = tr.value();
+						}
+					}
+					else {
+						newmat.setZero();
+						newmat.reserve(_dat->size());
+						for (auto tr : *_dat)
+						{
+							newmat.coeffRef(tr.row(), tr.col()) = tr.value();
+						}
+					}
+				}
+			}
+			return newmat;
+		}
+		Eigen::MatrixXd contract(denseMatrix^ U, denseMatrix^ V, int n,int m,bool flip,bool both)
+		{
+			auto _V = V->get();
+			auto _U = U->get();
+			Eigen::MatrixXd newmat(n,n);
+			if (both)
+			{
+				if ((*_dat)[0].col() == -1)
+				{
+					newmat.resize(n, 1);
+					newmat.setZero();
+					for (int j = 0; j < n; j++)
+					{
+						for (auto tr : *_dat)
+						{
+							newmat.coeffRef(j, 0) += _U.coeffRef(tr.row(), j) * tr.value();
+						}
+					}
+				}
+				else if ((*_dat)[0].row() == -1)
 				{
 					newmat.resize(1, n);
 					newmat.setZero();
@@ -1298,6 +1402,106 @@ namespace KingOfMonsters {
 						for (auto tr : *_dat)
 						{
 							newmat.coeffRef(0, j) += _V.coeffRef(tr.col(), j) * tr.value();
+						}
+					}
+				}
+				else {
+					newmat.setZero();
+					for (int i = 0; i < n; i++)
+					{
+						for (int j = 0; j < n; j++)
+						{
+							for (auto tr : *_dat)
+							{
+								newmat.coeffRef(i, j) += _V.coeffRef(tr.col(), j) * _U.coeffRef(tr.row(), i) * tr.value();
+							}
+						}
+					}
+				}
+			}
+			else {
+				if (flip)//U,oV
+				{
+					if ((*_dat)[0].col() == -1)
+					{
+						newmat.resize(1, n);
+						newmat.setZero();
+						for (int j = 0; j < n; j++)
+						{
+							for (auto tr : *_dat)
+							{
+								newmat.coeffRef(0, j) += _U.coeffRef(tr.row(), j) * tr.value();
+							}
+						}
+					}
+					else if ((*_dat)[0].row() == -1)
+					{
+						newmat.resize(0, 0);
+						newmat.setZero();
+					}
+					else {
+						newmat.setZero();
+						for (int i = 0; i < n; i++)
+						{
+							for (int j = 0; j < n; j++)
+							{
+								for (auto tr : *_dat)
+								{
+									newmat.coeffRef(j, i) += _V.coeffRef(tr.col(), j) * _U.coeffRef(tr.row(), i) * tr.value();
+								}
+							}
+						}
+					}
+				}
+				else {//U,oV
+					if ((*_dat)[0].col() == -1)
+					{
+						newmat.resize(0, 0);
+						newmat.setZero();
+					}
+					else if ((*_dat)[0].row() == -1)
+					{
+						newmat.resize(1, n);
+						newmat.setZero();
+						for (int j = 0; j < n; j++)
+						{
+							for (auto tr : *_dat)
+							{
+								newmat.coeffRef(0, j) += _V.coeffRef(tr.col(), j) * tr.value();
+							}
+						}
+					}
+					else {
+						newmat.setZero();
+						for (int i = 0; i < n; i++)
+						{
+							for (int j = 0; j < n; j++)
+							{
+								for (auto tr : *_dat)
+								{
+									newmat.coeffRef(i, j) += _V.coeffRef(tr.col(), j) * _U.coeffRef(tr.row(), i) * tr.value();
+								}
+							}
+						}
+					}
+				}
+			}
+			/*if (U == nullptr)
+			{
+				auto _V = V->get();
+				int nv = _V.rows();
+				if ((*_dat)[0].row() == -1)
+				{
+					newmat.resize(1, n);
+					newmat.setZero();
+					for (int j = 0; j < n; j++)
+					{
+						for (auto tr : *_dat)
+						{
+							//if (tr.col() < nv)
+							{
+								newmat.coeffRef(0, j) += _V.coeffRef(tr.col(), j) * tr.value();
+							}
 						}
 
 					}
@@ -1308,11 +1512,15 @@ namespace KingOfMonsters {
 				else {
 					newmat.resize(m, n);
 					newmat.setZero();
+					int nv = _V.rows();
 					for (int i = 0; i < n; i++)
 					{
 						for (auto tr : *_dat)
 						{
-							newmat.coeffRef(tr.row(), i) +=_V.coeffRef(tr.col(), i) * tr.value();
+							//if (tr.col() < nv)
+							{
+								newmat.coeffRef(tr.row(), i) += _V.coeffRef(tr.col(), i) * tr.value();
+							}
 						}
 					}
 				}
@@ -1323,11 +1531,16 @@ namespace KingOfMonsters {
 				{
 					newmat.resize(1,n);
 					newmat.setZero();
+
+					int nu = _U.rows();
 					for (int i = 0; i < n; i++)
 					{
 						for (auto tr : *_dat)
 						{
-							newmat.coeffRef(0,i) += _U.coeffRef(tr.row(), i) * tr.value();
+							//if (tr.row() < nu)
+							{
+								newmat.coeffRef(0, i) += _U.coeffRef(tr.row(), i) * tr.value();
+							}
 						}
 					}
 				}else if ((*_dat)[0].row() == -1)
@@ -1337,16 +1550,20 @@ namespace KingOfMonsters {
 				else {
 					newmat.resize(m,n);
 					newmat.setZero();
+					int nu = _U.rows();
 					for (int i = 0; i < n; i++)
 					{
 						for (auto tr : *_dat)
 						{
-							newmat.coeffRef(tr.col(), i) += _U.coeffRef(tr.row(), i) *  tr.value();
+							//if (tr.row() < nu)
+							{
+								newmat.coeffRef(tr.col(), i) += _U.coeffRef(tr.row(), i) * tr.value();
+							}
 						}
 					}
 				}
 			}
-
+			*/
 			return newmat;
 
 		}
@@ -1355,7 +1572,7 @@ namespace KingOfMonsters {
 			if ((*_dat).empty())return;
 			auto pU = mU->p->perm;
 			auto pV = mV->p->perm;
-			*newone->_dat = *_dat;
+			(*newone->_dat).resize((*_dat).size());
 
 			if ((*_dat)[0].row() == -1)
 			{
@@ -1379,74 +1596,95 @@ namespace KingOfMonsters {
 				}
 			}
 			
-			for (auto it = (*newone->_dat).begin(); it != (*newone->_dat).end();) {
+			/*for (auto it = (*newone->_dat).begin(); it != (*newone->_dat).end();) {
 				if ((*it).row()>=nU|| (*it).col() >= nV) {
 					it = (*newone->_dat).erase(it);
 				}
 				else {
 					++it;
 				}
-			}
+			}*/
 		}
 		
-		void mulright(Eigen::VectorXd* v, Eigen::VectorXd* ret,double sc)
+		void mulright(Eigen::VectorXd* v, Eigen::VectorXd* ret,double sc,int jj)
 		{
 			if ((*_dat).empty())return;
 			if ((*_dat)[0].row() == -1)return;
 			if ((*_dat)[0].col() == -1)
 			{
-				for (const auto& triplet : *_dat)
+				//if (jj % 2 == 1)
 				{
-					ret->coeffRef(triplet.row()) += sc * (triplet.value());
+					for (const auto& triplet : *_dat)
+					{
+						ret->coeffRef(triplet.row()) += sc * (triplet.value());
+					}
 				}
 			}
 			else {
-				for (const auto& triplet : *_dat)
+				//if (jj % 2 == 0)
 				{
-					ret->coeffRef(triplet.row()) += sc * ((*v)(triplet.col()) * triplet.value());
+					for (const auto& triplet : *_dat)
+					{
+						ret->coeffRef(triplet.row()) += sc * ((*v)(triplet.col()) * triplet.value());
+					}
 				}
 			}
 		}
-		void mulleft(Eigen::VectorXd* u, Eigen::VectorXd* ret,double sc)
+		void mulleft(Eigen::VectorXd* u, Eigen::VectorXd* ret,double sc,int jj)
 		{
 			if ((*_dat).empty())return;
 			if ((*_dat)[0].col() == -1)return;
 			if ((*_dat)[0].row() == -1)
 			{
-				for (const auto& triplet : *_dat)
+				//if (jj % 2 == 1)
 				{
-					ret->coeffRef(triplet.col()) += sc * (triplet.value());
+					for (const auto& triplet : *_dat)
+					{
+						ret->coeffRef(triplet.col()) += sc * (triplet.value());
+					}
 				}
 			}
 			else {
-				for (const auto& triplet : *_dat)
+				//if (jj % 2 == 0)
 				{
-					ret->coeffRef(triplet.col()) += sc * ((*u)(triplet.row()) * triplet.value());
+					for (const auto& triplet : *_dat)
+					{
+						ret->coeffRef(triplet.col()) += sc * ((*u)(triplet.row()) * triplet.value());
+					}
 				}
 			}
 		}
-		double mulboth(Eigen::VectorXd* u, Eigen::VectorXd* v)
+		double mulboth(Eigen::VectorXd* u, Eigen::VectorXd* v,int jj)
 		{
 			double val = 0;
 			if ((*_dat).empty())return 0;
 			if ((*_dat)[0].row() == -1)
 			{
-				for (const auto& triplet : *_dat)
+				//if (jj % 2 == 1)
 				{
-					val += ((*v)(triplet.col())) * triplet.value();
+					for (const auto& triplet : *_dat)
+					{
+						val += ((*v)(triplet.col())) * triplet.value();
+					}
 				}
 			}
 			else if ((*_dat)[0].col() == -1)
 			{
-				for (const auto& triplet : *_dat)
+				//if (jj % 2 == 1)
 				{
-					val += ((*u)(triplet.row())) * triplet.value();
+					for (const auto& triplet : *_dat)
+					{
+						val += ((*u)(triplet.row())) * triplet.value();
+					}
 				}
 			}
 			else {
-				for (const auto& triplet : *_dat)
+				//if (jj % 2 == 0)
 				{
-					val += ((*u)(triplet.row())) * ((*v)(triplet.col())) * triplet.value();
+					for (const auto& triplet : *_dat)
+					{
+						val += ((*u)(triplet.row())) * ((*v)(triplet.col())) * triplet.value();
+					}
 				}
 			}
 			return val;
@@ -1483,7 +1721,7 @@ namespace KingOfMonsters {
 		//helper.pushforward(_mats,mZ,mphi,L1Z,L1phi);
 		//helper.computeKrylovSubspace(_mats, __U, __V, __W, _C, 200);
 
-		static System::Collections::Generic::List<workspace^>^ pushforward(System::Collections::Generic::List<workspace^>^ _mats, myPermutation^ mU, myPermutation^ mV, int nU, int nV)
+		/*static System::Collections::Generic::List<workspace^>^ pushforward(System::Collections::Generic::List<workspace^>^ _mats, myPermutation^ mU, myPermutation^ mV, int nU, int nV)
 		{
 			System::Collections::Generic::List<workspace^>^ newmats = gcnew System::Collections::Generic::List<workspace^>();
 			int _mt = omp_get_max_threads();
@@ -1512,140 +1750,12 @@ namespace KingOfMonsters {
 				}
 			}
 			return newmats;
-		}
+		}*/
 		//note that _mats is the one before pushforward
 		//The one used for Krylov decompoision was used to compute U,V,W and now they are pulled back. It is safe to multiply the original _mats and U,V,W.
-		static void contract(System::Collections::Generic::List<workspace^>^ _mats, denseMatrix^ U, denseMatrix^ V, denseMatrix^ W, array<denseMatrix^>^ _mats1, array<denseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, int _C)
-		{
-			int _mt = omp_get_max_threads();
-			int m = _mats->Count;			
-			int n = U->get().cols();
-			//array<denseMatrix^>^ mm = gcnew array<mySparse^>(m);
-			std::vector<Eigen::SparseMatrix<double>> mm01(m); //multiplied with U
-			std::vector<Eigen::SparseMatrix<double>> mm02(m); //multiplied with V
-			array<denseMatrix^>^ mm11 = gcnew array<denseMatrix^>(n + 1); //mutiplied with U and W
-			array<denseMatrix^>^ mm12 = gcnew array<denseMatrix^>(n + 1); //mutiplied with V and W
-			array<sparseMatrix^>^ mm13 = gcnew array<sparseMatrix^>(n+2); //mutiplied with V and W
-
-			int count = 0;
-
-#pragma omp parallel
-			{
-#pragma omp single
-				_mt = omp_get_num_threads();
-			}
-#pragma omp parallel for
-			for (int ii = 0; ii < _mt; ii++)
-			{
-				int S = ii * m / _mt;
-				int E = (ii + 1) * m / _mt;
-				for (int i = S; i < E; i++)
-				{
-					auto M = _mats[i];
-					auto newM1 = M->contract(U, nullptr, n,_C);
-					auto newM2 = M->contract(nullptr, V, n,_C);
-					mm01[i] = newM1;
-					mm02[i] = newM2;
-#pragma omp critical
-					{
-						count++;
-						//Console::WriteLine(newM1.sum().ToString());
-						//Console::WriteLine(newM2.sum().ToString());
-						Console::WriteLine(count.ToString() + "/" + m.ToString());
-					}
-				}
-			}
-
-			
-			auto _W = W->get();
-			count = 0;
-#pragma omp parallel for
-			for (int ii = 0; ii < _mt; ii++)
-			{
-				int S = ii * n/ _mt;
-				int E = (ii + 1) * n / _mt;
-				for (int i = S; i < E; i++)
-				{
-					//auto M = _mats[i];
-
-					mm11[i] = gcnew denseMatrix(_C, n);
-					mm12[i] = gcnew denseMatrix(_C, n);
-					mm13[i] = gcnew sparseMatrix(_C, _C);
-
-					mm11[i]->get().setZero();
-					mm12[i]->get().setZero();
-					mm13[i]->get().setZero();
-					for (int k = 0; k < m; k++)
-					{
-						if (mm01[k].cols() == n && mm01[k].rows() == _C)
-						{
-							mm11[i]->get() += mm01[k] * _W(k, i);
-							mm12[i]->get() += mm02[k] * _W(k, i);
-							for (auto tri : *_mats[k]->_dat)
-							{
-								mm13[i]->get().coeffRef(tri.row(), tri.col()) += tri.value() * _W(k, i);
-							}
-						}
-					}
-#pragma omp critical
-					{
-						count++;
-						Console::WriteLine(count.ToString() + "/" + n.ToString());
-					}
-				}
-			}
-
-			mm11[n] = gcnew denseMatrix(n,n);
-			mm11[n]->get().setZero();
-			mm13[n] = gcnew sparseMatrix(n, _C);
-			mm13[n]->get().setZero();
-			mm13[n + 1] = gcnew sparseMatrix(n, _C);
-			mm13[n + 1]->get().setZero();
-
-			for (int i = 0; i < n; i++)
-			{
-				for (int k = 0; k < m; k++)
-				{
-					if (mm01[k].rows() == 1 && mm01[k].cols() == n)
-					{
-						mm11[n]->get().row(i) += mm01[k] * _W(k, i);
-						for (auto tri : *_mats[k]->_dat)
-						{
-							(mm13[n]->get().row(i)).coeffRef(tri.col()) += tri.value() * _W(k, i);
-						}
-					}
-				}
-			}
-
-			mm12[n] = gcnew denseMatrix(n, n);
-			mm12[n]->get().setZero();
-			for (int i = 0; i < n; i++)
-			{
-				for (int k = 0; k < m; k++)
-				{
-					if (mm02[k].rows() == 1 && mm02[k].cols() == n)
-					{
-						mm12[n]->get().row(i) += mm02[k] * _W(k, i);
-						for (auto tri : *_mats[k]->_dat)
-						{
-							(mm13[n+1]->get().row(i)).coeffRef(tri.col()) += tri.value() * _W(k, i);
-						}
-					}
-				}
-			}
-			for (int i = 0; i < n; i++)
-			{
-				_mats1[i] = mm11[i];
-				_mats2[i] = mm12[i];
-				_mats3[i] = mm13[i];
-			}
-			_mats1[n] = mm11[n];
-			_mats2[n] = mm12[n];
-			_mats3[n] = mm13[n];
-			_mats3[n+1] = mm13[n+1];
-
-		}
-		static void pullback(denseMatrix^ _U, denseMatrix^ _V, myPermutation^ mU, myPermutation^ mV, int nU, int nV)
+		static void contract(System::Collections::Generic::List<workspace^>^ _mats, denseMatrix^ U, denseMatrix^ V, denseMatrix^ W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, int _C);
+		
+		/*static void pullback(denseMatrix^ _U, denseMatrix^ _V, myPermutation^ mU, myPermutation^ mV, int nU, int nV)
 		{
 			int nu0 = _U->get().rows();
 			int nv0 = _V->get().rows();
@@ -1658,271 +1768,13 @@ namespace KingOfMonsters {
 			_U->get().applyOnTheLeft(mU->p->perm.transpose());
 			_V->get().applyOnTheLeft(mV->p->perm.transpose());
 			
-		}
-		static void VarPro( myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^  __V, denseMatrix^  __W, array<denseMatrix^>^ _mats1, array<denseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray ^ _r1, myDoubleArray^ _r2, int _C,double dt)
-		{
-			//mats1 multiplying with V from left gives Jacobian J_x
-			//mats2 multiplying with U from left gives Jacobian J_X
+		}*/
+		static double VarPro(myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt);
+		static double ALT(myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt);
+		static void write(myDoubleArray^ phi0, myDoubleArray^ zz0, myDoubleArray^ phi, myDoubleArray^ zz,denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt);
 
-			int _mt = 0;
-			int n = __U->get().cols();
-#pragma omp parallel
-			{
-#pragma omp single
-				_mt = omp_get_num_threads();
-			}
-			/*__U->get().col(0)(20) = 10;
-			__U->get().col(0)(40) = -10;
-			__U->get().col(0)(60) = 30;
-			__V->get().col(0)(20) = 10;
-			__V->get().col(0)(40) = -10;
-			__V->get().col(0)(60) = 30;
-			__U->get().col(0).normalize();
-			__V->get().col(0).normalize();*/
-
-			int m = __W->get().rows();
-			//double normu = phi->_arr->__v.norm();
-			//double normv = zz->_arr->__v.norm();
-
-			Eigen::VectorXd u0 = __U->get().transpose() * phi->_arr->__v;
-			Eigen::VectorXd v0 = __V->get().transpose() * zz->_arr->__v;
-			
-			//phi->_arr->__v = __U->get() *u0;
-			//zz->_arr->__v = __V->get()*v0;
-			//phi->_arr->__v.normalize();
-			//zz->_arr->__v.normalize();
-			//phi->_arr->__v *= normu;
-			//zz->_arr->__v *= normv;
-			//u0 = __U->get().transpose() * phi->_arr->__v;
-			//v0 = __V->get().transpose() * zz->_arr->__v;
-
-			//return;
-			
-			auto r1 = __W->get().transpose() * _r1->_arr->__v;
-			auto r2 = __W->get().transpose() * _r2->_arr->__v;
-
-			Eigen::VectorXd b1(n),b2(n);
-			b1.setZero();
-			b2.setZero();
-			Eigen::VectorXd __r1(m), __r2(m);
-			__r1.setConstant(0);
-			__r2.setConstant(0);
-			//__r1(0) = 5;//phi
-			//__r1(1) = 12;
-			//__r1(2) = -4;
-			//__r1(3) = 2;
-		    
-			__r2(0) = 5;//zz
-			__r2(1) = 12;
-			__r2(2) = -4;
-			__r2(3) = 2;
-
-			Eigen::VectorXd ___r1(n), ___r2(n);
-			___r1 = __W->get().transpose() * __r1;
-			___r2 = __W->get().transpose() * __r2;
-
-			//___r1 = r1; ___r2 = r2;
-			Eigen::MatrixXd Jx(n,n);
-			Eigen::MatrixXd JX(n, n);
-			Jx.setZero();
-			JX.setZero();
-			Eigen::VectorXd rhsx(n);
-			Eigen::VectorXd rhsX(n);
-
-#pragma omp parallel for
-			for (int ii = 0; ii < _mt; ii++)
-			{
-				int S = ii * n/ _mt;
-				int E = (ii + 1) * n / _mt;
-				for (int i = S; i < E; i++)
-				{
-
-					auto M1 = _mats1[i]->get();
-					auto M2 = _mats2[i]->get();
-					auto M3 = _mats3[i]->get();//sparse
-					//Console::WriteLine(i.ToString() + ":" + M1.sum().ToString());
-					//Console::WriteLine(i.ToString() + ":" + M2.sum().ToString());
-					//if (M1.rows() != 1 && M1.cols() != 1)
-					{
-						//Jx.row(i) = zz->_arr->__v.transpose()*M1;
-						//JX.row(i) = phi->_arr->__v.transpose()*M2;
-						//b1(i) = phi->_arr->__v.transpose() * M3 * zz->_arr->__v;
-						//b2(i) = phi->_arr->__v.transpose() * M3 * zz->_arr->__v;
-					}
-				}
-			}
-			b2 += (_mats3[n+1]->get() * zz->_arr->__v);
-			b1 += (_mats3[n]->get() * phi->_arr->__v);
-
-			JX += _mats2[n]->get();
-			Jx += _mats1[n]->get();
-
-			rhsx = (b1 - ___r1).transpose() * Jx;
-			rhsX = (b2 - ___r2).transpose() * JX;
-			//rhsx = (___r1).transpose() * Jx;
-			//rhsX = (___r2).transpose() * JX;
-			//rhsx *= 1000000;
-			//rhsX *= 1000000;
-			//JX *= 1000;
-			//Jx *= 1000;
-			Console::WriteLine("Jx=" + Jx.sum().ToString());
-			Console::WriteLine("JX=" + JX.sum().ToString());
-			Console::WriteLine("residual normx=" + rhsx.norm().ToString());
-			Console::WriteLine("residual normX=" + rhsX.norm().ToString());
-			Eigen::MatrixXd I(n, n);
-			I.setIdentity();
-			Eigen::VectorXd dx = -(Jx.transpose() * Jx + I * 0.000000000001).inverse() * rhsx;
-			Eigen::VectorXd dX=-(JX.transpose() * JX+I*0.000000000001).inverse()* rhsX;
-			u0 += dx * dt;
-			v0 += dX * dt;
-			zz->_arr->__v = __V->get()*v0;
-			phi->_arr->__v = __U->get()*u0;
-		}
-		static void computeKrylovSubspace(System::Collections::Generic::List<workspace^>^ _mats,denseMatrix ^_U, denseMatrix^ _V, denseMatrix^ _W,int nU, int nV,int r, myPermutation^ mphi, myPermutation^ mZ, myDoubleArray ^phi, myDoubleArray^ zz)
-		{
-			Eigen::VectorXd u0 = phi->_arr->__v;
-			Eigen::VectorXd v0 = zz->_arr->__v;
-			u0.applyOnTheLeft(mphi->p->perm);
-			v0.applyOnTheLeft(mZ->p->perm);
-			u0 = u0.topRows(nU);
-			v0 = v0.topRows(nV);
-
-			int m = _mats->Count;
-			Eigen::VectorXd ui(nU);
-			Eigen::VectorXd vi(nV);
-			Eigen::VectorXd wi(m);
-			ui=u0;
-			vi=v0;
-			//wi=rr->_arr->__v;
-			
-			//ui.setOnes();
-			//vi.setOnes();
-			//wi.setOnes();
-
-			ui.setRandom();
-			vi.setRandom();
-			wi.setRandom();
-
-
-			ui.normalize();
-			vi.normalize();
-			wi.normalize();
-			/*ui(20) = 10;
-			ui(40) = -10;
-			ui(60) = 30;
-			vi(20) = 10;
-			vi(40) = -10;
-			vi(60) = 30;
-			ui.normalize();
-			vi.normalize();*/
-
-			Eigen::MatrixXd U(nU, r);
-			Eigen::MatrixXd V(nV, r);
-			Eigen::MatrixXd W(m, r);
-
-			U.setZero();
-			V.setZero();
-			W.setZero();
-			U.col(0) = ui;
-			V.col(0) = vi;
-			W.col(0) = wi;
-			Eigen::VectorXd u2(nU);
-			Eigen::VectorXd v2(nV);
-			Eigen::VectorXd w2(m);
-			u2.setZero();
-			v2.setZero();
-			w2.setZero();
-			int _mt = omp_get_max_threads();
-#pragma omp parallel
-			{
-#pragma omp single
-				_mt = omp_get_num_threads();
-			}
-			
-			Console::WriteLine("task#:" + (0).ToString() + "/" + r.ToString());
-			for (int j =0;j<r-1;j++ )
-			{
-				ui = U.col(j);
-				vi = V.col(j);
-				wi = W.col(j);
-				u2.setZero();
-				v2.setZero();
-				w2.setZero();
-				Console::WriteLine("task#:"+(j+1).ToString() + "/" + r.ToString());
-				//int count = 0;
-#pragma omp parallel for
-				for (int ii = 0; ii < _mt; ii++)
-				{
-					int S = ii * m / _mt;
-					int E = (ii + 1) * m / _mt;
-					Eigen::VectorXd _u2(nU);
-					Eigen::VectorXd _v2(nV);
-					_u2.setZero();
-					_v2.setZero();
-					double* ptr = &w2.coeffRef(S);
-					double* ptr2 = &wi.coeffRef(S);
-					for (int i = S; i < E; i++)
-					{
-						
-						auto M = _mats[i];
-						
-						*ptr = M->mulboth(&ui, &vi);// (ui.transpose() * M)* vi;
-						ptr++;
-
-						M->mulright(&vi, &_u2, *ptr2);
-						M->mulleft(&ui, &_v2, *ptr2);// (ui.transpose() * M).transpose();
-						ptr2++;
-
-					}
-#pragma omp critical
-					{
-						u2 += _u2;
-						v2 += _v2;
-					}
-				}
-				Eigen::VectorXd hu = U.leftCols(j + 1).transpose() * u2;
-				Eigen::VectorXd hv = V.leftCols(j + 1).transpose() * v2;
-				Eigen::VectorXd hw = W.leftCols(j + 1).transpose() * w2;
-				u2 = u2 - U.leftCols(j + 1) * hu;
-				v2 = v2 - V.leftCols(j + 1) * hv;
-				w2 = w2 - W.leftCols(j + 1) * hw;
-
-				u2.normalize();
-				v2.normalize();
-				w2.normalize();
-
-				U.col(j + 1) = u2;
-				V.col(j + 1) = v2;
-				W.col(j + 1) = w2;
-			}
-			_U->resize(nU, r);
-			_V->resize(nV, r);
-			_W->resize(m, r);
-			_U->get().setZero();
-			_V->get().setZero();
-			_W->get().setZero();
-
-			_U->get() = U;
-			_V->get() = V;
-			_W->get() = W;
-
-			/**_U->get().setRandom();
-			_V->get().setRandom();
-			for (int i = 0; i < _U->get().cols(); i++)
-			{
-				_U->get().col(i).normalize();
-				_V->get().col(i).normalize();
-			}
-			_U->get().col(0)(20) = 10;
-			_U->get().col(0)(40) = -10;
-			_U->get().col(0)(60) = 30;
-			_V->get().col(0)(20) = 10;
-			_V->get().col(0)(40) = -10;
-			_V->get().col(0)(60) = 30;
-			_U->get().col(0).normalize();
-			_V->get().col(0).normalize();*/
-
-		}
+		static void computeKrylovSubspace(System::Collections::Generic::List<workspace^>^ _mats, denseMatrix^ _U, denseMatrix^ _V, denseMatrix^ _W, int nU, int nV, int r, myPermutation^ mphi, myPermutation^ mZ, myDoubleArray^ phi, myDoubleArray^ zz, System::Collections::Generic::List<Tuple<int, int>^>^bb1, System::Collections::Generic::List<Tuple<int, int>^>^ bb2);
+		
 
 	};
 }
