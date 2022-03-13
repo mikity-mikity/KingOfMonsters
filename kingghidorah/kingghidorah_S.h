@@ -1876,7 +1876,7 @@ namespace KingOfMonsters {
 					//int I = index[i];
 					//int J = index[j];
 					//mat->_mat[0].coeffRef(*ptr2, *ptr3) = *ptr;// _ref->__mat[i * _nNode + j];
-					_dat->push_back(_Triplet<double>(*ptr2, *ptr3,_ref->__mat[i*_nNode+j]));
+					_dat->push_back(_Triplet<double>(*ptr2, *ptr3, sc * _ref->__mat[i*_nNode+j]));
 					//if (i == j)
 					//	_dat->push_back(_Triplet<double>(*ptr2, *ptr3, _ref->d2[0][i]* _ref->d2[0][j]+ _ref->d2[3][i] * _ref->d2[3][j]));
 					ptr++;

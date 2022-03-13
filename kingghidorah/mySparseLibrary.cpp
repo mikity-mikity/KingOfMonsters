@@ -138,11 +138,17 @@ void KingOfMonsters::helper::contract(System::Collections::Generic::List<workspa
 	*/
 
 }
-double KingOfMonsters::helper::VarPro(myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt,int tt)
+double KingOfMonsters::helper::VarPro(System::Collections::Generic::List<double>^ __coeff, myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt,int tt)
 {
 	std::vector<Eigen::SparseMatrix<double>*> __mats1;
 	std::vector<Eigen::SparseMatrix<double>*> __mats2;
 	std::vector<Eigen::SparseMatrix<double>*> __mats3;
+	Eigen::VectorXd coeff(__coeff->Count);
+	for (int i = 0; i < __coeff->Count; i++)
+	{
+		coeff(i) = __coeff[i];
+	}
+	coeff.setOnes();
 	__mats1.clear();
 	__mats2.clear();
 	__mats3.clear();
@@ -159,15 +165,22 @@ double KingOfMonsters::helper::VarPro(myDoubleArray^ phi, myDoubleArray^ zz, den
 	{
 		__mats3.push_back(&_mats3[i]->get());
 	}
-	double norm=KingOfMonsters::_helper::VarPro(&phi->_arr->__v, &zz->_arr->__v, &__U->get(), &__V->get(), &__W->get(), __mats1, __mats2, __mats3, &_r1->_arr->__v, &_r2->_arr->__v, dt, tt);
+	double norm=KingOfMonsters::_helper::VarPro(&coeff,&phi->_arr->__v, &zz->_arr->__v, &__U->get(), &__V->get(), &__W->get(), __mats1, __mats2, __mats3, &_r1->_arr->__v, &_r2->_arr->__v, dt, tt);
 	System::Console::WriteLine("normGrad=" + norm.ToString());
 	return norm;
 }
-double KingOfMonsters::helper::ALT(myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt)
+double KingOfMonsters::helper::ALT(System::Collections::Generic::List<double>^ __coeff, myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt)
 {
 	std::vector<Eigen::SparseMatrix<double>*> __mats1;
 	std::vector<Eigen::SparseMatrix<double>*> __mats2;
 	std::vector<Eigen::SparseMatrix<double>*> __mats3;
+	Eigen::VectorXd coeff(__coeff->Count);
+	for (int i = 0; i < __coeff->Count; i++)
+	{
+		coeff(i) = __coeff[i];
+	}
+	coeff.setOnes();
+
 	__mats1.clear();
 	__mats2.clear();
 	__mats3.clear();
@@ -184,17 +197,25 @@ double KingOfMonsters::helper::ALT(myDoubleArray^ phi, myDoubleArray^ zz, denseM
 	{
 		__mats3.push_back(&_mats3[i]->get());
 	}
-	double norm=KingOfMonsters::_helper::ALT(&phi->_arr->__v, &zz->_arr->__v, &__U->get(), &__V->get(), &__W->get(), __mats1, __mats2, __mats3, &_r1->_arr->__v, &_r2->_arr->__v, dt, tt);
+	double norm=KingOfMonsters::_helper::ALT(&coeff, &phi->_arr->__v, &zz->_arr->__v, &__U->get(), &__V->get(), &__W->get(), __mats1, __mats2, __mats3, &_r1->_arr->__v, &_r2->_arr->__v, dt, tt);
 	System::Console::WriteLine("normGrad="+norm.ToString());
 	return norm;
 }
-void KingOfMonsters::helper::write(myDoubleArray^ phi0, myDoubleArray^ zz0,myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt)
+void KingOfMonsters::helper::write(System::Collections::Generic::List<double>^ __coeff, myDoubleArray^ phi0, myDoubleArray^ zz0,myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt)
 {
 	System::Console::WriteLine(System::Environment::CurrentDirectory);
 
 	std::vector<Eigen::SparseMatrix<double>*> __mats1;
 	std::vector<Eigen::SparseMatrix<double>*> __mats2;
+	Eigen::VectorXd coeff(__coeff->Count);
+	for (int i = 0; i < __coeff->Count; i++)
+	{
+		coeff(i) = __coeff[i];
+	}
+	coeff.setOnes();
+
 	std::vector<Eigen::SparseMatrix<double>*> __mats3;
+
 	__mats1.clear();
 	__mats2.clear();
 	__mats3.clear();
@@ -211,11 +232,11 @@ void KingOfMonsters::helper::write(myDoubleArray^ phi0, myDoubleArray^ zz0,myDou
 	{
 		__mats3.push_back(&_mats3[i]->get());
 	}
-	KingOfMonsters::_helper::write(&phi0->_arr->__v, &zz0->_arr->__v ,&phi->_arr->__v, &zz->_arr->__v, &__U->get(), &__V->get(), &__W->get(), __mats1, __mats2, __mats3, &_r1->_arr->__v, &_r2->_arr->__v, dt, tt);
+	KingOfMonsters::_helper::write(&coeff, &phi0->_arr->__v, &zz0->_arr->__v ,&phi->_arr->__v, &zz->_arr->__v, &__U->get(), &__V->get(), &__W->get(), __mats1, __mats2, __mats3, &_r1->_arr->__v, &_r2->_arr->__v, dt, tt);
 
 
 }
-void KingOfMonsters::helper::computeKrylovSubspace(System::Collections::Generic::List<workspace^>^ _mats, denseMatrix^ _U, denseMatrix^ _V, denseMatrix^ _W,  int nU, int nV, int r, myPermutation^ mphi, myPermutation^ mZ, myDoubleArray^ phi, myDoubleArray^ zz, System::Collections::Generic::List<Tuple<int, int>^>^ bb1, System::Collections::Generic::List<Tuple<int, int>^>^bb2)
+void KingOfMonsters::helper::computeKrylovSubspace(System::Collections::Generic::List<double> ^__coeff,System::Collections::Generic::List<workspace^>^ _mats, denseMatrix^ _U, denseMatrix^ _V, denseMatrix^ _W,  int nU, int nV, int r, myPermutation^ mphi, myPermutation^ mZ, myDoubleArray^ phi, myDoubleArray^ zz, System::Collections::Generic::List<Tuple<int, int>^>^ bb1, System::Collections::Generic::List<Tuple<int, int>^>^bb2)
 {
 	int _C = phi->_arr->__v.size();
 	if (r > _C)r = _C;
@@ -239,6 +260,7 @@ void KingOfMonsters::helper::computeKrylovSubspace(System::Collections::Generic:
 			work->_dat->push_back(_Triplet<double>(i, -1, 1));
 			_mats->Add(work);
 			bb1->Add(gcnew Tuple<int, int>(i,_mats->Count-1));
+			__coeff->Add(1.0);
 		}
 	}
 	for (int i = 0; i < _C; i++)
@@ -249,10 +271,11 @@ void KingOfMonsters::helper::computeKrylovSubspace(System::Collections::Generic:
 			work->_dat->push_back(_Triplet<double>(-1, i, 1));
 			_mats->Add(work);
 			bb2->Add(gcnew Tuple<int, int>(i, _mats->Count - 1));
+			__coeff->Add(1.0);
 		}
 	}
 
-
+	
 	/*Eigen::VectorXd w0(m);
 	Eigen::VectorXd ui(_C);
 	Eigen::VectorXd vi(_C);

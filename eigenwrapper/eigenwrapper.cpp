@@ -29,7 +29,7 @@ void KingOfMonsters::cuda::disable()
 {
 	__cuinit = false;
 }
-double KingOfMonsters::_helper::VarPro(Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd *_r1, Eigen::VectorXd* _r2, double dt, int tt)
+double KingOfMonsters::_helper::VarPro(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd *_r1, Eigen::VectorXd* _r2, double dt, int tt)
 {
 	Eigen::VectorXd X0 = *zz;
 	Eigen::VectorXd x0 = *phi;
@@ -64,59 +64,12 @@ double KingOfMonsters::_helper::VarPro(Eigen::VectorXd* phi, Eigen::VectorXd* zz
 	JX.setZero();
 	Eigen::VectorXd rhsx(m);
 	Eigen::VectorXd rhsX(m);
+	Eigen::MatrixXd __I(n, n);
+	__I.setIdentity();
 
+	//if (tt % 2 == 0)
+	//{
 #pragma omp parallel for
-	for (int ii = 0; ii < _mt; ii++)
-	{
-		int S = ii * m / _mt;
-		int E = (ii + 1) * m / _mt;
-		for (int i = S; i < E; i++)
-		{
-
-			auto M1 = _mats1[i];
-			auto M2 = _mats2[i];
-			auto M3 = _mats3[i];//sparse
-			if (M1->rows() == n  && M1->cols() == n)
-			{
-				Jx.row(i) = (*M1*X0).transpose();
-				JX.row(i) = x0.transpose() * *M1;
-				b1(i) = x0.transpose() * *M1 * X0;
-				b2(i) = x0.transpose() * *M1 * X0;
-			}
-			else if (M1->rows() == 1&& M1->cols() == n)
-			{
-				Jx.row(i) = *M1;
-				b1(i) = ( *M1*x0)(0,0);
-			}
-			else  if (M2->rows() == 1 && M2->cols() == n) {
-				JX.row(i) = *M2;
-				b2(i) = (*M2 * X0)(0,0);
-			}
-		}
-	}
-
-	rhsx = (b1 - ___r1).transpose() * Jx;
-	rhsX = (b2 - ___r2).transpose() * JX;
-
-	Eigen::FullPivLU<Eigen::MatrixXd> qr;
-	Eigen::MatrixXd I(n, n);
-	I.setIdentity();
-	Eigen::MatrixXd ee = Jx.transpose() * Jx;
-	qr.compute(ee);
-		Eigen::VectorXd dx = -qr.solve(rhsx);
-		x0 += dx * 1;
-
-
-		Jx.setZero();
-		JX.setZero();
-		rhsx.setZero();
-		rhsX.setZero();
-		b1.setZero();
-		b2.setZero();
-		Eigen::MatrixXd Jxx(m, n);
-		Eigen::MatrixXd JXX(m, n);
-		Jxx.setZero();
-		JXX.setZero();
 		for (int ii = 0; ii < _mt; ii++)
 		{
 			int S = ii * m / _mt;
@@ -129,18 +82,62 @@ double KingOfMonsters::_helper::VarPro(Eigen::VectorXd* phi, Eigen::VectorXd* zz
 				auto M3 = _mats3[i];//sparse
 				if (M1->rows() == n && M1->cols() == n)
 				{
-					Jx.row(i) = (*M1 * X0).transpose();
-					JX.row(i) = x0.transpose() * *M1;
-					Jxx.row(i) = (*M1 * X0).transpose();
-					JXX.row(i) = x0.transpose() * *M1;
-
-					b1(i) = x0.transpose() * *M1 * X0;
-					b2(i) = x0.transpose() * *M1 * X0;
+					Jx.row(i) = (X0.transpose() * *M1);
+					JX.row(i) = x0.transpose() * *M2;
+					b1(i) = X0.transpose() * *M1 * x0;
+					b2(i) = x0.transpose() * *M2 * X0;
 				}
 				else if (M1->rows() == 1 && M1->cols() == n)
 				{
 					Jx.row(i) = *M1;
-					b1(i) = (*M1*x0)(0, 0);
+					b1(i) = (*M1 * x0)(0, 0);
+				}
+				else  if (M2->rows() == 1 && M2->cols() == n) {
+					JX.row(i) = *M2;
+					b2(i) = (*M2 * X0)(0, 0);
+				}
+			}
+		}
+
+		rhsx = (b1 - ___r1).transpose() * coeff->asDiagonal() * Jx;
+		rhsX = (b2 - ___r2).transpose() * coeff->asDiagonal() * JX;
+
+		Eigen::FullPivLU<Eigen::MatrixXd> qr;
+		Eigen::MatrixXd ee = Jx.transpose() * coeff->asDiagonal() * Jx;
+		qr.compute(ee);
+		Eigen::VectorXd dx = -qr.solve(rhsx);
+		x0 += dx * 1;
+	//}
+	//else {
+
+		Jx.setZero();
+		JX.setZero();
+		rhsx.setZero();
+		rhsX.setZero();
+		b1.setZero();
+		b2.setZero();
+#pragma omp parallel for
+		for (int ii = 0; ii < _mt; ii++)
+		{
+			int S = ii * m / _mt;
+			int E = (ii + 1) * m / _mt;
+			for (int i = S; i < E; i++)
+			{
+
+				auto M1 = _mats1[i];
+				auto M2 = _mats2[i];
+				auto M3 = _mats3[i];//sparse
+				if (M1->rows() == n && M1->cols() == n)
+				{
+					Jx.row(i) = (X0.transpose() * *M1);
+					JX.row(i) = x0.transpose() * *M2;
+					b1(i) = X0.transpose() * *M1 * x0;
+					b2(i) = x0.transpose() * *M2 * X0;
+				}
+				else if (M1->rows() == 1 && M1->cols() == n)
+				{
+					Jx.row(i) = *M1;
+					b1(i) = (*M1 * x0)(0, 0);
 				}
 				else  if (M2->rows() == 1 && M2->cols() == n) {
 					JX.row(i) = *M2;
@@ -154,35 +151,37 @@ double KingOfMonsters::_helper::VarPro(Eigen::VectorXd* phi, Eigen::VectorXd* zz
 		//JX += *_mats2[n];
 		//Jx += *_mats1[n];
 
-		rhsx = (b1 - ___r1).transpose() * Jx;
+		rhsx = (b1 - ___r1).transpose() * coeff->asDiagonal() * Jx;
 		double norm = rhsx.norm();
-		rhsX = (b2 - ___r2).transpose() * JX;
-		ee = Jx.transpose() * Jx;
+		rhsX = (b2 - ___r2).transpose() * coeff->asDiagonal() * JX;
+		ee = Jx.transpose() * coeff->asDiagonal() * Jx;
+		
 		qr.compute(ee);
 		//eei = ee.inverse();
-		//Eigen::MatrixXd ffff=I-(ee* eei);
+		//Eigen::MatrixXd ffff=I-(ee* eei); 
 		//double ffffff = ffff.norm();
-		Eigen::MatrixXd ff = JX.transpose() * Jx *qr.solve(I);
-		Eigen::MatrixXd gg = JX.transpose() * JX;
+		Eigen::MatrixXd ff = JX.transpose() * coeff->asDiagonal() * Jx * qr.inverse();
+		Eigen::MatrixXd gg = JX.transpose() * coeff->asDiagonal() * JX;
 		//ff.setZero();
-		Eigen::MatrixXd kk = ff * Jx.transpose() * JX;
+		Eigen::MatrixXd kk = ff * Jx.transpose() * coeff->asDiagonal() * JX;
 		Eigen::MatrixXd mm = gg - kk;
-		
+
 		qr.compute(mm);
 
-		Eigen::VectorXd ll = rhsX -ff * rhsx;
+		Eigen::VectorXd ll = rhsX - ff * rhsx;
 		Eigen::VectorXd dX = -qr.solve(ll);
 		X0 += dX * dt;
+		//}
 	//}
-	*zz = *__V * X0;
-	*phi = *__U * x0;
+	*zz = X0;
+	*phi = x0;
 	return rhsX.norm();
 }
 
-double KingOfMonsters::_helper::ALT(Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int tt)
+double KingOfMonsters::_helper::ALT(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int tt)
 {
-	Eigen::VectorXd X0 = __V->transpose() * *zz;
-	Eigen::VectorXd x0 = __U->transpose() * *phi;
+	Eigen::VectorXd X0 = *zz;
+	Eigen::VectorXd x0 =  *phi;
 
 	int _mt = 0;
 	int n = __U->cols();
@@ -250,8 +249,8 @@ double KingOfMonsters::_helper::ALT(Eigen::VectorXd* phi, Eigen::VectorXd* zz, E
 	//JX += *_mats2[n];
 	//Jx += *_mats1[n];
 
-	rhsx = (b1 - ___r1).transpose() * Jx;
-	rhsX = (b2 - ___r2).transpose() * JX;
+	rhsx = (b1 - ___r1).transpose() * coeff->asDiagonal() * Jx;
+	rhsX = (b2 - ___r2).transpose() * coeff->asDiagonal() * JX;
 
 	//Console::WriteLine("Jx=" + Jx.sum().ToString());
 	//Console::WriteLine("JX=" + JX.sum().ToString());
@@ -260,7 +259,7 @@ double KingOfMonsters::_helper::ALT(Eigen::VectorXd* phi, Eigen::VectorXd* zz, E
 	Eigen::FullPivLU<Eigen::MatrixXd> qr;
 	Eigen::MatrixXd I(n, n);
 	I.setIdentity();
-	Eigen::MatrixXd ee = Jx.transpose() * Jx;
+	Eigen::MatrixXd ee = Jx.transpose() * coeff->asDiagonal() * Jx;
 	qr.compute(ee);
 	//Eigen::MatrixXd eei = ee.inverse();
 	Eigen::VectorXd dx = -qr.solve(rhsx);
@@ -305,22 +304,22 @@ double KingOfMonsters::_helper::ALT(Eigen::VectorXd* phi, Eigen::VectorXd* zz, E
 		}
 	}
 
-	rhsx = (b1 - ___r1).transpose() * Jx;
+	rhsx = (b1 - ___r1).transpose() * coeff->asDiagonal() * Jx;
 	double norm = rhsx.norm();
-	rhsX = (b2 - ___r2).transpose() * JX;
-	qr.compute(JX.transpose() * JX);
+	rhsX = (b2 - ___r2).transpose() * coeff->asDiagonal() * JX;
+	qr.compute(JX.transpose() * coeff->asDiagonal() * JX);
 
 	Eigen::VectorXd dX = -qr.solve(rhsX);
 	X0 += dX * 1.0;
 	//}
-	*zz = *__V * X0;
-	*phi = *__U * x0;
+	*zz =X0;
+	*phi = x0;
 	return rhsX.norm();
 }
 
-void KingOfMonsters::_helper::write(Eigen::VectorXd* phi0, Eigen::VectorXd* zz0,Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int tt)
+void KingOfMonsters::_helper::write(Eigen::VectorXd* coeff, Eigen::VectorXd* phi0, Eigen::VectorXd* zz0,Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int tt)
 {
-	/*Eigen::VectorXd X0 = *zz;
+	Eigen::VectorXd X0 = *zz;
 	Eigen::VectorXd x0 = *phi;
 
 	int _mt = 1;
@@ -389,14 +388,9 @@ void KingOfMonsters::_helper::write(Eigen::VectorXd* phi0, Eigen::VectorXd* zz0,
 			{
 				Jx.row(i) = (*M2 * X0).transpose();
 				JX.row(i) = x0.transpose() * *M2;
-				for (int _i=0;_i<M2->rows();_i++)
-				{
-					for (int _j = 0; _j < M2->rows(); _j++)
-					{
-						if ((*M2).coeffref(_i, _j) != 0)
-						{
-							Aijk << _i+1 << " , " << _j+1 << " , " << kk+1 << " , " << (*M2)(_i, _j) << std::endl;
-						}
+				for (int k = 0; k < M2->outerSize(); ++k) {
+					for (Eigen::SparseMatrix<double>::InnerIterator it(*M2, k); it; ++it) {
+						Aijk << it.row() + 1 << " , " << it.col() + 1 << " , " << kk + 1 << " , " << it.value() << std::endl;
 					}
 				}
 				Aijk << n << " , " << n << " , " << kk+1 << " , " << 0 << std::endl;
@@ -411,11 +405,9 @@ void KingOfMonsters::_helper::write(Eigen::VectorXd* phi0, Eigen::VectorXd* zz0,
 			{
 				//Cin
 				Jx.row(i) = *M1;
-				for (int _i = 0; _i < M1->cols(); _i++)
-				{
-					if ((*M1)(0, _i) != 0)
-					{
-						Din << _i+1 << " , " << nn+1 << " , " << (*M1)(0, _i) << std::endl;
+				for (int k = 0; k < M1->outerSize(); ++k) {
+					for (Eigen::SparseMatrix<double>::InnerIterator it(*M1, k); it; ++it) {
+						Din << it.col() + 1 << " , " << nn + 1 << " , " << it.value() << std::endl;
 					}
 				}
 				Din  << n << " , " << nn+1 << " , " << 0 << std::endl;
@@ -426,11 +418,9 @@ void KingOfMonsters::_helper::write(Eigen::VectorXd* phi0, Eigen::VectorXd* zz0,
 			else  if (M2->rows() == 1 && M2->cols() == n) {
 				//Bjm
 				JX.row(i) = *M2;
-				for (int _j = 0; _j < M2->cols(); _j++)
-				{
-					if ((*M2)(0, _j) != 0)
-					{
-						Bjm << _j+1 << " , " << mm+1 << " , " << (*M2)(0, _j) << std::endl;
+				for (int k = 0; k < M2->outerSize(); ++k) {
+					for (Eigen::SparseMatrix<double>::InnerIterator it(*M2, k); it; ++it) {
+						Bjm << it.col() + 1 << " , " << mm + 1 << " , " << it.value() << std::endl;
 					}
 				}
 				Bjm << n << " , " << mm+1 << " , " << 0 << std::endl;
@@ -458,7 +448,7 @@ void KingOfMonsters::_helper::write(Eigen::VectorXd* phi0, Eigen::VectorXd* zz0,
 	_X0.close();
 	xsol.close();
 	Xsol.close();
-	*/
+	
 }
 
 KingOfMonsters::cuda::cuda(int64_t N) {

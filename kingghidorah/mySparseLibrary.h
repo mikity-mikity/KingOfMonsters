@@ -1769,11 +1769,11 @@ namespace KingOfMonsters {
 			_V->get().applyOnTheLeft(mV->p->perm.transpose());
 			
 		}*/
-		static double VarPro(myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt);
-		static double ALT(myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt);
-		static void write(myDoubleArray^ phi0, myDoubleArray^ zz0, myDoubleArray^ phi, myDoubleArray^ zz,denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt);
+		static double VarPro(System::Collections::Generic::List<double>^ __coeff, myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt);
+		static double ALT(System::Collections::Generic::List<double>^ __coeff, myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt);
+		static void write(System::Collections::Generic::List<double>^ __coeff, myDoubleArray^ phi0, myDoubleArray^ zz0, myDoubleArray^ phi, myDoubleArray^ zz,denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt);
 
-		static void computeKrylovSubspace(System::Collections::Generic::List<workspace^>^ _mats, denseMatrix^ _U, denseMatrix^ _V, denseMatrix^ _W, int nU, int nV, int r, myPermutation^ mphi, myPermutation^ mZ, myDoubleArray^ phi, myDoubleArray^ zz, System::Collections::Generic::List<Tuple<int, int>^>^bb1, System::Collections::Generic::List<Tuple<int, int>^>^ bb2);
+		static void computeKrylovSubspace(System::Collections::Generic::List<double>^ __coeff,System::Collections::Generic::List<workspace^>^ _mats, denseMatrix^ _U, denseMatrix^ _V, denseMatrix^ _W, int nU, int nV, int r, myPermutation^ mphi, myPermutation^ mZ, myDoubleArray^ phi, myDoubleArray^ zz, System::Collections::Generic::List<Tuple<int, int>^>^bb1, System::Collections::Generic::List<Tuple<int, int>^>^ bb2);
 		
 
 	};
