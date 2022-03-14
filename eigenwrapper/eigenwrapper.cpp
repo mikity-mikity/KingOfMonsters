@@ -227,10 +227,10 @@ double KingOfMonsters::_helper::ALT(Eigen::VectorXd* coeff, Eigen::VectorXd* phi
 			auto M3 = _mats3[i];//sparse
 			if (M1->rows() == n && M1->cols() == n)
 			{
-				Jx.row(i) = (*M1 * X0).transpose();
-				JX.row(i) = x0.transpose() * *M1;
-				b1(i) = x0.transpose() * *M1 * X0;
-				b2(i) = x0.transpose() * *M1 * X0;
+				Jx.row(i) = (*M2* X0).transpose();
+				JX.row(i) = x0.transpose() * *M2;
+				b1(i) = x0.transpose() * *M2 * X0;
+				b2(i) = x0.transpose() * *M2 * X0;
 			}
 			else if (M1->rows() == 1 && M1->cols() == n)
 			{
@@ -286,11 +286,11 @@ double KingOfMonsters::_helper::ALT(Eigen::VectorXd* coeff, Eigen::VectorXd* phi
 			auto M3 = _mats3[i];//sparse
 			if (M1->rows() == n && M1->cols() == n)
 			{
-				Jx.row(i) = (*M1 * X0).transpose();
-				JX.row(i) = x0.transpose() * *M1;
+				Jx.row(i) = (*M2 * X0).transpose();
+				JX.row(i) = x0.transpose() * *M2;
 
-				b1(i) = x0.transpose() * *M1 * X0;
-				b2(i) = x0.transpose() * *M1 * X0;
+				b1(i) = x0.transpose() * *M2 * X0;
+				b2(i) = x0.transpose() * *M2 * X0;
 			}
 			else if (M1->rows() == 1 && M1->cols() == n)
 			{
@@ -313,6 +313,107 @@ double KingOfMonsters::_helper::ALT(Eigen::VectorXd* coeff, Eigen::VectorXd* phi
 	X0 += dX * 1.0;
 	//}
 	*zz =X0;
+	*phi = x0;
+	return rhsX.norm();
+}
+double KingOfMonsters::_helper::GN(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int tt)
+{
+	Eigen::VectorXd X0 = *zz;
+	Eigen::VectorXd x0 = *phi;
+
+	int _mt = 0;
+	int n = __U->cols();
+	int m = _mats1.size();
+#pragma omp parallel
+	{
+#pragma omp single
+		_mt = omp_get_num_threads();
+	}
+
+	//int m = __W->rows();
+
+	int nr1 = _r1->size();
+	int nr2 = _r2->size();
+
+	Eigen::VectorXd r1 = /*__W->transpose() * */*_r1;
+	Eigen::VectorXd r2 = /*__W->transpose() * */*_r2;
+
+	Eigen::VectorXd b1(m), b2(m);
+	b1.setZero();
+	b2.setZero();
+
+	Eigen::VectorXd ___r1(m), ___r2(m);
+
+	___r1 = r1; ___r2 = r2;
+	Eigen::MatrixXd Jx(m, n);
+	Eigen::MatrixXd JX(m, n);
+	Jx.setZero();
+	JX.setZero();
+	Eigen::VectorXd rhsx(m);
+	Eigen::VectorXd rhsX(m);
+
+#pragma omp parallel for
+	for (int ii = 0; ii < _mt; ii++)
+	{
+		int S = ii * m / _mt;
+		int E = (ii + 1) * m / _mt;
+		for (int i = S; i < E; i++)
+		{
+
+			auto M1 = _mats1[i];
+			auto M2 = _mats2[i];
+			auto M3 = _mats3[i];//sparse
+			if (M1->rows() == n && M1->cols() == n)
+			{
+				Jx.row(i) = (*M2 * X0).transpose();
+				JX.row(i) = x0.transpose() * *M2;
+				b1(i) = x0.transpose() * *M2 * X0;
+				b2(i) = x0.transpose() * *M2 * X0;
+			}
+			else if (M1->rows() == 1 && M1->cols() == n)
+			{
+				Jx.row(i) = *M1;
+				b1(i) = (*M1 * x0)(0, 0);
+			}
+			else  if (M2->rows() == 1 && M2->cols() == n) {
+				JX.row(i) = *M2;
+				b2(i) = (*M2 * X0)(0, 0);
+			}
+		}
+	}
+	//b2 += (*_mats3[n + 1] * X0);
+	//b1 += (*_mats3[n] * x0);
+
+	//JX += *_mats2[n];
+	//Jx += *_mats1[n];
+
+	rhsx = (b1 - ___r1).transpose() * coeff->asDiagonal() * Jx;
+	rhsX = (b2 - ___r2).transpose() * coeff->asDiagonal() * JX;
+
+	Eigen::FullPivLU<Eigen::MatrixXd> qr;
+	Eigen::MatrixXd I(2*n, 2*n);
+	I.setIdentity();
+	
+	Eigen::MatrixXd SYS(n * 2, n * 2);
+	SYS.topLeftCorner(n, n) = Jx.transpose() * Jx;
+	SYS.bottomRightCorner(n, n) = JX.transpose() * JX;
+	SYS.topRightCorner(n, n) = JX.transpose() * Jx;
+	SYS.bottomLeftCorner(n, n) = Jx.transpose() * JX;
+	Eigen::VectorXd rhs(2 * n);
+	rhs.topRows(n) = rhsx;
+	rhs.topRows(n) = rhsX;
+
+	qr.compute(SYS+I*0.0000001);
+	//Eigen::MatrixXd eei = ee.inverse();
+	Eigen::VectorXd dxX = -qr.solve(rhs);
+	auto dx = dxX.topRows(n);
+	auto dX = dxX.bottomRows(n);
+
+	x0 += dx * 1;
+	X0 += dX * 1;
+
+
+	*zz = X0;
 	*phi = x0;
 	return rhsX.norm();
 }
