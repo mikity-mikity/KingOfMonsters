@@ -466,7 +466,6 @@ namespace KingOfMonsters {
 					hh2[6] = new double[uDim];
 					hh2[7] = new double[vDim];
 
-
 					M[0] = new double* [uDim];
 					M[1] = new double* [vDim];
 					for (int i = 0; i < uDim; i++) {
@@ -1880,6 +1879,35 @@ namespace KingOfMonsters {
 					//if (i == j)
 					//	_dat->push_back(_Triplet<double>(*ptr2, *ptr3, _ref->d2[0][i]* _ref->d2[0][j]+ _ref->d2[3][i] * _ref->d2[3][j]));
 					ptr++;
+					ptr3++;
+				}
+				ptr2++;
+			}
+			//mat->_mat[0].setFromTriplets(_dat->begin(), _dat->end());
+		}
+		void getMatG(int64_t* index, int64_t* index2,std::vector<_Triplet<double>>* _dat,double sc)
+		{
+			//double* ptr = &_ref->__mat[0];
+			int64_t* ptr2 = &index[0];
+			//_dat->clear();
+			//_dat->reserve(_nNode * _nNode);
+			for (int i = 0; i < _nNode; i++)
+			{
+				int64_t* ptr3 = &index2[0];
+				for (int j = 0; j < _nNode; j++)
+				{
+					//int I = index[i];
+					//int J = index[j];
+					//mat->_mat[0].coeffRef(*ptr2, *ptr3) = *ptr;// _ref->__mat[i * _nNode + j];
+					//_dat->push_back(_Triplet<double>(*ptr2, *ptr3, sc * _ref->__mat[i * _nNode + j]));
+					//if (i == j)
+					_dat->push_back(_Triplet<double>(*ptr2, *ptr3, (
+						(_ref->d2[3][i]-_ref->get__Gammaijk(1,1,0)*_ref->d1[0][i] - _ref->get__Gammaijk(1, 1, 1) * _ref->d1[1][i]) * (_ref->d2[0][j] - _ref->get__Gammaijk(0, 0, 0) * _ref->d1[0][j] - _ref->get__Gammaijk(0, 0, 1) * _ref->d1[1][j])+
+						(_ref->d2[0][i] - _ref->get__Gammaijk(0, 0, 0) * _ref->d1[0][i] - _ref->get__Gammaijk(0, 0, 1) * _ref->d1[1][i]) * (_ref->d2[3][j] - _ref->get__Gammaijk(1, 1, 0) * _ref->d1[0][j] - _ref->get__Gammaijk(1, 1, 1) * _ref->d1[1][j])-
+						(_ref->d2[1][i] - _ref->get__Gammaijk(0, 1, 0) * _ref->d1[0][i] - _ref->get__Gammaijk(0, 1, 1) * _ref->d1[1][i]) * (_ref->d2[2][j] - _ref->get__Gammaijk(0, 1, 0) * _ref->d1[0][j] - _ref->get__Gammaijk(0, 1, 1) * _ref->d1[1][j]) -
+						(_ref->d2[2][i] - _ref->get__Gammaijk(0, 1, 0) * _ref->d1[0][i] - _ref->get__Gammaijk(0, 1, 1) * _ref->d1[1][i]) * (_ref->d2[1][j] - _ref->get__Gammaijk(0, 1, 0) * _ref->d1[0][j] - _ref->get__Gammaijk(0, 1, 1) * _ref->d1[1][j]))*sc));
+
+					//ptr++;
 					ptr3++;
 				}
 				ptr2++;
@@ -3426,6 +3454,9 @@ public:
 		}
 		void getmat(myIntArray^ index, workspace^ _dat) {
 			__mem->getMat(index->data(), _dat->_dat);
+		}
+		void getmatG(myIntArray^ index, myIntArray^ index2, workspace^ _dat,double sc) {
+			__mem->getMatG(index->data(), index2->data(), _dat->_dat,sc);
 		}
 		void getmat_d0(myIntArray^ index, workspace^ _dat) {
 			__mem->getMat_d0(index->data(), _dat->_dat);

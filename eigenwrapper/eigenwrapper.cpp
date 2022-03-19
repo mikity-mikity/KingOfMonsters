@@ -265,7 +265,7 @@ double KingOfMonsters::_helper::ALT(Eigen::VectorXd* coeff, Eigen::VectorXd* phi
 	Eigen::VectorXd dx = -qr.solve(rhsx);
 	//Eigen::VectorXd dX = -(JX.transpose() * JX + I * 0.000000000001).inverse() * rhsX;
 	//X0 += dX * dt;
-	x0 += dx * 1;
+	x0 += dx * dt;
 
 
 	Jx.setZero();
@@ -310,12 +310,92 @@ double KingOfMonsters::_helper::ALT(Eigen::VectorXd* coeff, Eigen::VectorXd* phi
 	qr.compute(JX.transpose() * coeff->asDiagonal() * JX);
 
 	Eigen::VectorXd dX = -qr.solve(rhsX);
-	X0 += dX * 1.0;
+	X0 += dX * dt;
 	//}
 	*zz =X0;
 	*phi = x0;
 	return rhsX.norm();
 }
+double KingOfMonsters::_helper::Simple(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int tt)
+{
+	Eigen::VectorXd X0 = *zz;
+
+	int _mt = 0;
+	int n = X0.size();
+	int m = _mats1.size();
+#pragma omp parallel
+	{
+#pragma omp single
+		_mt = omp_get_num_threads();
+	}
+
+	//int m = __W->rows();
+
+	int nr1 = _r2->size();
+
+	Eigen::VectorXd r2 = /*__W->transpose() * */*_r2;
+
+	Eigen::VectorXd b2(m);
+	b2.setZero();
+
+	Eigen::VectorXd ___r2(m);
+
+	___r2 = r2;
+	Eigen::MatrixXd JX(m, n);
+	JX.setZero();
+	Eigen::VectorXd rhsX(m);
+
+#pragma omp parallel for
+	for (int ii = 0; ii < _mt; ii++)
+	{
+		int S = ii * m / _mt;
+		int E = (ii + 1) * m / _mt;
+		for (int i = S; i < E; i++)
+		{
+
+			auto M1 = _mats1[i];
+			auto M2 = _mats2[i];
+			auto M3 = _mats3[i];//sparse
+			if (M1->rows() == n && M1->cols() == n)
+			{
+				JX.row(i) = X0.transpose() * *M2;
+				b2(i) = X0.transpose() * *M2 * X0;
+			}
+			if (M2->rows() == 1 && M2->cols() == n) {
+				JX.row(i) = *M2;
+				b2(i) = (*M2 * X0)(0, 0);
+			}
+		}
+	}
+	//b2 += (*_mats3[n + 1] * X0);
+	//b1 += (*_mats3[n] * x0);
+
+	//JX += *_mats2[n];
+	//Jx += *_mats1[n];
+
+	rhsX = (b2 - ___r2).transpose() * coeff->asDiagonal() * JX;
+
+	//Console::WriteLine("Jx=" + Jx.sum().ToString());
+	//Console::WriteLine("JX=" + JX.sum().ToString());
+	//Console::WriteLine("residual normx=" + rhsx.norm().ToString());
+	//Console::WriteLine("residual normX=" + rhsX.norm().ToString());
+	Eigen::FullPivLU<Eigen::MatrixXd> qr;
+	Eigen::MatrixXd I(n, n);
+	I.setIdentity();
+	Eigen::MatrixXd ee = JX.transpose() * coeff->asDiagonal() * JX;
+	qr.compute(ee+I*0.000001);
+	//Eigen::MatrixXd eei = ee.inverse();
+	Eigen::VectorXd dX = -qr.solve(rhsX);
+	//Eigen::VectorXd dX = -(JX.transpose() * JX + I * 0.000000000001).inverse() * rhsX;
+	//X0 += dX * dt;
+	X0 += dX * dt;
+
+
+	*zz = X0;
+	*phi = X0;
+	return rhsX.norm();
+}
+
 double KingOfMonsters::_helper::GN(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int tt)
 {
 	Eigen::VectorXd X0 = *zz;

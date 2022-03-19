@@ -228,8 +228,40 @@ double KingOfMonsters::helper::ALT(System::Collections::Generic::List<double>^ _
 	{
 		__mats3.push_back(&_mats3[i]->get());
 	}
-	double norm=KingOfMonsters::_helper::ALT(&coeff, &phi->_arr->__v, &zz->_arr->__v, &__U->get(), &__V->get(), &__W->get(), __mats1, __mats2, __mats3, &_r1->_arr->__v, &_r2->_arr->__v, dt, tt);
-	System::Console::WriteLine("normGrad="+norm.ToString());
+	double norm = KingOfMonsters::_helper::ALT(&coeff, &phi->_arr->__v, &zz->_arr->__v, &__U->get(), &__V->get(), &__W->get(), __mats1, __mats2, __mats3, &_r1->_arr->__v, &_r2->_arr->__v, dt, tt);
+	System::Console::WriteLine("normGrad=" + norm.ToString());
+	return norm;
+}
+double KingOfMonsters::helper::simple(System::Collections::Generic::List<double>^ __coeff, myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt)
+{
+	std::vector<Eigen::SparseMatrix<double>*> __mats1;
+	std::vector<Eigen::SparseMatrix<double>*> __mats2;
+	std::vector<Eigen::SparseMatrix<double>*> __mats3;
+	Eigen::VectorXd coeff(__coeff->Count);
+	for (int i = 0; i < __coeff->Count; i++)
+	{
+		coeff(i) = __coeff[i];
+	}
+	coeff.setOnes();
+
+	__mats1.clear();
+	__mats2.clear();
+	__mats3.clear();
+
+	for (int i = 0; i < _mats1->Length; i++)
+	{
+		__mats1.push_back(&_mats1[i]->get());
+	}
+	for (int i = 0; i < _mats2->Length; i++)
+	{
+		__mats2.push_back(&_mats2[i]->get());
+	}
+	for (int i = 0; i < _mats3->Length; i++)
+	{
+		__mats3.push_back(&_mats3[i]->get());
+	}
+	double norm = KingOfMonsters::_helper::Simple(&coeff, &phi->_arr->__v, &zz->_arr->__v, &__U->get(), &__V->get(), &__W->get(), __mats1, __mats2, __mats3, &_r1->_arr->__v, &_r2->_arr->__v, dt, tt);
+	System::Console::WriteLine("normGrad=" + norm.ToString());
 	return norm;
 }
 void KingOfMonsters::helper::write(System::Collections::Generic::List<double>^ __coeff, myDoubleArray^ phi0, myDoubleArray^ zz0,myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt)
