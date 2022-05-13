@@ -1719,6 +1719,26 @@ namespace KingOfMonsters {
 		{
 			_mySparse::project(i1->dat, i2->dat, t1->dat, v1->_arr, v2->_arr, ret1->_arr, ret2->_arr);
 		}
+		static void GN(mySparse^ mat1, mySparse^ mat2, mySparse^ mat3, myDoubleArray^ rhs1, myDoubleArray^ rhs2, myDoubleArray^ ret1, myDoubleArray^ ret2,int L1phi,int L1Z)
+		{
+			Eigen::MatrixXd M(L1phi + L1Z, L1phi + L1Z);
+			M.topLeftCorner(L1phi, L1phi) = mat1->dat->_mat[0];
+			M.bottomRightCorner(L1Z, L1Z) = mat2->dat->_mat[0];
+			M.topRightCorner(L1phi, L1Z) = mat3->dat->_mat[0];
+			M.bottomLeftCorner(L1Z, L1phi) = mat3->dat->_mat[0].transpose();
+
+			M += Eigen::MatrixXd::Identity(L1phi + L1Z, L1phi + L1Z) * 0.000000000000001;
+			Eigen::VectorXd rhs(L1phi + L1Z);
+			rhs.topRows(L1phi) = rhs1->_arr->__v;
+			rhs.bottomRows(L1Z) = rhs2->_arr->__v;
+
+			Eigen::FullPivLU<Eigen::MatrixXd> lu(M);
+			auto ret=lu.solve(rhs);
+
+			ret1->_arr->__v = ret.topRows(L1phi);
+			ret2->_arr->__v = ret.bottomRows(L1Z);
+
+		}
 		//helper.pushforward(_mats,mZ,mphi,L1Z,L1phi);
 		//helper.computeKrylovSubspace(_mats, __U, __V, __W, _C, 200);
 

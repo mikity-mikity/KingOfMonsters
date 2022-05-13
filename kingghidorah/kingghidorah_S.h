@@ -1264,13 +1264,21 @@ namespace KingOfMonsters {
 						_pt01++;
 					}
 				}
-				
+				for (int i = 0; i < _nNode; i++)
+				{
+					for (int j = 0; j < _nNode; j++)
+					{
+						if (j >= i)continue;
+						_ref->__mat[i * _nNode + j] = (_ref->__mat[i * _nNode + j] + _ref->__mat[i * _nNode + j]) / 2.0;
+						_ref->__mat[j * _nNode + i] = _ref->__mat[i * _nNode + j];
+					}
+				}
 				pptr = &_ref->__mat[0];
-				pptr1 = &_ref->buf_phi[0];
+				pptr1 = &_ref->buf_z[0];
 				val3 = 0;
 				for (int i = 0; i < _nNode; i++)
 				{
-					pptr2 = &_ref->buf_z[0];
+					pptr2 = &_ref->buf_phi[0];
 					for (int j = 0; j < _nNode; j++) {
 						val3 += *pptr * (*pptr2) */*_ref->buf_z[j] **/ (*pptr1);//_ref->buf_phi[i];
 						pptr++;
@@ -1280,10 +1288,10 @@ namespace KingOfMonsters {
 				}
 				bodyF = val3;
 				pptr = &_ref->__mat[0];
-				pptr2 = &__grad_z[0];
+				pptr2 = &__grad_phi[0];
 				for (int i = 0; i < _nNode; i++) {
 					val2 = 0;
-					pptr1 = &_ref->buf_z[0];
+					pptr1 = &_ref->buf_phi[0];
 					for (int j = 0; j < _nNode; j++) {
 						val2 += (*pptr)/*__mat[i * _nNode + j]*/ * (*pptr1)/*_ref->buf_z[j]*/;
 						pptr1++;
@@ -1295,15 +1303,15 @@ namespace KingOfMonsters {
 					pptr2++;
 				}
 				pptr = _ref->__mat;
-				pptr1 = &_ref->buf_phi[0];
-				pptr2 = &__grad_phi[0];
+				pptr1 = &_ref->buf_z[0];
+				pptr2 = &__grad_z[0];
 				for (int j = 0; j < _nNode; j++) {
 					*pptr2 = 0;
 					pptr2++;
 				}
 				for (int i = 0; i < _nNode; i++) {
 					//val2 = 0;
-					pptr2 = &__grad_phi[0];
+					pptr2 = &__grad_z[0];
 					for (int j = 0; j < _nNode; j++) {
 						val2 = (*pptr)/*__mat[i * _nNode + j]*/ * (*pptr1)/* _ref->buf_phi[i]*/;
 						pptr++;
@@ -1867,6 +1875,7 @@ namespace KingOfMonsters {
 			int64_t* ptr2 = &index[0];
 			_dat->clear();
 			_dat->reserve(_nNode * _nNode);
+			double norm=0;
 			for (int i = 0; i < _nNode; i++)
 			{
 				int64_t* ptr3 = &index[0];
@@ -1876,6 +1885,7 @@ namespace KingOfMonsters {
 					//int J = index[j];
 					//mat->_mat[0].coeffRef(*ptr2, *ptr3) = *ptr;// _ref->__mat[i * _nNode + j];
 					_dat->push_back(_Triplet<double>(*ptr2, *ptr3, sc * _ref->__mat[i*_nNode+j]));
+					norm += (sc * _ref->__mat[i * _nNode + j]) * (sc * _ref->__mat[i * _nNode + j]);
 					//if (i == j)
 					//	_dat->push_back(_Triplet<double>(*ptr2, *ptr3, _ref->d2[0][i]* _ref->d2[0][j]+ _ref->d2[3][i] * _ref->d2[3][j]));
 					ptr++;
@@ -1883,6 +1893,7 @@ namespace KingOfMonsters {
 				}
 				ptr2++;
 			}
+			norm = std::sqrt(norm);
 			//mat->_mat[0].setFromTriplets(_dat->begin(), _dat->end());
 		}
 		void getMatG(int64_t* index, int64_t* index2,std::vector<_Triplet<double>>* _dat,double sc)

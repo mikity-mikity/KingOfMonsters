@@ -193,7 +193,7 @@ public:
 			handle_, A.size(), A.nnz(), A.desc(),
 			val, csrRowPtr, csrColInd,
 			rhs,
-			0.0000000001,
+			0.00001,
 			ordering,
 			ret,
 			&singularity);

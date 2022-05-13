@@ -66,7 +66,8 @@ double KingOfMonsters::_helper::VarPro(Eigen::VectorXd* coeff, Eigen::VectorXd* 
 	Eigen::VectorXd rhsX(m);
 	Eigen::MatrixXd __I(n, n);
 	__I.setIdentity();
-
+	double residual = 0;
+	double residual2 = 0;
 	//if (tt % 2 == 0)
 	//{
 #pragma omp parallel for
@@ -86,6 +87,13 @@ double KingOfMonsters::_helper::VarPro(Eigen::VectorXd* coeff, Eigen::VectorXd* 
 					JX.row(i) = x0.transpose() * *M2;
 					b1(i) = X0.transpose() * *M1 * x0;
 					b2(i) = x0.transpose() * *M2 * X0;
+					double a = b1(i);
+					double b = b2(i);
+					double c = r1(i);
+					double d = r2(i);
+
+					residual += b1(i);
+					residual2 +=___r1(i);
 				}
 				else if (M1->rows() == 1 && M1->cols() == n)
 				{
@@ -101,6 +109,8 @@ double KingOfMonsters::_helper::VarPro(Eigen::VectorXd* coeff, Eigen::VectorXd* 
 
 		rhsx = (b1 - ___r1).transpose() * coeff->asDiagonal() * Jx;
 		rhsX = (b2 - ___r2).transpose() * coeff->asDiagonal() * JX;
+		double norm1 = rhsx.norm();
+		double norm2 = rhsX.norm();
 
 		Eigen::FullPivLU<Eigen::MatrixXd> qr;
 		Eigen::MatrixXd ee = Jx.transpose() * coeff->asDiagonal() * Jx;
@@ -175,7 +185,7 @@ double KingOfMonsters::_helper::VarPro(Eigen::VectorXd* coeff, Eigen::VectorXd* 
 	//}
 	*zz = X0;
 	*phi = x0;
-	return rhsX.norm();
+	return (residual-residual2)/residual;
 }
 
 double KingOfMonsters::_helper::ALT(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int tt)
@@ -3489,14 +3499,103 @@ std::string KingOfMonsters::_mySparse::_solve0_lu(Eigen::VectorXd* rhs, Eigen::V
 	using VectorR = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
 
 	SparseMatrixCSR Acsr = _mat[0]; // solver supports CSR format
-	auto solver = CuSparseCholeskySolver<Scalar>::create(_mat[0].cols());
+	Acsr.makeCompressed();
+	
+	cusparseMatDescr_t descrA;
+
+	auto cusparse_status = cusparseCreateMatDescr(&descrA);
+	cusolverSpHandle_t handle;
+	cusolverSpCreate(&handle);
+	int singularity=-1;
+	ret->resize(Acsr.cols());
+	ret->setZero();
+	double* values;
+	int* rows;
+	int* cols;
+	double* _ret;
+	double* _rhs;
+
+	auto err = cudaMalloc(&values, sizeof(double) * Acsr.nonZeros());
+	if (err != cudaSuccess)
+	{
+
+		return "memory allocation FAILED" + std::to_string(sizeof(double) * Acsr.nonZeros()) + " Bytes";
+	}
+	err = cudaMalloc(&cols, sizeof(int) * Acsr.nonZeros());
+	if (err != cudaSuccess)
+	{
+
+		return "memory allocation FAILED" + std::to_string(sizeof(int) * Acsr.nonZeros()) + " Bytes";
+	}
+	err = cudaMalloc(&rows, sizeof(int) * (Acsr.rows()+1));
+	if (err != cudaSuccess)
+	{
+
+		return "memory allocation FAILED" + std::to_string(sizeof(int) * (Acsr.rows()+1)) + " Bytes";
+	}
+	err = cudaMalloc(&_ret, sizeof(double) * Acsr.cols());
+	if (err != cudaSuccess)
+	{
+
+		return "memory allocation FAILED" + std::to_string(sizeof(double) * Acsr.cols()) + " Bytes";
+	}
+	err = cudaMalloc(&_rhs, sizeof(double) * (Acsr.rows()));
+	if (err != cudaSuccess)
+	{
+
+		return "memory allocation FAILED" + std::to_string(sizeof(double) * (Acsr.rows())) + " Bytes";
+	}
+
+	cudaMemcpy(values, Acsr.valuePtr(), sizeof(double) * Acsr.nonZeros(), cudaMemcpyHostToDevice);
+	cudaMemcpy(rows, Acsr.outerIndexPtr(), sizeof(int) * (Acsr.rows()+1), cudaMemcpyHostToDevice);
+	cudaMemcpy(cols, Acsr.innerIndexPtr(), sizeof(int) * Acsr.nonZeros(), cudaMemcpyHostToDevice);
+	
+	cudaMemcpy(_rhs, rhs->data(), sizeof(double) * Acsr.rows(), cudaMemcpyHostToDevice);
+
+	auto err2=cusolverSpDcsrlsvchol(handle,
+		Acsr.rows(),
+		Acsr.nonZeros(),
+		descrA,
+		values,
+		rows,
+		cols,
+		_rhs,
+		0,
+		ordering,
+	    _ret,
+		&singularity);
+
+	cudaMemcpy(ret->data(), _ret, sizeof(double) * Acsr.cols(), cudaMemcpyDeviceToHost);
+
+	cusparseDestroyMatDescr(descrA);
+
+	cudaFree(_rhs);
+	cudaFree(_ret);
+	cudaFree(values);
+	cudaFree(cols);
+	cudaFree(rows);
+
+	cusolverSpDestroy(handle);
+	if (err2 == CUDA_SUCCESS)
+	{
+		return "SUCCESS";
+	}
+	else {
+		return "ERROR";
+
+	}
+	/*auto solver = CuSparseCholeskySolver<Scalar>::create(_mat[0].cols());
 	std::string res=solver->analyze(_mat[0].nonZeros(), Acsr.valuePtr(), Acsr.outerIndexPtr(), Acsr.innerIndexPtr());
 	
 
 
 	// if (res != "SUCCESS")return res;
 	//VectorR xhatGPU(_mat[0].cols());
-	ret->conservativeResize(_mat[0].cols());
+	//ret->resize(_mat[0].cols());
+
+	//memset(ret->data(),0,sizeof)
+	ret->resize(_mat[0].cols());
+	
 	ret->setZero();
 	std::string pivot=solver->factorize(Acsr.valuePtr(), Acsr.outerIndexPtr(), Acsr.innerIndexPtr(), rhs->data(), ret->data(), ordering);
 	auto info=solver->info();
@@ -3510,8 +3609,8 @@ std::string KingOfMonsters::_mySparse::_solve0_lu(Eigen::VectorXd* rhs, Eigen::V
 
 		return ("FAILED "+pivot);
 
-	}
-
+	}*/
+	
 }
 std::string KingOfMonsters::_mySparse::_solve0_chol_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering) {
 
@@ -3550,8 +3649,8 @@ std::string KingOfMonsters::_mySparse::_solve0_chol_cpu(Eigen::VectorXd* rhs, Ei
 
 }
 std::string KingOfMonsters::_mySparse::_solve0_lu_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering) {
-	//Eigen::SparseLU<Eigen::SparseMatrix<double,Eigen::ColMajor, int64_t>,Eigen::COLAMDOrdering<int64_t>> lu;
-	Eigen::SimplicialLDLT< Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>, Eigen::Lower, Eigen::COLAMDOrdering<int64_t>> lu;
+	Eigen::SparseLU<Eigen::SparseMatrix<double,Eigen::ColMajor, int64_t>,Eigen::COLAMDOrdering<int64_t>> lu;
+	//Eigen::SimplicialLDLT< Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>, Eigen::Lower, Eigen::COLAMDOrdering<int64_t>> lu;
 	lu.compute(_mat[0]);
 
 	/*using Scalar = double;

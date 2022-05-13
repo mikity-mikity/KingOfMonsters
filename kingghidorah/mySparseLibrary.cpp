@@ -197,7 +197,8 @@ double KingOfMonsters::helper::VarPro(System::Collections::Generic::List<double>
 		__mats3.push_back(&_mats3[i]->get());
 	}
 	double norm = KingOfMonsters::_helper::VarPro(&coeff, &phi->_arr->__v, &zz->_arr->__v, &__U->get(), &__V->get(), &__W->get(), __mats1, __mats2, __mats3, &_r1->_arr->__v, &_r2->_arr->__v, dt, tt);
-	System::Console::WriteLine("normGrad=" + norm.ToString());
+	
+	System::Console::WriteLine("******residual********=" + norm.ToString());
 	return norm;
 }
 double KingOfMonsters::helper::ALT(System::Collections::Generic::List<double>^ __coeff, myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt)
@@ -315,7 +316,7 @@ void KingOfMonsters::helper::computeKrylovSubspace(System::Collections::Generic:
 	//System::Collections::Generic::List<Tuple<int, int>^>^ bb1 = gcnew System::Collections::Generic::List<Tuple<int, int>^>();
 	//System::Collections::Generic::List<Tuple<int, int>^>^ bb2 = gcnew System::Collections::Generic::List<Tuple<int, int>^>();
 
-	for (int i = 0; i < _C; i++)
+	/*for (int i = 0; i < _C; i++)
 	{
 		if (mphi->p->perm.indices()(i) >= nU)
 		{
@@ -336,7 +337,7 @@ void KingOfMonsters::helper::computeKrylovSubspace(System::Collections::Generic:
 			bb2->Add(gcnew Tuple<int, int>(i, _mats->Count - 1));
 			__coeff->Add(1.0);
 		}
-	}
+	}*/
 
 	
 	/*Eigen::VectorXd w0(m);
