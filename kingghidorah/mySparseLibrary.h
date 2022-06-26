@@ -736,8 +736,16 @@ namespace KingOfMonsters {
 			//ptr = nullptr;
 			//return ret;
 		}
-		
-		
+
+		void mult(myDoubleArray^ a, myDoubleArray^ b)
+		{
+			b->_arr->__v = this->dat->_dmat * a->_arr->__v;
+		}
+		void mult(mySparse^ a, mySparse^ b)
+		{
+			b->dat->_dmat = this->dat->_dmat * a->dat->_dmat;
+		}
+
 		void addemptyrow(Int64 ii) {
 			dat->addemptyrow(ii);
 		}
@@ -1707,6 +1715,59 @@ namespace KingOfMonsters {
 	};
 	public ref class helper {
 	public:
+		static void orthogonalize(myDoubleArray^ _a, myDoubleArray^ _b, myDoubleArray^ ret)
+		{
+			double norm = _a->_arr->__v.dot(_b->_arr->__v);
+			double normB = _b->_arr->__v.squaredNorm();
+			if (normB < 0.00000000001)
+			{
+				ret->_arr->__v = _a->_arr->__v;
+			}
+			else {
+				ret->_arr->__v = _a->_arr->__v - norm / normB * _b->_arr->__v;
+			}
+
+			
+		}
+		static void find(myDoubleArray^ dx0,myDoubleArray^ _b, mySparse^ _F,myDoubleArray^ ret,double alpha)
+		{
+			int N = _b->_arr->__v.size();
+			Eigen::MatrixXd F = _F->dat->_dmat;
+			Eigen::MatrixXd FIFI = F;// 0.5 * (F.transpose() + F);
+			Eigen::MatrixXd M = F + alpha * Eigen::MatrixXd::Identity(N, N);
+
+
+			Eigen::VectorXd dx = _b->_arr->__v;
+			Eigen::VectorXd prev_dx = _b->_arr->__v;
+			Eigen::VectorXd b = _b->_arr->__v;
+			double normb = b.norm();
+			Eigen::VectorXd c;
+			if (_b->L2Norm() < 0.000000000001)return;
+			for (int i = 0; i < 50; i++)
+			{
+				prev_dx = dx;
+				dx = M * dx;
+				c = b - 2.0 * dx;
+				//solve (dx+lambda c)(dx+lambda c)=(dx+lambda c)b
+				double A = c.dot(c);
+				double B = 2 * dx.dot(c)-c.dot(b);
+				double C = dx.dot(dx) - dx.dot(b);
+				double lambda1 = (-B + sqrt(B * B - 4 * A * C)) / (2 * A);
+				double lambda2 = (-B - sqrt(B * B - 4 * A * C)) / (2 * A);
+				if (abs(lambda1) < abs(lambda2))
+				{
+					dx = dx + lambda1 * c;
+				}
+				else {
+					dx = dx + lambda2 * c;
+				}
+				//double norm = dx.norm();
+				//dx = dx+b/normb*norm*0.1;
+				if (dx.norm() < 0.000000000001)break;
+				if ((prev_dx - dx).norm() < 0.00000000001)break;
+			}
+			ret->_arr->__v = dx;
+		}
 		static double computeeigen(mySparse^ i1, mySparse^ i2, mySparse^ t1, Int64 N)
 		{
 			double maxval = _mySparse::computeeigen(i1->dat, i2->dat, t1->dat, N);
