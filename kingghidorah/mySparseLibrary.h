@@ -14,6 +14,8 @@ using namespace System;
 using namespace System::Threading::Tasks;
 //#define EIGEN_DONT_ALIGN
 namespace KingOfMonsters {
+	
+
 	public ref class mySparseVector {
 	public:
 		_mySparseVector* _vec=0;
@@ -392,6 +394,12 @@ namespace KingOfMonsters {
 			mySparse^ kernel = gcnew mySparse();
 			kernel->dat->_dmat= II - this->dat->_mat[0].transpose() * ret * this->dat->_mat[0];
 			return kernel;
+		}
+		void resetData()
+		{
+			this->dat->dat.resize(1);
+			this->dat->dat[0].clear();
+			this->dat->_nt = 1;
 		}
 		void setFromList(System::Collections::Generic::List < System::Collections::Generic::List<System::Tuple<Int64, Int64>^>^>^ tt)
 		{
@@ -1859,6 +1867,84 @@ namespace KingOfMonsters {
 
 		static void computeKrylovSubspace(System::Collections::Generic::List<double>^ __coeff,System::Collections::Generic::List<workspace^>^ _mats, denseMatrix^ _U, denseMatrix^ _V, denseMatrix^ _W, int nU, int nV, int r, myPermutation^ mphi, myPermutation^ mZ, myDoubleArray^ phi, myDoubleArray^ zz, System::Collections::Generic::List<Tuple<int, int>^>^bb1, System::Collections::Generic::List<Tuple<int, int>^>^ bb2);
 		
+
+	};
+
+	public ref class myMicroMatrix {
+		_myMicroMatrix* _dat = 0;
+		int N;
+		double _sc;
+		myMicroMatrix()
+		{
+			_dat = new _myMicroMatrix();
+		}
+		~myMicroMatrix()
+		{
+			if (_dat != 0)
+			{
+				delete _dat;
+			}
+			_dat = 0;
+		}
+		!myMicroMatrix()
+		{
+			if (_dat != 0)
+			{
+				delete _dat;
+			}
+			_dat = 0;
+		}
+		void scale(double sc)
+		{
+			_sc = sc;
+		}
+		void init(int I, System::Collections::Generic::List<int>^ star)
+		{
+			this->_dat->indices.push_back(I);
+			for (int i = 0; i < star->Count; i++)
+			{
+				this->_dat->indices.push_back(star[i]);
+			}
+			N = star->Count + 1;
+			this->_dat->_mat.resize(N, N);
+			this->_dat->_mat.setZero();
+			this->_dat->_w.resize(N);
+			this->_dat->_w.setZero();
+			this->_dat->_z.resize(N);
+			this->_dat->_z.setZero();
+		}
+		void set(int i, int j, double val)
+		{
+			this->_dat->_mat(i, j) = val;
+		}
+		void updateNodes(myDoubleArray^ z, myDoubleArray^ w)
+		{
+			for (int i = 0; i < N; i++)
+			{
+				this->_dat->_w(i) = w->_arr->__v(this->_dat->indices[i]);
+				this->_dat->_z(i) = z->_arr->__v(this->_dat->indices[i]);
+			}
+		}
+
+		void computeJacobian(mySparse^ M, int I, bool z)
+		{
+			if (z)
+			{
+				this->_dat->_tmp = _sc * (this->_dat->_w.transpose() * this->_dat->_mat).transpose();
+			}
+			else {
+				this->_dat->_tmp = _sc * (this->_dat->_mat * this->_dat->_z);
+			}
+			for (int i = 0; i < N; i++)
+			{
+				M->dat->dat[0].push_back(Eigen::Triplet<double>(I, this->_dat->indices[i], this->_dat->_tmp(i, 0)));
+			}
+		}
+		double computeResidual(double rho)
+		{
+			return _sc * ((this->_dat->_w.transpose() * this->_dat->_mat*this->_dat->_z)(0,0)+rho);
+		}
+
 
 	};
 }

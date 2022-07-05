@@ -167,6 +167,12 @@ namespace KingOfMonsters {
 		void* dBuffer1 = NULL, * dBuffer2 = NULL;
 		size_t bufferSize1 = 0, bufferSize2 = 0;
 	};
+	class _myMicroMatrix {
+	public:
+		Eigen::MatrixXd _mat;
+		Eigen::VectorXd _z, _w, _tmp;
+		std::vector<int> indices;
+	};
 	class _mySparseVector
 	{
 	public:
@@ -183,6 +189,7 @@ namespace KingOfMonsters {
 	private:
 		vector<Eigen::VectorXd> coeff;
 		int64_t space = 0;
+	public:
 		int64_t _nt = 0;
 		int64_t _mt = 0;
 		int64_t _dat_count = 0;
@@ -192,6 +199,7 @@ namespace KingOfMonsters {
 
 		//Eigen::HouseholderQR<Eigen::MatrixXd> qr2;
 		//Eigen::PartialPivLU<Eigen::MatrixXd> lu2;
+	public:
 		vector<vector<Eigen::Triplet<double>>> dat;
 		//vector<Eigen::Triplet<double>> dat2;
 	public:
