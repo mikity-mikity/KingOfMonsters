@@ -188,6 +188,10 @@ namespace KingOfMonsters {
 		{
 			_arr->__v.noalias() -= b->_arr->__v;
 		}
+		void minus(myDoubleArray^ b,double sc)
+		{
+			_arr->__v.noalias() -= b->_arr->__v*sc;
+		}
 		double L2Norm() {
 			return _arr->__v.norm();
 		}
@@ -382,6 +386,20 @@ namespace KingOfMonsters {
 	public ref class mySparse {
 	public:
 		_mySparse* dat = 0;
+		void plus(mySparse^ m, bool sparse)
+		{
+			if (sparse)
+			{
+				this->dat->_mat[0] += m->dat->_mat[0];
+			}
+			else {
+				this->dat->_dmat += m->dat->_mat[0];
+			}
+		}
+		void multiply(myDoubleArray^ v, myDoubleArray^ ret)
+		{
+			ret->_arr->__v = this->dat->_mat[0] * v->_arr->__v;
+		}
 		mySparse^ computeKernel()
 		{
 			Eigen::SparseMatrix<double> ff = (this->dat->_mat[0] * this->dat->_mat[0].transpose());
@@ -662,6 +680,15 @@ namespace KingOfMonsters {
 		Int64 resize(Int64 n, Int64 m)
 		{
 			return dat->resize(n, m);
+		}
+		void setZero(bool sparse) {
+			if (sparse)
+			{
+				this->dat->_mat[0].setZero();
+			}
+			else {
+				this->dat->_dmat.setZero();
+			}
 		}
 		void reserve(Int64 n) {
 			dat->reserve(n);
@@ -1873,7 +1900,7 @@ namespace KingOfMonsters {
 	public ref class myMicroMatrix {
 		_myMicroMatrix* _dat = 0;
 		int N;
-		
+	public:
 		myMicroMatrix()
 		{
 			_dat = new _myMicroMatrix();
@@ -1926,7 +1953,7 @@ namespace KingOfMonsters {
 			}
 		}
 
-		void computeJacobian(mySparse^ M, int I, bool z)
+		void computeJacobian(mySparse^ M, int I, bool z,bool firsttime)
 		{
 			if (z)
 			{
@@ -1935,9 +1962,18 @@ namespace KingOfMonsters {
 			else {
 				this->_dat->_tmp = ((this->_dat->_mat * this->_dat->_z)) * _dat->_sc;
 			}
-			for (int i = 0; i < N; i++)
+			if (firsttime)
 			{
-				M->dat->dat[0].push_back(Eigen::Triplet<double>(I, this->_dat->indices[i], this->_dat->_tmp(i, 0)));
+				for (int i = 0; i < N; i++)
+				{
+					M->dat->dat[0].push_back(Eigen::Triplet<double>(I, this->_dat->indices[i], this->_dat->_tmp(i, 0)));
+				}
+			}
+			else {
+				for (int i = 0; i < N; i++)
+				{
+					M->dat->_mat[0].coeffRef(I, this->_dat->indices[i]) = this->_dat->_tmp(i, 0);
+				}
 			}
 		}
 		double computeResidual(double rho)
