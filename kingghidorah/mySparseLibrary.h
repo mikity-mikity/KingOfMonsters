@@ -1873,7 +1873,7 @@ namespace KingOfMonsters {
 	public ref class myMicroMatrix {
 		_myMicroMatrix* _dat = 0;
 		int N;
-		double _sc;
+		
 		myMicroMatrix()
 		{
 			_dat = new _myMicroMatrix();
@@ -1896,7 +1896,7 @@ namespace KingOfMonsters {
 		}
 		void scale(double sc)
 		{
-			_sc = sc;
+			_dat->_sc = sc;
 		}
 		void init(int I, System::Collections::Generic::List<int>^ star)
 		{
@@ -1930,10 +1930,10 @@ namespace KingOfMonsters {
 		{
 			if (z)
 			{
-				this->_dat->_tmp = _sc * (this->_dat->_w.transpose() * this->_dat->_mat).transpose();
+				this->_dat->_tmp = ((this->_dat->_w.transpose() * this->_dat->_mat).transpose()) * _dat->_sc;
 			}
 			else {
-				this->_dat->_tmp = _sc * (this->_dat->_mat * this->_dat->_z);
+				this->_dat->_tmp = ((this->_dat->_mat * this->_dat->_z)) * _dat->_sc;
 			}
 			for (int i = 0; i < N; i++)
 			{
@@ -1942,7 +1942,7 @@ namespace KingOfMonsters {
 		}
 		double computeResidual(double rho)
 		{
-			return _sc * ((this->_dat->_w.transpose() * this->_dat->_mat*this->_dat->_z)(0,0)+rho);
+			return _dat->_sc * ((this->_dat->_w.transpose() * this->_dat->_mat*this->_dat->_z)(0,0)+rho);
 		}
 
 

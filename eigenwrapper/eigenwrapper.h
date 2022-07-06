@@ -172,6 +172,7 @@ namespace KingOfMonsters {
 		Eigen::MatrixXd _mat;
 		Eigen::VectorXd _z, _w, _tmp;
 		std::vector<int> indices;
+		double _sc;
 	};
 	class _mySparseVector 
 	{
@@ -189,6 +190,7 @@ namespace KingOfMonsters {
 	private:
 		vector<Eigen::VectorXd> coeff;
 		int64_t space = 0;
+	public:
 		int64_t _nt = 0;
 		int64_t _mt = 0;
 		int64_t _dat_count = 0;

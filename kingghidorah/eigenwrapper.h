@@ -172,6 +172,7 @@ namespace KingOfMonsters {
 		Eigen::MatrixXd _mat;
 		Eigen::VectorXd _z, _w, _tmp;
 		std::vector<int> indices;
+		double _sc;
 	};
 	class _mySparseVector
 	{
