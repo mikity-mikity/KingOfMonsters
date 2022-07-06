@@ -365,7 +365,7 @@ namespace KingOfMonsters {
 			//Eigen::Map<Eigen::VectorXd>(ptr2, N) = _ret;
 
 			ptr = nullptr;
-			//ptr2 = nullptr;
+			//ptr2 = nullptr;es
 			//return ret;
 		}*/
 		void perm(myDoubleArray^ vec) {
@@ -386,6 +386,10 @@ namespace KingOfMonsters {
 	public ref class mySparse {
 	public:
 		_mySparse* dat = 0;
+		void addResidual(myDoubleArray^ r,myDoubleArray ^ret)
+		{
+			ret->_arr->__v += this->dat->_mat[0].transpose() * r->_arr->__v;
+		}
 		void plus(mySparse^ m, bool sparse)
 		{
 			if (sparse)
@@ -1978,7 +1982,7 @@ namespace KingOfMonsters {
 		}
 		double computeResidual(double rho)
 		{
-			return _dat->_sc * ((this->_dat->_w.transpose() * this->_dat->_mat*this->_dat->_z)(0,0)+rho);
+			return _dat->_sc * ((this->_dat->_w.transpose() * this->_dat->_mat *this->_dat->_z)(0,0)+rho);
 		}
 
 
