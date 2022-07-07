@@ -1908,6 +1908,7 @@ namespace KingOfMonsters {
 		myMicroMatrix()
 		{
 			_dat = new _myMicroMatrix();
+			_dat->_sc = 1.0;
 		}
 		~myMicroMatrix()
 		{
