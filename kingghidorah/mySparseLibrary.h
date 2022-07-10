@@ -404,6 +404,15 @@ namespace KingOfMonsters {
 		{
 			ret->_arr->__v = this->dat->_mat[0] * v->_arr->__v;
 		}
+		void leftmultiply(myDoubleArray^ v, myDoubleArray^ ret)
+		{
+			ret->_arr->__v = v->_arr->__v.transpose() * this->dat->_mat[0];
+		}
+		void ofAtAsimple(mySparse^ m)
+		{
+			this->dat->_dmat = m->dat->_mat[0].transpose() * m->dat->_mat[0];
+		}
+
 		mySparse^ computeKernel()
 		{
 			Eigen::SparseMatrix<double> ff = (this->dat->_mat[0] * this->dat->_mat[0].transpose());
@@ -701,6 +710,10 @@ namespace KingOfMonsters {
 		{
 			dat->addmat(m->dat);
 		}
+		void scale(int i, double sc)
+		{
+			this->dat->scale(i, sc);
+		}
 		Int64 cols() {
 			return dat->cols();
 		}
@@ -723,6 +736,14 @@ namespace KingOfMonsters {
 		void permute(myPermutation^ p)
 		{
 			dat->permute(p->p->perm);
+		}
+		void permute_dense(myPermutation^ p)
+		{
+			dat->_dmat = p->p->perm*dat->_dmat * p->p->perm.transpose();
+		}
+		void _shrink_dense(Int64 N)
+		{
+			this->dat->_dmat.conservativeResize(N, N);
 		}
 		void _shrink(Int64 M, bool sparse, bool dense)
 		{
@@ -1155,6 +1176,9 @@ namespace KingOfMonsters {
 		}
 		void plus(mySparse^ m, double a, bool dense, bool sparse) {
 			this->dat->plus(m->dat, a, dense, sparse);
+		}
+		void plus_dense(mySparse^ m, double a) {
+			this->dat->_dmat += a * m->dat->_dmat;
 		}
 		void addsmallidentity(double salt, bool sparse, bool dense) {
 			this->dat->addsmallidentity(salt, sparse, dense);

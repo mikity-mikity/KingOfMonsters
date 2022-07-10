@@ -1579,6 +1579,13 @@ int64_t KingOfMonsters::_mySparse::rows() {
 	}
 	return _ret;
 }
+void  KingOfMonsters::_mySparse::scale(int i, double sc)
+{
+	if (_mat.size() > 0)
+	{
+		_mat[0].row(i) *= sc;
+	}
+}
 int64_t KingOfMonsters::_mySparse::_rows() {
 	return _dmat.rows();// __r;
 }

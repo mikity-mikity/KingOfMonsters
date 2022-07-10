@@ -235,6 +235,7 @@ namespace KingOfMonsters {
 		void _shrink(int64_t M, int64_t N);
 		Eigen::VectorXd get_coeff(int64_t ii);
 		double __at(int64_t i, int64_t j);
+		void scale(int i, double sc);
 		int64_t rows();
 		int64_t _rows();
 		int64_t _cols();
