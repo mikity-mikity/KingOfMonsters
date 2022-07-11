@@ -59,6 +59,10 @@ namespace KingOfMonsters {
 		_myDoubleArray *_arr=0;
 		Int64 _N = 0;
 	public:
+		void addResidual(myDoubleArray^ r, myDoubleArray^ ret)
+		{
+			ret->_arr->__v += this->_arr->__v * r->_arr->__v;
+		}
 		double dot(myDoubleArray^ v)
 		{
 			return this->_arr->__v.dot(v->_arr->__v);
@@ -1178,7 +1182,45 @@ namespace KingOfMonsters {
 			this->dat->plus(m->dat, a, dense, sparse);
 		}
 		void plus_dense(mySparse^ m, double a) {
-			this->dat->_dmat += a * m->dat->_dmat;
+			int _mt;
+			int n = Eigen::nbThreads();
+			Eigen::setNbThreads(1);
+			Eigen::initParallel();
+#pragma omp parallel
+			{
+#pragma omp single
+				_mt = omp_get_num_threads();
+			}
+#pragma omp parallel for
+			for (int nn = 0; nn < _mt; nn++)
+			{
+				int S = (m->dat->_dmat.cols() * nn) / _mt;
+				int E = (m->dat->_dmat.cols() * (nn+1)) / _mt;
+				this->dat->_dmat.middleCols(S,E-S) += a * m->dat->_dmat.middleCols(S,E-S);
+			}
+			Eigen::setNbThreads(0);
+
+		}
+
+		void plus_AtA_dense(myDoubleArray^ m, double a) {
+			int _mt;
+			int n = Eigen::nbThreads();
+			Eigen::setNbThreads(1);
+			Eigen::initParallel();
+#pragma omp parallel
+			{
+#pragma omp single
+				_mt = omp_get_num_threads();
+			}
+#pragma omp parallel for
+			for (int nn = 0; nn < _mt; nn++)
+			{
+				int S = (this->dat->_dmat.cols() * nn) / _mt;
+				int E = (this->dat->_dmat.cols() * (nn + 1)) / _mt;
+				this->dat->_dmat.middleCols(S, E - S) += a * m->_arr->__v * m->_arr->__v.middleRows(S, E - S).transpose();
+			}
+			Eigen::setNbThreads(0);
+
 		}
 		void addsmallidentity(double salt, bool sparse, bool dense) {
 			this->dat->addsmallidentity(salt, sparse, dense);
