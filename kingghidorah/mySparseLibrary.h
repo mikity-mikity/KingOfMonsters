@@ -724,11 +724,13 @@ namespace KingOfMonsters {
 		void _resize(int n, int m)
 		{
 			Eigen::SparseMatrix<double> mm(n, m);
-			for (int64_t k = 0; k < m; ++k) {
+			for (int64_t k = 0; k < this->dat->_mat[0].cols(); ++k) {
 				for (Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>::InnerIterator it(this->dat->_mat[0], k); it; ++it) {
 					mm.coeffRef(it.row(), it.col()) = it.value();
 				}
 			}
+			this->dat->_mat[0].resize(n, m);
+			this->dat->_mat[0].setZero();
 			this->dat->_mat[0] = mm;
 		}
 		Int64 rows() {
