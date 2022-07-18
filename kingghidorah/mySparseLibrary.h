@@ -2007,6 +2007,8 @@ namespace KingOfMonsters {
 		void scale(double sc)
 		{
 			_dat->_sc = sc;
+			_dat->sqrsc = sqrt(sc);
+
 		}
 		void init(int I, System::Collections::Generic::List<int>^ star)
 		{
@@ -2038,12 +2040,13 @@ namespace KingOfMonsters {
 
 		void computeJacobian(mySparse^ M, int I, bool z,bool firsttime)
 		{
+			
 			if (z)
 			{
-				this->_dat->_tmp = ((this->_dat->_w.transpose() * this->_dat->_mat).transpose()) * _dat->_sc;
+				this->_dat->_tmp = ((this->_dat->_w.transpose() * this->_dat->_mat).transpose()) * _dat->sqrsc;
 			}
 			else {
-				this->_dat->_tmp = ((this->_dat->_mat * this->_dat->_z)) * _dat->_sc;
+				this->_dat->_tmp = ((this->_dat->_mat * this->_dat->_z)) * _dat->sqrsc;
 			}
 			if (firsttime)
 			{
@@ -2062,6 +2065,9 @@ namespace KingOfMonsters {
 		double computeResidual(double rho)
 		{
 			return _dat->_sc * ((this->_dat->_w.transpose() * this->_dat->_mat *this->_dat->_z)(0,0)+rho);
+		}
+		double getscale() {
+			return _dat->_sc;
 		}
 
 

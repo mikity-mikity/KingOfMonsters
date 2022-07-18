@@ -12,7 +12,7 @@
 #include "eigen-3.3.8/Eigen/Dense"
 #include "eigen-3.3.8/Eigen/SparseQR"
 #include "eigen-3.3.8/Eigen/SparseLU"
-#include "eigen-3.3.8/Eigen/SparseCholesky"	
+#include "eigen-3.3.8/Eigen/SparseCholesky"
 */
 
 #include <cuda_runtime.h>
@@ -49,7 +49,7 @@ namespace KingOfMonsters {
 		static double ALT(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int tt);
 		static double Simple(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int tt);
 		static double GN(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int tt);
-		static void write(Eigen::VectorXd* coeff, Eigen::VectorXd* phi0, Eigen::VectorXd* zz0,Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int tt);
+		static void write(Eigen::VectorXd* coeff, Eigen::VectorXd* phi0, Eigen::VectorXd* zz0, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int tt);
 	};
 	class cuda {
 	public:
@@ -127,7 +127,7 @@ namespace KingOfMonsters {
 	public:
 		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	public:
-		Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic,int64_t> perm;
+		Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, int64_t> perm;
 		_myPermutation(int64_t* ptr, int64_t N);
 	};
 	class _myDoubleArray
@@ -173,15 +173,16 @@ namespace KingOfMonsters {
 		Eigen::VectorXd _z, _w, _tmp;
 		std::vector<int> indices;
 		double _sc;
+		double sqrsc;
 	};
-	class _mySparseVector 
+	class _mySparseVector
 	{
 	public:
 		Eigen::SparseVector<double> _vec;
 	};
 	class _mySparse {
 
-	public:		
+	public:
 		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	public:
 		vector<vector<double>> _coeff;
@@ -226,7 +227,7 @@ namespace KingOfMonsters {
 		int64_t cols();
 		//void join();
 		std::string info();
-		void permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic,int64_t> &perm);
+		void permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, int64_t>& perm);
 		void shrink(int64_t M);
 		void _permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, int64_t>& perm, bool sparse, bool dense);
 		void _permuteCols(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, int64_t>& perm, bool sparse, bool dense);
@@ -247,8 +248,8 @@ namespace KingOfMonsters {
 		void reserve(int64_t n);
 		void addemptyrow(int64_t ii);
 		void addrow(int64_t ii, int64_t* ptr, double* data, double sc, int64_t N);
-		void addrow(int64_t ii, int64_t* ptr, double* data, double sc, int64_t N,double _coeff);
-		void addrow(int64_t ii, int64_t* ptr, double* data, int64_t shift, double sc, int64_t N, bool add,double __coeff);
+		void addrow(int64_t ii, int64_t* ptr, double* data, double sc, int64_t N, double _coeff);
+		void addrow(int64_t ii, int64_t* ptr, double* data, int64_t shift, double sc, int64_t N, bool add, double __coeff);
 		void adddat(int64_t ii, int64_t j, double value);
 		void addcoeff(double sc);
 		void addmat(_mySparse* mat);
@@ -257,7 +258,7 @@ namespace KingOfMonsters {
 		void ofDat();
 		void freezecoeff();
 		std::string ofAtA(_mySparse* A, bool sparse);
-		std::string ofAtA_gpu(cuda* _cuda,_mySparse* A, bool sparse);
+		std::string ofAtA_gpu(cuda* _cuda, _mySparse* A, bool sparse);
 		std::string _ofAtA(_mySparse* A);
 		//void ofAtB_gpu(_mySparse* B, bool sparse);
 		void ofAtB(_mySparse* B, bool sparse);
@@ -273,12 +274,12 @@ namespace KingOfMonsters {
 		void computeLLT(Eigen::LLT<Eigen::MatrixXd>* LLT);
 		int64_t nonzeros();
 		void Clear();
-		void setmat(Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t> &mat, int64_t ii);
+		void setmat(Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>& mat, int64_t ii);
 		void setmat(const Eigen::MatrixXd& mat);
-		void setmiddlecolum(Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t> &f, int64_t start, int64_t end);
+		void setmiddlecolum(Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>& f, int64_t start, int64_t end);
 		void solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void _solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
-		std::string _solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret,int ordering);
+		std::string _solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering);
 		std::string _solve0_lu_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering);
 		std::string _solve0_chol_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering);
 		void solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
