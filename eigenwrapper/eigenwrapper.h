@@ -188,8 +188,9 @@ namespace KingOfMonsters {
 		vector<vector<double>> _coeff;
 		std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>> _mat;
 		Eigen::MatrixXd _dmat;
-	private:
+
 		vector<Eigen::VectorXd> coeff;
+	private:
 		int64_t space = 0;
 	public:
 		int64_t _nt = 0;
