@@ -2436,12 +2436,22 @@ namespace KingOfMonsters {
 					S[(k << 1) + l] = val;// get_gij(k, l);// -_ref->get__gij(k, l);
 				}
 			}
+			double det = _ref->get__gij(0, 0) * _ref->get__gij(1, 1) - _ref->get__gij(0, 1) * _ref->get__gij(0, 1);
+			double gg11 = _ref->get__gi(0, 0) * _ref->get__gi(0, 0) + _ref->get__gi(0, 1) * _ref->get__gi(0, 1);
+			double gg21 = _ref->get__gi(1, 0) * _ref->get__gi(1, 0) + _ref->get__gi(0, 1) * _ref->get__gi(0, 1);
+			double gg12 = _ref->get__gi(0, 0) * _ref->get__gi(0, 0) + _ref->get__gi(1, 1) * _ref->get__gi(1, 1);
+			double gg22 = _ref->get__gi(1, 0) * _ref->get__gi(1, 0) + _ref->get__gi(1, 1) * _ref->get__gi(1, 1);
+			double det2 = gg11 * gg22 - gg12 * gg21;
+			double J = sqrt(det / det2);
 			*a = S[0] * _ref->get__gi(0, 0) * _ref->get__gi(0, 0) + S[1] * _ref->get__gi(0, 0) * _ref->get__gi(1, 0) + S[2] * _ref->get__gi(1, 0) * _ref->get__gi(0, 0) + S[3] * _ref->get__gi(1, 0) * _ref->get__gi(1, 0);
 			*b = S[0] * _ref->get__gi(0, 0) * _ref->get__gi(0, 1) + S[1] * _ref->get__gi(0, 0) * _ref->get__gi(1, 1) + S[2] * _ref->get__gi(1, 0) * _ref->get__gi(0, 1) + S[3] * _ref->get__gi(1, 0) * _ref->get__gi(1, 1);
 			*c = S[0] * _ref->get__gi(0, 1) * _ref->get__gi(0, 0) + S[1] * _ref->get__gi(0, 1) * _ref->get__gi(1, 0) + S[2] * _ref->get__gi(1, 1) * _ref->get__gi(0, 0) + S[3] * _ref->get__gi(1, 1) * _ref->get__gi(1, 0);
 			*d = S[0] * _ref->get__gi(0, 1) * _ref->get__gi(0, 1) + S[1] * _ref->get__gi(0, 1) * _ref->get__gi(1, 1) + S[2] * _ref->get__gi(1, 1) * _ref->get__gi(0, 1) + S[3] * _ref->get__gi(1, 1) * _ref->get__gi(1, 1);
+			*a *= J;
+			*b *= J;
+			*c *= J;
+			*d *= J;
 
-			
 
 			/*S[0] = get_gij(0, 0) - _ref->get__gij(0, 0);
 			S[1] = get_gij(1, 0) - _ref->get__gij(1, 0);
