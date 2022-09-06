@@ -16,7 +16,7 @@ namespace KingOfMonsters {
 	
 	public class _buffer {
 	public:
-		double mem[14000];
+		double mem[18000];
 	};
 	public ref class buffer {
 	public:
@@ -52,6 +52,8 @@ namespace KingOfMonsters {
 		double* def = 0;
 		double* buf_z = 0;
 		double* buf_phi = 0;
+		double* buf_chi = 0;
+		double* buf_psi = 0;
 		double* buf_b = 0;
 		double* buf_D = 0;
 		double* buf_W = 0;
@@ -103,9 +105,11 @@ namespace KingOfMonsters {
 			def = &buf[2000];
 			buf_z = &buf[4000];
 			buf_phi = &buf[6000];
-			buf_b = &buf[8000];
-			buf_D = &buf[10000];
-			buf_W = &buf[12000];
+			buf_chi = &buf[8000];
+			buf_psi = &buf[10000];
+			buf_b = &buf[12000];
+			buf_D = &buf[14000];
+			buf_W = &buf[16000];
 		}
 		inline void set_node(const int &i, const int &s, const double val) {
 			node[___ll[i] + s] = val;
@@ -125,6 +129,14 @@ namespace KingOfMonsters {
 			//buf_z[i] = val;
 			memcpy(buf_phi, ptr, sizeof(double) * N);
 		}
+		inline void set_buf_chi(double* ptr, const int& N) {
+			//buf_z[i] = val;
+			memcpy(buf_chi, ptr, sizeof(double) * N);
+		}
+		inline void set_buf_psi(double* ptr, const int& N) {
+			//buf_z[i] = val;
+			memcpy(buf_psi, ptr, sizeof(double) * N);
+		}
 		inline void set_buf_W(double* ptr, const int& N) {
 			//buf_z[i] = val;
 			memcpy(buf_W, ptr, sizeof(double) * N);
@@ -135,6 +147,12 @@ namespace KingOfMonsters {
 		}
 		inline void set_buf_phi(const int& i, const double val) {
 			buf_phi[i] = val;
+		}
+		inline void set_buf_chi(const int& i, const double val) {
+			buf_chi[i] = val;
+		}
+		inline void set_buf_psi(const int& i, const double val) {
+			buf_psi[i] = val;
 		}
 		inline void set_def(const int &i, const int &s, const double &val) {
 			def[___ll[i]  + s] = val;
