@@ -390,6 +390,18 @@ namespace KingOfMonsters {
 	public ref class mySparse {
 	public:
 		_mySparse* dat = 0;
+		System::String^ tostring()
+		{
+			System::String^ str = gcnew System::String("");
+			for (int i = 0; i < dat->_mat[0].cols(); i++)
+			{
+				for (Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>::InnerIterator it(dat->_mat[0], i); it; ++it) 
+				{
+					str = str + it.row().ToString() + "," + it.col().ToString() + "," + it.value().ToString() + "\n";
+				}
+			}
+			return str;
+		}
 		void addResidual(myDoubleArray^ r, myDoubleArray^ ret)
 		{
 			ret->_arr->__v += this->dat->_mat[0].transpose() * r->_arr->__v;
@@ -1422,6 +1434,34 @@ namespace KingOfMonsters {
 			_dat = new std::vector<_Triplet<double>>();
 			_dat->clear();
 		}
+		System::String^ tostring()
+		{
+			System::String^ str = gcnew System::String("");
+
+			for (auto dd : *_dat)
+			{
+				str = str + dd.row().ToString() + "," + dd.col().ToString() + "," + dd.value().ToString()+"\n";
+			}
+			return str;
+		}
+		Eigen::SparseMatrix<double> _tosparse(int n)
+		{
+			Eigen::SparseMatrix<double> newmat(n, n);
+			for (auto tr : *_dat)
+			{
+				newmat.coeffRef(tr.row(), tr.col()) += tr.value();
+			}
+			return newmat;
+		}
+		mySparse^ __tosparse(int n)
+		{
+			auto mat = _tosparse(n);
+			mySparse^ ret = gcnew mySparse(n, n);
+			ret->dat->_mat.resize(1);
+			ret->dat->_mat[0] = mat;
+			return ret;
+		}
+		
 		Eigen::SparseMatrix<double> tosparse(int n, bool flip, bool both)
 		{
 			Eigen::SparseMatrix<double> newmat(n, n);

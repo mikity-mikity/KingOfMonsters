@@ -1885,15 +1885,15 @@ namespace KingOfMonsters {
 				}
 			}
 		}
-		void getMat(int64_t *index, std::vector<_Triplet<double>> *_dat)
-		{	
+		void getMat(int64_t* index, std::vector<_Triplet<double>>* _dat)
+		{
 			//mat->_mat[0].setZero();
 			//mat->_mat[0].reserve(_nNode * _nNode);
 			double* ptr = &_ref->__mat[0];
 			int64_t* ptr2 = &index[0];
 			_dat->clear();
 			_dat->reserve(_nNode * _nNode);
-			double norm=0;
+			double norm = 0;
 			for (int i = 0; i < _nNode; i++)
 			{
 				int64_t* ptr3 = &index[0];
@@ -1902,7 +1902,7 @@ namespace KingOfMonsters {
 					//int I = index[i];
 					//int J = index[j];
 					//mat->_mat[0].coeffRef(*ptr2, *ptr3) = *ptr;// _ref->__mat[i * _nNode + j];
-					_dat->push_back(_Triplet<double>(*ptr2, *ptr3, sc * _ref->__mat[i*_nNode+j]));
+					_dat->push_back(_Triplet<double>(*ptr2, *ptr3, sc * _ref->__mat[i * _nNode + j]));
 					norm += (sc * _ref->__mat[i * _nNode + j]) * (sc * _ref->__mat[i * _nNode + j]);
 					//if (i == j)
 					//	_dat->push_back(_Triplet<double>(*ptr2, *ptr3, _ref->d2[0][i]* _ref->d2[0][j]+ _ref->d2[3][i] * _ref->d2[3][j]));
@@ -1912,6 +1912,59 @@ namespace KingOfMonsters {
 				ptr2++;
 			}
 			norm = std::sqrt(norm);
+			//mat->_mat[0].setFromTriplets(_dat->begin(), _dat->end());
+		}
+		void getMat_Galerkin(int64_t* index, std::vector<_Triplet<double>>* _dat,int I,double w)
+		{
+
+			int kk[4]{ 3,2,1,0 };
+			int kk1[4]{ 1,1,0,0 };
+			int kk2[4]{ 1,0,1,0 };
+
+			int tt[4]{ 1,-1,-1,1 };
+			int ss[4]{ 0,0,1,1, };
+			int uu[4]{ 0,1,0,1, };
+			//_dat->clear();
+			_dat->reserve(_dat->size()+_nNode * _nNode);
+			for (int i = 0; i < _nNode; i++)
+			{
+				for (int j = 0; j < _nNode; j++)
+				{
+					double val = 0;
+					for (int k = 0; k < 4; k++)
+					{
+						val+= w*_ref->refDv*sc* tt[k] * (_ref->d2[kk[k]][i]-_ref->get__Gammaijk(kk1[k],kk2[k],0)*_ref->d1[0][i]-_ref->get__Gammaijk(kk1[k], kk2[k], 1) * _ref->d1[1][i]) *(_ref->d1[ss[k]][j] * _ref->d1[uu[k]][I]+ _ref->d1[ss[k]][I] * _ref->d1[uu[k]][j])*0.5;
+					}
+					_dat->push_back(_Triplet<double>(index[i], index[j], val));
+				}
+
+			}
+
+			//mat->_mat[0].setZero();
+			//mat->_mat[0].reserve(_nNode * _nNode);
+			/*double* ptr = &_ref->__mat[0];
+			int64_t* ptr2 = &index[0];
+			_dat->clear();
+			_dat->reserve(_nNode * _nNode);
+			double norm = 0;
+			for (int i = 0; i < _nNode; i++)
+			{
+				int64_t* ptr3 = &index[0];
+				for (int j = 0; j < _nNode; j++)
+				{
+					//int I = index[i];
+					//int J = index[j];
+					//mat->_mat[0].coeffRef(*ptr2, *ptr3) = *ptr;// _ref->__mat[i * _nNode + j];
+					_dat->push_back(_Triplet<double>(*ptr2, *ptr3, sc * _ref->__mat[i * _nNode + j]));
+					norm += (sc * _ref->__mat[i * _nNode + j]) * (sc * _ref->__mat[i * _nNode + j]);
+					//if (i == j)
+					//	_dat->push_back(_Triplet<double>(*ptr2, *ptr3, _ref->d2[0][i]* _ref->d2[0][j]+ _ref->d2[3][i] * _ref->d2[3][j]));
+					ptr++;
+					ptr3++;
+				}
+				ptr2++;
+			}
+			norm = std::sqrt(norm);*/
 			//mat->_mat[0].setFromTriplets(_dat->begin(), _dat->end());
 		}
 		void getMatG(int64_t* index, int64_t* index2,std::vector<_Triplet<double>>* _dat,double sc)
@@ -3494,6 +3547,9 @@ public:
 		}
 		void getmat(myIntArray^ index, workspace^ _dat) {
 			__mem->getMat(index->data(), _dat->_dat);
+		}
+		void getmat_Galerkin(myIntArray^ index, workspace^ _dat,int i,double w) {
+			__mem->getMat_Galerkin(index->data(), _dat->_dat,i,w);
 		}
 		void getmatG(myIntArray^ index, myIntArray^ index2, workspace^ _dat,double sc) {
 			__mem->getMatG(index->data(), index2->data(), _dat->_dat,sc);
