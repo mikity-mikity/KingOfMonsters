@@ -533,9 +533,15 @@ namespace KingOfMonsters {
 		double _SLOPE_z[2];
 		double* __grad_C_z = 0;
 		double* __grad_C_phi = 0;
+		double* __grad_C_chi = 0;
+		double* __grad_C_psi = 0;
 		double* __grad_D_z = 0;
 		double* __grad_D_phi = 0;
+		double* __grad_D_chi = 0;
+		double* __grad_D_psi = 0;
 		double _K_phi[2];
+		double _K_chi[2];
+		double _K_psi[2];
 		double* _K = 0;
 		double lo[2]{ 0,0, };
 		

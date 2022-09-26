@@ -1941,9 +1941,7 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 							}
 						}
 						//e[_ii].makeCompressed();
-
-					}
-				
+					}				
 			}
 		}
 		//e[_ii].makeCompressed();
