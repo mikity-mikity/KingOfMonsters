@@ -393,12 +393,19 @@ namespace KingOfMonsters {
 		System::String^ tostring()
 		{
 			System::String^ str = gcnew System::String("");
+			auto ee = Eigen::SparseMatrix<double,0,int64_t>(dat->_mat[0].transpose());
+			double ss = (dat->_mat[0] - ee).squaredNorm();
+			//double ss = ff.sum();
+			int count = 0;
 			for (int i = 0; i < dat->_mat[0].cols(); i++)
 			{
 				for (Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>::InnerIterator it(dat->_mat[0], i); it; ++it) 
 				{
-					str = str + it.row().ToString() + "," + it.col().ToString() + "," + it.value().ToString() + "\n";
+					str = str + it.row().ToString() + "," + it.col().ToString() + "," + it.value().ToString() +"::" +dat->_mat[0].coeffRef(it.col(), it.row()).ToString() + "\n";
+					count++;
+					if (count > 40)break;
 				}
+				if (count > 40)break;
 			}
 			return str;
 		}

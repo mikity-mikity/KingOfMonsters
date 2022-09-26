@@ -1931,7 +1931,13 @@ namespace KingOfMonsters {
 			int ss[4]{ 0,0,1,1, };
 			int uu[4]{ 0,1,0,1, };
 			//_dat->clear();
-			_dat->reserve(_dat->size()+_nNode * _nNode);
+			int II = -1;
+			for (int i = 0; i < _nNode; i++)
+			{
+				if (index[i] == I)II = i;
+			}
+			if (II == -1)return;
+			_dat->reserve(_dat->size() + _nNode * _nNode);
 			for (int i = 0; i < _nNode; i++)
 			{
 				for (int j = 0; j < _nNode; j++)
@@ -1939,7 +1945,7 @@ namespace KingOfMonsters {
 					double val = 0;
 					for (int k = 0; k < 4; k++)
 					{
-						val+= w*_ref->refDv*sc* tt[k] * (_ref->d2[kk[k]][i]-_ref->get__Gammaijk(kk1[k],kk2[k],0)*_ref->d1[0][i]-_ref->get__Gammaijk(kk1[k], kk2[k], 1) * _ref->d1[1][i]) *(_ref->d1[ss[k]][j] * _ref->d1[uu[k]][I]+ _ref->d1[ss[k]][I] * _ref->d1[uu[k]][j])*0.5;
+						val+= w*_ref->refDv*sc* tt[k] * (_ref->d2[kk[k]][i]-_ref->get__Gammaijk(kk1[k],kk2[k],0)*_ref->d1[0][i]-_ref->get__Gammaijk(kk1[k], kk2[k], 1) * _ref->d1[1][i]) *(_ref->d1[ss[k]][j] * _ref->d1[uu[k]][II]+ _ref->d1[ss[k]][II] * _ref->d1[uu[k]][j])*0.5;
 					}
 					_dat->push_back(_Triplet<double>(index[i], index[j], val));
 				}
