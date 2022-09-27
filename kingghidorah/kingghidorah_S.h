@@ -1930,6 +1930,12 @@ namespace KingOfMonsters {
 			int tt[4]{ 1,-1,-1,1 };
 			int ss[4]{ 0,0,1,1, };
 			int uu[4]{ 0,1,0,1, };
+			int II = -1;
+			for (int i = 0; i < _nNode; i++)
+			{
+				if (index[i] == I)II = i;
+			}
+			if (II == -1)return;
 			//_dat->clear();
 			int II = -1;
 			for (int i = 0; i < _nNode; i++)
