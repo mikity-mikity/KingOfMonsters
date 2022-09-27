@@ -1936,13 +1936,7 @@ namespace KingOfMonsters {
 				if (index[i] == I)II = i;
 			}
 			if (II == -1)return;
-			//_dat->clear();
-			int II = -1;
-			for (int i = 0; i < _nNode; i++)
-			{
-				if (index[i] == I)II = i;
-			}
-			if (II == -1)return;
+			
 			_dat->reserve(_dat->size() + _nNode * _nNode);
 			for (int i = 0; i < _nNode; i++)
 			{
