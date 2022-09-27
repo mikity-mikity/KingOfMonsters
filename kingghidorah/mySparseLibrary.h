@@ -2064,6 +2064,10 @@ namespace KingOfMonsters {
 			}
 			_dat = 0;
 		}
+		double check() {
+			return (_dat->_mat - _dat->_mat.transpose()).squaredNorm();
+
+		}
 		void scale(double sc)
 		{
 			_dat->_sc = sc;
