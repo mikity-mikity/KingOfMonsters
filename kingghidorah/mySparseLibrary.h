@@ -494,6 +494,10 @@ namespace KingOfMonsters {
 		void setZero() {
 			this->dat->_mat[0].setZero();
 		}
+		void setZero(int row)
+		{
+			this->dat->setzero(row);
+		}
 		void ofStack(mySparse^ A, mySparse^ B)
 		{
 			std::vector<Eigen::Triplet<double>> dat;
@@ -2065,7 +2069,7 @@ namespace KingOfMonsters {
 			_dat = 0;
 		}
 		double check() {
-			return (_dat->_mat - _dat->_mat.transpose()).squaredNorm();
+			return (_dat->_mat/* - _dat->_mat.transpose()*/).squaredNorm();
 
 		}
 		void scale(double sc)

@@ -1720,7 +1720,10 @@ void KingOfMonsters::_mySparse::mulright(Eigen::VectorXd& v, Eigen::VectorXd& re
 {
 	ret+=this->_mat[0] * v*sc;
 }
-		
+void KingOfMonsters::_mySparse::setzero(int row)
+{
+	this->_mat[0].prune([row] (int i, int j, float val) {return i != row; });
+}
 void KingOfMonsters::_mySparse::mulleft(Eigen::VectorXd& v, Eigen::VectorXd& ret, double sc)
 {
 	ret+=(v.transpose() * this->_mat[0]).transpose()*sc;

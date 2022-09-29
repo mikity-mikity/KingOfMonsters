@@ -209,7 +209,7 @@ namespace KingOfMonsters {
 		double mulboth(Eigen::VectorXd& u, Eigen::VectorXd& v);
 		void mulleft(Eigen::VectorXd& u, Eigen::VectorXd& ret, double sc);
 		void mulright(Eigen::VectorXd& u, Eigen::VectorXd& ret, double sc);
-
+		void setzero(int row);
 		static double computeeigen(_mySparse* i1, _mySparse* i2, _mySparse* f1, int64_t N);
 		static void project(_mySparse* i1, _mySparse* i2, _mySparse* f1, _myDoubleArray* v1, _myDoubleArray* v2, _myDoubleArray* _ret1, _myDoubleArray* _ret2);
 		_mySparse();
