@@ -409,6 +409,12 @@ namespace KingOfMonsters {
 			}
 			return str;
 		}
+		mySparse^ AtA() {
+			mySparse^ newMat = gcnew mySparse();
+			newMat->dat->_mat.resize(1);
+			newMat->dat->_mat[0] = this->dat->_mat[0].transpose() * this->dat->_mat[0];
+			return newMat;
+		}
 		void addResidual(myDoubleArray^ r, myDoubleArray^ ret)
 		{
 			ret->_arr->__v += this->dat->_mat[0].transpose() * r->_arr->__v;
@@ -422,6 +428,10 @@ namespace KingOfMonsters {
 			else {
 				this->dat->_dmat += m->dat->_mat[0];
 			}
+		}
+		void plus(mySparse^ m, double sc)
+		{
+				this->dat->_mat[0] += m->dat->_mat[0]*sc;
 		}
 		void multiply(myDoubleArray^ v, myDoubleArray^ ret)
 		{
@@ -673,10 +683,6 @@ namespace KingOfMonsters {
 			auto ret = gcnew mySparse(N, M);
 			ret->dat->_mat[0] = this->dat->_mat[0].block(i, j, N, M);
 			return ret;
-		}
-		void plus(mySparse^ B, double sc)
-		{
-			this->dat->_mat[0] = this->dat->_mat[0] + B->dat->_mat[0]*sc;
 		}
 		void plus(mySparseVector^ vec, double sc)
 		{
