@@ -846,6 +846,16 @@ namespace KingOfMonsters {
 			//return ret;
 		}
 
+		void _ofCBtAB(mySparse^ C,mySparse^ A, mySparse^ B, myDoubleArray^ singularvalues)
+		{
+			//pin_ptr<double> ptr = &b[0];
+			//singularvalues = gcnew myDoubleArray(0);
+			A->dat->_ofCBtAB(B->dat, C->dat, this->dat,singularvalues->_arr);
+			//array<double>^ ret = gcnew array<double>(_ret.rows());
+			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
+			//ptr = nullptr;
+			//return ret;
+		}
 		void mult(myDoubleArray^ a, myDoubleArray^ b)
 		{
 			b->_arr->__v = this->dat->_dmat * a->_arr->__v;

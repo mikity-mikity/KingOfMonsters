@@ -2161,7 +2161,7 @@ void KingOfMonsters::_mySparse::_ofAtB(_mySparse* B, _mySparse* C)
 	//tmp = q * B->_mat[0];
 	//C->_dmat = tmp.transpose() * tmp;
 }*/
-void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret)
+void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySparse* C,Eigen::VectorXd* ret)
 {
 	Eigen::MatrixXd D;
 
@@ -2178,7 +2178,7 @@ void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySpa
 
 
 	//C->_dmat.resize(nn, nn);
-	C->_dmat.setZero(nn,nn);
+	C->_dmat.setZero(nn, nn);
 	//C->_tmp.setZero(nn,nn);
 
 	//int64_t mt = omp_get_max_threads();
@@ -2189,28 +2189,84 @@ void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySpa
 
 	D.resize(nn, kk);
 	int64_t ss = kk / _mt / 2;
-	
+
 #pragma omp parallel for schedule(dynamic,4)
 	for (int64_t ii = 0; ii < kk; ii += ss)
 	{
-		int64_t S = ii;
-		int64_t E = ii + ss;
-		if (E >= kk)E = kk;
-		D.middleCols(S, E - S).noalias() = left * mid.middleCols(S, E - S);
+		int64_t _S = ii;
+		int64_t _E = ii + ss;
+		if (_E >= kk)_E = kk;
+		D.middleCols(_S, _E - _S).noalias() = left * mid.middleCols(_S, _E - _S);
 	}
 	//D.noalias() = left * mid;
 	ss = nn / _mt / 2;
 #pragma omp parallel for schedule(dynamic,4)
 	for (int64_t ii = 0; ii < nn; ii += ss)
 	{
-		int64_t S = ii;
-		int64_t E = ii + ss;
-		if (E >= nn)E = nn;
-		C->_dmat.middleCols(S, E - S).noalias() = D * right.middleCols(S, E - S);
+		int64_t _S = ii;
+		int64_t _E = ii + ss;
+		if (_E >= nn)_E = nn;
+		C->_dmat.middleCols(_S, _E - _S).noalias() = D * right.middleCols(_S, _E - _S);
 	}
-	//C_dmat.noalias() = D * right;
-	//Eigen::Map<Eigen::VectorXd> b(ptr, N);
-	*ret = D * *b;
+
+
+	*ret = D.transpose() * *b;
+
+}
+void KingOfMonsters::_mySparse::_ofCBtAB(_mySparse* B, _mySparse* C, _mySparse* D, _myDoubleArray* singularvalues)
+{
+	Eigen::MatrixXd E;
+
+	int64_t nn = B->_mat[0].cols();
+	int64_t kk = _dmat.cols();// __c;
+
+
+
+	//C->__r = nn;
+	//C->__c = nn;
+	//C->_dmat.resize(nn, mm);
+	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
+	//Eigen::Map<Eigen::MatrixXd> C_dmat(C->___dmat, nn, nn);
+
+
+	//C->_dmat.resize(nn, nn);
+	D->_dmat.setZero(nn, nn);
+	//C->_tmp.setZero(nn,nn);
+
+	//int64_t mt = omp_get_max_threads();
+
+	auto left = B->_mat[0].transpose();
+	auto mid = _dmat;
+	auto right = B->_mat[0];
+
+	E.resize(nn, kk);
+	int64_t ss = kk / _mt / 2;
+
+#pragma omp parallel for schedule(dynamic,4)
+	for (int64_t ii = 0; ii < kk; ii += ss)
+	{
+		int64_t _S = ii;
+		int64_t _E = ii + ss;
+		if (_E >= kk)_E = kk;
+		E.middleCols(_S, _E - _S).noalias() = left * mid.middleCols(_S, _E - _S);
+	}
+	//D.noalias() = left * mid;
+	ss = nn / _mt / 2;
+#pragma omp parallel for schedule(dynamic,4)
+	for (int64_t ii = 0; ii < nn; ii += ss)
+	{
+		int64_t _S = ii;
+		int64_t _E = ii + ss;
+		if (_E >= nn)_E = nn;
+		D->_dmat.middleCols(_S, _E - _S).noalias() = E * right.middleCols(_S, _E - _S);
+	}
+	D->_dmat = C->_dmat * D->_dmat;
+
+	Eigen::EigenSolver<Eigen::MatrixXd> eigen;
+	eigen.compute(D->_dmat);
+
+	singularvalues->__v.resize(D->_dmat.rows());
+	singularvalues->__v = eigen.eigenvalues().real();
 }
 
 void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)

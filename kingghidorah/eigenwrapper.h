@@ -188,7 +188,7 @@ namespace KingOfMonsters {
 		vector<vector<double>> _coeff;
 		std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>> _mat;
 		Eigen::MatrixXd _dmat;
-	
+
 		vector<Eigen::VectorXd> coeff;
 	private:
 		int64_t space = 0;
@@ -265,6 +265,7 @@ namespace KingOfMonsters {
 		void ofAtB(_mySparse* B, bool sparse);
 		void _ofAtB(_mySparse* B, _mySparse* C);
 		void _ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret);
+		void _ofCBtAB(_mySparse* B, _mySparse* C, _mySparse* D, _myDoubleArray* singularvalues);
 		//void _ofBtAB_qr(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret);
 		Eigen::VectorXd Atb(double* ptr, int64_t N);
 		Eigen::VectorXd _Atb(double* ptr, int64_t N);
