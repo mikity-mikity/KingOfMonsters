@@ -2213,7 +2213,7 @@ void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySpa
 	*ret = D.transpose() * *b;
 
 }
-void KingOfMonsters::_mySparse::_ofCBtAB(_mySparse* B, _mySparse* C, _mySparse* D, _myDoubleArray* singularvalues)
+void KingOfMonsters::_mySparse::_ofCBtAB(_mySparse* B, _mySparse* C, _mySparse* D)
 {
 	Eigen::MatrixXd E;
 
@@ -2262,11 +2262,11 @@ void KingOfMonsters::_mySparse::_ofCBtAB(_mySparse* B, _mySparse* C, _mySparse* 
 	}
 	D->_dmat = C->_dmat * D->_dmat;
 
-	Eigen::EigenSolver<Eigen::MatrixXd> eigen;
-	eigen.compute(D->_dmat);
+	//Eigen::EigenSolver<Eigen::MatrixXd> eigen;
+	//eigen.compute(D->_dmat);
 
-	singularvalues->__v.resize(D->_dmat.rows());
-	singularvalues->__v = eigen.eigenvalues().real();
+	//singularvalues->__v.resize(D->_dmat.rows());
+	//singularvalues->__v = eigen.eigenvalues().real();
 }
 
 void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)

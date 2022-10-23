@@ -415,6 +415,13 @@ namespace KingOfMonsters {
 			newMat->dat->_mat[0] = this->dat->_mat[0].transpose() * this->dat->_mat[0];
 			return newMat;
 		}
+		mySparse^ AtBC(mySparse ^B,mySparse ^C)
+		{
+			mySparse^ newMat = gcnew mySparse();
+			newMat->dat->_mat.resize(1);
+			newMat->dat->_mat[0] = this->dat->_mat[0].transpose() * B->dat->_mat[0]*C->dat->_mat[0];
+			return newMat;
+		}
 		void addResidual(myDoubleArray^ r, myDoubleArray^ ret)
 		{
 			ret->_arr->__v += this->dat->_mat[0].transpose() * r->_arr->__v;
@@ -845,12 +852,16 @@ namespace KingOfMonsters {
 			//ptr = nullptr;
 			//return ret;
 		}
-
-		void _ofCBtAB(mySparse^ C,mySparse^ A, mySparse^ B, myDoubleArray^ singularvalues)
+		double _trace()
+		{
+			return this->dat->_dmat.trace();
+		}
+		void _ofCBtAB(mySparse^ C,mySparse^ A, mySparse^ B)
 		{
 			//pin_ptr<double> ptr = &b[0];
 			//singularvalues = gcnew myDoubleArray(0);
-			A->dat->_ofCBtAB(B->dat, C->dat, this->dat,singularvalues->_arr);
+			A->dat->_ofCBtAB(B->dat, C->dat, this->dat);
+			
 			//array<double>^ ret = gcnew array<double>(_ret.rows());
 			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
 			//ptr = nullptr;
@@ -863,6 +874,14 @@ namespace KingOfMonsters {
 		void mult(mySparse^ a, mySparse^ b)
 		{
 			b->dat->_dmat = this->dat->_dmat * a->dat->_dmat;
+		}
+		void _mult(myDoubleArray^ a, myDoubleArray^ b)
+		{
+			b->_arr->__v = this->dat->_mat[0] * a->_arr->__v;
+		}
+		void _mult(mySparse^ a, mySparse^ b)
+		{
+			b->dat->_dmat = this->dat->_mat[0] * a->dat->_dmat;
 		}
 
 		void addemptyrow(Int64 ii) {
@@ -1004,25 +1023,45 @@ namespace KingOfMonsters {
 			if (_str == "")_str = "success";
 			System::Console::WriteLine(gcnew System::String(_str.c_str()));
 		}
-		void _solve0_lu_cpu(myDoubleArray^ rhs, myDoubleArray^ ret, int ordering, bool meh) {
+		void _solve0_lu_cpu(myDoubleArray^ rhs, myDoubleArray^ ret, int ordering, bool meh,double nnn) {
+			mySparse^ m = nullptr;
+			myDoubleArray^ v = nullptr;
 			if (meh) {
-				rhs->_arr->__v = this->dat->_mat[0].transpose() * rhs->_arr->__v;
-				this->dat->_mat[0] = this->dat->_mat[0].transpose() * this->dat->_mat[0];
+
+				//rhs->_arr->__v = this->dat->_mat[0].transpose() * rhs->_arr->__v;
+				
+				Eigen::VectorXd _v = this->dat->_mat[0].transpose() * rhs->_arr->__v;
+				Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t> _m = this->dat->_mat[0].transpose() * this->dat->_mat[0];
+
+				//this->dat->_mat[0] = this->dat->_mat[0].transpose() * this->dat->_mat[0];
+				m = gcnew mySparse(_m.rows(), _m.cols());
+				m->dat->_mat[0] = _m;
+				v = gcnew myDoubleArray(_v.size());
+				v->_arr->__v = _v;
+			}
+			else {
+				m = this;
+				v = rhs;
 			}
 			double nn = 0.00000000001;
 			bool allocerr = false;
 			std::string _str = "";
+			if (nnn != 0)
+			{
+				m->dat->addsmallidentity(nnn, true, false);
+				nn = nnn;
+			}
 
 			for (int i = 0; i < 10; i++)
 			{
-				std::string str = dat->_solve0_lu_cpu(&rhs->_arr->__v, &ret->_arr->__v, ordering);
+				std::string str = m->dat->_solve0_lu_cpu(&v->_arr->__v, &ret->_arr->__v, ordering);
 
 				//lu.compute(this->dat->_mat[0]);
 				_str += str;
 				if (str.find("SUCCESS") == string::npos)
 				{
 					nn *= 100;
-					this->dat->addsmallidentity(nn, true, false);
+					m->dat->addsmallidentity(nn, true, false);
 				}
 				else {
 					break;
