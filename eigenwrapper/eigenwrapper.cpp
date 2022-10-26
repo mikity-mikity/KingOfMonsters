@@ -2210,7 +2210,7 @@ void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySpa
 	}
 
 
-	*ret = D.transpose() * *b;
+	*ret = D * *b;
 
 }
 void KingOfMonsters::_mySparse::_ofCBtAB(_mySparse* B, _mySparse* C, _mySparse* D)
