@@ -515,6 +515,25 @@ namespace KingOfMonsters {
 		{
 			this->dat->setzero(row);
 		}
+		void ofStack(System::Collections::Generic::List<mySparse^> ^jacobians)
+		{
+			int M = this->dat->_mat[0].rows();
+			int N = this->dat->_mat[0].cols();
+			for (int i = 0; i < jacobians->Count; i++)
+			{
+				M += jacobians[i]->dat->_mat[0].rows();
+			}
+			this->dat->_dmat.resize(M, N);
+
+			this->dat->_dmat.topRows(this->dat->_mat[0].rows()) = this->dat->_mat[0];
+			M = this->dat->_mat[0].rows();
+			for (int i = 0; i < jacobians->Count; i++)
+			{
+				this->dat->_dmat.middleRows(M, jacobians[i]->dat->_mat[0].rows()) = jacobians[i]->dat->_mat[0];
+				M += jacobians[i]->dat->_mat[0].rows();
+			}
+			return;
+		}
 		void ofStack(mySparse^ A, mySparse^ B)
 		{
 			std::vector<Eigen::Triplet<double>> dat;
@@ -851,6 +870,10 @@ namespace KingOfMonsters {
 			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
 			//ptr = nullptr;
 			//return ret;
+		}
+		void _ofBtAB2(myCuda^ cuda,mySparse^ A, mySparse^ B, mySparse^ Q, mySparse^ R)
+		{
+			A->dat->_ofBtAB2(B->dat, this->dat,Q->dat,R->dat,cuda->cuda());
 		}
 		double _trace()
 		{

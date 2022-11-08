@@ -67,12 +67,15 @@ namespace KingOfMonsters {
 
 		//cublasHandle_t cublas_handle[MAXDEVICE];
 		double* __mgM[MAXDEVICE];
+		double* __mgM2[MAXDEVICE];
 		double* __mgrhs[MAXDEVICE];
 		//double* __mgM2 = 0;
 		//double* __mgrhs2 = 0;
 		double* __mgC[MAXDEVICE];
 		double* __work[MAXDEVICE];
 		int64_t work_size[MAXDEVICE];
+		double* __work2[MAXDEVICE];
+		int64_t work_size2[MAXDEVICE];
 		//double* _array_d_A[MAXDEVICE];
 		//double* _array_d_B[MAXDEVICE];
 		//double* _array_d_work[MAXDEVICE];
@@ -265,6 +268,7 @@ namespace KingOfMonsters {
 		void ofAtB(_mySparse* B, bool sparse);
 		void _ofAtB(_mySparse* B, _mySparse* C);
 		void _ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret);
+		void _ofBtAB2(_mySparse* B, _mySparse* C, _mySparse* Q, _mySparse* R, KingOfMonsters::cuda* cuda);
 		void _ofCBtAB(_mySparse* B, _mySparse* C, _mySparse* D);
 		//void _ofBtAB_qr(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret);
 		Eigen::VectorXd Atb(double* ptr, int64_t N);
@@ -287,6 +291,7 @@ namespace KingOfMonsters {
 		void solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void _solve0_lu_cg(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		std::string _solve0_gpu(KingOfMonsters::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int64_t device);
+		std::string _QR_gpu(KingOfMonsters::cuda* cuda, Eigen::MatrixXd* Q, Eigen::MatrixXd* R, int64_t device);
 		std::string _solveLU_gpu(KingOfMonsters::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int64_t device);
 		Eigen::MatrixXd _solve0(_myLLT* LLT, _mySparse* rhs);
 		void _solve0_gpu(KingOfMonsters::cuda* cuda, _mySparse* rhs, _mySparse* ret);
