@@ -452,9 +452,16 @@ namespace KingOfMonsters {
 		{
 			ret->_arr->__v = v->_arr->__v.transpose() * this->dat->_mat[0];
 		}
-		void ofAtAsimple(mySparse^ m)
+		void ofAtAsimple(mySparse^ m,bool sparse)
 		{
-			this->dat->_dmat = m->dat->_mat[0].transpose() * m->dat->_mat[0];
+			if (sparse)
+			{
+				this->dat->_mat.resize(1);
+				this->dat->_mat[0] = m->dat->_mat[0].transpose() * m->dat->_mat[0];
+			}
+			else {
+				this->dat->_dmat = m->dat->_mat[0].transpose() * m->dat->_mat[0];
+			}
 		}
 
 		mySparse^ computeKernel()
@@ -878,6 +885,10 @@ namespace KingOfMonsters {
 		void _mult(myDoubleArray^ a, myDoubleArray^ b)
 		{
 			b->_arr->__v = this->dat->_mat[0] * a->_arr->__v;
+		}
+		void _transposemultplus(myDoubleArray^ a, myDoubleArray^ b)
+		{
+			b->_arr->__v += this->dat->_mat[0].transpose() * a->_arr->__v;
 		}
 		void _mult(mySparse^ a, mySparse^ b)
 		{
