@@ -2192,7 +2192,8 @@ void KingOfMonsters::_mySparse::_ofAtB(_mySparse* B, _mySparse* C)
 void KingOfMonsters::_mySparse::_ofBtAB2(_mySparse* B, _mySparse* C, _mySparse* Q, _mySparse* R, KingOfMonsters::cuda* cuda)
 {
 	C->_dmat = this->_dmat;
-	this->_QR_gpu(cuda, &(Q->_dmat), &(R->_dmat), cuda->fastest());
+	//this->_QR_gpu(cuda, &(Q->_dmat), &(R->_dmat), cuda->fastest());
+	this->_QR_cpu(&(Q->_dmat), &(R->_dmat));
 	C->_dmat -= Q->_dmat * R->_dmat;
 
 	/*Eigen::MatrixXd D;
@@ -2316,6 +2317,51 @@ void KingOfMonsters::_mySparse::_ofCBtAB(_mySparse* B, _mySparse* C, _mySparse* 
 	}
 	D->_dmat = C->_dmat * D->_dmat;
 
+	//Eigen::EigenSolver<Eigen::MatrixXd> eigen;
+	//eigen.compute(D->_dmat);
+
+	//singularvalues->__v.resize(D->_dmat.rows());
+	//singularvalues->__v = eigen.eigenvalues().real();
+}
+void KingOfMonsters::_mySparse::_ofCBtAB2(_mySparse* B, _mySparse* C, _mySparse* D, _mySparse* E)//this:invZ, C:invW, B:Jx, E:JX, D:result
+{
+	Eigen::MatrixXd F;
+
+	int64_t nn = B->_mat[0].rows();
+	//int64_t kk = _dmat.cols();// __c;
+
+
+
+	D->_dmat.setZero(nn, nn);
+	D->_dmat = B->_mat[0] * C->_dmat * B->_mat[0].transpose() * E->_mat[0] * this->_dmat * E->_mat[0].transpose();
+
+/*	auto left = B->_mat[0].transpose();
+	auto mid = _dmat;
+	auto right = B->_mat[0];
+
+	F.resize(nn, kk);
+	int64_t ss = kk / _mt / 2;
+
+#pragma omp parallel for schedule(dynamic,4)
+	for (int64_t ii = 0; ii < kk; ii += ss)
+	{
+		int64_t _S = ii;
+		int64_t _E = ii + ss;
+		if (_E >= kk)_E = kk;
+		F.middleCols(_S, _E - _S).noalias() = left * mid.middleCols(_S, _E - _S);
+	}
+	//D.noalias() = left * mid;
+	ss = nn / _mt / 2;
+#pragma omp parallel for schedule(dynamic,4)
+	for (int64_t ii = 0; ii < nn; ii += ss)
+	{
+		int64_t _S = ii;
+		int64_t _E = ii + ss;
+		if (_E >= nn)_E = nn;
+		D->_dmat.middleCols(_S, _E - _S).noalias() = F * right.middleCols(_S, _E - _S);
+	}
+	D->_dmat = C->_dmat * D->_dmat;
+	*/
 	//Eigen::EigenSolver<Eigen::MatrixXd> eigen;
 	//eigen.compute(D->_dmat);
 
@@ -2816,6 +2862,28 @@ void  KingOfMonsters::_mySparse::project(_mySparse* i1/*JxxJ*/, _mySparse* i2/*J
 	_ret1->__v = ret;
 	_ret2->__v = ret2;
 	
+}
+std::string KingOfMonsters::_mySparse::_QR_cpu(Eigen::MatrixXd* Q, Eigen::MatrixXd* R) {
+
+	std::stringstream ss;
+
+	//dmat is a column-major matrix
+	//CUDA also uses a column-major format
+	//this->_freeze();
+	int64_t M = this->_dmat.rows();
+	int64_t N = this->_dmat.cols();
+
+
+	Q->resize(M, N);
+	R->resize(N, N);
+	Eigen::ColPivHouseholderQR<Eigen::MatrixXd> qr;
+	qr.compute(this->_dmat);
+	Eigen::MatrixXd thinQ = qr.householderQ().setLength(qr.nonzeroPivots());
+	*Q = qr.householderQ();
+	*R = qr.matrixR();
+
+	
+	return ss.str();
 }
 std::string KingOfMonsters::_mySparse::_QR_gpu(KingOfMonsters::cuda* cuda, Eigen::MatrixXd* Q, Eigen::MatrixXd* R, int64_t device) {
 

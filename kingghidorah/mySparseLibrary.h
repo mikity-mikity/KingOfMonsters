@@ -886,12 +886,23 @@ namespace KingOfMonsters {
 		{
 			return this->dat->_dmat.trace();
 		}
-		void _ofCBtAB(mySparse^ C,mySparse^ A, mySparse^ B)
+		void _ofCBtAB(mySparse^ C, mySparse^ A, mySparse^ B)
 		{
 			//pin_ptr<double> ptr = &b[0];
 			//singularvalues = gcnew myDoubleArray(0);
 			A->dat->_ofCBtAB(B->dat, C->dat, this->dat);
-			
+
+			//array<double>^ ret = gcnew array<double>(_ret.rows());
+			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
+			//ptr = nullptr;
+			//return ret;
+		}
+		void _ofCBtAB(mySparse^ C, mySparse^ A, mySparse^ B, mySparse^ D)
+		{
+			//pin_ptr<double> ptr = &b[0];
+			//singularvalues = gcnew myDoubleArray(0);
+			A->dat->_ofCBtAB2(B->dat, C->dat, this->dat, D->dat);
+
 			//array<double>^ ret = gcnew array<double>(_ret.rows());
 			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
 			//ptr = nullptr;
