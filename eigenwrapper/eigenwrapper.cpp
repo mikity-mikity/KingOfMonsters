@@ -2885,7 +2885,16 @@ std::string KingOfMonsters::_mySparse::_QR_cpu(Eigen::MatrixXd* Q, Eigen::Matrix
 	
 	return ss.str();
 }
-std::string KingOfMonsters::_mySparse::_QR_gpu(KingOfMonsters::cuda* cuda, Eigen::MatrixXd* Q, Eigen::MatrixXd* R, int64_t device) {
+int KingOfMonsters::_mySparse::_QR_cpu(Eigen::MatrixXd* Q, Eigen::MatrixXd* R) {
+
+	int64_t M = this->_dmat.rows();
+	int64_t N = this->_dmat.cols();
+	Eigen::FullPivHouseholderQR<Eigen::MatrixXd> qr(this->_dmat);
+
+	*Q = qr.matrixQ();
+	return qr.rank();
+}
+int KingOfMonsters::_mySparse::_QR_gpu(KingOfMonsters::cuda* cuda, Eigen::MatrixXd* Q, Eigen::MatrixXd* R, int64_t device) {
 
 	std::stringstream ss;
 	
@@ -2898,7 +2907,7 @@ std::string KingOfMonsters::_mySparse::_QR_gpu(KingOfMonsters::cuda* cuda, Eigen
 
 	if (!cuda->valid())
 	{
-		return "";
+		return 0;
 	}
 	cudaSetDevice(device);
 	auto solver = cuda->solver(device, 0);
@@ -2931,8 +2940,8 @@ std::string KingOfMonsters::_mySparse::_QR_gpu(KingOfMonsters::cuda* cuda, Eigen
 	int devInfo_on_cpu;
 	cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
     err = cudaMemcpy( _dmat.data(), gpu_matrix, M * N * sizeof(double), cudaMemcpyDeviceToHost);
-	*Q = _dmat.triangularView<Eigen::Lower>();
-	*R = (_dmat.topRows(N).triangularView<Eigen::Upper>());
+	//*Q = _dmat.triangularView<Eigen::Lower>();
+	//*R = (_dmat.topRows(N).triangularView<Eigen::Upper>());
 	//Q->diagonal().setOnes();
 	
 	//cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int64_t), cudaMemcpyDeviceToHost);
@@ -2970,7 +2979,7 @@ std::string KingOfMonsters::_mySparse::_QR_gpu(KingOfMonsters::cuda* cuda, Eigen
 	/*ss << "size()" << ret->size();
 	ss << "norm" << ret->norm();
 	//cudaStreamDestroy(stream);*/
-	return ss.str();
+	return 0;
 }
 std::string KingOfMonsters::_mySparse::_solveLU_gpu(KingOfMonsters::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int64_t device) {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);

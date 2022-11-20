@@ -882,6 +882,10 @@ namespace KingOfMonsters {
 		{
 			A->dat->_ofBtAB2(B->dat, this->dat,Q->dat,R->dat,cuda->cuda());
 		}
+		int _QR_cpu(mySparse^ Q, mySparse^ R)
+		{
+			return this->dat->_QR_cpu(&Q->dat->_dmat, &R->dat->_dmat);
+		}
 		double _trace()
 		{
 			return this->dat->_dmat.trace();
@@ -911,6 +915,25 @@ namespace KingOfMonsters {
 		void mult(myDoubleArray^ a, myDoubleArray^ b)
 		{
 			b->_arr->__v = this->dat->_dmat * a->_arr->__v;
+		}
+		void enabledense()
+		{
+			this->dat->_dmat.resize(this->dat->_mat[0].rows(), this->dat->_mat[0].cols());
+			this->dat->_dmat.setZero();
+		}
+		void plusdyad(myDoubleArray^ a, myDoubleArray^ b, double sc,int N,array<int> ^index)
+		{
+			//int nnz = this->dat->_mat[0].nonZeros();
+			//nnz=nnz / 100000;
+			//nnz = (nnz + 1) * 100000;
+			//this->dat->_mat[0].resizeNonZeros(nnz);
+			for (int i = 0; i < N; i++)
+			{
+				for (int j = 0; j < N; j++)
+				{
+					this->dat->_dmat(index[i], index[j]) += sc*a->_arr->__v(i)* a->_arr->__v(j);
+				}
+			}
 		}
 		void mult(mySparse^ a, mySparse^ b)
 		{
