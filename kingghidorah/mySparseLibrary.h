@@ -878,14 +878,7 @@ namespace KingOfMonsters {
 			//ptr = nullptr;
 			//return ret;
 		}
-		void _ofBtAB2(myCuda^ cuda,mySparse^ A, mySparse^ B, mySparse^ Q, mySparse^ R)
-		{
-			A->dat->_ofBtAB2(B->dat, this->dat,Q->dat,R->dat,cuda->cuda());
-		}
-		int _QR_cpu(mySparse^ Q, mySparse^ R)
-		{
-			return this->dat->_QR_cpu(&Q->dat->_dmat, &R->dat->_dmat);
-		}
+	
 		double _trace()
 		{
 			return this->dat->_dmat.trace();
