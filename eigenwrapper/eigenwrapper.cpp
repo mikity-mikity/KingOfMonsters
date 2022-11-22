@@ -1571,6 +1571,38 @@ void KingOfMonsters::_mySparse::_shrink(int64_t M, bool sparse, bool dense)
 
 	}*/
 }
+void KingOfMonsters::_mySparse::_shrinkCols(int64_t M, bool sparse, bool dense)
+{
+	if (true)
+	{
+		if (_mat.size() >= 1)
+		{
+			//if ((_mat[0].rows() == _dmat.rows()) && (_mat[0].cols() == _dmat.cols()))
+			{
+				_mat[0] = _mat[0].leftCols(M);
+			}
+		}
+	}
+	if (dense)
+	{
+		//__r = M;
+		//__c = M;
+		//Eigen::Map<Eigen::MatrixXd> map1(___dmat, __r, __c);
+		_dmat.resize(_dmat.rows(), M);
+		_dmat = _mat[0];
+		//_resize(M, M);
+		//_dmat.conservativeResize(M, M);
+	}
+	/*int64_t count = 0;
+	int64_t count2 = 0;
+
+	for (int64_t i = 0; i < M; i++)
+	{
+		if (_mat[0].coeff(i, i) < 0)count++;
+		if(dense)if (_dmat.coeff(i, i) < 0)count2++;
+
+	}*/
+}
 void KingOfMonsters::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic,int64_t>& perm, Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic,int64_t>& perm2)
 {
 	int64_t nn = _dmat.rows();// __r;
@@ -1598,6 +1630,7 @@ void KingOfMonsters::_mySparse::_shrink(int64_t M, int64_t N)
 	}
 	//_dmat.conservativeResize(M, N);//;// _dmat.topLeftCorner(M, N);// f;
 }
+
 int64_t KingOfMonsters::_mySparse::rows() {
 	int64_t _ret = 0;
 	for (int64_t ii = 0; ii < _nt; ii++)
@@ -2288,12 +2321,36 @@ void KingOfMonsters::_mySparse::_ofCBtAB2(_mySparse* B, _mySparse* C, _mySparse*
 	Eigen::MatrixXd F;
 
 	int64_t nn = B->_mat[0].rows();
+	
+	/*Eigen::SparseMatrix<double> I(nn, nn);
+	I.setIdentity();
+
+	D->_dmat=B->_mat[0].transpose()* C->_dmat* B->_mat[0] * E->_mat[0].transpose()* this->_dmat* E->_mat[0];
+	*/
+	int64_t mm = B->_mat[0].cols();
+	int64_t kk = E->_mat[0].cols();
 	//int64_t kk = _dmat.cols();// __c;
 
 
 
-	D->_dmat.setZero(nn, nn);
-	D->_dmat = B->_mat[0] * C->_dmat * B->_mat[0].transpose() * E->_mat[0] * this->_dmat * E->_mat[0].transpose();
+
+	D->_dmat.setZero(mm+kk, mm+kk);
+	Eigen::SparseMatrix<double> I(nn, nn);
+	I.setIdentity();
+	I *= 0.0000000000001;
+ 	Eigen::MatrixXd ii = (I+B->_mat[0] * B->_mat[0].transpose()+ E->_mat[0] * E->_mat[0].transpose()).toDense().inverse();
+
+	D->_dmat.topLeftCorner(mm, mm) = B->_mat[0].transpose() * ii * B->_mat[0];
+	D->_dmat.bottomRightCorner(kk, kk) = E->_mat[0].transpose() * ii * E->_mat[0];
+
+	D->_dmat.topRightCorner(mm, kk) = B->_mat[0].transpose() * ii * E->_mat[0];
+	D->_dmat.bottomLeftCorner(kk, mm) = E->_mat[0].transpose() * ii * B->_mat[0];
+	Eigen::SparseMatrix<double> I2(mm+kk, mm+kk);
+	I2.setIdentity();
+	D->_dmat = I2 - D->_dmat;
+	
+
+	//D->_dmat = (B->_mat[0] * this->_dmat* B->_mat[0].transpose()*E->_mat[0] * C->_dmat * E->_mat[0].transpose());
 
 /*	auto left = B->_mat[0].transpose();
 	auto mid = _dmat;

@@ -182,6 +182,11 @@ namespace KingOfMonsters {
 			}*/
 			_N = N;
 		}
+		void split(int N,myDoubleArray ^ ret)
+		{
+			ret->_arr->__v = this->_arr->__v.bottomRows(this->_arr->__v.size() - N);
+			this->_arr->__v = this->_arr->__v.topRows(N);
+		}
 		void reset(Int64 N)
 		{
 			_N = N;
@@ -831,6 +836,10 @@ namespace KingOfMonsters {
 		{
 			dat->_shrink(M, sparse, dense);
 		}
+		void _shrinkCols(Int64 M, bool sparse, bool dense)
+		{
+			dat->_shrinkCols(M, sparse, dense);
+		}
 		void _permute(myPermutation^ p, bool sparse, bool dense)
 		{
 			dat->_permute(p->p->perm, sparse, dense);
@@ -894,7 +903,7 @@ namespace KingOfMonsters {
 			//ptr = nullptr;
 			//return ret;
 		}
-		void _ofCBtAB(mySparse^ C, mySparse^ A, mySparse^ B, mySparse^ D)
+		void _ofCBtAB2(mySparse^ C, mySparse^ A, mySparse^ B, mySparse^ D)
 		{
 			//pin_ptr<double> ptr = &b[0];
 			//singularvalues = gcnew myDoubleArray(0);
@@ -944,7 +953,10 @@ namespace KingOfMonsters {
 		{
 			b->dat->_dmat = this->dat->_mat[0] * a->dat->_dmat;
 		}
-
+		void _mult_dense(myDoubleArray^ a, myDoubleArray^ ret)
+		{
+			ret->_arr->__v = a->_arr->__v.transpose() * this->dat->_dmat;
+		}
 		void addemptyrow(Int64 ii) {
 			dat->addemptyrow(ii);
 		}

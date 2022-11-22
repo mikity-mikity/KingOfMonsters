@@ -237,6 +237,7 @@ namespace KingOfMonsters {
 		void _permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, int64_t>& perm, bool sparse, bool dense);
 		void _permuteCols(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, int64_t>& perm, bool sparse, bool dense);
 		void _shrink(int64_t M, bool sparse, bool dense);
+		void _shrinkCols(int64_t M, bool sparse, bool dense);
 		void _permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, int64_t>& perm, Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, int64_t>& perm2);
 		void _shrink(int64_t M, int64_t N);
 		Eigen::VectorXd get_coeff(int64_t ii);
