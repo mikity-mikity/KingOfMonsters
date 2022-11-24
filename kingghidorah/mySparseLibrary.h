@@ -923,17 +923,17 @@ namespace KingOfMonsters {
 			this->dat->_dmat.resize(this->dat->_mat[0].rows(), this->dat->_mat[0].cols());
 			this->dat->_dmat.setZero();
 		}
-		void plusdyad(myDoubleArray^ a, myDoubleArray^ b, double sc,int N,array<int> ^index)
+		void makePattern()
 		{
-			//int nnz = this->dat->_mat[0].nonZeros();
-			//nnz=nnz / 100000;
-			//nnz = (nnz + 1) * 100000;
-			//this->dat->_mat[0].resizeNonZeros(nnz);
+			this->dat->makePattern();
+		}
+		void plusdyad_usemap(myDoubleArray^ a, myDoubleArray^ b, double sc,int N,array<int> ^index)
+		{
 			for (int i = 0; i < N; i++)
 			{
 				for (int j = 0; j < N; j++)
 				{
-					this->dat->_dmat(index[i], index[j]) += sc*a->_arr->__v(i)* a->_arr->__v(j);
+					this->dat->add_usemap(index[i], index[j], sc * a->_arr->__v(i) * a->_arr->__v(j));
 				}
 			}
 		}
@@ -1212,7 +1212,13 @@ namespace KingOfMonsters {
 			//return ret;
 			return ee;
 		}
+		System::String^ _solveLU_sparse_cpu(myDoubleArray^ rhs, myDoubleArray^ ret) {
+			//auto ss = dat->_solveLU_gpu(gpu->cuda(), &rhs->_arr->__v, &ret->_arr->__v, device);
+			//System::String^ ee = gcnew System::String(ss.c_str());
+			auto ss = dat->_solveLU_sparse_cpu(&rhs->_arr->__v, &ret->_arr->__v);
 
+			return gcnew System::String(ss.c_str());
+		}
 		mySparse^ solve0(mySparse^ rhs) {
 			Eigen::LLT<Eigen::MatrixXd>* _LLT = new Eigen::LLT<Eigen::MatrixXd>();
 			dat->computeLLT(_LLT);

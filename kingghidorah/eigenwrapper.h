@@ -210,6 +210,7 @@ namespace KingOfMonsters {
 		vector<vector<Eigen::Triplet<double>>> dat;
 		//vector<Eigen::Triplet<double>> dat2;
 	public:
+		void makePattern();
 		double mulboth(Eigen::VectorXd& u, Eigen::VectorXd& v);
 		void mulleft(Eigen::VectorXd& u, Eigen::VectorXd& ret, double sc);
 		void mulright(Eigen::VectorXd& u, Eigen::VectorXd& ret, double sc);
@@ -264,6 +265,7 @@ namespace KingOfMonsters {
 		void ofDat();
 		void freezecoeff();
 		std::string ofAtA(_mySparse* A, bool sparse);
+		void add_usemap(int64_t i, int64_t j, double val);
 		std::string ofAtA_gpu(cuda* _cuda, _mySparse* A, bool sparse);
 		std::string _ofAtA(_mySparse* A);
 		//void ofAtB_gpu(_mySparse* B, bool sparse);
@@ -294,9 +296,9 @@ namespace KingOfMonsters {
 		void solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void _solve0_lu_cg(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		std::string _solve0_gpu(KingOfMonsters::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int64_t device);
-		std::string _QR_gpu(KingOfMonsters::cuda* cuda, Eigen::MatrixXd* Q, Eigen::MatrixXd* R, int64_t device);
-		std::string _QR_cpu(Eigen::MatrixXd* Q, Eigen::MatrixXd* R);
+		//std::string _QR_gpu(KingOfMonsters::cuda* cuda, Eigen::MatrixXd* Q, Eigen::MatrixXd* R, int64_t device);
 		std::string _solveLU_gpu(KingOfMonsters::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int64_t device);
+		std::string _solveLU_sparse_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		Eigen::MatrixXd _solve0(_myLLT* LLT, _mySparse* rhs);
 		void _solve0_gpu(KingOfMonsters::cuda* cuda, _mySparse* rhs, _mySparse* ret);
 		int64_t _solveI(_mySparse* ret);

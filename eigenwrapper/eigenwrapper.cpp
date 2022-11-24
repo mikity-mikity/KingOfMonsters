@@ -1854,6 +1854,26 @@ void KingOfMonsters::_mySparse::ofDat()
 		}
 	}
 }
+
+std::map<Eigen::SparseMatrix<double, 0, int64_t>*, std::map<std::tuple<int64_t, int64_t>,int>> map2;
+void KingOfMonsters::_mySparse::makePattern()
+{
+
+	std::map<std::tuple<int64_t, int64_t>,int> __map2;
+	for (int64_t k = 0; k < _mat[0].outerSize(); ++k) {
+		for (Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>::InnerIterator it(_mat[0], k); it; ++it) {
+			int64_t S = _mat[0].outerIndexPtr()[k];
+			int64_t E = _mat[0].outerIndexPtr()[k + 1];
+
+			for (int64_t tt = S; tt < E; tt++)
+			{
+				if (_mat[0].innerIndexPtr()[tt] == it.row())
+					__map2[std::tuple<int64_t,int64_t>(it.row(), it.col())] = tt;
+			}
+		}
+	}
+	map2[&this->_mat[0]] = __map2;
+}
 void KingOfMonsters::_mySparse::computeQR() {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 	int count = 0;
@@ -2108,7 +2128,10 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 	return ss.str();
 }
 
-
+void KingOfMonsters::_mySparse::add_usemap(int64_t i, int64_t j, double val)
+{
+	*(_mat[0].valuePtr() + (map2[&this->_mat[0]][std::tuple<int64_t,int64_t>(i ,j)])) += val;
+}
 
 
 std::string KingOfMonsters::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool sparse)
@@ -2911,8 +2934,12 @@ void  KingOfMonsters::_mySparse::project(_mySparse* i1/*JxxJ*/, _mySparse* i2/*J
 	*Q = qr.matrixQ();
 	return qr.rank();
 }*/
-
-
+std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret) 
+{
+	Eigen::SparseLU<Eigen::SparseMatrix<double, 0, int64_t>> lu(this->_mat[0]);
+	*ret = lu.solve(*rhs);
+	return "success";
+}
 std::string KingOfMonsters::_mySparse::_solveLU_gpu(KingOfMonsters::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int64_t device) {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 	std::stringstream ss;
