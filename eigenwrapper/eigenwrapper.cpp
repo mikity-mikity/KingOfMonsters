@@ -2130,7 +2130,7 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 
 void KingOfMonsters::_mySparse::add_usemap(int64_t i, int64_t j, double val)
 {
-	*(_mat[0].valuePtr() + (map2[&this->_mat[0]][std::tuple<int64_t,int64_t>(i ,j)])) += val;
+	*(_mat[0].valuePtr() + (map2[&this->_mat[0]][std::tuple<int64_t, int64_t>(i, j)])) += val;
 }
 
 
