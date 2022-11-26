@@ -989,7 +989,7 @@ namespace KingOfMonsters {
 
 			return _val3 * _ref->refDv;
 		}
-		void KN(_mySparse* M,  int64_t* _index, double sc)
+		void KN(_mySparse* M,  int* _index, double sc)
 		{
 			for (int i = 0; i < _nNode; i++)
 			{
@@ -1023,7 +1023,7 @@ namespace KingOfMonsters {
 
 			return _val3 * _ref->refDv;
 		}
-		void KH(_mySparse* M, int64_t* _index, double sc)
+		void KH(_mySparse* M, int* _index, double sc)
 		{
 			for (int i = 0; i < _nNode; i++)
 			{
@@ -1104,7 +1104,7 @@ namespace KingOfMonsters {
 			_val4 += A * FF * GG;
 			return _val4 * _ref->refDv * 0.25;
 		}
-		void _H(_mySparse* M, int64_t* _index, double sc)
+		void _H(_mySparse* M, int* _index, double sc)
 		{
 			for (int i = 0; i < _nNode; i++)
 			{

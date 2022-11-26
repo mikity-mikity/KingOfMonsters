@@ -1734,13 +1734,13 @@ namespace KingOfMonsters {
 			return m[0] * m[3] - m[1] * m[2];
 		}
 	public:
-		void getMat_slope(int64_t* index, std::vector<_Triplet<double>>* _dat,double dcdt1,double dcdt2,bool airy)
+		void getMat_slope(int* index, std::vector<_Triplet<double>>* _dat,double dcdt1,double dcdt2,bool airy)
 		{
 			_dat->clear();
 			_dat->reserve(_nNode);
 			if (airy)
 			{
-				int64_t* ptr2 = &index[0];
+				int* ptr2 = &index[0];
 				for (int i = 0; i < _nNode; i++)
 				{
 					double val = 0;
@@ -1753,7 +1753,7 @@ namespace KingOfMonsters {
 					ptr2++;
 				}
 			}else {
-				int64_t* ptr2 = &index[0];
+				int* ptr2 = &index[0];
 				for (int i = 0; i < _nNode; i++)
 				{
 					double val = 0;
@@ -1877,7 +1877,7 @@ namespace KingOfMonsters {
 			int e = i * _nNode + j;
 			return 0.5*(_Sij[0] * _ref->B[0][e] + 2 * _Sij[1] * _ref->B[1][e] + _Sij[3] * _ref->B[3][e]) * _ref->refDv;
 		}
-		void F(_mySparse* mat,int64_t* index, double sc) {		
+		void F(_mySparse* mat,int* index, double sc) {		
 			for (int i = 0; i < _nNode; i++)
 			{
 				int I = index[i];
@@ -1891,18 +1891,18 @@ namespace KingOfMonsters {
 				}
 			}
 		}
-		void getMat(int64_t* index, std::vector<_Triplet<double>>* _dat)
+		void getMat(int* index, std::vector<_Triplet<double>>* _dat)
 		{
 			//mat->_mat[0].setZero();
 			//mat->_mat[0].reserve(_nNode * _nNode);
 			double* ptr = &_ref->__mat[0];
-			int64_t* ptr2 = &index[0];
+			int* ptr2 = &index[0];
 			_dat->clear();
 			_dat->reserve(_nNode * _nNode);
 			double norm = 0;
 			for (int i = 0; i < _nNode; i++)
 			{
-				int64_t* ptr3 = &index[0];
+				int* ptr3 = &index[0];
 				for (int j = 0; j < _nNode; j++)
 				{
 					//int I = index[i];
@@ -1920,7 +1920,7 @@ namespace KingOfMonsters {
 			norm = std::sqrt(norm);
 			//mat->_mat[0].setFromTriplets(_dat->begin(), _dat->end());
 		}
-		void getMat_Galerkin(int64_t* index, std::vector<_Triplet<double>>* _dat,int I,double w)
+		void getMat_Galerkin(int* index, std::vector<_Triplet<double>>* _dat,int I,double w)
 		{
 
 			int kk[4]{ 3,2,1,0 };
@@ -1955,13 +1955,13 @@ namespace KingOfMonsters {
 			//mat->_mat[0].setZero();
 			//mat->_mat[0].reserve(_nNode * _nNode);
 			/*double* ptr = &_ref->__mat[0];
-			int64_t* ptr2 = &index[0];
+			int* ptr2 = &index[0];
 			_dat->clear();
 			_dat->reserve(_nNode * _nNode);
 			double norm = 0;
 			for (int i = 0; i < _nNode; i++)
 			{
-				int64_t* ptr3 = &index[0];
+				int* ptr3 = &index[0];
 				for (int j = 0; j < _nNode; j++)
 				{
 					//int I = index[i];
@@ -1979,15 +1979,15 @@ namespace KingOfMonsters {
 			norm = std::sqrt(norm);*/
 			//mat->_mat[0].setFromTriplets(_dat->begin(), _dat->end());
 		}
-		void getMatG(int64_t* index, int64_t* index2,std::vector<_Triplet<double>>* _dat,double sc)
+		void getMatG(int* index, int* index2,std::vector<_Triplet<double>>* _dat,double sc)
 		{
 			//double* ptr = &_ref->__mat[0];
-			int64_t* ptr2 = &index[0];
+			int* ptr2 = &index[0];
 			//_dat->clear();
 			//_dat->reserve(_nNode * _nNode);
 			for (int i = 0; i < _nNode; i++)
 			{
-				int64_t* ptr3 = &index2[0];
+				int* ptr3 = &index2[0];
 				for (int j = 0; j < _nNode; j++)
 				{
 					//int I = index[i];
@@ -2008,12 +2008,12 @@ namespace KingOfMonsters {
 			}
 			//mat->_mat[0].setFromTriplets(_dat->begin(), _dat->end());
 		}
-		void getMat_d0(int64_t* index, std::vector<_Triplet<double>>* _dat)
+		void getMat_d0(int* index, std::vector<_Triplet<double>>* _dat)
 		{
 			//mat->_mat[0].setZero();
 			//mat->_mat[0].reserve(_nNode * _nNode);
 			double* ptr = &_ref->d0[0];
-			int64_t* ptr2 = &index[0];
+			int* ptr2 = &index[0];
 			_dat->clear();
 			_dat->reserve(_nNode * _nNode);
 			for (int i = 0; i < _nNode; i++)
@@ -2032,7 +2032,7 @@ namespace KingOfMonsters {
 				* (_Sij[0] * (_ref->d2[0][j] - this->_ref->get__Gammaijk(0, 0, 0) * _ref->d1[0][j] - this->_ref->get__Gammaijk(0, 0, 1) * _ref->d1[1][j]) + 2 * _Sij[1] * (_ref->d2[1][j] - this->_ref->get__Gammaijk(0, 1, 0) * _ref->d1[0][j] - this->_ref->get__Gammaijk(0, 1, 1) * _ref->d1[1][j]) + _Sij[3] * (_ref->d2[3][j] - this->_ref->get__Gammaijk(1, 1, 0) * _ref->d1[0][j] - this->_ref->get__Gammaijk(1, 1, 1) * _ref->d1[1][j])) * _ref->refDv;// / _ref->refDv / _ref->refDv;
 
 		}
-		std::string F2(_mySparse* mat, int64_t* index, double sc) {
+		std::string F2(_mySparse* mat, int* index, double sc) {
 			Eigen::initParallel();
 			std::stringstream ss;
 			auto start = high_resolution_clock::now();
@@ -2054,7 +2054,7 @@ namespace KingOfMonsters {
 				(_Sij[0] * (_ref->d2[0][i] - this->_ref->get__Gammaijk(0, 0, 0) * _ref->d1[0][i] - this->_ref->get__Gammaijk(0, 0, 1) * _ref->d1[1][i]) + 2 * _Sij[1] * (_ref->d2[1][i] - this->_ref->get__Gammaijk(0, 1, 0) * _ref->d1[0][i] - this->_ref->get__Gammaijk(0, 1, 1) * _ref->d1[1][i]) + _Sij[3] * (_ref->d2[3][i] - this->_ref->get__Gammaijk(1, 1, 0) * _ref->d1[0][i] - this->_ref->get__Gammaijk(1, 1, 1) * _ref->d1[1][i]))
 				* (_ref->d2[0][j]) * _ref->refDv;// / _ref->refDv / _ref->refDv;
 		}
-		std::string F2A(_mySparse* mat, int64_t* index, double sc) {
+		std::string F2A(_mySparse* mat, int* index, double sc) {
 			Eigen::initParallel();
 			std::stringstream ss;
 			auto start = high_resolution_clock::now();
@@ -2353,7 +2353,7 @@ namespace KingOfMonsters {
 			return (_Sij[0] * (_ref->d2[0][i] - this->_ref->get__Gammaijk(0, 0, 0) * _ref->d1[0][i] - this->_ref->get__Gammaijk(0, 0, 1) * _ref->d1[1][i]) + 2 * _Sij[1] * (_ref->d2[1][i] - this->_ref->get__Gammaijk(0, 1, 0) * _ref->d1[0][i] - this->_ref->get__Gammaijk(0, 1, 1) * _ref->d1[1][i]) + _Sij[3] * (_ref->d2[3][i] - this->_ref->get__Gammaijk(1, 1, 0) * _ref->d1[0][i] - this->_ref->get__Gammaijk(1, 1, 1) * _ref->d1[1][i])) * _ref->refDv;// / _ref->refDv / _ref->refDv;
 
 		}
-		void G3(_myDoubleArray * vec, int64_t* index, double sc) {
+		void G3(_myDoubleArray * vec, int* index, double sc) {
 			for (int i = 0; i < _nNode; i++)
 			{
 				int I = index[i];
@@ -2392,7 +2392,7 @@ namespace KingOfMonsters {
 		double MASS(int i, int j) {
 			return _ref->d0[i] * _ref->d0[j] * _ref->_refDv;
 		}
-		void MASS(_mySparse* mat, int64_t* index, double sc) {			
+		void MASS(_mySparse* mat, int* index, double sc) {			
 			for (int i = 0; i < _nNode; i++)
 			{
 				int I = index[i];
@@ -2910,7 +2910,7 @@ namespace KingOfMonsters {
 			}
 			return (_val3) * this->dv;
 		}
-		void K(_mySparse* M, int64_t* _index, double _la, double _mu, double __sc)
+		void K(_mySparse* M, int* _index, double _la, double _mu, double __sc)
 		{
 			const static int kk[3]{ 0,1,2 };
 			const static int ll[2]{ 0,1 };
@@ -3100,7 +3100,7 @@ namespace KingOfMonsters {
 			}
 			return _val4 * _ref->refDv * 0.25;
 		}
-		void H(_mySparse* M,int64_t* _index,double _la, double _mu,double sc)
+		void H(_mySparse* M,int* _index,double _la, double _mu,double sc)
 		{
 			const static int kk[3]{ 0,1,2 };
 			const static int ll[2]{ 0,1 };
@@ -3436,7 +3436,7 @@ public:
 			return gcnew System::String(str.c_str());
 		}
 		System::String^ F2A(mySparse^ mat, myIntArray^ index, double sc) {
-			auto str = __mem->F2A(mat->dat, index->data(), sc);
+			auto str = __mem->F2(mat->dat, index->data(), sc);
 			return gcnew System::String(str.c_str());
 		}
 		double F3(int i, int I) {
