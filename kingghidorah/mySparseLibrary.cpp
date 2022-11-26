@@ -1,9 +1,9 @@
 #include"mySparseLibrary.h"
-void KingOfMonsters::helper::contract(System::Collections::Generic::List<workspace^>^ _mats, denseMatrix^ U, denseMatrix^ V, denseMatrix^ W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, int _C)
+void KingOfMonsters::helper::contract(System::Collections::Generic::List<workspace^>^ _mats, denseMatrix^ U, denseMatrix^ V, denseMatrix^ W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, int64_t _C)
 {
-	int _mt = omp_get_max_threads();
-	int m = _mats->Count;
-	int n = U->get().cols();
+	int64_t _mt = omp_get_max_threads();
+	int64_t m = _mats->Count;
+	int64_t n = U->get().cols();
 	//array<denseMatrix^>^ mm = gcnew array<mySparse^>(m);
 	std::vector<Eigen::SparseMatrix<double>> mm01(m); //multiplied with U
 	std::vector<Eigen::SparseMatrix<double>> mm02(m); //multiplied with V
@@ -12,7 +12,7 @@ void KingOfMonsters::helper::contract(System::Collections::Generic::List<workspa
 	array<sparseMatrix^>^ mm12 = gcnew array<sparseMatrix^>(n + 1); //mutiplied with V and W
 	array<sparseMatrix^>^ mm13 = gcnew array<sparseMatrix^>(n + 2); //mutiplied with V and W
 
-	int count = 0;
+	int64_t count = 0;
 	//denseMatrix^ Uo = gcnew denseMatrix();
 	//Uo->get() = U->get() * (U->get().transpose() * U->get()).inverse();
 	//denseMatrix^ Vo = gcnew denseMatrix();
@@ -23,11 +23,11 @@ void KingOfMonsters::helper::contract(System::Collections::Generic::List<workspa
 		_mt = omp_get_num_threads();
 	}
 #pragma omp parallel for
-	for (int ii = 0; ii < _mt; ii++)
+	for (int64_t ii = 0; ii < _mt; ii++)
 	{
-		int S = ii * m / _mt;
-		int E = (ii + 1) * m / _mt;
-		for (int i = S; i < E; i++)
+		int64_t S = ii * m / _mt;
+		int64_t E = (ii + 1) * m / _mt;
+		for (int64_t i = S; i < E; i++)
 		{
 			auto M = _mats[i];
 			auto newM1 = M->tosparse(n, true, false);
@@ -49,7 +49,7 @@ void KingOfMonsters::helper::contract(System::Collections::Generic::List<workspa
 	//array<KingOfMonsters::denseMatrix^>::Resize(_mats3, m);
 
 	
-	for (int i = 0; i < m; i++)
+	for (int64_t i = 0; i < m; i++)
 	{
 		_mats1[i] = gcnew sparseMatrix(n, n);
 		_mats2[i] = gcnew sparseMatrix(n, n);
@@ -61,11 +61,11 @@ void KingOfMonsters::helper::contract(System::Collections::Generic::List<workspa
 	/*auto _W = W->get();
 	count = 0;
 #pragma omp parallel for
-	for (int ii = 0; ii < _mt; ii++)
+	for (int64_t ii = 0; ii < _mt; ii++)
 	{
-		int S = ii * n / _mt;
-		int E = (ii + 1) * n / _mt;
-		for (int i = S; i < E; i++)
+		int64_t S = ii * n / _mt;
+		int64_t E = (ii + 1) * n / _mt;
+		for (int64_t i = S; i < E; i++)
 		{
 			//auto M = _mats[i];
 
@@ -76,7 +76,7 @@ void KingOfMonsters::helper::contract(System::Collections::Generic::List<workspa
 			mm11[i]->get().setZero();
 			mm12[i]->get().setZero();
 			mm13[i]->get().setZero();
-			for (int k = 0; k < m; k++)
+			for (int64_t k = 0; k < m; k++)
 			{
 				if (mm01[k].cols() == n && mm01[k].rows() == n)
 				{
@@ -100,9 +100,9 @@ void KingOfMonsters::helper::contract(System::Collections::Generic::List<workspa
 	mm13[n + 1] = gcnew denseMatrix(n, n);
 	mm13[n + 1]->get().setZero();
 
-	for (int i = 0; i < n; i++)
+	for (int64_t i = 0; i < n; i++)
 	{
-		for (int k = 0; k < m; k++)
+		for (int64_t k = 0; k < m; k++)
 		{
 			if (mm01[k].rows() == 1 && mm01[k].cols() == n)
 			{
@@ -114,9 +114,9 @@ void KingOfMonsters::helper::contract(System::Collections::Generic::List<workspa
 
 	mm12[n] = gcnew denseMatrix(n, n);
 	mm12[n]->get().setZero();
-	for (int i = 0; i < n; i++)
+	for (int64_t i = 0; i < n; i++)
 	{
-		for (int k = 0; k < m; k++)
+		for (int64_t k = 0; k < m; k++)
 		{
 			if (mm02[k].rows() == 1 && mm02[k].cols() == n)
 			{
@@ -125,7 +125,7 @@ void KingOfMonsters::helper::contract(System::Collections::Generic::List<workspa
 			}
 		}
 	}
-	for (int i = 0; i < n; i++)
+	for (int64_t i = 0; i < n; i++)
 	{
 		_mats1[i] = mm11[i];
 		_mats2[i] = mm12[i];
@@ -138,13 +138,13 @@ void KingOfMonsters::helper::contract(System::Collections::Generic::List<workspa
 	*/
 
 }
-double KingOfMonsters::helper::GN(System::Collections::Generic::List<double>^ __coeff, myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt)
+double KingOfMonsters::helper::GN(System::Collections::Generic::List<double>^ __coeff, myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int64_t tt)
 {
 	std::vector<Eigen::SparseMatrix<double>*> __mats1;
 	std::vector<Eigen::SparseMatrix<double>*> __mats2;
 	std::vector<Eigen::SparseMatrix<double>*> __mats3;
 	Eigen::VectorXd coeff(__coeff->Count);
-	for (int i = 0; i < __coeff->Count; i++)
+	for (int64_t i = 0; i < __coeff->Count; i++)
 	{
 		coeff(i) = __coeff[i];
 	}
@@ -153,15 +153,15 @@ double KingOfMonsters::helper::GN(System::Collections::Generic::List<double>^ __
 	__mats2.clear();
 	__mats3.clear();
 
-	for (int i = 0; i < _mats1->Length; i++)
+	for (int64_t i = 0; i < _mats1->Length; i++)
 	{
 		__mats1.push_back(&_mats1[i]->get());
 	}
-	for (int i = 0; i < _mats2->Length; i++)
+	for (int64_t i = 0; i < _mats2->Length; i++)
 	{
 		__mats2.push_back(&_mats2[i]->get());
 	}
-	for (int i = 0; i < _mats3->Length; i++)
+	for (int64_t i = 0; i < _mats3->Length; i++)
 	{
 		__mats3.push_back(&_mats3[i]->get());
 	}
@@ -169,13 +169,13 @@ double KingOfMonsters::helper::GN(System::Collections::Generic::List<double>^ __
 	System::Console::WriteLine("normGrad=" + norm.ToString());
 	return norm;
 }
-double KingOfMonsters::helper::VarPro(System::Collections::Generic::List<double>^ __coeff, myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt)
+double KingOfMonsters::helper::VarPro(System::Collections::Generic::List<double>^ __coeff, myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int64_t tt)
 {
 	std::vector<Eigen::SparseMatrix<double>*> __mats1;
 	std::vector<Eigen::SparseMatrix<double>*> __mats2;
 	std::vector<Eigen::SparseMatrix<double>*> __mats3;
 	Eigen::VectorXd coeff(__coeff->Count);
-	for (int i = 0; i < __coeff->Count; i++)
+	for (int64_t i = 0; i < __coeff->Count; i++)
 	{
 		coeff(i) = __coeff[i];
 	}
@@ -184,15 +184,15 @@ double KingOfMonsters::helper::VarPro(System::Collections::Generic::List<double>
 	__mats2.clear();
 	__mats3.clear();
 
-	for (int i = 0; i < _mats1->Length; i++)
+	for (int64_t i = 0; i < _mats1->Length; i++)
 	{
 		__mats1.push_back(&_mats1[i]->get());
 	}
-	for (int i = 0; i < _mats2->Length; i++)
+	for (int64_t i = 0; i < _mats2->Length; i++)
 	{
 		__mats2.push_back(&_mats2[i]->get());
 	}
-	for (int i = 0; i < _mats3->Length; i++)
+	for (int64_t i = 0; i < _mats3->Length; i++)
 	{
 		__mats3.push_back(&_mats3[i]->get());
 	}
@@ -201,13 +201,13 @@ double KingOfMonsters::helper::VarPro(System::Collections::Generic::List<double>
 	System::Console::WriteLine("******residual********=" + norm.ToString());
 	return norm;
 }
-double KingOfMonsters::helper::ALT(System::Collections::Generic::List<double>^ __coeff, myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt)
+double KingOfMonsters::helper::ALT(System::Collections::Generic::List<double>^ __coeff, myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int64_t tt)
 {
 	std::vector<Eigen::SparseMatrix<double>*> __mats1;
 	std::vector<Eigen::SparseMatrix<double>*> __mats2;
 	std::vector<Eigen::SparseMatrix<double>*> __mats3;
 	Eigen::VectorXd coeff(__coeff->Count);
-	for (int i = 0; i < __coeff->Count; i++)
+	for (int64_t i = 0; i < __coeff->Count; i++)
 	{
 		coeff(i) = __coeff[i];
 	}
@@ -217,15 +217,15 @@ double KingOfMonsters::helper::ALT(System::Collections::Generic::List<double>^ _
 	__mats2.clear();
 	__mats3.clear();
 
-	for (int i = 0; i < _mats1->Length; i++)
+	for (int64_t i = 0; i < _mats1->Length; i++)
 	{
 		__mats1.push_back(&_mats1[i]->get());
 	}
-	for (int i = 0; i < _mats2->Length; i++)
+	for (int64_t i = 0; i < _mats2->Length; i++)
 	{
 		__mats2.push_back(&_mats2[i]->get());
 	}
-	for (int i = 0; i < _mats3->Length; i++)
+	for (int64_t i = 0; i < _mats3->Length; i++)
 	{
 		__mats3.push_back(&_mats3[i]->get());
 	}
@@ -233,13 +233,13 @@ double KingOfMonsters::helper::ALT(System::Collections::Generic::List<double>^ _
 	System::Console::WriteLine("normGrad=" + norm.ToString());
 	return norm;
 }
-double KingOfMonsters::helper::simple(System::Collections::Generic::List<double>^ __coeff, myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt)
+double KingOfMonsters::helper::simple(System::Collections::Generic::List<double>^ __coeff, myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int64_t tt)
 {
 	std::vector<Eigen::SparseMatrix<double>*> __mats1;
 	std::vector<Eigen::SparseMatrix<double>*> __mats2;
 	std::vector<Eigen::SparseMatrix<double>*> __mats3;
 	Eigen::VectorXd coeff(__coeff->Count);
-	for (int i = 0; i < __coeff->Count; i++)
+	for (int64_t i = 0; i < __coeff->Count; i++)
 	{
 		coeff(i) = __coeff[i];
 	}
@@ -249,15 +249,15 @@ double KingOfMonsters::helper::simple(System::Collections::Generic::List<double>
 	__mats2.clear();
 	__mats3.clear();
 
-	for (int i = 0; i < _mats1->Length; i++)
+	for (int64_t i = 0; i < _mats1->Length; i++)
 	{
 		__mats1.push_back(&_mats1[i]->get());
 	}
-	for (int i = 0; i < _mats2->Length; i++)
+	for (int64_t i = 0; i < _mats2->Length; i++)
 	{
 		__mats2.push_back(&_mats2[i]->get());
 	}
-	for (int i = 0; i < _mats3->Length; i++)
+	for (int64_t i = 0; i < _mats3->Length; i++)
 	{
 		__mats3.push_back(&_mats3[i]->get());
 	}
@@ -265,14 +265,14 @@ double KingOfMonsters::helper::simple(System::Collections::Generic::List<double>
 	System::Console::WriteLine("normGrad=" + norm.ToString());
 	return norm;
 }
-void KingOfMonsters::helper::write(System::Collections::Generic::List<double>^ __coeff, myDoubleArray^ phi0, myDoubleArray^ zz0,myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt)
+void KingOfMonsters::helper::write(System::Collections::Generic::List<double>^ __coeff, myDoubleArray^ phi0, myDoubleArray^ zz0,myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int64_t tt)
 {
 	System::Console::WriteLine(System::Environment::CurrentDirectory);
 
 	std::vector<Eigen::SparseMatrix<double>*> __mats1;
 	std::vector<Eigen::SparseMatrix<double>*> __mats2;
 	Eigen::VectorXd coeff(__coeff->Count);
-	for (int i = 0; i < __coeff->Count; i++)
+	for (int64_t i = 0; i < __coeff->Count; i++)
 	{
 		coeff(i) = __coeff[i];
 	}
@@ -284,15 +284,15 @@ void KingOfMonsters::helper::write(System::Collections::Generic::List<double>^ _
 	__mats2.clear();
 	__mats3.clear();
 
-	for (int i = 0; i < _mats1->Length; i++)
+	for (int64_t i = 0; i < _mats1->Length; i++)
 	{
 		__mats1.push_back(&_mats1[i]->get());
 	}
-	for (int i = 0; i < _mats2->Length; i++)
+	for (int64_t i = 0; i < _mats2->Length; i++)
 	{
 		__mats2.push_back(&_mats2[i]->get());
 	}
-	for (int i = 0; i < _mats3->Length; i++)
+	for (int64_t i = 0; i < _mats3->Length; i++)
 	{
 		__mats3.push_back(&_mats3[i]->get());
 	}
@@ -300,11 +300,11 @@ void KingOfMonsters::helper::write(System::Collections::Generic::List<double>^ _
 
 
 }
-void KingOfMonsters::helper::computeKrylovSubspace(System::Collections::Generic::List<double> ^__coeff,System::Collections::Generic::List<workspace^>^ _mats, denseMatrix^ _U, denseMatrix^ _V, denseMatrix^ _W,  int nU, int nV, int r, myPermutation^ mphi, myPermutation^ mZ, myDoubleArray^ phi, myDoubleArray^ zz, System::Collections::Generic::List<Tuple<int, int>^>^ bb1, System::Collections::Generic::List<Tuple<int, int>^>^bb2)
+void KingOfMonsters::helper::computeKrylovSubspace(System::Collections::Generic::List<double> ^__coeff,System::Collections::Generic::List<workspace^>^ _mats, denseMatrix^ _U, denseMatrix^ _V, denseMatrix^ _W,  int64_t nU, int64_t nV, int64_t r, myPermutation^ mphi, myPermutation^ mZ, myDoubleArray^ phi, myDoubleArray^ zz, System::Collections::Generic::List<Tuple<int, int>^>^ bb1, System::Collections::Generic::List<Tuple<int, int>^>^bb2)
 {
-	int _C = phi->_arr->__v.size();
+	int64_t _C = phi->_arr->__v.size();
 	if (r > _C)r = _C;
-	int m = _mats->Count;
+	int64_t m = _mats->Count;
 	Eigen::MatrixXd U(_C, r);
 	Eigen::MatrixXd V(_C, r);
 	Eigen::MatrixXd W(m, r);
@@ -316,7 +316,7 @@ void KingOfMonsters::helper::computeKrylovSubspace(System::Collections::Generic:
 	//System::Collections::Generic::List<Tuple<int, int>^>^ bb1 = gcnew System::Collections::Generic::List<Tuple<int, int>^>();
 	//System::Collections::Generic::List<Tuple<int, int>^>^ bb2 = gcnew System::Collections::Generic::List<Tuple<int, int>^>();
 
-	/*for (int i = 0; i < _C; i++)
+	/*for (int64_t i = 0; i < _C; i++)
 	{
 		if (mphi->p->perm.indices()(i) >= nU)
 		{
@@ -327,7 +327,7 @@ void KingOfMonsters::helper::computeKrylovSubspace(System::Collections::Generic:
 			__coeff->Add(1.0);
 		}
 	}
-	for (int i = 0; i < _C; i++)
+	for (int64_t i = 0; i < _C; i++)
 	{
 		if (mZ->p->perm.indices()(i) >= nV)
 		{
@@ -378,7 +378,7 @@ void KingOfMonsters::helper::computeKrylovSubspace(System::Collections::Generic:
 	u2.setZero();
 	v2.setZero();
 	w2.setZero();
-	int _mt = omp_get_max_threads();
+	int64_t _mt = omp_get_max_threads();
 	#pragma omp parallel
 	{
 	#pragma omp single
@@ -386,8 +386,8 @@ void KingOfMonsters::helper::computeKrylovSubspace(System::Collections::Generic:
 	}
 
 	Console::WriteLine("task#:" + (0).ToString() + "/" + r.ToString());
-	int pointer = 0;
-	for (int j = 0; j < r - 1; j++)
+	int64_t pointer = 0;
+	for (int64_t j = 0; j < r - 1; j++)
 	{
 		//ui.topRows(nU) = U.col(j);
 		//vi.topRows(nV) = V.col(j);
@@ -410,19 +410,19 @@ void KingOfMonsters::helper::computeKrylovSubspace(System::Collections::Generic:
 		//}
 
 		Console::WriteLine("task#:" + (j + 1).ToString() + "/" + r.ToString());
-		//int count = 0;
+		//int64_t count = 0;
 #pragma omp parallel for
-		for (int ii = 0; ii < _mt; ii++)
+		for (int64_t ii = 0; ii < _mt; ii++)
 		{
-			int S = ii * m / _mt;
-			int E = (ii + 1) * m / _mt;
+			int64_t S = ii * m / _mt;
+			int64_t E = (ii + 1) * m / _mt;
 			Eigen::VectorXd _u2(_C);
 			Eigen::VectorXd _v2(_C);
 			_u2.setZero();
 			_v2.setZero();
 			//double* ptr = &w2.coeffRef(S);
 			//double* ptr2 = &wi.coeffRef(S);
-			for (int i = S; i < E; i++)
+			for (int64_t i = S; i < E; i++)
 			{
 
 				auto M = _mats[i];
@@ -440,7 +440,7 @@ void KingOfMonsters::helper::computeKrylovSubspace(System::Collections::Generic:
 				v2 += _v2;
 			}
 		}
-		for (int kk = 0; kk < 10; kk++)
+		for (int64_t kk = 0; kk < 10; kk++)
 		{
 			Eigen::VectorXd hu = U.leftCols(j + 1).transpose() * u2;
 			Eigen::VectorXd hv = V.leftCols(j + 1).transpose() * v2;

@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-int main()
+int64_t main()
 {
     std::cout << "Hello World!\n";
 }
