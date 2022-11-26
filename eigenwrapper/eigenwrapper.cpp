@@ -2934,11 +2934,19 @@ void  KingOfMonsters::_mySparse::project(_mySparse* i1/*JxxJ*/, _mySparse* i2/*J
 	*Q = qr.matrixQ();
 	return qr.rank();
 }*/
-std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret) 
+std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret)
 {
 	Eigen::SparseLU<Eigen::SparseMatrix<double, 0, int64_t>> lu(this->_mat[0]);
-	*ret = lu.solve(*rhs);
-	return "success";
+	if (lu.info() == Eigen::ComputationInfo::Success)
+	{
+
+		*ret = lu.solve(*rhs);
+		return "success";
+	}
+	else {
+		return "failed"
+			;
+	}
 }
 std::string KingOfMonsters::_mySparse::_solveLU_gpu(KingOfMonsters::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int64_t device) {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
