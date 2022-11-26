@@ -937,10 +937,6 @@ namespace KingOfMonsters {
 				}
 			}
 		}
-		void plus_usemap(Int64 i, Int64 j, double value)
-		{
-			this->dat->add_usemap(i, j, value);
-		}
 		void mult(mySparse^ a, mySparse^ b)
 		{
 			b->dat->_dmat = this->dat->_dmat * a->dat->_dmat;
