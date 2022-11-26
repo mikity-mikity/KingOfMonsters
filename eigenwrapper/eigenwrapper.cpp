@@ -29,24 +29,24 @@ void KingOfMonsters::cuda::disable()
 {
 	__cuinit = false;
 }
-double KingOfMonsters::_helper::VarPro(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd *_r1, Eigen::VectorXd* _r2, double dt, int64_t tt)
+double KingOfMonsters::_helper::VarPro(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd *_r1, Eigen::VectorXd* _r2, double dt, int tt)
 {
 	Eigen::VectorXd X0 = *zz;
 	Eigen::VectorXd x0 = *phi;
 
-	int64_t _mt = 0;
-	int64_t n = __U->cols();
-	int64_t m = _mats1.size();
+	int _mt = 0;
+	int n = __U->cols();
+	int m = _mats1.size();
 #pragma omp parallel
 	{
 #pragma omp single
 		_mt = omp_get_num_threads();
 	}
 
-	//int64_t m = __W->rows();
+	//int m = __W->rows();
 
-	int64_t nr1 = _r1->size();
-	int64_t nr2 = _r2->size();
+	int nr1 = _r1->size();
+	int nr2 = _r2->size();
 
 	Eigen::VectorXd r1 = /*__W->transpose() * */*_r1;
 	Eigen::VectorXd r2 = /*__W->transpose() * */*_r2;
@@ -71,11 +71,11 @@ double KingOfMonsters::_helper::VarPro(Eigen::VectorXd* coeff, Eigen::VectorXd* 
 	//if (tt % 2 == 0)
 	//{
 #pragma omp parallel for
-		for (int64_t ii = 0; ii < _mt; ii++)
+		for (int ii = 0; ii < _mt; ii++)
 		{
-			int64_t S = ii * m / _mt;
-			int64_t E = (ii + 1) * m / _mt;
-			for (int64_t i = S; i < E; i++)
+			int S = ii * m / _mt;
+			int E = (ii + 1) * m / _mt;
+			for (int i = S; i < E; i++)
 			{
 
 				auto M1 = _mats1[i];
@@ -127,11 +127,11 @@ double KingOfMonsters::_helper::VarPro(Eigen::VectorXd* coeff, Eigen::VectorXd* 
 		b1.setZero();
 		b2.setZero();
 #pragma omp parallel for
-		for (int64_t ii = 0; ii < _mt; ii++)
+		for (int ii = 0; ii < _mt; ii++)
 		{
-			int64_t S = ii * m / _mt;
-			int64_t E = (ii + 1) * m / _mt;
-			for (int64_t i = S; i < E; i++)
+			int S = ii * m / _mt;
+			int E = (ii + 1) * m / _mt;
+			for (int i = S; i < E; i++)
 			{
 
 				auto M1 = _mats1[i];
@@ -188,24 +188,24 @@ double KingOfMonsters::_helper::VarPro(Eigen::VectorXd* coeff, Eigen::VectorXd* 
 	return (residual-residual2)/residual;
 }
 
-double KingOfMonsters::_helper::ALT(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int64_t tt)
+double KingOfMonsters::_helper::ALT(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int tt)
 {
 	Eigen::VectorXd X0 = *zz;
 	Eigen::VectorXd x0 =  *phi;
 
-	int64_t _mt = 0;
-	int64_t n = __U->cols();
-	int64_t m = _mats1.size();
+	int _mt = 0;
+	int n = __U->cols();
+	int m = _mats1.size();
 #pragma omp parallel
 	{
 #pragma omp single
 		_mt = omp_get_num_threads();
 	}
 
-	//int64_t m = __W->rows();
+	//int m = __W->rows();
 
-	int64_t nr1 = _r1->size();
-	int64_t nr2 = _r2->size();
+	int nr1 = _r1->size();
+	int nr2 = _r2->size();
 
 	Eigen::VectorXd r1 = /*__W->transpose() * */*_r1;
 	Eigen::VectorXd r2 = /*__W->transpose() * */*_r2;
@@ -225,11 +225,11 @@ double KingOfMonsters::_helper::ALT(Eigen::VectorXd* coeff, Eigen::VectorXd* phi
 	Eigen::VectorXd rhsX(m);
 
 #pragma omp parallel for
-	for (int64_t ii = 0; ii < _mt; ii++)
+	for (int ii = 0; ii < _mt; ii++)
 	{
-		int64_t S = ii * m / _mt;
-		int64_t E = (ii + 1) * m / _mt;
-		for (int64_t i = S; i < E; i++)
+		int S = ii * m / _mt;
+		int E = (ii + 1) * m / _mt;
+		for (int i = S; i < E; i++)
 		{
 
 			auto M1 = _mats1[i];
@@ -284,11 +284,11 @@ double KingOfMonsters::_helper::ALT(Eigen::VectorXd* coeff, Eigen::VectorXd* phi
 	rhsX.setZero();
 	b1.setZero();
 	b2.setZero();
-	for (int64_t ii = 0; ii < _mt; ii++)
+	for (int ii = 0; ii < _mt; ii++)
 	{
-		int64_t S = ii * m / _mt;
-		int64_t E = (ii + 1) * m / _mt;
-		for (int64_t i = S; i < E; i++)
+		int S = ii * m / _mt;
+		int E = (ii + 1) * m / _mt;
+		for (int i = S; i < E; i++)
 		{
 
 			auto M1 = _mats1[i];
@@ -326,22 +326,22 @@ double KingOfMonsters::_helper::ALT(Eigen::VectorXd* coeff, Eigen::VectorXd* phi
 	*phi = x0;
 	return rhsX.norm();
 }
-double KingOfMonsters::_helper::Simple(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int64_t tt)
+double KingOfMonsters::_helper::Simple(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int tt)
 {
 	Eigen::VectorXd X0 = *zz;
 
-	int64_t _mt = 0;
-	int64_t n = X0.size();
-	int64_t m = _mats1.size();
+	int _mt = 0;
+	int n = X0.size();
+	int m = _mats1.size();
 #pragma omp parallel
 	{
 #pragma omp single
 		_mt = omp_get_num_threads();
 	}
 
-	//int64_t m = __W->rows();
+	//int m = __W->rows();
 
-	int64_t nr1 = _r2->size();
+	int nr1 = _r2->size();
 
 	Eigen::VectorXd r2 = /*__W->transpose() * */*_r2;
 
@@ -356,11 +356,11 @@ double KingOfMonsters::_helper::Simple(Eigen::VectorXd* coeff, Eigen::VectorXd* 
 	Eigen::VectorXd rhsX(m);
 
 #pragma omp parallel for
-	for (int64_t ii = 0; ii < _mt; ii++)
+	for (int ii = 0; ii < _mt; ii++)
 	{
-		int64_t S = ii * m / _mt;
-		int64_t E = (ii + 1) * m / _mt;
-		for (int64_t i = S; i < E; i++)
+		int S = ii * m / _mt;
+		int E = (ii + 1) * m / _mt;
+		for (int i = S; i < E; i++)
 		{
 
 			auto M1 = _mats1[i];
@@ -406,24 +406,24 @@ double KingOfMonsters::_helper::Simple(Eigen::VectorXd* coeff, Eigen::VectorXd* 
 	return rhsX.norm();
 }
 
-double KingOfMonsters::_helper::GN(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int64_t tt)
+double KingOfMonsters::_helper::GN(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int tt)
 {
 	Eigen::VectorXd X0 = *zz;
 	Eigen::VectorXd x0 = *phi;
 
-	int64_t _mt = 0;
-	int64_t n = __U->cols();
-	int64_t m = _mats1.size();
+	int _mt = 0;
+	int n = __U->cols();
+	int m = _mats1.size();
 #pragma omp parallel
 	{
 #pragma omp single
 		_mt = omp_get_num_threads();
 	}
 
-	//int64_t m = __W->rows();
+	//int m = __W->rows();
 
-	int64_t nr1 = _r1->size();
-	int64_t nr2 = _r2->size();
+	int nr1 = _r1->size();
+	int nr2 = _r2->size();
 
 	Eigen::VectorXd r1 = /*__W->transpose() * */*_r1;
 	Eigen::VectorXd r2 = /*__W->transpose() * */*_r2;
@@ -443,11 +443,11 @@ double KingOfMonsters::_helper::GN(Eigen::VectorXd* coeff, Eigen::VectorXd* phi,
 	Eigen::VectorXd rhsX(m);
 
 #pragma omp parallel for
-	for (int64_t ii = 0; ii < _mt; ii++)
+	for (int ii = 0; ii < _mt; ii++)
 	{
-		int64_t S = ii * m / _mt;
-		int64_t E = (ii + 1) * m / _mt;
-		for (int64_t i = S; i < E; i++)
+		int S = ii * m / _mt;
+		int E = (ii + 1) * m / _mt;
+		for (int i = S; i < E; i++)
 		{
 
 			auto M1 = _mats1[i];
@@ -508,19 +508,19 @@ double KingOfMonsters::_helper::GN(Eigen::VectorXd* coeff, Eigen::VectorXd* phi,
 	return rhsX.norm();
 }
 
-void KingOfMonsters::_helper::write(Eigen::VectorXd* coeff, Eigen::VectorXd* phi0, Eigen::VectorXd* zz0,Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int64_t tt)
+void KingOfMonsters::_helper::write(Eigen::VectorXd* coeff, Eigen::VectorXd* phi0, Eigen::VectorXd* zz0,Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int tt)
 {
 	Eigen::VectorXd X0 = *zz;
 	Eigen::VectorXd x0 = *phi;
 
-	int64_t _mt = 1;
-	int64_t n = __U->cols();
-	int64_t m = _mats1.size();
+	int _mt = 1;
+	int n = __U->cols();
+	int m = _mats1.size();
 
-	//int64_t m = __W->rows();
+	//int m = __W->rows();
 
-	int64_t nr1 = _r1->size();
-	int64_t nr2 = _r2->size();
+	int nr1 = _r1->size();
+	int nr2 = _r2->size();
 
 	Eigen::VectorXd r1 = *_r1;
 	Eigen::VectorXd r2 = *_r2;
@@ -562,14 +562,14 @@ void KingOfMonsters::_helper::write(Eigen::VectorXd* coeff, Eigen::VectorXd* phi
 	xsol.open("example01_phisol.txt", std::ios::out);
 	Xsol.open("example01_zsol.txt", std::ios::out);
 
-	int64_t kk = 0;
-	int64_t nn = 0;
-	int64_t mm = 0;
-	for (int64_t ii = 0; ii < _mt; ii++)
+	int kk = 0;
+	int nn = 0;
+	int mm = 0;
+	for (int ii = 0; ii < _mt; ii++)
 	{
-		int64_t S = ii * m / _mt;
-		int64_t E = (ii + 1) * m / _mt;
-		for (int64_t i = S; i < E; i++)
+		int S = ii * m / _mt;
+		int E = (ii + 1) * m / _mt;
+		for (int i = S; i < E; i++)
 		{
 
 			auto M1 = _mats1[i];
@@ -579,7 +579,7 @@ void KingOfMonsters::_helper::write(Eigen::VectorXd* coeff, Eigen::VectorXd* phi
 			{
 				Jx.row(i) = (*M2 * X0).transpose();
 				JX.row(i) = x0.transpose() * *M2;
-				for (int64_t k = 0; k < M2->outerSize(); ++k) {
+				for (int k = 0; k < M2->outerSize(); ++k) {
 					for (Eigen::SparseMatrix<double>::InnerIterator it(*M2, k); it; ++it) {
 						Aijk << it.row() + 1 << " , " << it.col() + 1 << " , " << kk + 1 << " , " << it.value() << std::endl;
 					}
@@ -596,7 +596,7 @@ void KingOfMonsters::_helper::write(Eigen::VectorXd* coeff, Eigen::VectorXd* phi
 			{
 				//Cin
 				Jx.row(i) = *M1;
-				for (int64_t k = 0; k < M1->outerSize(); ++k) {
+				for (int k = 0; k < M1->outerSize(); ++k) {
 					for (Eigen::SparseMatrix<double>::InnerIterator it(*M1, k); it; ++it) {
 						Din << it.col() + 1 << " , " << nn + 1 << " , " << it.value() << std::endl;
 					}
@@ -609,7 +609,7 @@ void KingOfMonsters::_helper::write(Eigen::VectorXd* coeff, Eigen::VectorXd* phi
 			else  if (M2->rows() == 1 && M2->cols() == n) {
 				//Bjm
 				JX.row(i) = *M2;
-				for (int64_t k = 0; k < M2->outerSize(); ++k) {
+				for (int k = 0; k < M2->outerSize(); ++k) {
 					for (Eigen::SparseMatrix<double>::InnerIterator it(*M2, k); it; ++it) {
 						Bjm << it.col() + 1 << " , " << mm + 1 << " , " << it.value() << std::endl;
 					}
@@ -622,7 +622,7 @@ void KingOfMonsters::_helper::write(Eigen::VectorXd* coeff, Eigen::VectorXd* phi
 		}
 	}
 
-	for (int64_t i = 0; i < n; i++)
+	for (int i = 0; i < n; i++)
 	{
 		_x0 << i + 1 << " , " << (*phi0)(i) << std::endl;
 		_X0 << i + 1 << " , " << (*zz0)(i) << std::endl;
@@ -685,37 +685,37 @@ KingOfMonsters::cuda::cuda(int64_t N) {
 		cusparse_handle[ii].resize(STREAMCOUNT);
 		solver_handleSp[ii].resize(STREAMCOUNT);
 		_streams[ii].resize(STREAMCOUNT);
-		for (int64_t kk = 0; kk < STREAMCOUNT; kk++)
+		for (int kk = 0; kk < STREAMCOUNT; kk++)
 			cudaStreamCreate(&_streams[ii][kk]);
 	}
 
 	//std::cout << err << "yay" << std::endl;
-	for (int64_t i = 0; i < _count; i++)
+	for (int i = 0; i < _count; i++)
 	{
-		for (int64_t j = 0; j < STREAMCOUNT; j++)
+		for (int j = 0; j < STREAMCOUNT; j++)
 		{
 			solver_handle[i][j] = 0;
 		}
 	}
 
-	//for (int64_t i = 0; i < MAXDEVICE; i++)
+	//for (int i = 0; i < MAXDEVICE; i++)
 	//{
 	//	cublas_handle[i] = 0;
 	//}
-	for (int64_t ii = 0; ii < count(); ii++)
+	for (int ii = 0; ii < count(); ii++)
 	{
 		cudaSetDevice(ii);
-		for (int64_t j = 0; j < STREAMCOUNT; j++)
+		for (int j = 0; j < STREAMCOUNT; j++)
 		{
 			cusolverSpCreate(&solver_handleSp[ii][j]);
 			cusparseCreate(&cusparse_handle[ii][j]);
 		}
 	}
-	for (int64_t ii = 0; ii < count(); ii++)
+	for (int ii = 0; ii < count(); ii++)
 	{
 		cudaSetDevice(ii);
 		cusolverStatus_t status;
-		for (int64_t j = 0; j < STREAMCOUNT; j++)
+		for (int j = 0; j < STREAMCOUNT; j++)
 			status = cusolverDnCreate(&solver_handle[ii][j]);
 
 		//auto status2 = cublasCreate(&cublas_handle[ii]);
@@ -728,7 +728,7 @@ KingOfMonsters::cuda::cuda(int64_t N) {
 		else {
 			initialized = false;
 			failed = true;
-			for (int64_t j = 0; j < STREAMCOUNT; j++)
+			for (int j = 0; j < STREAMCOUNT; j++)
 				solver_handle[ii][j] = 0;
 			return;
 		}
@@ -751,7 +751,7 @@ KingOfMonsters::cuda::cuda(int64_t N) {
 	//__mgM2 = 0;
 	//__mgrhs2 = 0;
 
-	for (int64_t i = 0; i < MAXDEVICE; i++)
+	for (int i = 0; i < MAXDEVICE; i++)
 	{
 		__mgM[i] = 0;
 		__mgrhs[i] = 0;
@@ -783,10 +783,10 @@ KingOfMonsters::cuda::cuda(int64_t N) {
 		//cublasSetStream(cublas_handle[ii], streams[ii]);
 	}
 	speed.resize(count());
-	for (int64_t i = 0; i < count(); i++)speed[i] = i;
-	for (int64_t kk = 0; kk < 3; kk++)
+	for (int i = 0; i < count(); i++)speed[i] = i;
+	for (int kk = 0; kk < 3; kk++)
 	{
-		for (int64_t ii = 0; ii < count(); ii++)
+		for (int ii = 0; ii < count(); ii++)
 		{
 			auto start = high_resolution_clock::now();
 			_mySparse m;
@@ -1106,17 +1106,17 @@ void KingOfMonsters::cuda::dispose() {
 cusolverMgHandle_t KingOfMonsters::cuda::mgsolver() {
 	return mg_solver;
 }*/
-int* KingOfMonsters::cuda::info(int64_t i) {
+int* KingOfMonsters::cuda::info(int i) {
 	return __info[i];
 }
 KingOfMonsters::cuda::~cuda() {
 
 	dispose();
 }
-double* KingOfMonsters::cuda::work_M(int64_t i) {
+double* KingOfMonsters::cuda::work_M(int i) {
 	return __mgM[i];
 }
-double* KingOfMonsters::cuda::work_rhs(int64_t i) {
+double* KingOfMonsters::cuda::work_rhs(int i) {
 	return __mgrhs[i];
 }
 /*double* KingOfMonsters::cuda::work_M2() {
@@ -1125,7 +1125,7 @@ double* KingOfMonsters::cuda::work_rhs(int64_t i) {
 double* KingOfMonsters::cuda::work_rhs2() {
 	return __mgrhs2;
 }*/
-double* KingOfMonsters::cuda::work_C(int64_t i) {
+double* KingOfMonsters::cuda::work_C(int i) {
 	return __mgC[i];
 }
 double* KingOfMonsters::cuda::work(int64_t N, int device) {
@@ -1639,7 +1639,7 @@ int64_t KingOfMonsters::_mySparse::rows() {
 	}
 	return _ret;
 }
-void  KingOfMonsters::_mySparse::scale(int64_t i, double sc)
+void  KingOfMonsters::_mySparse::scale(int i, double sc)
 {
 	if (_mat.size() > 0)
 	{
@@ -1780,9 +1780,9 @@ void KingOfMonsters::_mySparse::mulright(Eigen::VectorXd& v, Eigen::VectorXd& re
 {
 	ret+=this->_mat[0] * v*sc;
 }
-void KingOfMonsters::_mySparse::setzero(int64_t row)
+void KingOfMonsters::_mySparse::setzero(int row)
 {
-	this->_mat[0].prune([row] (int64_t i, int64_t j, float val) {return i != row; });
+	this->_mat[0].prune([row] (int i, int j, float val) {return i != row; });
 }
 void KingOfMonsters::_mySparse::mulleft(Eigen::VectorXd& v, Eigen::VectorXd& ret, double sc)
 {
@@ -1876,8 +1876,8 @@ void KingOfMonsters::_mySparse::makePattern()
 }
 void KingOfMonsters::_mySparse::computeQR() {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
-	int64_t count = 0;
-	int64_t nnz = 0;
+	int count = 0;
+	int nnz = 0;
 	for (auto f : _mat)
 	{
 		count += f.rows();
@@ -1887,7 +1887,7 @@ void KingOfMonsters::_mySparse::computeQR() {
 	Eigen::SparseMatrix<double, Eigen::RowMajor, int64_t> M(count, _mat[0].cols());
 	Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t> N(count, _mat[0].cols());
 	M.reserve(nnz);
-	int64_t offset = 0;
+	int offset = 0;
 	for (auto f : _mat)
 	{
 		M.middleRows(offset, f.rows()) = f;
@@ -2130,7 +2130,7 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 
 void KingOfMonsters::_mySparse::add_usemap(int64_t i, int64_t j, double val)
 {
-	*(_mat[0].valuePtr() + (map2[&this->_mat[0]][std::tuple<int64_t,int64_t>(i ,j)])) += val;
+	*(_mat[0].valuePtr() + (map2[&this->_mat[0]][std::tuple<int64_t, int64_t>(i, j)])) += val;
 }
 
 
@@ -2786,7 +2786,7 @@ std::string KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, E
 	err=cudaMemcpy(gpu_rhs, rhs->data(), N * sizeof(double), cudaMemcpyHostToDevice);
 	ss << "," << err;
 
-	int64_t work_size = 0;
+	int work_size = 0;
 	int* devInfo_on_gpu = cuda->info(device);
 	//cudaMalloc(&devInfo_on_gpu, sizeof(int64_t));
 
@@ -2806,7 +2806,7 @@ std::string KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, E
 	//auto now = std::chrono::high_resolution_clock::now();
 	err2=cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, work, work_size, devInfo_on_gpu);
 	ss << "," << err2;
-	int64_t devInfo_on_cpu;
+	int devInfo_on_cpu;
 	cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
 	ss << "devInfo," << devInfo_on_cpu;
 
@@ -2886,7 +2886,7 @@ void  KingOfMonsters::_mySparse::project(_mySparse* i1/*JxxJ*/, _mySparse* i2/*J
 	auto I = Eigen::MatrixXd::Identity(v1->__v.size(), v1->__v.size());
 	double lambda = 0;
 	Eigen::FullPivHouseholderQR<Eigen::MatrixXd> qr;
-	for (int64_t i = 0; i < 6; i++)
+	for (int i = 0; i < 6; i++)
 	{
 		qr.compute((XxxX - I).transpose() * (XxxX - I) + lambda * I);
 		double norm1 = v1->__v.transpose() * qr.solve(qr.solve(v1->__v));
@@ -2925,7 +2925,7 @@ void  KingOfMonsters::_mySparse::project(_mySparse* i1/*JxxJ*/, _mySparse* i2/*J
 	
 	return ss.str();
 }*/
-/*int64_t KingOfMonsters::_mySparse::_QR_cpu(Eigen::MatrixXd* Q, Eigen::MatrixXd* R) {
+/*int KingOfMonsters::_mySparse::_QR_cpu(Eigen::MatrixXd* Q, Eigen::MatrixXd* R) {
 
 	int64_t M = this->_dmat.rows();
 	int64_t N = this->_dmat.cols();
@@ -2969,7 +2969,7 @@ std::string KingOfMonsters::_mySparse::_solveLU_gpu(KingOfMonsters::cuda* cuda, 
 	err = cudaMemcpy(gpu_rhs, rhs->data(), N * sizeof(double), cudaMemcpyHostToDevice);
 	ss << "," << err;
 
-	int64_t work_size = 0;
+	int work_size = 0;
 	int* devInfo_on_gpu = cuda->info(device);
 	//cudaMalloc(&devInfo_on_gpu, sizeof(int64_t));
 
@@ -2989,7 +2989,7 @@ std::string KingOfMonsters::_mySparse::_solveLU_gpu(KingOfMonsters::cuda* cuda, 
 	//auto now = std::chrono::high_resolution_clock::now();
 	err2 = cusolverDnDgetrf (solver, N, N, gpu_matrix, N, work, NULL, devInfo_on_gpu);
 	ss << "," << err2;
-	int64_t devInfo_on_cpu;
+	int devInfo_on_cpu;
 	cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
 	ss << "devInfo," << devInfo_on_cpu;
 
@@ -3124,7 +3124,7 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu_single(KingOfMonsters::cuda* 
 	cudaMemcpy(gpu_matrix, _dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
 	int* devInfo_on_gpu = cuda->info(cuda->fastest());
 
-	int64_t work_size = 0;
+	int work_size = 0;
 
 	// --- CUDA CHOLESKY initialization
 	cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, &work_size);
@@ -3196,7 +3196,7 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu_omp(KingOfMonsters::cuda* cud
 		cudaMemcpy(gpu_matrix, _dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
 		int* devInfo_on_gpu = cuda->info(cuda->fastest());
 
-		int64_t work_size = 0;
+		int work_size = 0;
 
 		// --- CUDA CHOLESKY initialization
 		cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, &work_size);
@@ -3226,7 +3226,7 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu_omp(KingOfMonsters::cuda* cud
 		//auto stream = streams[cuda->fastest()];
 		double* gpu_matrix = cuda->work_M(cuda->fastest());
 		// --- CUDA CHOLESKY initialization
-		int64_t work_size = 0;
+		int work_size = 0;
 		cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, &work_size);
 		cudaMemcpyAsync(gpu_matrix, _dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice, cuda->__streams(cuda->fastest(), 0));
 		int* devInfo_on_gpu = cuda->info(cuda->fastest());
@@ -3290,7 +3290,7 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu_omp(KingOfMonsters::cuda* cud
 		double* gpu_rhs = cuda->work_C(ii);
 		int* devInfo_on_gpu = cuda->info(ii);
 
-	    int64_t devInfo_on_cpu = 0;
+	    int devInfo_on_cpu = 0;
 
 		bool exit = false;
 		//while (true)
@@ -3345,7 +3345,7 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu_sparse(KingOfMonsters::cuda* 
 
 	//SparseMatrixCSR Acsr = _mat[0]; // solver supports CSR format
 
-	int64_t N = _mat[0].cols();
+	int N = _mat[0].cols();
 
 
 
@@ -3358,14 +3358,14 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu_sparse(KingOfMonsters::cuda* 
 
 	//ret->_dmat = ltlt.solve(I);
 	Eigen::initParallel();
-	int64_t tt = _mt;
+	int tt = _mt;
 #pragma omp parallel for
-	for (int64_t i = 0; i < tt; i++)
+	for (int i = 0; i < tt; i++)
 	{
 		Eigen::SimplicialLDLT<Eigen::SparseMatrix<double,Eigen::ColMajor,int64_t>> ltlt;
 		ltlt.compute(_mat[0]);
-		int64_t S = N * i / tt;
-		int64_t E = N * (i + 1) / tt;
+		int S = N * i / tt;
+		int E = N * (i + 1) / tt;
 
 		ret->_dmat.middleCols(S,E-S) = ltlt.solve(I.middleCols(S,E-S));
 	}*/
@@ -3374,7 +3374,7 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu_sparse(KingOfMonsters::cuda* 
 
 /*	if (!cuda->valid())return ss.str();
 
-	int64_t ii = cuda->fastest();
+	int ii = cuda->fastest();
 	auto solver = cuda->solverSp(ii, 0);
 	cusolverSpSetStream(solver, cuda->__streams(ii, 0));
 	cudaSetDevice(ii);
@@ -3389,7 +3389,7 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu_sparse(KingOfMonsters::cuda* 
 
 	double* m_gpu = cuda->work_M(ii);
 
-	int64_t nnz = _mat[0].nonZeros();
+	int nnz = _mat[0].nonZeros();
 	auto err = cudaMemcpyAsync(m_gpu, Acsr.valuePtr(), sizeof(double) * nnz, cudaMemcpyHostToDevice, cuda->__streams(cuda->fastest(), 0));
 	err = cudaMemcpyAsync(m_gpu + nnz, Acsr.outerIndexPtr(), sizeof(int) * (N + 1), cudaMemcpyHostToDevice, cuda->__streams(cuda->fastest(), 0));
 	err = cudaMemcpyAsync(m_gpu + sizeof(int) * (N + 1), Acsr.innerIndexPtr(), sizeof(int) * nnz, cudaMemcpyHostToDevice, cuda->__streams(cuda->fastest(), 0));
@@ -3407,7 +3407,7 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu_sparse(KingOfMonsters::cuda* 
 	//std::string res = buffer_.allocate(workSpace);
 
 	double* work = cuda->work(workspace, ii);
-	int64_t singularity = -1;
+	int singularity = -1;
 	auto err3 = cusolverSpDcsrcholFactor(solver, N, nnz, desc,
 		m_gpu, (int*)(m_gpu + nnz), (int*)(m_gpu + sizeof(int) * (N + 1)), info_, work);
 	//const double tol = static_cast<double>(1e-10);
@@ -3425,15 +3425,15 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu_sparse(KingOfMonsters::cuda* 
 
 	double one = 1;
 	double zero = 0;
-	for (int64_t i = 0; i < N; i+=50)
+	for (int i = 0; i < N; i+=50)
 	{
 		cudaMemset(rhs_gpu, 0.0, sizeof(double) * N * 50);
 
-		int64_t S = i;
-		int64_t E = S + 50;
+		int S = i;
+		int E = S + 50;
 		if (E > N)E = N;
 #pragma omp parallel for
-		for (int64_t j = S; j < E; j++)
+		for (int j = S; j < E; j++)
 		{
 			cudaMemcpy((void*)((double*)rhs_gpu + (j-S)*N+j), &one, sizeof(double) * 1, cudaMemcpyHostToDevice);
 			//if (i > 0)
@@ -3464,11 +3464,11 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu_sparse(KingOfMonsters::cuda* 
 
 	SparseMatrixCSR Acsr = _mat[0]; // solver supports CSR format
 
-	int64_t N = Acsr.cols();
+	int N = Acsr.cols();
 
 
-	int64_t count = 0;
-	for (int64_t i = 0; i < N; i++)
+	int count = 0;
+	for (int i = 0; i < N; i++)
 	{
 		if (Acsr.coeff(i, i) < 0)count++;
 	}
@@ -3478,7 +3478,7 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu_sparse(KingOfMonsters::cuda* 
 
 	if (!cuda->valid())return ss.str();
 
-	int64_t ii = cuda->fastest();
+	int ii = cuda->fastest();
 	auto solver = cuda->solverSp(ii, 0);
 	cusolverSpSetStream(solver, cuda->__streams(ii, 0));
 	cudaSetDevice(ii);
@@ -3493,7 +3493,7 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu_sparse(KingOfMonsters::cuda* 
 
 	double* m_gpu = cuda->work_M(ii);
 	
-	int64_t nnz = _mat[0].nonZeros();
+	int nnz = _mat[0].nonZeros();
 	auto err = cudaMemcpyAsync(m_gpu, Acsr.valuePtr(), sizeof(double) * nnz, cudaMemcpyHostToDevice, cuda->__streams(cuda->fastest(), 0));
 	err = cudaMemcpyAsync(m_gpu+nnz, Acsr.outerIndexPtr(), sizeof(int) * (N+1), cudaMemcpyHostToDevice, cuda->__streams(cuda->fastest(), 0));
 	err = cudaMemcpyAsync(m_gpu+ sizeof(int)*(N+1), Acsr.innerIndexPtr(), sizeof(int) * nnz, cudaMemcpyHostToDevice, cuda->__streams(cuda->fastest(), 0));
@@ -3511,7 +3511,7 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu_sparse(KingOfMonsters::cuda* 
 	//std::string res = buffer_.allocate(workSpace);
 	
 	double *work =cuda->work(workspace, ii);
-	int64_t singularity = -1;
+	int singularity = -1;
 	auto err3 = cusolverSpDcsrcholFactor(solver,N, nnz, desc,
 		m_gpu, (int*)(m_gpu + nnz), (int*)(m_gpu + sizeof(int) * (N + 1)), info_, work);
 
@@ -3522,7 +3522,7 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu_sparse(KingOfMonsters::cuda* 
 
 	double one = 1;
 	double zero = 0;
-	for (int64_t i = 0; i < N; i++)
+	for (int i = 0; i < N; i++)
 	{
 		
 		cudaMemset(rhs_gpu, 0.0, sizeof(double) * 2 * N);
@@ -3579,9 +3579,9 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu(KingOfMonsters::cuda* cuda, _
 	auto err=cudaMemcpyAsync(m_gpu, _dmat.data(), sizeof(double) * N * N, cudaMemcpyHostToDevice, cuda->__streams(cuda->fastest(), 0));
 	ss << "," << err;
 	double* work;
-	int64_t work_size;
-	int64_t work_size1 = 0;
-	int64_t work_size2 = 0;
+	int work_size;
+	int work_size1 = 0;
+	int work_size2 = 0;
 	auto err2=cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, &work_size1);
 	ss << "," << err2;
 	err2=cusolverDnDpotri_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, &work_size2);
@@ -3645,7 +3645,7 @@ void KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, _mySpars
 	int* devInfo_on_gpu;
 	cudaMalloc(&devInfo_on_gpu, sizeof(int64_t));
 	double* work;
-	int64_t work_size = 0;
+	int work_size = 0;
 
 	// --- CUDA CHOLESKY initialization
 	cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, &work_size);
@@ -3655,7 +3655,7 @@ void KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, _mySpars
 	//cudaMalloc(&work, work_size * sizeof(double));
 	auto now = std::chrono::high_resolution_clock::now();
 	cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, work, work_size, devInfo_on_gpu);
-	int64_t  devInfo_on_cpu = 0;
+	int  devInfo_on_cpu = 0;
 	cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
 
 	if (0 != devInfo_on_cpu) {
@@ -3679,7 +3679,7 @@ void KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, _mySpars
 		cudaMemcpy(_gpu_matrix, _dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
 		cudaMemcpy(gpu_rhs, mat->_dmat.data(), N * nn * sizeof(double), cudaMemcpyHostToDevice);
 		int* _devInfo_on_gpu = 0;
-		int64_t _devInfo_on_cpu = 0;
+		int _devInfo_on_cpu = 0;
 		cudaMalloc(&_devInfo_on_gpu, sizeof(int));
 		while (true)
 		{
@@ -3726,7 +3726,7 @@ void KingOfMonsters::_mySparse::_solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* r
 	*ret = LLT.solve(*rhs);
 	//return x;
 }
-std::string KingOfMonsters::_mySparse::_solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret,int64_t ordering) {
+std::string KingOfMonsters::_mySparse::_solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret,int ordering) {
 	//Eigen::SparseLU<Eigen::SparseMatrix<double,Eigen::ColMajor>> lu;
 	//lu.compute(_mat[0]);
 	//ret->conservativeResize(_mat[0].cols());
@@ -3747,7 +3747,7 @@ std::string KingOfMonsters::_mySparse::_solve0_lu(Eigen::VectorXd* rhs, Eigen::V
 	auto cusparse_status = cusparseCreateMatDescr(&descrA);
 	cusolverSpHandle_t handle;
 	cusolverSpCreate(&handle);
-	int64_t singularity=-1;
+	int singularity=-1;
 	ret->resize(Acsr.cols());
 	ret->setZero();
 	double* values;
@@ -3853,7 +3853,7 @@ std::string KingOfMonsters::_mySparse::_solve0_lu(Eigen::VectorXd* rhs, Eigen::V
 	}*/
 	
 }
-std::string KingOfMonsters::_mySparse::_solve0_chol_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int64_t ordering) {
+std::string KingOfMonsters::_mySparse::_solve0_chol_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering) {
 
 	using Scalar = double;
 	using SparseMatrixCSC = Eigen::SparseMatrix<Scalar, Eigen::StorageOptions::ColMajor>;

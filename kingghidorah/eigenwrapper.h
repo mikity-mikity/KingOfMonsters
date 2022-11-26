@@ -45,11 +45,11 @@ void kernel(double* value, int64_t* row, int64_t* col, int64_t N, int64_t M, dou
 namespace KingOfMonsters {
 	class _helper {
 	public:
-		static double VarPro(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int64_t tt);
-		static double ALT(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int64_t tt);
-		static double Simple(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int64_t tt);
-		static double GN(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int64_t tt);
-		static void write(Eigen::VectorXd* coeff, Eigen::VectorXd* phi0, Eigen::VectorXd* zz0, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int64_t tt);
+		static double VarPro(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int tt);
+		static double ALT(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int tt);
+		static double Simple(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int tt);
+		static double GN(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int tt);
+		static void write(Eigen::VectorXd* coeff, Eigen::VectorXd* phi0, Eigen::VectorXd* zz0, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int tt);
 	};
 	class cuda {
 	public:
@@ -59,8 +59,8 @@ namespace KingOfMonsters {
 		std::vector<std::string> rank;
 		bool failed;
 		bool initialized;
-		int64_t _count = 0;
-		int64_t _fastest = 0;
+		int _count = 0;
+		int _fastest = 0;
 		std::vector<std::vector<cusolverDnHandle_t>> solver_handle;
 		std::vector<std::vector<cusolverSpHandle_t>> solver_handleSp;
 		std::vector<std::vector<cusparseHandle_t>> cusparse_handle;
@@ -80,7 +80,7 @@ namespace KingOfMonsters {
 		//double* _array_d_B[MAXDEVICE];
 		//double* _array_d_work[MAXDEVICE];
 		int* __info[MAXDEVICE];
-		int64_t _deviceList[MAXDEVICE];
+		int _deviceList[MAXDEVICE];
 		//double* _L=0;
 		std::vector<int> speed;
 
@@ -107,9 +107,9 @@ namespace KingOfMonsters {
 		bool valid();
 		bool canpeer();
 		std::string device_name();
-		int* info(int64_t i);
-		double* work_M(int64_t i);
-		double* work_rhs(int64_t i);
+		int* info(int i);
+		double* work_M(int i);
+		double* work_rhs(int i);
 		//double* work_M2();
 		//double* work_rhs2();
 		double* work_C(int i);
@@ -290,9 +290,9 @@ namespace KingOfMonsters {
 		void setmiddlecolum(Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>& f, int64_t start, int64_t end);
 		void solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void _solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
-		std::string _solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int64_t ordering);
-		std::string _solve0_lu_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int64_t ordering);
-		std::string _solve0_chol_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int64_t ordering);
+		std::string _solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering);
+		std::string _solve0_lu_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering);
+		std::string _solve0_chol_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering);
 		void solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void _solve0_lu_cg(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		std::string _solve0_gpu(KingOfMonsters::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int64_t device);

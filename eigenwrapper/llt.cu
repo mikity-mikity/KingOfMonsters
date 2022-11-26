@@ -155,7 +155,7 @@ void kernel(double* value,int* row,int* col,int N,int M,double* value2,int* inde
 
 }
 
-void kernel2(double* value, int* row, int* col, int N,int  M, double* value2, cudaStream_t stream) {
+void kernel2(double* value, int* row, int* col, int N, int M, double* value2, cudaStream_t stream) {
 
 	dim3 threads(__blocksize2);
 	int ff = N / __blocksize2 / __chunk2;

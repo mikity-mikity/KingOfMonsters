@@ -10,17 +10,17 @@
 /* Description: Gather of non-zero elements from dense vector y into
    sparse vector x. */
 /*cusparseStatus_t CUSPARSEAPI cusparseXgthr(cusparseHandle_t handle,
-	int64_t nnz,
+	int nnz,
 	const float *y,
 	float *xVal,
-	const int64_t *xInd,
+	const int *xInd,
 	cusparseIndexBase_t idxBase);
 
 cusparseStatus_t CUSPARSEAPI cusparseXgthr(cusparseHandle_t handle,
-	int64_t nnz,
+	int nnz,
 	const double *y,
 	double *xVal,
-	const int64_t *xInd,
+	const int *xInd,
 	cusparseIndexBase_t idxBase);
 */
 /*
@@ -29,47 +29,47 @@ cusparseStatus_t CUSPARSEAPI cusparseXgthr(cusparseHandle_t handle,
  */
 cusolverStatus_t CUSOLVERAPI cusolverSpScsrluBufferInfoHost(
 	cusolverSpHandle_t handle,
-	int64_t n,
-	int64_t nnzA,
+	int n,
+	int nnzA,
 	const cusparseMatDescr_t descrA,
 	const float *csrValA,
-	const int64_t *csrRowPtrA,
-	const int64_t *csrColIndA,
+	const int *csrRowPtrA,
+	const int *csrColIndA,
 	csrluInfoHost_t info,
 	size_t *internalDataInBytes,
 	size_t *workspaceInBytes);
 
 cusolverStatus_t CUSOLVERAPI cusolverSpDcsrluBufferInfoHost(
 	cusolverSpHandle_t handle,
-	int64_t n,
-	int64_t nnzA,
+	int n,
+	int nnzA,
 	const cusparseMatDescr_t descrA,
 	const double *csrValA,
-	const int64_t *csrRowPtrA,
-	const int64_t *csrColIndA,
+	const int *csrRowPtrA,
+	const int *csrColIndA,
 	csrluInfoHost_t info,
 	size_t *internalDataInBytes,
 	size_t *workspaceInBytes);
 
 cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluFactor(
 	cusolverSpHandle_t handle,
-	int64_t n,
-	int64_t nnzA,
+	int n,
+	int nnzA,
 	const cusparseMatDescr_t descrA,
 	const float *csrValA,
-	const int64_t *csrRowPtrA,
-	const int64_t *csrColIndA,
+	const int *csrRowPtrA,
+	const int *csrColIndA,
 	csrluInfoHost_t info,
 	void *pBuffer);
 
 cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluFactor(
 	cusolverSpHandle_t handle,
-	int64_t n,
-	int64_t nnzA,
+	int n,
+	int nnzA,
 	const cusparseMatDescr_t descrA,
 	const double *csrValA,
-	const int64_t *csrRowPtrA,
-	const int64_t *csrColIndA,
+	const int *csrRowPtrA,
+	const int *csrColIndA,
 	csrluInfoHost_t info,
 	void *pBuffer);
 
@@ -77,17 +77,17 @@ cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluZeroPivot(
 	cusolverSpHandle_t handle,
 	csrluInfoHost_t info,
 	float tol,
-	int64_t *position);
+	int *position);
 
 cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluZeroPivot(
 	cusolverSpHandle_t handle,
 	csrluInfoHost_t info,
 	double tol,
-	int64_t *position);
+	int *position);
 
 cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluSolve(
 	cusolverSpHandle_t handle,
-	int64_t n,
+	int n,
 	const float *b,
 	float *x,
 	csrluInfoHost_t info,
@@ -95,7 +95,7 @@ cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluSolve(
 
 cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluSolve(
 	cusolverSpHandle_t handle,
-	int64_t n,
+	int n,
 	const double *b,
 	double *x,
 	csrluInfoHost_t info,
