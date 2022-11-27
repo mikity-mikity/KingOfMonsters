@@ -2937,7 +2937,7 @@ void  KingOfMonsters::_mySparse::project(_mySparse* i1/*JxxJ*/, _mySparse* i2/*J
 std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret)
 {
 	this->_mat[0].makeCompressed();
-	Eigen::SparseLU<Eigen::SparseMatrix<double, 0, int64_t>,Eigen::COLAMDOrdering<int64_t>> lu(this->_mat[0]);
+	Eigen::SparseLU<Eigen::SparseMatrix<double, 0, int64_t>,Eigen:: COLAMDOrdering<int64_t>> lu(this->_mat[0]);
 	if (lu.info() == Eigen::ComputationInfo::Success)
 	{
 
