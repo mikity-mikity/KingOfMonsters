@@ -1224,6 +1224,24 @@ namespace KingOfMonsters {
 
 			return gcnew System::String(ss.c_str());
 		}
+		System::String^ _solveLU_sparseCG_cpu(myDoubleArray^ rhs, myDoubleArray^ ret) {
+			//auto ss = dat->_solveLU_gpu(gpu->cuda(), &rhs->_arr->__v, &ret->_arr->__v, device);
+			//System::String^ ee = gcnew System::String(ss.c_str());
+			auto ss = dat->_solveLU_sparseCG_cpu(&rhs->_arr->__v, &ret->_arr->__v);
+
+			return gcnew System::String(ss.c_str());
+		}
+		System::String^ _solveLU_dense_cpu(myDoubleArray^ rhs, myDoubleArray^ ret) {
+			//auto ss = dat->_solveLU_gpu(gpu->cuda(), &rhs->_arr->__v, &ret->_arr->__v, device);
+			//System::String^ ee = gcnew System::String(ss.c_str());
+			auto ss = dat->_solveLU_dense_cpu(&rhs->_arr->__v, &ret->_arr->__v);
+
+			return gcnew System::String(ss.c_str());
+		}
+		void turnDense()
+		{
+			this->dat->turnDense();
+		}
 		mySparse^ solve0(mySparse^ rhs) {
 			Eigen::LLT<Eigen::MatrixXd>* _LLT = new Eigen::LLT<Eigen::MatrixXd>();
 			dat->computeLLT(_LLT);

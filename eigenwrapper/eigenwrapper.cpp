@@ -2934,10 +2934,32 @@ void  KingOfMonsters::_mySparse::project(_mySparse* i1/*JxxJ*/, _mySparse* i2/*J
 	*Q = qr.matrixQ();
 	return qr.rank();
 }*/
+std::string KingOfMonsters::_mySparse::_solveLU_dense_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret)
+{
+	this->_mat[0].makeCompressed();
+	Eigen::PartialPivLU<Eigen::MatrixXd> lu(this->_dmat);
+	//if (lu.info() == Eigen::ComputationInfo::Success)
+	{
+
+		*ret = lu.solve(*rhs);
+		return "success";
+	}
+	/*
+	else {
+		std::stringstream ss;
+		ss << lu.info();
+		return ss.str();
+			;
+	}*/
+}
+void KingOfMonsters::_mySparse::turnDense()
+{
+	this->_dmat = this->_mat[0];
+}
 std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret)
 {
 	this->_mat[0].makeCompressed();
-	Eigen::SparseLU<Eigen::SparseMatrix<double, 0, int64_t>,Eigen:: COLAMDOrdering<int64_t>> lu(this->_mat[0]);
+	Eigen::SparseLU<Eigen::SparseMatrix<double, 0, int64_t>, Eigen::COLAMDOrdering<int64_t>> lu(this->_mat[0]);
 	if (lu.info() == Eigen::ComputationInfo::Success)
 	{
 
@@ -2948,7 +2970,24 @@ std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs,
 		std::stringstream ss;
 		ss << lu.info();
 		return ss.str();
-			;
+		;
+	}
+}
+std::string KingOfMonsters::_mySparse::_solveLU_sparseCG_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret)
+{
+	this->_mat[0].makeCompressed();
+	Eigen::ConjugateGradient<Eigen::SparseMatrix<double, 0, int64_t>,Eigen::Upper|Eigen::Lower,Eigen::DiagonalPreconditioner<double>> lu(this->_mat[0]);
+	if (lu.info() == Eigen::ComputationInfo::Success)
+	{
+
+		*ret = lu.solve(*rhs);
+		return "success";
+	}
+	else {
+		std::stringstream ss;
+		ss << lu.info();
+		return ss.str();
+		;
 	}
 }
 std::string KingOfMonsters::_mySparse::_solveLU_gpu(KingOfMonsters::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int64_t device) {
