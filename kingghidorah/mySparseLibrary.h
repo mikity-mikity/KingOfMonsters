@@ -1053,7 +1053,7 @@ namespace KingOfMonsters {
 			//ptr = nullptr;
 			//return ret;
 		}
-		void _solve0_lu(myDoubleArray^ rhs, myDoubleArray^ ret, int ordering, bool meh) {
+		System::String ^ _solve0_lu(myDoubleArray^ rhs, myDoubleArray^ ret, int ordering, bool meh) {
 			//pin_ptr<double> ptr = &rhs[0];
 			//dat->_mat[0].setIdentity();
 			if (meh) {
@@ -1099,6 +1099,7 @@ namespace KingOfMonsters {
 			}
 			if (_str == "")_str = "success";
 			System::Console::WriteLine(gcnew System::String(_str.c_str()));
+			return gcnew System::String(_str.c_str());
 		}
 		void _solve0_lu_cpu(myDoubleArray^ rhs, myDoubleArray^ ret, int ordering, bool meh,double nnn) {
 			mySparse^ m = nullptr;

@@ -161,50 +161,54 @@ cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluZeroPivot(
 			position);
 }
 
-cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluZeroPivot(
+cusolverStatus_t CUSOLVERAPI cusolverSpXcsrqrZeroPivot(
 	cusolverSpHandle_t handle,
-	csrluInfoHost_t info,
+	csrqrInfoHost_t info,
 	double tol,
 	int *position)
 {
 	return
-		cusolverSpDcsrluZeroPivotHost(
+		cusolverSpDcsrqrZeroPivotHost(
 			handle,
 			info,
 			tol,
 			position);
 }
 
-cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluSolve    (
+cusolverStatus_t CUSOLVERAPI cusolverSpXcsrqrSolve    (
 	cusolverSpHandle_t handle,
 	int n,
-	const float *b,
+	int m,
+	float *b,
 	float *x,
-	csrluInfoHost_t info,
+	csrqrInfoHost_t info,
 	void *pBuffer)
 {
 	return
-		cusolverSpScsrluSolveHost(
+		cusolverSpScsrqrSolveHost(
 			handle,
 			n,
+			m,
 			b,
 			x,
 			info,
 			pBuffer);
 }
 
-cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluSolve(
+cusolverStatus_t CUSOLVERAPI cusolverSpXcsrqrSolve(
 	cusolverSpHandle_t handle,
 	int n,
-	const double *b,
+	int m,
+	double *b,
 	double *x,
-	csrluInfoHost_t info,
+	csrqrInfoHost_t info,
 	void *pBuffer)
 {
 	return
-		cusolverSpDcsrluSolveHost(
+		cusolverSpDcsrqrSolveHost(
 			handle,
 			n,
+			m,
 			b,
 			x,
 			info,

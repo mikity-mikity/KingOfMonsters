@@ -120,13 +120,13 @@ public:
 		handle_ = handle;
 
 		// create info
-		cusolverSpCreateCsrluInfoHost(&info_);
+		cusolverSpCreateCsrqrInfoHost(&info_);
 	}
 
 	std::string allocateBuffer(const SparseSquareMatrixCSR<T>& A, const int* csrRowPtr, const int* csrColInd)
 	{
 		size_t internalData, workSpace;
-		cusolverSpDcsrluBufferInfoHost(handle_, A.size(), A.nnz(), A.desc(),
+		cusolverSpDcsrqrBufferInfoHost(handle_, A.size(), A.nnz(), A.desc(),
 			(double*) A.val(), csrRowPtr, csrColInd, info_, &internalData, &workSpace);
 		//std::cout << "cusparse workspace size=" << workSpace << std::endl;
 		std::string res=buffer_.allocate(workSpace);
@@ -137,7 +137,7 @@ public:
 	{
 		const T tol = static_cast<T>(1e-14);
 		int singularity = -1;
-		cusolverSpXcsrluZeroPivot(handle_, info_, tol, &singularity);
+		cusolverSpXcsrqrZeroPivot(handle_, info_, tol, &singularity);
 		if (position)
 			*position = singularity;
 		return singularity >= 0;
@@ -159,7 +159,7 @@ public:
 		if (!hasZeroPivot(&zeropivot))return "SUCCESS";
 		*/
 		int singularity = -1;
-		auto err = cusolverSpDcsrlsvchol(
+		auto err = cusolverSpDcsrlsvqr(
 
 			handle_, A.size(), A.nnz(), A.desc(),
 			val, csrRowPtr, csrColInd,
@@ -188,7 +188,7 @@ public:
 		if (!hasZeroPivot(&zeropivot))return "SUCCESS";
 		*/
 		int singularity = -1;
-		auto err = cusolverSpDcsrlsvcholHost(
+		auto err = cusolverSpDcsrlsvqrHost(
 
 			handle_, A.size(), A.nnz(), A.desc(),
 			val, csrRowPtr, csrColInd,
@@ -209,14 +209,14 @@ public:
 			return "SUCCESS";
 		}
 	}
-	void solve(int size, const T* b, T* x)
+	void solve(int size, double* b, double* x)
 	{
-		cusolverSpXcsrluSolve(handle_, size, b, x, info_, (void*)buffer_.data);
+		//cusolverSpDcsrqrSolve(handle_, size,size, b, x, info_, (void*)buffer_.data);
 	}
 
 	void destroy()
 	{
-		cusolverSpDestroyCsrluInfoHost(info_);
+		cusolverSpDestroyCsrqrInfoHost(info_);
 	}
 
 	~Sparsecholesky() { destroy(); }
@@ -224,7 +224,7 @@ public:
 private:
 
 	cusolverSpHandle_t handle_;
-	csrluInfoHost_t info_;
+	csrqrInfoHost_t info_;
 	DeviceBuffer<unsigned char> buffer_;
 };
 
@@ -425,7 +425,7 @@ public:
 	}
 	void solve(const T* b, T* x) override
 	{
-		d_b.upload(b);
+		/*d_b.upload(b);
 
 		if (doOrdering)
 		{
@@ -444,7 +444,7 @@ public:
 			cholesky.solve(Acsr.size(), d_b.data, d_x.data);
 		}
 
-		d_x.download(x);
+		d_x.download(x);*/
 	}
 
 	Info info() const override
