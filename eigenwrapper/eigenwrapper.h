@@ -24,7 +24,7 @@
 #include <cusolverSp.h>
 #include <cusparse_v2.h>
 #include <cublas_v2.h>
-#include <cusolverSp_LOWLEVEL_PREVIEW.h>
+//#include <cusolverSp_LOWLEVEL_PREVIEW.h>
 #include<cuda.h>
 #include <cuda_runtime_api.h>
 #include <chrono>

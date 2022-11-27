@@ -3803,7 +3803,7 @@ std::string KingOfMonsters::_mySparse::_solve0_lu(Eigen::VectorXd* rhs, Eigen::V
 	cudaMemcpy(cols, Acsr.innerIndexPtr(), sizeof(int) * Acsr.nonZeros(), cudaMemcpyHostToDevice);
 	
 	cudaMemcpy(_rhs, rhs->data(), sizeof(double) * Acsr.rows(), cudaMemcpyHostToDevice);
-
+	
 	auto err2=cusolverSpDcsrlsvqr(handle,
 		Acsr.rows(),
 		Acsr.nonZeros(),
