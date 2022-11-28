@@ -3119,6 +3119,17 @@ int64_t KingOfMonsters::_mySparse::_solveI(_mySparse* ret)
 	//Eigen::SparseLU<Eigen::SparseMatrix<double,Eigen::ColMajor>> llt;
 	//Eigen::FullPivLU<
 }
+int64_t KingOfMonsters::_mySparse::_solveI_dense(_mySparse* ret)
+{
+	//ret->_dmat = this->_dmat.inverse();
+	//return 0;
+	ret->_dmat = this->_dmat.inverse();
+	return 0;
+	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);	
+	//Eigen::SimplicialLLT<Eigen::SparseMatrix<double>, Eigen::ColMajor> llt;
+	//Eigen::SparseLU<Eigen::SparseMatrix<double,Eigen::ColMajor>> llt;
+	//Eigen::FullPivLU<
+}
 
 void initidentiy(KingOfMonsters::cuda* cuda, int64_t N,bool mp) {
 	double _a = 0;
