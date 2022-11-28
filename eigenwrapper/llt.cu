@@ -1,4 +1,4 @@
-#include <assert.h>
+/*#include <assert.h>
 #include <stdio.h>
 
 // CUDA runtime
@@ -13,80 +13,7 @@
 
 #define __blocksize2 4
 #define __chunk2 4
-/*__global__ void cholesky1(double* A, double* L, int n) {
-	int _b = blockIdx.x;
-	int _t = threadIdx.x;
-	int _j = _b * __blocksize + _t;
-	int _s = _j* __chunk;
-	int _e = _s + __chunk;
-	if (_s >= n)return;
-	if (_e > n)_e = n;
 
-	for (int j = _s; j < _e; j++) {
-
-		double s = 0;
-		double* _ptr = &L[j * n + 0];
-		for (int k = 0; k < j; k++) {
-			s += *_ptr * *_ptr;
-			_ptr++;
-		}
-		L[j * n + j] = sqrt(A[j * n + j] - s);
-	}
-}
-__global__ void cholesky1(double* A, double* L, int j, int n) {
-	int _b = blockIdx.x;
-	int _t = threadIdx.x;
-	int _j = _b * __blocksize + _t;
-	int _s = _j * __chunk;
-	int _e = _s + __chunk;
-	if (_s >= _e)return;
-	if (_e > n)_e = n;
-	
-
-
-
-	if(_s==0)
-		L[j * n + j] += sqrt(A[j * n + j]);
-
-	double s = 0;
-	int __s2 = _s;
-	int __e2 = _e;
-	if (__e2 >= j)__e2 = j;
-	if (__s2 < __e2)
-	{
-		double* _ptr = &L[j * n + __s2];
-		for (int k = __s2; k < __e2; k++) {
-			s += *_ptr * *_ptr;
-			_ptr++;
-		}
-		L[j * n + j] -= s;
-	}
-	//L[j * n + j] = sqrt(A[j * n + j] - s);
-	
-	return;
-	__s2 = _s;
-	__e2 = _e;
-	if (__s2 < j + 1)__s2 = j + 1;
-	if (__e2 >= n)__e2 = n;
-	if (__s2 < __e2)
-	{
-		for (int i = __s2; i < __e2; i++) {
-			double s = 0;
-			double* ptr = &L[i * n + 0];
-			double* ptr2 = &L[j * n + 0];
-			for (int k = 0; k < j; k++) {
-				//s += L[i * n + k] * L[j * n + k];
-				s += *ptr * *ptr2;
-				ptr++;
-				ptr2++;
-			}
-			if(_s==0)
-				L[i * n + j] += (1.0 / L[j * n + j] * (A[i * n + j]));
-			L[i * n + j] -= 1.0 / L[j * n + j] * s;
-		}
-
-	}
-}*/
 __global__ void __add(double* value, int* row, int* col, int N, int M, double* value2, int* index) {
 	int _b = blockIdx.x;
 	int _t = threadIdx.x;
@@ -165,3 +92,4 @@ void kernel2(double* value, int* row, int* col, int N, int M, double* value2, cu
 	__vecmul<< <grid, threads, 0, stream >> > (value, row, col, N, M, value2);
 
 }
+*/
