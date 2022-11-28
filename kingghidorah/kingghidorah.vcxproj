@@ -19,46 +19,45 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{0228C078-DCFD-47AF-BB22-9A3608FFC2CF}</ProjectGuid>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <ProjectGuid>{796D04BC-374B-439A-BFEB-4404F542A70D}</ProjectGuid>
+    <EnableManagedPackageReferenceSupport>true</EnableManagedPackageReferenceSupport>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <Keyword>ManagedCProj</Keyword>
     <RootNamespace>kingghidorah</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
-    <EnableUnitySupport>true</EnableUnitySupport>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.5.props" />
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
@@ -76,17 +75,28 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>$(CUDA_PATH_V11_8)\include;$(IncludePath);$(SolutionDir)packages\intelmkl.static.win-x64.2022.2.1.19754\lib\native\include</IncludePath>
+    <LibraryPath>$(SolutionDir)packages\inteltbb.devel.win.2021.1.1.133\lib\native\win-x64;$(SolutionDir)packages\intelmkl.static.win-x64.2022.2.1.19754\lib\native\win-x64;$(CUDA_PATH_V11_8)\lib\x64;$(LibraryPath)</LibraryPath>
+    <EnableManagedIncrementalBuild>false</EnableManagedIncrementalBuild>
     <TargetName>KingOfMonsters</TargetName>
-    <LibraryPath>$(SolutionDir)packages\intelmkl.static.win-x64.2022.2.1.19754\lib\native\win-x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <TargetName>KingOfMonsters</TargetName>
-    <LibraryPath>$(SolutionDir)packages\intelmkl.static.win-x64.2022.2.1.19754\lib\native\win-x64;$(SolutionDir)packages\intelopenmp.devel.win.2022.0.0.3663\lib\native\win-x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(CUDA_PATH_V11_8)\include;</IncludePath>
   </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>MaxSpeed</Optimization>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>mkl_core.lib;mkl_intel_lp64.lib;mkl_intel_thread.lib;cuda.lib;cudart_static.lib;cusolver.lib;cusparse.lib</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -94,29 +104,8 @@
       <AdditionalDependencies />
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
-      <ConformanceMode>false</ConformanceMode>
-      <ForceConformanceInForLoopScope>false</ForceConformanceInForLoopScope>
-      <FloatingPointModel>Fast</FloatingPointModel>
-      <LanguageStandard>stdcpp14</LanguageStandard>
-      <BufferSecurityCheck>true</BufferSecurityCheck>
-      <SupportJustMyCode>true</SupportJustMyCode>
-      <AdditionalOptions> /bigobj %(AdditionalOptions)</AdditionalOptions>
-    </ClCompile>
-    <Link>
-      <AdditionalDependencies>cublas.lib;cusolver.lib;cusolverMg.lib;cudart.lib;cuda.lib;cusparse.lib</AdditionalDependencies>
-    </Link>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -126,70 +115,54 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <WholeProgramOptimization>false</WholeProgramOptimization>
-      <ConformanceMode>false</ConformanceMode>
-      <ForceConformanceInForLoopScope>false</ForceConformanceInForLoopScope>
-      <OpenMPSupport>true</OpenMPSupport>
-      <FloatingPointModel>Fast</FloatingPointModel>
-      <BufferSecurityCheck>false</BufferSecurityCheck>
-      <DebugInformationFormat>None</DebugInformationFormat>
-      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <AdditionalOptions> /bigobj  -d2SSAOptimizer- %(AdditionalOptions)</AdditionalOptions>
-      <LanguageStandard>Default</LanguageStandard>
-      <RemoveUnreferencedCodeData>false</RemoveUnreferencedCodeData>
-      <MinimalRebuild>false</MinimalRebuild>
-      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>cublas.lib;cusolver.lib;cusolverMg.lib;cudart.lib;cuda.lib;cusparse.lib;mkl_intel_lp64.lib;mkl_core.lib;mkl_intel_thread.lib;libiomp5md.lib</AdditionalDependencies>
-      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
-      <HeapReserveSize>50000000</HeapReserveSize>
+      <AdditionalDependencies />
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\eigenwrapper\eigenwrapper.vcxproj">
+      <Project>{efb5dc22-28e8-41be-af5f-235e5d651d81}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <ItemGroup>
     <ClInclude Include="eigenwrapper.h" />
     <ClInclude Include="kingghidorah.h" />
     <ClInclude Include="kingghidorah_C.h" />
     <ClInclude Include="kingghidorah_S.h" />
     <ClInclude Include="mySparseLibrary.h" />
-    <ClInclude Include="pch.h" />
-    <ClInclude Include="Resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="kingghidorah.cpp" />
     <ClCompile Include="mySparseLibrary.cpp" />
-    <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="app.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="app.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\eigenwrapper\eigenwrapper.vcxproj">
-      <Project>{efb5dc22-28e8-41be-af5f-235e5d651d81}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.5.targets" />
+    <Import Project="..\packages\intelmkl.static.win-x64.2022.2.1.19754\build\native\intelmkl.static.win-x64.targets" Condition="Exists('..\packages\intelmkl.static.win-x64.2022.2.1.19754\build\native\intelmkl.static.win-x64.targets')" />
+    <Import Project="..\packages\intelmkl.static.cluster.win-x64.2022.2.1.19754\build\native\intelmkl.static.cluster.win-x64.targets" Condition="Exists('..\packages\intelmkl.static.cluster.win-x64.2022.2.1.19754\build\native\intelmkl.static.cluster.win-x64.targets')" />
+    <Import Project="..\packages\intelmpi.redist.win-x64.2021.7.1.15761\build\native\IntelMPI.redist.win-x64.targets" Condition="Exists('..\packages\intelmpi.redist.win-x64.2021.7.1.15761\build\native\IntelMPI.redist.win-x64.targets')" />
+    <Import Project="..\packages\intelmpi.devel.win-x64.2021.7.1.15761\build\native\IntelMPI.devel.win-x64.targets" Condition="Exists('..\packages\intelmpi.devel.win-x64.2021.7.1.15761\build\native\IntelMPI.devel.win-x64.targets')" />
+    <Import Project="..\packages\intelopenmp.redist.win.2022.2.1.19741\build\native\intelopenmp.redist.win.targets" Condition="Exists('..\packages\intelopenmp.redist.win.2022.2.1.19741\build\native\intelopenmp.redist.win.targets')" />
+    <Import Project="..\packages\intelopenmp.devel.win.2022.2.1.19741\build\native\intelopenmp.devel.win.targets" Condition="Exists('..\packages\intelopenmp.devel.win.2022.2.1.19741\build\native\intelopenmp.devel.win.targets')" />
+    <Import Project="..\packages\inteltbb.redist.win.2021.7.1.15305\build\native\inteltbb.redist.win.targets" Condition="Exists('..\packages\inteltbb.redist.win.2021.7.1.15305\build\native\inteltbb.redist.win.targets')" />
+    <Import Project="..\packages\inteltbb.devel.win.2021.7.1.15305\build\native\inteltbb.devel.win.targets" Condition="Exists('..\packages\inteltbb.devel.win.2021.7.1.15305\build\native\inteltbb.devel.win.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\intelmkl.static.win-x64.2022.2.1.19754\build\native\intelmkl.static.win-x64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\intelmkl.static.win-x64.2022.2.1.19754\build\native\intelmkl.static.win-x64.targets'))" />
+    <Error Condition="!Exists('..\packages\intelmkl.static.cluster.win-x64.2022.2.1.19754\build\native\intelmkl.static.cluster.win-x64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\intelmkl.static.cluster.win-x64.2022.2.1.19754\build\native\intelmkl.static.cluster.win-x64.targets'))" />
+    <Error Condition="!Exists('..\packages\intelmpi.redist.win-x64.2021.7.1.15761\build\native\IntelMPI.redist.win-x64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\intelmpi.redist.win-x64.2021.7.1.15761\build\native\IntelMPI.redist.win-x64.targets'))" />
+    <Error Condition="!Exists('..\packages\intelmpi.devel.win-x64.2021.7.1.15761\build\native\IntelMPI.devel.win-x64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\intelmpi.devel.win-x64.2021.7.1.15761\build\native\IntelMPI.devel.win-x64.targets'))" />
+    <Error Condition="!Exists('..\packages\intelopenmp.redist.win.2022.2.1.19741\build\native\intelopenmp.redist.win.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\intelopenmp.redist.win.2022.2.1.19741\build\native\intelopenmp.redist.win.targets'))" />
+    <Error Condition="!Exists('..\packages\intelopenmp.devel.win.2022.2.1.19741\build\native\intelopenmp.devel.win.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\intelopenmp.devel.win.2022.2.1.19741\build\native\intelopenmp.devel.win.targets'))" />
+    <Error Condition="!Exists('..\packages\inteltbb.redist.win.2021.7.1.15305\build\native\inteltbb.redist.win.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\inteltbb.redist.win.2021.7.1.15305\build\native\inteltbb.redist.win.targets'))" />
+    <Error Condition="!Exists('..\packages\inteltbb.devel.win.2021.7.1.15305\build\native\inteltbb.devel.win.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\inteltbb.devel.win.2021.7.1.15305\build\native\inteltbb.devel.win.targets'))" />
+  </Target>
 </Project>
