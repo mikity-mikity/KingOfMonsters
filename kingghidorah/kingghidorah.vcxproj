@@ -91,6 +91,7 @@
     <threading-MKL-static-win-x64>sequential-cluster</threading-MKL-static-win-x64>
     <interface-MKL-static-win-x64>lp64-cluster</interface-MKL-static-win-x64>
     <linkage-MPI-devel-win-x64>dynamic</linkage-MPI-devel-win-x64>
+    <TargetName>KingOfMonsters</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
