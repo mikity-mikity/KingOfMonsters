@@ -128,6 +128,8 @@
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <OpenMPSupport>true</OpenMPSupport>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
     </ClCompile>
     <Link>
       <AdditionalDependencies>mkl_core.lib;mkl_intel_lp64.lib;mkl_intel_thread.lib;cuda.lib;cudart_static.lib;cusolver.lib;cusparse.lib</AdditionalDependencies>
