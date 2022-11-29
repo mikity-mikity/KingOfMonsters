@@ -43,7 +43,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CLRSupport>true</CLRSupport>
@@ -52,7 +52,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -136,6 +136,7 @@
       <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <ForceConformanceInForLoopScope>false</ForceConformanceInForLoopScope>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <AdditionalDependencies>mkl_core.lib;mkl_intel_lp64.lib;mkl_intel_thread.lib;cuda.lib;cudart_static.lib;cusolver.lib;cusparse.lib</AdditionalDependencies>

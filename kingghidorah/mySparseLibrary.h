@@ -1148,6 +1148,54 @@ namespace KingOfMonsters {
 			if (_str == "")_str = "success";
 			System::Console::WriteLine(gcnew System::String(_str.c_str()));
 		}
+		void _solve0_lu_cpu(myDoubleArray^ rhs, myDoubleArray^ ret, int ordering, bool meh) {
+			mySparse^ m = nullptr;
+			double nnn = 0;
+			myDoubleArray^ v = nullptr;
+			if (meh) {
+
+				//rhs->_arr->__v = this->dat->_mat[0].transpose() * rhs->_arr->__v;
+
+				Eigen::VectorXd _v = this->dat->_mat[0].transpose() * rhs->_arr->__v;
+				Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t> _m = this->dat->_mat[0].transpose() * this->dat->_mat[0];
+
+				//this->dat->_mat[0] = this->dat->_mat[0].transpose() * this->dat->_mat[0];
+				m = gcnew mySparse(_m.rows(), _m.cols());
+				m->dat->_mat[0] = _m;
+				v = gcnew myDoubleArray(_v.size());
+				v->_arr->__v = _v;
+			}
+			else {
+				m = this;
+				v = rhs;
+			}
+			double nn = 0.00000000001;
+			bool allocerr = false;
+			std::string _str = "";
+			if (nnn != 0)
+			{
+				m->dat->addsmallidentity(nnn, true, false);
+				nn = nnn;
+			}
+
+			for (int i = 0; i < 10; i++)
+			{
+				std::string str = m->dat->_solve0_lu_cpu(&v->_arr->__v, &ret->_arr->__v, ordering);
+
+				//lu.compute(this->dat->_mat[0]);
+				_str += str;
+				if (str.find("SUCCESS") == string::npos)
+				{
+					nn *= 100;
+					m->dat->addsmallidentity(nn, true, false);
+				}
+				else {
+					break;
+				}
+			}
+			if (_str == "")_str = "success";
+			System::Console::WriteLine(gcnew System::String(_str.c_str()));
+		}
 		void solve0_lu(myDoubleArray^ rhs, myDoubleArray^ ret) {
 			//pin_ptr<double> ptr = &rhs[0];
 

@@ -308,6 +308,7 @@ namespace KingOfMonsters {
 		int64_t _solveI_dense(_mySparse* ret);
 		std::string _solveI_gpu_sparse(KingOfMonsters::cuda* cuda, _mySparse* ret);
 		std::string _solveI_gpu(KingOfMonsters::cuda* cuda, _mySparse* ret);
+		std::string _solveI_cpu(_mySparse* ret);
 		std::string _solveI_gpu_omp(KingOfMonsters::cuda* cuda, _mySparse* ret);
 		std::string _solveI_gpu_single(KingOfMonsters::cuda* cuda, _mySparse* ret);
 		void plus(Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>* m);
