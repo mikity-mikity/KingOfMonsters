@@ -89,7 +89,7 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(SolutionDir)packages\intelmkl.static.win-x64.2022.2.1.19754\lib\native\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(CUDA_PATH_V11_8)\include;$(IncludePath)</IncludePath>
     <linkage-MKL-static-win-x64>static</linkage-MKL-static-win-x64>
-    <threading-MKL-static-win-x64>intel</threading-MKL-static-win-x64>
+    <threading-MKL-static-win-x64>sequential</threading-MKL-static-win-x64>
     <interface-MKL-static-win-x64>ilp64</interface-MKL-static-win-x64>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
