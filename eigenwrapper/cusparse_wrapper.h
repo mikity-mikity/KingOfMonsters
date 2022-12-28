@@ -1,4 +1,5 @@
-#ifndef __CUSPARSE_WRAPPER_H__
+#ifndef _CPU
+# ifndef __CUSPARSE_WRAPPER_H__
 #define __CUSPARSE_WRAPPER_H__
 
 #include <cusparse.h>
@@ -101,4 +102,5 @@ cusolverStatus_t CUSOLVERAPI cusolverSpXcsrluSolve(
 	csrluInfoHost_t info,
 	void *pBuffer);
 
-#endif // !__CUSPARSE_WRAPPER_H__
+# endif // !__CUSPARSE_WRAPPER_H__
+#endif

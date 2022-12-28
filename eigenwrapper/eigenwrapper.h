@@ -14,9 +14,12 @@
 #include "eigen-3.3.8/Eigen/SparseLU"
 #include "eigen-3.3.8/Eigen/SparseCholesky"
 */
-
+#ifndef _CPU
 #include <cuda_runtime.h>
 #include <device_launch_paraMeters.h>
+#include<cuda.h>
+#include <cuda_runtime_api.h>
+#endif
 #include <stdlib.h>
 #include <stdio.h>
 #include <cusolverDn.h>
@@ -24,9 +27,6 @@
 #include <cusolverSp.h>
 #include <cusparse_v2.h>
 #include <cublas_v2.h>
-//#include <cusolverSp_LOWLEVEL_PREVIEW.h>
-#include<cuda.h>
-#include <cuda_runtime_api.h>
 #include <chrono>
 #include <vector>
 #include <map>
@@ -107,15 +107,16 @@ namespace KingOfMonsters {
 		bool valid();
 		bool canpeer();
 		std::string device_name();
+#ifndef _CPU
 		int* info(int i);
+
 		double* work_M(int i);
 		double* work_rhs(int i);
-		//double* work_M2();
-		//double* work_rhs2();
 		double* work_C(int i);
 		double* work(int64_t N, int i);
 		double* work2(int64_t N, int i);
 		double* work(int64_t N, int i, cudaStream_t stream);
+#endif
 		int& count();
 		int& fastest();
 		void dispose();

@@ -1,5 +1,6 @@
 #include "cusparse_wrapper.h"
 
+#ifndef _CPU
 /* Description: Gather of non-zero elements from dense vector y into
    sparse vector x. */
 //cusparseStatus_t CUSPARSEAPI cusparseXgthr(cusparseHandle_t handle,
@@ -214,3 +215,4 @@ cusolverStatus_t CUSOLVERAPI cusolverSpXcsrqrSolve(
 			info,
 			pBuffer);
 }
+#endif

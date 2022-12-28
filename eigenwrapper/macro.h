@@ -2,7 +2,7 @@
 #define __MACRO_H__
 
 #include <cstdio>
-
+# ifndef _CPU
 #define CUDA_CHECK(err) \
 do {\
 	if (err != cudaSuccess) { \
@@ -10,4 +10,5 @@ do {\
 	} \
 } while (0)
 
-#endif // !__MACRO_H__
+# endif // !__MACRO_H__
+#endif

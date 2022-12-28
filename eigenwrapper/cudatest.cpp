@@ -1,4 +1,5 @@
 #include "pch.h"
+#ifndef _CPU
 //#include "cuda_runtime.h"
 //#include "device_launch_paraMeters.h"
 
@@ -309,3 +310,4 @@ int main() {
     //std::cin.get();
 
 }
+#endif

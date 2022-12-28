@@ -1,3 +1,4 @@
+#ifndef _CPU
 #include "cusparse_cholesky_solver.h"
 
 #include <vector>
@@ -504,3 +505,4 @@ CuSparseCholeskySolver<T>::~CuSparseCholeskySolver()
 
 template class CuSparseCholeskySolver<double>;
 template class CuSparseCholeskySolver<float>;
+#endif

@@ -1,4 +1,5 @@
-#ifndef __CUSPARSE_CHOLESKY_SOLVER_H__
+#ifndef _CPU
+# ifndef __CUSPARSE_CHOLESKY_SOLVER_H__
 #define __CUSPARSE_CHOLESKY_SOLVER_H__
 
 #include <memory>
@@ -30,4 +31,5 @@ public:
 	virtual ~CuSparseCholeskySolver();
 };
 
-#endif // !__CUSPARSE_CHOLESKY_SOLVER_H__
+# endif // !__CUSPARSE_CHOLESKY_SOLVER_H__
+#endif

@@ -6,7 +6,7 @@
 #ifndef IDX1F
 #define IDX1F(i) ((i)-1)
 #endif /* IDX1F */
-
+#ifndef _CPU
 static bool enablePeerAccess(const int nbGpus, const int* deviceList)
 {
     int currentDevice = 0;
@@ -356,3 +356,4 @@ int ldb
     if (NULL != array_d_A_unpacked) { free(array_d_A_unpacked); }
     return 0;
 }
+#endif

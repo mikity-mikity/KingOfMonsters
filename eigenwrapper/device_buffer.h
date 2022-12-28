@@ -1,4 +1,5 @@
-#ifndef __DEVICE_BUFFER_H__
+#ifndef _CPU
+# ifndef __DEVICE_BUFFER_H__
 #define __DEVICE_BUFFER_H__
 
 #include <cuda_runtime.h>
@@ -76,4 +77,5 @@ public:
 	size_t size;
 };
 
-#endif // !__DEVICE_BUFFER_H__
+# endif // !__DEVICE_BUFFER_H__
+#endif
