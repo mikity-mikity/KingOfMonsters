@@ -933,7 +933,7 @@ namespace KingOfMonsters {
 			{
 				for (int j = 0; j < N; j++)
 				{
-					this->dat->add_usemap(index[i], index[j], sc * a->_arr->__v(i) * a->_arr->__v(j));
+					this->dat->add_usemap(index[i], index[j], sc * a->_arr->__v(i) * b->_arr->__v(j));
 				}
 			}
 		}
