@@ -59,6 +59,13 @@ namespace KingOfMonsters {
 		_myDoubleArray *_arr=0;
 		Int64 _N = 0;
 	public:
+		void plus_useindex(myDoubleArray^ vec, double sc, int N, array<int>^index)
+		{
+			for (int i = 0; i < N; i++)
+			{
+				this->_arr->__v(index[i]) += sc * vec->_arr->__v(i);
+			}
+		}
 		void addResidual(myDoubleArray^ r, myDoubleArray^ ret)
 		{
 			ret->_arr->__v += this->_arr->__v * r->_arr->__v;
