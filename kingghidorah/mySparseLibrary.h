@@ -1522,9 +1522,16 @@ namespace KingOfMonsters {
 		{
 			return *mat;
 		}
-		inline void set(Eigen::MatrixXd _m)
+		void set(Eigen::MatrixXd _m)
 		{
 			*mat = _m;
+		}
+		void set(int i,int j,double val)
+		{
+			(* mat)(i, j) = val;
+		}
+		void setzero() {
+			mat->setZero();
 		}
 		void resize(int n,int m)
 		{
