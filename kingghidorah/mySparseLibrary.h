@@ -15,7 +15,63 @@ using namespace System::Threading::Tasks;
 //#define EIGEN_DONT_ALIGN
 namespace KingOfMonsters {
 	
-
+	public ref class denseMatrix {
+	private:
+		Eigen::MatrixXd* mat = 0;
+	public:
+		Eigen::MatrixXd& get()
+		{
+			return *mat;
+		}
+		void set(Eigen::MatrixXd _m)
+		{
+			*mat = _m;
+		}
+		void set(int i, int j, double val)
+		{
+			(*mat)(i, j) = val;
+		}
+		void setzero() {
+			mat->setZero();
+		}
+		void resize(int n, int m)
+		{
+			mat->resize(n, m);
+		}
+		int rows() {
+			return mat->rows();
+		}
+		int cols() {
+			return mat->cols();
+		}
+		denseMatrix(int n, int m)
+		{
+			if (mat != 0)del();
+			mat = new Eigen::MatrixXd();
+			mat->resize(n, m);
+			mat->setZero();
+		}
+		denseMatrix()
+		{
+			if (mat != 0)del();
+			mat = new Eigen::MatrixXd();
+		}
+		!denseMatrix()
+		{
+			del();
+		}
+		~denseMatrix()
+		{
+			del();
+		}
+		void del() {
+			if (mat != 0)
+			{
+				delete mat;
+			}
+			mat = 0;
+		}
+	};
 	public ref class mySparseVector {
 	public:
 		_mySparseVector* _vec=0;
@@ -59,6 +115,13 @@ namespace KingOfMonsters {
 		_myDoubleArray *_arr=0;
 		Int64 _N = 0;
 	public:
+		myDoubleArray^ duplicate()
+		{
+			myDoubleArray^ _new = gcnew myDoubleArray(this->_arr->__v.rows());
+			_new->_arr->__v = this->_arr->__v;
+			return _new;
+		}
+
 		void plus_useindex(myDoubleArray^ vec, double sc, int N, array<int>^index)
 		{
 			for (int i = 0; i < N; i++)
@@ -457,8 +520,12 @@ namespace KingOfMonsters {
 			ret->_arr->__v = this->dat->_mat[0] * v->_arr->__v;
 			if (this->dat->coeff[0].size() == this->dat->_mat[0].rows())
 			{
-				ret->_arr->__v = this->dat->coeff[0].asDiagonal()*ret->_arr->__v;
+				ret->_arr->__v = this->dat->coeff[0].asDiagonal() * ret->_arr->__v;
 			}
+		}
+		void _multiply(myDoubleArray^ v, myDoubleArray^ ret)
+		{
+			ret->_arr->__v = this->dat->_mat[0] * v->_arr->__v;
 		}
 		void leftmultiply(myDoubleArray^ v, myDoubleArray^ ret)
 		{
@@ -933,6 +1000,17 @@ namespace KingOfMonsters {
 		void makePattern()
 		{
 			this->dat->makePattern();
+		}
+		void plusmat_usemap(denseMatrix^ a, double sc, int N, array<int>^ index)
+		{
+			for (int i = 0; i < N; i++)
+			{
+				for (int j = 0; j < N; j++)
+				{
+					this->dat->add_usemap(index[i], index[j], sc * (a->get())(i,j) );
+				}
+			}
+
 		}
 		void plusdyad_usemap(myDoubleArray^ a, myDoubleArray^ b, double sc,int N,array<int> ^index)
 		{
@@ -1521,63 +1599,7 @@ namespace KingOfMonsters {
 			return str;
 		}
 	};
-	public ref class denseMatrix {
-	private:
-		Eigen::MatrixXd* mat=0;
-	public:
-		inline Eigen::MatrixXd& get()
-		{
-			return *mat;
-		}
-		void set(Eigen::MatrixXd _m)
-		{
-			*mat = _m;
-		}
-		void set(int i,int j,double val)
-		{
-			(* mat)(i, j) = val;
-		}
-		void setzero() {
-			mat->setZero();
-		}
-		void resize(int n,int m)
-		{
-			mat->resize(n, m);
-		}
-		int rows() {
-			return mat->rows();
-		}
-		int cols() {
-			return mat->cols();
-		}
-		denseMatrix(int n, int m)
-		{
-			if (mat != 0)del();
-			mat = new Eigen::MatrixXd();
-			mat->resize(n, m);
-			mat->setZero();
-		}
-		denseMatrix()
-		{
-			if (mat != 0)del();
-			mat = new Eigen::MatrixXd();
-		}
-		!denseMatrix()
-		{
-			del();
-		}
-		~denseMatrix()
-		{
-			del();
-		}
-		void del() {
-			if (mat != 0)
-			{
-				delete mat;
-			}
-			mat = 0;
-		}
-	};
+	
 	public ref class sparseMatrix {
 	private:
 		Eigen::SparseMatrix<double>* mat = 0;

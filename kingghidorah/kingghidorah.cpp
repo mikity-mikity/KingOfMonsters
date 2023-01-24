@@ -2,7 +2,7 @@
 #include"mySparseLibrary.h"
 #include "kingghidorah_S.h"
 #include "kingghidorah_C.h"
-
+/*
 void main()
 {
 	Eigen::SparseMatrix<double, 1, int> mat(5, 5);
@@ -21,4 +21,4 @@ void main()
 	lu.compute(mat);
 	Eigen::VectorXd ret=lu.solve(rhs);
 	std::cout << ret;
-}
+}*/
