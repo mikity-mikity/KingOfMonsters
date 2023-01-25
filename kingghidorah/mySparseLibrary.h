@@ -811,6 +811,12 @@ namespace KingOfMonsters {
 		{
 			return gcnew mySparse(this);
 		}
+		mySparse^ _duplicate()
+		{
+			mySparse^ newmat = gcnew mySparse();
+			newmat->dat->_mat.push_back(this->dat->_mat[0]);
+			return newmat;
+		}
 		~mySparse()
 		{
 			if (dat != 0)
@@ -1025,6 +1031,10 @@ namespace KingOfMonsters {
 		void plus_usemap(Int64 i, Int64 j, double value)
 		{
 			this->dat->add_usemap(i, j, value);
+		}
+		void set_usemap(Int64 i, Int64 j, double value)
+		{
+			this->dat->set_usemap(i, j, value);
 		}
 		void mult(mySparse^ a, mySparse^ b)
 		{

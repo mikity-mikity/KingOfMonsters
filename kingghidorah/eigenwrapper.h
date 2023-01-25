@@ -267,6 +267,7 @@ namespace KingOfMonsters {
 		void freezecoeff();
 		std::string ofAtA(_mySparse* A, bool sparse);
 		void add_usemap(int64_t i, int64_t j, double val);
+		void set_usemap(int64_t i, int64_t j, double val);
 		std::string ofAtA_gpu(cuda* _cuda, _mySparse* A, bool sparse);
 		std::string _ofAtA(_mySparse* A);
 		//void ofAtB_gpu(_mySparse* B, bool sparse);

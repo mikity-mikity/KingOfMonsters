@@ -2154,6 +2154,10 @@ void KingOfMonsters::_mySparse::add_usemap(int64_t i, int64_t j, double val)
 {
 	*(_mat[0].valuePtr() + (map2[&this->_mat[0]][std::tuple<int64_t, int64_t>(i, j)])) += val;
 }
+void KingOfMonsters::_mySparse::set_usemap(int64_t i, int64_t j, double val)
+{
+	*(_mat[0].valuePtr() + (map2[&this->_mat[0]][std::tuple<int64_t, int64_t>(i, j)])) = val;
+}
 
 
 std::string KingOfMonsters::_mySparse::ofAtA_gpu(cuda* _cuda, _mySparse* A, bool sparse)
