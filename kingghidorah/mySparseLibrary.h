@@ -232,18 +232,20 @@ namespace KingOfMonsters {
 		}
 		void resize(Int64 N)
 		{	
- 			Eigen::VectorXd v(N);
-			v.setZero();
+ 			//Eigen::VectorXd v(N);
+			//v.setZero();
 			if (_N < N)
 			{
-				v.middleRows(0, _N) = this->_arr->__v;
-				this->_arr->__v.resize(N);
-				this->_arr->__v = v;
+				//v.middleRows(0, _N) = this->_arr->__v;
+				this->_arr->__v.conservativeResize(N);
+				this->_arr->__v.bottomRows(N - _N).setZero();
+				//this->_arr->__v = v;
 			}
 			else if(N<_N){
-				v = this->_arr->__v.middleRows(0, N);
-				this->_arr->__v.resize(N);
-				this->_arr->__v = v;
+				this->_arr->__v.conservativeResize(N);
+				//v = this->_arr->__v.middleRows(0, N);
+				//this->_arr->__v.resize(N);
+				//this->_arr->__v = v;
 			}
 			//_arr->__v.conservativeResize(N);
 			/*if (N > _N)
