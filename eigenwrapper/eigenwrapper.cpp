@@ -2785,6 +2785,23 @@ void KingOfMonsters::_mySparse::solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* re
 	//x.setZero();
 	*ret = lu.solve(*rhs);
 }
+void KingOfMonsters::_mySparse::LSsolve(Eigen::VectorXd* rhs, Eigen::VectorXd* ret) {
+	Eigen::PartialPivLU<Eigen::MatrixXd> lu;
+	if (this->_mat[0].rows() < this->_mat[0].cols())
+	{
+		lu.compute((this->_mat[0] * this->_mat[0].transpose()));
+		ret->resize(this->_mat[0].cols());
+		*ret = this->_mat[0].transpose() * lu.inverse() * (*rhs);
+		return;
+	}
+	if (this->_mat[0].rows() > this->_mat[0].cols())
+	{
+		lu.compute((this->_mat[0].transpose()*this->_mat[0]));
+		ret->resize(this->_mat[0].cols());
+		*ret = rhs->transpose() * lu.inverse() * this->_mat[0].transpose();
+		return;
+	}
+}
 
 
 std::string KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int64_t device) {

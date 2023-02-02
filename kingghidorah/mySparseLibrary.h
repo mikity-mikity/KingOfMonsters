@@ -1150,6 +1150,11 @@ namespace KingOfMonsters {
 			//ptr = nullptr;
 			//return ret;
 		}
+		void LSsolve(myDoubleArray^ rhs, myDoubleArray^ ret) {
+
+			dat->LSsolve(&rhs->_arr->__v, &ret->_arr->__v);
+
+		}
 		System::String ^ _solve0_lu(myDoubleArray^ rhs, myDoubleArray^ ret, int ordering, bool meh) {
 			//pin_ptr<double> ptr = &rhs[0];
 			//dat->_mat[0].setIdentity();
@@ -1482,6 +1487,7 @@ namespace KingOfMonsters {
 				this->dat->_mat[0].reserve(this->dat->_mat[0].nonZeros() + nn * 2);
 			}
 		}
+		
 		Int64 nonZeros() {
 			return dat->nonzeros();
 		}
