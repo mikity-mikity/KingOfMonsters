@@ -1139,6 +1139,10 @@ namespace KingOfMonsters {
 			ptr = nullptr;
 			return ret;
 		}
+		void fillZeros()
+		{
+			memset((this->dat->_mat[0]).valuePtr(), 0, sizeof(double) * this->dat->_mat[0].nonZeros());
+		}
 		void solve0(myDoubleArray^ rhs, myDoubleArray^ ret) {
 			//pin_ptr<double> ptr = &rhs[0];
 
