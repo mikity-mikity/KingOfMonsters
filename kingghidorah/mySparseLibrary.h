@@ -1030,6 +1030,28 @@ namespace KingOfMonsters {
 				}
 			}
 		}
+
+		void plusmat_uselocation(denseMatrix^ a, double sc, int N, array<int,2>^ location)
+		{
+			for (int i = 0; i < N; i++)
+			{
+				for (int j = 0; j < N; j++)
+				{
+					this->dat->add_uselocation(location[i,j], sc * (a->get())(i, j));
+				}
+			}
+
+		}
+		void plusdyad_uselocation(myDoubleArray^ a, myDoubleArray^ b, double sc, int N, array<int,2>^ location)
+		{
+			for (int i = 0; i < N; i++)
+			{
+				for (int j = 0; j < N; j++)
+				{
+					this->dat->add_uselocation(location[i,j], sc * a->_arr->__v(i) * b->_arr->__v(j));
+				}
+			}
+		}
 		void plus_usemap(Int64 i, Int64 j, double value)
 		{
 			this->dat->add_usemap(i, j, value);
@@ -1038,6 +1060,19 @@ namespace KingOfMonsters {
 		{
 			this->dat->set_usemap(i, j, value);
 		}
+		int find_location(Int64 i, Int64 j)
+		{
+			return this->dat->find_location(i, j);
+		}
+		void plus_uselocation(Int64 location, double value)
+		{
+			this->dat->add_uselocation(location, value);
+		}
+		void set_useloaction(Int64 location, double value)
+		{
+			this->dat->set_uselocation(location, value);
+		}
+
 		void mult(mySparse^ a, mySparse^ b)
 		{
 			b->dat->_dmat = this->dat->_dmat * a->dat->_dmat;

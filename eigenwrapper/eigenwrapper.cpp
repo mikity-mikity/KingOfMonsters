@@ -2149,14 +2149,28 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 	ss << "sum:" << (*e)[0].sum() << std::endl;
 	return ss.str();
 }
-
+int KingOfMonsters::_mySparse::find_location(int64_t i, int64_t j)
+{
+	return map2[&this->_mat[0]][std::tuple<int64_t, int64_t>(i, j)];
+}
 void KingOfMonsters::_mySparse::add_usemap(int64_t i, int64_t j, double val)
 {
 	*(_mat[0].valuePtr() + (map2[&this->_mat[0]][std::tuple<int64_t, int64_t>(i, j)])) += val;
+
 }
 void KingOfMonsters::_mySparse::set_usemap(int64_t i, int64_t j, double val)
 {
 	*(_mat[0].valuePtr() + (map2[&this->_mat[0]][std::tuple<int64_t, int64_t>(i, j)])) = val;
+}
+void KingOfMonsters::_mySparse::add_uselocation(int64_t location, double val)
+{
+	*(_mat[0].valuePtr() + (location)) += val;
+
+}
+void KingOfMonsters::_mySparse::set_uselocation(int64_t location, double val)
+{
+	*(_mat[0].valuePtr() + (location)) += val;
+
 }
 
 
