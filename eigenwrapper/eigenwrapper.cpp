@@ -3038,19 +3038,17 @@ void KingOfMonsters::_mySparse::turnDense()
 std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret)
 {
 	this->_mat[0].makeCompressed();
-	//Eigen::PardisoLU < Eigen::SparseMatrix<double, 0, int64_t>> lu;
-	Eigen::JacobiSVD<Eigen::MatrixXd> svd;
-	svd.setThreshold(0.000000000001);
-	svd.compute(this->_mat[0]);
-	if (svd.info() == Eigen::ComputationInfo::Success)
+	Eigen::PardisoLU < Eigen::SparseMatrix<double, 0, int64_t>> lu;
+	lu.compute(this->_mat[0]);
+	if (lu.info() == Eigen::ComputationInfo::Success)
 	{
 
-		*ret = svd.solve(*rhs);
+		*ret = lu.solve(*rhs);
 		return "success";
 	}
 	else {
 		std::stringstream ss;
-		ss << svd.info();
+		ss << lu.info();
 		return ss.str();
 		;
 	}
