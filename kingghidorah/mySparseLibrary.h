@@ -1194,6 +1194,11 @@ namespace KingOfMonsters {
 			dat->LSsolve(&rhs->_arr->__v, &ret->_arr->__v);
 
 		}
+		void Project(myDoubleArray^ rhs, myDoubleArray^ ret) {
+
+			dat->Project(&rhs->_arr->__v, &ret->_arr->__v);
+
+		}
 		System::String ^ _solve0_lu(myDoubleArray^ rhs, myDoubleArray^ ret, int ordering, bool meh) {
 			//pin_ptr<double> ptr = &rhs[0];
 			//dat->_mat[0].setIdentity();
