@@ -2800,9 +2800,10 @@ void KingOfMonsters::_mySparse::solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* re
 	*ret = lu.solve(*rhs);
 }
 void KingOfMonsters::_mySparse::LSsolve(Eigen::VectorXd* rhs, Eigen::VectorXd* ret) {
-	Eigen::LLT<Eigen::MatrixXd> lu;
-	Eigen::MatrixXd m(this->_mat[0].rows(), this->_mat[0].cols());
-	m = this->_mat[0];
+	//Eigen::LLT<Eigen::MatrixXd> lu;
+	Eigen::PardisoLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
+	//Eigen::MatrixXd m(this->_mat[0].rows(), this->_mat[0].cols());
+	//m = this->_mat[0];
 	if (this->_mat[0].rows() <= this->_mat[0].cols())
 	{
 		lu.compute(this->_mat[0] * this->_mat[0].transpose());
