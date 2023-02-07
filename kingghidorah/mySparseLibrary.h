@@ -115,6 +115,11 @@ namespace KingOfMonsters {
 		_myDoubleArray *_arr=0;
 		Int64 _N = 0;
 	public:
+		void transpose()
+		{
+			this->_arr->__v.transposeInPlace();
+		}
+
 		myDoubleArray^ duplicate()
 		{
 			myDoubleArray^ _new = gcnew myDoubleArray(this->_arr->__v.rows());
