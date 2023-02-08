@@ -2802,11 +2802,14 @@ void KingOfMonsters::_mySparse::solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* re
 }
 void KingOfMonsters::_mySparse::LSsolve(Eigen::VectorXd* rhs, Eigen::VectorXd* ret,double salt) {
 	//Eigen::LLT<Eigen::MatrixXd> lu;
-	Eigen::PardisoLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
+	//Eigen::PardisoLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
+	Eigen::BiCGSTAB< Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	//Eigen::MatrixXd m(this->_mat[0].rows(), this->_mat[0].cols());
 	//m = this->_mat[0];
 	MKL_Set_Num_Threads(16);
 	MKL_Set_Dynamic(false);
+	lu.setTolerance(DBL_EPSILON);
+	lu.setMaxIterations(this->_mat[0].rows() * 10);
 	Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t> id;
 	if (this->_mat[0].rows() <= this->_mat[0].cols())
 	{
@@ -3053,10 +3056,14 @@ std::string KingOfMonsters::_mySparse::_solveLU_dense_cpu(Eigen::VectorXd* rhs, 
 {
 	this->_mat[0].makeCompressed();
 	//Eigen::PartialPivLU<Eigen::MatrixXd> lu(this->_dmat);
-	Eigen::FullPivHouseholderQR< Eigen::MatrixXd> lu;
+	//Eigen::FullPivHouseholderQR< Eigen::MatrixXd> lu;
+	Eigen::SparseQR< Eigen::SparseMatrix<double,0,int64_t>,Eigen::COLAMDOrdering<int64_t>> lu;
+
 	//Eigen::JacobiSVD<Eigen::MatrixXd> lu;
-	lu.setThreshold(0.000000000001);
-	lu.compute(this->_dmat);
+	lu.setPivotThreshold(0.0000000001);
+	//lu.setThreshold(0.000000000001);
+	//lu.compute(this->_dmat);
+	lu.compute(this->_mat[0]);
 	*ret=lu.solve(*rhs);
 	//if (lu.info() == Eigen::ComputationInfo::Success)
 	{
