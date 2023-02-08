@@ -1194,14 +1194,14 @@ namespace KingOfMonsters {
 			//ptr = nullptr;
 			//return ret;
 		}
-		void LSsolve(myDoubleArray^ rhs, myDoubleArray^ ret) {
+		void LSsolve(myDoubleArray^ rhs, myDoubleArray^ ret,double salt) {
 
-			dat->LSsolve(&rhs->_arr->__v, &ret->_arr->__v);
+			dat->LSsolve(&rhs->_arr->__v, &ret->_arr->__v,salt);
 
 		}
-		void Project(myDoubleArray^ rhs, myDoubleArray^ ret) {
+		void Project(myDoubleArray^ rhs, myDoubleArray^ ret, double salt) {
 
-			dat->Project(&rhs->_arr->__v, &ret->_arr->__v);
+			dat->Project(&rhs->_arr->__v, &ret->_arr->__v,salt);
 
 		}
 		System::String ^ _solve0_lu(myDoubleArray^ rhs, myDoubleArray^ ret, int ordering, bool meh) {

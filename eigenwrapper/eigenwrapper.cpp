@@ -14,6 +14,7 @@
 #define EIGEN_NO_DEBUG
 #define EIGEN_NO_STATIC_ASSERT
 #define EIGEN_USE_LAPACKE
+#define EIGEN_USE_MKL_ALL
 int64_t previdentiyN = 0;
 //std::vector<cudaStream_t> streams;
 Eigen::MatrixXd I;
@@ -2799,34 +2800,45 @@ void KingOfMonsters::_mySparse::solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* re
 	//x.setZero();
 	*ret = lu.solve(*rhs);
 }
-void KingOfMonsters::_mySparse::LSsolve(Eigen::VectorXd* rhs, Eigen::VectorXd* ret) {
+void KingOfMonsters::_mySparse::LSsolve(Eigen::VectorXd* rhs, Eigen::VectorXd* ret,double salt) {
 	//Eigen::LLT<Eigen::MatrixXd> lu;
 	Eigen::PardisoLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	//Eigen::MatrixXd m(this->_mat[0].rows(), this->_mat[0].cols());
 	//m = this->_mat[0];
+	MKL_Set_Num_Threads(16);
+	MKL_Set_Dynamic(false);
+	Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t> id;
 	if (this->_mat[0].rows() <= this->_mat[0].cols())
 	{
-		lu.compute(this->_mat[0] * this->_mat[0].transpose());
+		id.resize(_mat[0].rows(), _mat[0].rows());
+		id.setIdentity();
+		lu.compute(this->_mat[0] * this->_mat[0].transpose()+ id* salt);
 		ret->resize(this->_mat[0].cols());
 		*ret = this->_mat[0].transpose() * lu.solve(*rhs);
 		return;
 	}
 	if (this->_mat[0].rows() > this->_mat[0].cols())
 	{
-		lu.compute(this->_mat[0].transpose() * this->_mat[0]);
+		id.resize(_mat[0].cols(), _mat[0].cols());
+		id.setIdentity();
+		lu.compute(this->_mat[0].transpose() * this->_mat[0] + id * salt);
 		ret->resize(this->_mat[0].rows());
 		*ret = lu.solve(*rhs).transpose() * this->_mat[0].transpose();
 		return;
 	}
 }
-void KingOfMonsters::_mySparse::Project(Eigen::VectorXd* rhs, Eigen::VectorXd* ret) {
+void KingOfMonsters::_mySparse::Project(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, double salt) {
 	//Eigen::LLT<Eigen::MatrixXd> lu;
 	Eigen::PardisoLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	//Eigen::MatrixXd m(this->_mat[0].rows(), this->_mat[0].cols());
 	//m = this->_mat[0];
+	MKL_Set_Num_Threads(16);
+	MKL_Set_Dynamic(false);
+	Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t> id;
 	if (this->_mat[0].rows() <= this->_mat[0].cols())
 	{
-		lu.compute(this->_mat[0] * this->_mat[0].transpose());
+		id.resize(_mat[0].rows(), _mat[0].rows());
+		lu.compute(this->_mat[0] * this->_mat[0].transpose() + id * salt);
 		ret->resize(this->_mat[0].cols());
 		Eigen::VectorXd v(this->_mat[0] * *rhs);
 		*ret = *rhs-this->_mat[0].transpose() * lu.solve(v);
@@ -2834,7 +2846,8 @@ void KingOfMonsters::_mySparse::Project(Eigen::VectorXd* rhs, Eigen::VectorXd* r
 }
 	if (this->_mat[0].rows() > this->_mat[0].cols())
 	{
-		lu.compute(this->_mat[0].transpose() * this->_mat[0]);
+		id.resize(_mat[0].cols(), _mat[0].cols());
+		lu.compute(this->_mat[0].transpose() * this->_mat[0] + id * salt) ;
 		ret->resize(this->_mat[0].rows());
 		Eigen::VectorXd v(((*rhs).transpose() * this->_mat[0]).transpose());
 		*ret = lu.solve(v).transpose() * this->_mat[0].transpose();
@@ -3039,11 +3052,16 @@ void  KingOfMonsters::_mySparse::project(_mySparse* i1/*JxxJ*/, _mySparse* i2/*J
 std::string KingOfMonsters::_mySparse::_solveLU_dense_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret)
 {
 	this->_mat[0].makeCompressed();
-	Eigen::PartialPivLU<Eigen::MatrixXd> lu(this->_dmat);
+	//Eigen::PartialPivLU<Eigen::MatrixXd> lu(this->_dmat);
+	Eigen::FullPivHouseholderQR< Eigen::MatrixXd> lu;
+	//Eigen::JacobiSVD<Eigen::MatrixXd> lu;
+	lu.setThreshold(0.000000000001);
+	lu.compute(this->_dmat);
+	*ret=lu.solve(*rhs);
 	//if (lu.info() == Eigen::ComputationInfo::Success)
 	{
 
-		*ret = lu.solve(*rhs);
+		//*ret = lu.solve(*rhs);
 		return "success";
 	}
 	/*
@@ -3064,7 +3082,12 @@ std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs,
 	//Eigen::SparseLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	//Eigen::SparseQR< Eigen::SparseMatrix<double, 0, int64_t>, Eigen::COLAMDOrdering<int64_t>>lu;
 	Eigen::PardisoLU < Eigen::SparseMatrix<double, 0, int64_t>> lu;
+	//pardiso.compute(this->_mat[0]);
+
+
 	//lu.setPivotThreshold(0.0000000001);
+	MKL_Set_Num_Threads(16);
+	MKL_Set_Dynamic(false);
 	lu.compute(this->_mat[0]);
 	if (lu.info() == Eigen::ComputationInfo::Success)
 	{
@@ -3286,6 +3309,8 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu_single(KingOfMonsters::cuda* 
 {	std::stringstream sss;
 
 #ifdef _CPU
+MKL_Set_Num_Threads(16);
+MKL_Set_Dynamic(false);
 ret->_dmat = this->_dmat.inverse();
 	sss << "cpu_mode";
 	return sss.str();
@@ -3829,6 +3854,8 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu(KingOfMonsters::cuda* cuda, _
 void KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, _mySparse* mat, _mySparse* ret)
 {
 #ifdef _CPU
+	MKL_Set_Num_Threads(16);
+	MKL_Set_Dynamic(false);
 	Eigen::FullPivLU<Eigen::MatrixXd> lu(this->_dmat);
 	ret->_dmat=lu.solve(mat->_dmat);
 #else

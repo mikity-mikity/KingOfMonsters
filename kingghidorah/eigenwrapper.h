@@ -2,6 +2,8 @@
 
 //#define EIGEN_DONT_PARALLELIZE
 #define EIGEN_USE_MKL_ALL
+#define EIGEN_USE_LAPACKE
+#include "../include/mkl.h"
 #include "eigen-3.4.0/Eigen/Sparse"
 #include "eigen-3.4.0/Eigen/Dense"
 #include "eigen-3.4.0/Eigen/SparseQR"
@@ -294,8 +296,8 @@ namespace KingOfMonsters {
 		void setmat(const Eigen::MatrixXd& mat);
 		void setmiddlecolum(Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>& f, int64_t start, int64_t end);
 		void solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
-		void LSsolve(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
-		void Project(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
+		void LSsolve(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, double);
+		void Project(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, double);
 		void _solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		std::string _solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering);
 		std::string _solve0_lu_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering);
