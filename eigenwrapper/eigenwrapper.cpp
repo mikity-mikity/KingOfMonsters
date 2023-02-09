@@ -2802,12 +2802,12 @@ void KingOfMonsters::_mySparse::solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* re
 }
 void KingOfMonsters::_mySparse::LSsolve(Eigen::VectorXd* rhs, Eigen::VectorXd* ret,double salt) {
 	//Eigen::LLT<Eigen::MatrixXd> lu;
+	MKL_Set_Num_Threads(16);
+	MKL_Set_Dynamic(false);
 	Eigen::PardisoLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	//Eigen::BiCGSTAB< Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	//Eigen::MatrixXd m(this->_mat[0].rows(), this->_mat[0].cols());
 	//m = this->_mat[0];
-	MKL_Set_Num_Threads(16);
-	MKL_Set_Dynamic(false);
 	//lu.setTolerance(DBL_EPSILON);
 	//lu.setMaxIterations(this->_mat[0].rows() * 10);
 	Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t> id;
@@ -2832,11 +2832,11 @@ void KingOfMonsters::_mySparse::LSsolve(Eigen::VectorXd* rhs, Eigen::VectorXd* r
 }
 void KingOfMonsters::_mySparse::Project(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, double salt) {
 	//Eigen::LLT<Eigen::MatrixXd> lu;
+	MKL_Set_Num_Threads(16);
+	MKL_Set_Dynamic(false);
 	Eigen::PardisoLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	//Eigen::MatrixXd m(this->_mat[0].rows(), this->_mat[0].cols());
 	//m = this->_mat[0];
-	MKL_Set_Num_Threads(16);
-	MKL_Set_Dynamic(false);
 	Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t> id;
 	if (this->_mat[0].rows() <= this->_mat[0].cols())
 	{
@@ -3085,16 +3085,17 @@ void KingOfMonsters::_mySparse::turnDense()
 }
 std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret)
 {
+	MKL_Set_Num_Threads(16);
+	MKL_Set_Dynamic(false);
 	this->_mat[0].makeCompressed();
 	//Eigen::SparseLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	//Eigen::SparseQR< Eigen::SparseMatrix<double, 0, int64_t>, Eigen::COLAMDOrdering<int64_t>>lu;
 	Eigen::PardisoLU < Eigen::SparseMatrix<double, 0, int64_t>> lu;
+	//Eigen::BiCGSTAB< Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	//pardiso.compute(this->_mat[0]);
 
 
 	//lu.setPivotThreshold(0.0000000001);
-	MKL_Set_Num_Threads(16);
-	MKL_Set_Dynamic(false);
 	lu.compute(this->_mat[0]);
 	if (lu.info() == Eigen::ComputationInfo::Success)
 	{
