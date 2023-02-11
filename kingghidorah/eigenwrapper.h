@@ -247,6 +247,7 @@ namespace KingOfMonsters {
 		Eigen::VectorXd get_coeff(int64_t ii);
 		double __at(int64_t i, int64_t j);
 		void scale(int i, double sc);
+		void scale(double sc);
 		int64_t rows();
 		int64_t _rows();
 		int64_t _cols();
@@ -327,6 +328,7 @@ namespace KingOfMonsters {
 		Eigen::MatrixXd solve0(_mySparse* rhs);
 		void minus(_mySparse* m);
 		void clearcoeff();
+		void addsmallidentity(double salt, bool sparse, bool dense, int m);
 		void addsmallidentity(double salt, bool sparse, bool dense);
 		void begin_construct();
 		void end_construct(int64_t c);

@@ -1669,6 +1669,10 @@ void  KingOfMonsters::_mySparse::scale(int i, double sc)
 		_mat[0].row(i) *= sc;
 	}
 }
+void  KingOfMonsters::_mySparse::scale(double sc)
+{
+	_mat[0] *= sc;
+}
 int64_t KingOfMonsters::_mySparse::_rows() {
 	return _dmat.rows();// __r;
 }
@@ -4265,12 +4269,15 @@ void KingOfMonsters::_mySparse::clearcoeff() {
 	}
 }
 Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t> id;
-void KingOfMonsters::_mySparse::addsmallidentity(double salt, bool sparse, bool dense) {
+void KingOfMonsters::_mySparse::addsmallidentity(double salt, bool sparse, bool dense,int m) {
 
 	if (dense)
 	{
 		id.resize(_dmat.rows(), _dmat.cols());
-		id.setIdentity();
+		id.setZero();
+		for (int i = 0; i < m; i++)
+			id.coeffRef(i, i) = 1;
+		//id.setIdentity();
 		//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 
 		_dmat += (id * salt);
@@ -4281,6 +4288,32 @@ void KingOfMonsters::_mySparse::addsmallidentity(double salt, bool sparse, bool 
 		if (this->_mat.size() >= 1)
 		{
 			id.resize(this->_mat[0].rows(), this->_mat[0].cols());
+			id.setZero();
+			for (int i = 0; i < m; i++)
+				id.coeffRef(i, i) = 1;
+			this->_mat[0] += (id * salt);
+		}
+	}
+}
+void KingOfMonsters::_mySparse::addsmallidentity(double salt, bool sparse, bool dense) {
+
+	if (dense)
+	{
+		id.resize(_dmat.rows(), _dmat.cols());
+		
+		
+		id.setIdentity();
+
+
+		_dmat += (id * salt);
+	}
+	if (sparse)
+
+	{
+		if (this->_mat.size() >= 1)
+		{
+			id.resize(this->_mat[0].rows(), this->_mat[0].cols());
+			
 			id.setIdentity();
 			this->_mat[0] += (id * salt);
 		}

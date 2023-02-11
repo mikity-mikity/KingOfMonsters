@@ -508,6 +508,10 @@ namespace KingOfMonsters {
 		{
 			ret->_arr->__v += this->dat->_mat[0].transpose() * r->_arr->__v;
 		}
+		void scale(double sc)
+		{
+			this->dat->scale(sc);
+		}
 		void plus(mySparse^ m, bool sparse)
 		{
 			if (sparse)
@@ -1632,6 +1636,9 @@ namespace KingOfMonsters {
 		}
 		void addsmallidentity(double salt, bool sparse, bool dense) {
 			this->dat->addsmallidentity(salt, sparse, dense);
+		}
+		void addsmallidentity(double salt, bool sparse, bool dense,int m) {
+			this->dat->addsmallidentity(salt, sparse, dense,m);
 		}
 		void Clear() {
 			this->dat->Clear();
