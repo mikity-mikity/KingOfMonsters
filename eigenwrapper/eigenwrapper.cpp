@@ -3094,12 +3094,15 @@ std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs,
 	this->_mat[0].makeCompressed();
 	//Eigen::SparseLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	//Eigen::SparseQR< Eigen::SparseMatrix<double, 0, int64_t>, Eigen::COLAMDOrdering<int64_t>>lu;
-	Eigen::PardisoLU < Eigen::SparseMatrix<double, 0, int64_t>> lu;
-	//Eigen::BiCGSTAB< Eigen::SparseMatrix<double, 0, int64_t>> lu;
+	Eigen::BiCGSTAB< Eigen::SparseMatrix<double, 0, int64_t>> lu;
+	MKL_Set_Num_Threads(16);
+	MKL_Set_Dynamic(false);
+	//Eigen::PardisoLU < Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	//pardiso.compute(this->_mat[0]);
 
 
 	//lu.setPivotThreshold(0.0000000001);
+	lu.setMaxIterations(rhs->size() * 0.5);
 	lu.compute(this->_mat[0]);
 	if (lu.info() == Eigen::ComputationInfo::Success)
 	{
@@ -3983,6 +3986,8 @@ std::string KingOfMonsters::_mySparse::_solve0_lu(Eigen::VectorXd* rhs, Eigen::V
 	//ret->setZero();
 	//*ret = lu.solve(*rhs);
 #ifdef _CPU
+	MKL_Set_Num_Threads(16);
+	MKL_Set_Dynamic(false);
 	Eigen::PardisoLU < Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	lu.compute(this->_mat[0]);
 	*ret=lu.solve(*rhs);
@@ -4110,6 +4115,9 @@ std::string KingOfMonsters::_mySparse::_solve0_lu(Eigen::VectorXd* rhs, Eigen::V
 }
 std::string KingOfMonsters::_mySparse::_solve0_chol_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering) {
 #ifdef _CPU
+	MKL_Set_Num_Threads(16);
+	MKL_Set_Dynamic(false);
+
 	Eigen::PardisoLU < Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	lu.compute(this->_mat[0]);
 	*ret = lu.solve(*rhs);
