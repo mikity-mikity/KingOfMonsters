@@ -1198,9 +1198,9 @@ namespace KingOfMonsters {
 			//ptr = nullptr;
 			//return ret;
 		}
-		void LSsolve(myDoubleArray^ rhs, myDoubleArray^ ret,double salt) {
+		void LSsolve(myDoubleArray^ rhs, myDoubleArray^ ret,double salt,int mode) {
 
-			dat->LSsolve(&rhs->_arr->__v, &ret->_arr->__v,salt);
+			dat->LSsolve(&rhs->_arr->__v, &ret->_arr->__v,salt,mode);
 
 		}
 		void Project(myDoubleArray^ rhs, myDoubleArray^ ret, double salt) {

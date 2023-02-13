@@ -2834,6 +2834,7 @@ void KingOfMonsters::_mySparse::LSsolve(Eigen::VectorXd* rhs, Eigen::VectorXd* r
 		return;
 	}
 }
+
 void KingOfMonsters::_mySparse::Project(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, double salt) {
 	//Eigen::LLT<Eigen::MatrixXd> lu;
 	MKL_Set_Num_Threads(16);
