@@ -1628,10 +1628,6 @@ void KingOfMonsters::_mySparse::_shrinkCols(int64_t M, bool sparse, bool dense)
 }
 void KingOfMonsters::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic,int64_t>& perm, Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic,int64_t>& perm2)
 {
-	int64_t nn = _dmat.rows();// __r;
-	//int64_t numthreads = omp_get_max_threads();
-
-	int64_t S = nn / _mt / 2;
 	auto pt = perm2.transpose();
 
 	if (_mat.size() >= 1)
@@ -3098,14 +3094,14 @@ std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs,
 	//Eigen::SparseLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	//Eigen::SparseQR< Eigen::SparseMatrix<double, 0, int64_t>, Eigen::COLAMDOrdering<int64_t>>lu;
 	//Eigen::BiCGSTAB< Eigen::SparseMatrix<double, 0, int64_t>> lu;
-//	MKL_Set_Num_Threads(16);
-//	MKL_Set_Dynamic(false);
+	//MKL_Set_Num_Threads(16);
+	//MKL_Set_Dynamic(false);
 	Eigen::PardisoLU < Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	lu.pardisoParameterArray()[59] = 1;
 	//pardiso.compute(this->_mat[0]);
 
 
-	//lu.setPivotThreshold(0.0000000001);
+	//lu.setPivotThreshold(0.0000000001);l;ll;
 	//lu.setMaxIterations(rhs->size() * 0.5);
 	lu.compute(this->_mat[0]);
 	if (lu.info() == Eigen::ComputationInfo::Success)
@@ -3873,8 +3869,8 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu(KingOfMonsters::cuda* cuda, _
 void KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, _mySparse* mat, _mySparse* ret)
 {
 #ifdef _CPU
-	MKL_Set_Num_Threads(16);
-	MKL_Set_Dynamic(false);
+	//MKL_Set_Num_Threads(16);
+	//MKL_Set_Dynamic(false);
 	Eigen::FullPivLU<Eigen::MatrixXd> lu(this->_dmat);
 	ret->_dmat=lu.solve(mat->_dmat);
 #else

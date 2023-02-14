@@ -119,7 +119,7 @@ namespace KingOfMonsters {
 		{
 			this->_arr->__v.transposeInPlace();
 		}
-
+		
 		myDoubleArray^ duplicate()
 		{
 			myDoubleArray^ _new = gcnew myDoubleArray(this->_arr->__v.rows());
@@ -411,6 +411,29 @@ namespace KingOfMonsters {
 
 			ptr = nullptr;
 		}
+		myPermutation(int N,System::Collections::Generic::List<long long>^ index)
+		{
+			int L1 = N-1;
+			array<long long>^ ii = gcnew array<long long>(N);
+			for (int i = 0; i < index->Count; i++)
+			{
+				ii[index[i]] = L1;
+				L1--;
+			}
+			int L2 = 0;
+			for (int i = 0; i < N; i++)
+			{
+				if (index->Contains(i)) {}
+				else {
+					ii[i] = L2;
+					L2++;
+				}
+				
+			}
+			pin_ptr<Int64> ptr = &ii[0];
+			p = new _myPermutation(ptr, N);
+			ptr = nullptr;
+		}
 		!myPermutation() {
 			if (p != 0)
 				delete(p);
@@ -466,6 +489,10 @@ namespace KingOfMonsters {
 			//Eigen::Map<Eigen::VectorXd> b(ptr, N);
 			//b.applyOnTheLeft(this->p->perm.transpose());
 			vec->_arr->__v.applyOnTheLeft(this->p->perm.transpose());
+		}
+		int size()
+		{
+			return this->p->perm.size();
 		}
 	};
 	
@@ -1208,6 +1235,53 @@ namespace KingOfMonsters {
 			dat->Project(&rhs->_arr->__v, &ret->_arr->__v,salt);
 
 		}
+		void trimCols(System::Collections::Generic::List<int> ^ index)
+		{
+			int N = this->dat->_mat[0].cols();
+			int L1 = N;
+			array<long long>^ ii = gcnew array<long long>(N);
+			for (int i=0;i<index->Count;i++)
+			{
+				ii[index[i]] = L1;
+				L1--;
+			}
+			int L2 = 0;
+			for (int i = 0; i < N; i++)
+			{
+				if (index->Contains(i)) {}
+				else {
+					ii[index[i]] = L2;
+				}
+				L2++;
+			}
+			myPermutation ^perm = gcnew myPermutation(ii);
+			this->dat->_mat[0] = this->dat->_mat[0] * perm->p->perm.transpose();
+			this->dat->_mat[0] = this->dat->_mat[0].leftCols(L2);			
+		}
+		void trimRows(System::Collections::Generic::List<int>^ index)
+		{
+			int N = this->dat->_mat[0].rows();
+			int L1 = N;
+			array<long long>^ ii = gcnew array<long long>(N);
+			for (int i = 0; i < index->Count; i++)
+			{
+				ii[index[i]] = L1;
+				L1--;
+			}
+			int L2 = 0;
+			for (int i = 0; i < N; i++)
+			{
+				if (index->Contains(i)) {}
+				else {
+					ii[index[i]] = L2;
+				}
+				L2++;
+			}
+			myPermutation^ perm = gcnew myPermutation(ii);
+			this->dat->_mat[0] = perm->p->perm*this->dat->_mat[0] ;
+			this->dat->_mat[0] = this->dat->_mat[0].topRows(L2);
+		}
+
 		System::String ^ _solve0_lu(myDoubleArray^ rhs, myDoubleArray^ ret, int ordering, bool meh) {
 			//pin_ptr<double> ptr = &rhs[0];
 			//dat->_mat[0].setIdentity();
