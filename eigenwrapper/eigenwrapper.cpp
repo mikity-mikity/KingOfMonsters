@@ -3117,10 +3117,24 @@ std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs,
 		;
 	}
 }
-std::string KingOfMonsters::_mySparse::_solveLU_sparseCG_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret)
+std::string KingOfMonsters::_mySparse::_solveCG_sparse_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret)
 {
+	//MKL_Set_Num_Threads(16);
+	//MKL_Set_Dynamic(false);
 	this->_mat[0].makeCompressed();
-	Eigen::ConjugateGradient<Eigen::SparseMatrix<double, 0, int64_t>,Eigen::Upper|Eigen::Lower,Eigen::DiagonalPreconditioner<double>> lu(this->_mat[0]);
+	//Eigen::SparseLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
+	//Eigen::SparseQR< Eigen::SparseMatrix<double, 0, int64_t>, Eigen::COLAMDOrdering<int64_t>>lu;
+	Eigen::BiCGSTAB< Eigen::SparseMatrix<double, 0, int64_t>> lu;
+	//MKL_Set_Num_Threads(16);
+	//MKL_Set_Dynamic(false);
+	//Eigen::PardisoLU < Eigen::SparseMatrix<double, 0, int64_t>> lu;
+	//lu.pardisoParameterArray()[59] = 1;
+	//pardiso.compute(this->_mat[0]);
+
+
+	//lu.setPivotThreshold(0.0000000001);l;ll;
+	lu.setMaxIterations(rhs->size() * 0.2);
+	lu.compute(this->_mat[0]);
 	if (lu.info() == Eigen::ComputationInfo::Success)
 	{
 
@@ -3133,6 +3147,7 @@ std::string KingOfMonsters::_mySparse::_solveLU_sparseCG_cpu(Eigen::VectorXd* rh
 		return ss.str();
 		;
 	}
+
 }
 std::string KingOfMonsters::_mySparse::_solveLU_gpu(KingOfMonsters::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int64_t device) {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
