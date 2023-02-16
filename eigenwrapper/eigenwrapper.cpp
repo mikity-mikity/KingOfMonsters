@@ -2812,7 +2812,7 @@ void KingOfMonsters::_mySparse::LSsolve(Eigen::VectorXd* rhs, Eigen::VectorXd* r
 	//lu.setTolerance(DBL_EPSILON);
 	//lu.setMaxIterations(this->_mat[0].rows() * 10);
 	Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t> id;
-	if (mode==0)
+	if (mode==0)//minimum norm
 	{
 		id.resize(_mat[0].rows(), _mat[0].rows());
 		id.setIdentity();
@@ -2821,13 +2821,14 @@ void KingOfMonsters::_mySparse::LSsolve(Eigen::VectorXd* rhs, Eigen::VectorXd* r
 		*ret = this->_mat[0].transpose() * lu.solve(*rhs);
 		return;
 	}
-	if (mode==1)
+	if (mode==1)//least squares
 	{
 		id.resize(_mat[0].cols(), _mat[0].cols());
 		id.setIdentity();
 		lu.compute(this->_mat[0].transpose() * this->_mat[0] + id * salt);
 		ret->resize(this->_mat[0].rows());
-		*ret = lu.solve(*rhs).transpose() * this->_mat[0].transpose();
+		Eigen::VectorXd vv = this->_mat[0].transpose() * *rhs;
+		*ret = lu.solve(vv);
 		return;
 	}
 }
