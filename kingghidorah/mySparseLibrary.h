@@ -807,6 +807,7 @@ namespace KingOfMonsters {
 		double sum() {
 			if (this->dat->_mat[0].nonZeros() > 0)
 				return this->dat->_mat[0].cwiseAbs().sum();
+			return -1;
 		}
 		double _sum() {
 			return this->dat->_dmat.cwiseAbs().sum();

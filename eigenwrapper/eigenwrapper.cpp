@@ -43,12 +43,15 @@ double KingOfMonsters::_helper::VarPro(Eigen::VectorXd* coeff, Eigen::VectorXd* 
 	int _mt = 0;
 	int n = __U->cols();
 	int m = _mats1.size();
+	_mt = omp_get_max_threads();
+	int _mt2 = 0;
 #pragma omp parallel
 	{
 #pragma omp single
-		_mt = omp_get_num_threads();
+		_mt2 = omp_get_num_threads();
 	}
-
+	if (_mt2 > _mt)_mt = _mt2;
+	Eigen::setNbThreads(_mt);
 	//int m = __W->rows();
 
 	int nr1 = _r1->size();
@@ -202,12 +205,15 @@ double KingOfMonsters::_helper::ALT(Eigen::VectorXd* coeff, Eigen::VectorXd* phi
 	int _mt = 0;
 	int n = __U->cols();
 	int m = _mats1.size();
+	_mt = omp_get_max_threads();
+	int _mt2 = 0;
 #pragma omp parallel
 	{
 #pragma omp single
-		_mt = omp_get_num_threads();
+		_mt2 = omp_get_num_threads();
 	}
-
+	if (_mt2 > _mt)_mt = _mt2;
+	Eigen::setNbThreads(_mt);
 	//int m = __W->rows();
 
 	int nr1 = _r1->size();
@@ -339,12 +345,15 @@ double KingOfMonsters::_helper::Simple(Eigen::VectorXd* coeff, Eigen::VectorXd* 
 	int _mt = 0;
 	int n = X0.size();
 	int m = _mats1.size();
+	_mt = omp_get_max_threads();
+	int _mt2 = 0;
 #pragma omp parallel
 	{
 #pragma omp single
-		_mt = omp_get_num_threads();
+		_mt2 = omp_get_num_threads();
 	}
-
+	if (_mt2 > _mt)_mt = _mt2;
+	Eigen::setNbThreads(_mt);
 	//int m = __W->rows();
 
 	int nr1 = _r2->size();
@@ -420,12 +429,15 @@ double KingOfMonsters::_helper::GN(Eigen::VectorXd* coeff, Eigen::VectorXd* phi,
 	int _mt = 0;
 	int n = __U->cols();
 	int m = _mats1.size();
+	_mt = omp_get_max_threads();
+	int _mt2 = 0;
 #pragma omp parallel
 	{
 #pragma omp single
-		_mt = omp_get_num_threads();
+		_mt2 = omp_get_num_threads();
 	}
-
+	if (_mt2 > _mt)_mt = _mt2;
+	Eigen::setNbThreads(_mt);
 	//int m = __W->rows();
 
 	int nr1 = _r1->size();
@@ -1264,11 +1276,14 @@ KingOfMonsters::_mySparse::_mySparse()
 	_coeff.reserve(1000);
 	_mat.reserve(1000);
 	_mt = omp_get_max_threads();
+	int _mt2 = 0;
 #pragma omp parallel
 	{
 #pragma omp single
-		_mt = omp_get_num_threads();
+		_mt2 = omp_get_num_threads();
 	}
+	if (_mt2 > _mt)_mt = _mt2;
+	Eigen::setNbThreads(_mt);
 	//prevmat.resize(1, 1);
 	//e = new Eigen::SparseMatrix<double>[200];
 	//e2 = new Eigen::SparseMatrix<double>[200];
@@ -3091,8 +3106,10 @@ std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs,
 {
 	//MKL_Set_Num_Threads(16);
 	//MKL_Set_Dynamic(false);
-	int th=Eigen::nbThreads();
-
+ 	int th=Eigen::nbThreads();
+	Eigen::setNbThreads(_mt);
+	th= Eigen::nbThreads();
+	int th2 = th * 2;
 	this->_mat[0].makeCompressed();
 	//Eigen::SparseLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	//Eigen::SparseQR< Eigen::SparseMatrix<double, 0, int64_t>, Eigen::COLAMDOrdering<int64_t>>lu;
