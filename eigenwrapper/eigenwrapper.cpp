@@ -3107,8 +3107,24 @@ std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs,
 	lu.compute(this->_mat[0]);
 	if (lu.info() == Eigen::ComputationInfo::Success)
 	{
-
-		*ret = lu.solve(*rhs);
+		if (rhs->size() > this->_mat[0].rows())
+		{
+			Eigen::MatrixXd _rhs(this->_mat[0].rows(), rhs->size() / this->_mat[0].rows());
+			for (int i = 0; i < rhs->size(); i += this->_mat[0].rows())
+			{
+				_rhs.col(i/this->_mat[0].rows())= rhs->segment(i, this->_mat[0].rows());
+			}
+			Eigen::MatrixXd _ret = lu.solve(_rhs);
+			ret->resize(rhs->size());
+			ret->setZero();
+			for (int i = 0; i < rhs->size(); i += this->_mat[0].rows())
+			{
+				ret->segment(i, this->_mat[0].rows())=_ret.col(i / this->_mat[0].rows());
+			}
+		}
+		else {
+			*ret = lu.solve(*rhs);
+		}
 		return "success";
 	}
 	else {
