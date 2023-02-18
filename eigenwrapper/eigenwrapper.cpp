@@ -13,7 +13,7 @@
 #include <fstream>
 #define EIGEN_NO_DEBUG
 #define EIGEN_NO_STATIC_ASSERT
-#define EIGEN_USE_LAPACKE
+#define EIGEN_USE_LAPACK
 #define EIGEN_USE_MKL_ALL
 int64_t previdentiyN = 0;
 //std::vector<cudaStream_t> streams;
@@ -1270,7 +1270,7 @@ int& KingOfMonsters::cuda::fastest() {
 }
 KingOfMonsters::_mySparse::_mySparse()
 {
-	Eigen::initParallel();
+	//Eigen::initParallel();
 	dat.reserve(1000);
 	coeff.reserve(1000);
 	_coeff.reserve(1000);
@@ -1280,10 +1280,11 @@ KingOfMonsters::_mySparse::_mySparse()
 #pragma omp parallel
 	{
 #pragma omp single
-		_mt2 = omp_get_num_threads();
+		_mt = omp_get_num_threads();
 	}
 	if (_mt2 > _mt)_mt = _mt2;
 	Eigen::setNbThreads(_mt);
+	omp_set_num_threads(_mt);
 	//prevmat.resize(1, 1);
 	//e = new Eigen::SparseMatrix<double>[200];
 	//e2 = new Eigen::SparseMatrix<double>[200];

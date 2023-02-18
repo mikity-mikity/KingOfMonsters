@@ -142,14 +142,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(SolutionDir)packages\intelmkl.static.win-x64.2022.2.1.19754\lib\native\include;$(IncludePath);$(CUDA_PATH_V11_8)\include</IncludePath>
-    <threading-MKL-static-win-x64>tbb</threading-MKL-static-win-x64>
+    <threading-MKL-static-win-x64>sequential</threading-MKL-static-win-x64>
     <interface-MKL-static-win-x64>ilp64</interface-MKL-static-win-x64>
     <linkage-MKL-static-win-x64>static</linkage-MKL-static-win-x64>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_CPU|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(SolutionDir)packages\intelmkl.static.win-x64.2022.2.1.19754\lib\native\include;$(IncludePath);$(CUDA_PATH_V11_8)\include</IncludePath>
-    <threading-MKL-static-win-x64>tbb</threading-MKL-static-win-x64>
+    <threading-MKL-static-win-x64>sequential</threading-MKL-static-win-x64>
     <interface-MKL-static-win-x64>ilp64</interface-MKL-static-win-x64>
     <linkage-MKL-static-win-x64>static</linkage-MKL-static-win-x64>
   </PropertyGroup>
@@ -157,14 +157,14 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(SolutionDir)packages\intelmkl.static.win-x64.2022.2.1.19754\lib\native\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(CUDA_PATH_V11_8)\include;$(IncludePath)</IncludePath>
     <linkage-MKL-static-win-x64>static</linkage-MKL-static-win-x64>
-    <threading-MKL-static-win-x64>tbb</threading-MKL-static-win-x64>
+    <threading-MKL-static-win-x64>sequential</threading-MKL-static-win-x64>
     <interface-MKL-static-win-x64>ilp64</interface-MKL-static-win-x64>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_CPU|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(SolutionDir)packages\intelmkl.static.win-x64.2022.2.1.19754\lib\native\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(CUDA_PATH_V11_8)\include;$(IncludePath)</IncludePath>
     <linkage-MKL-static-win-x64>static</linkage-MKL-static-win-x64>
-    <threading-MKL-static-win-x64>tbb</threading-MKL-static-win-x64>
+    <threading-MKL-static-win-x64>sequential</threading-MKL-static-win-x64>
     <interface-MKL-static-win-x64>ilp64</interface-MKL-static-win-x64>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -331,14 +331,14 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions);_CPU</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <ForceConformanceInForLoopScope>false</ForceConformanceInForLoopScope>
       <RemoveUnreferencedCodeData>false</RemoveUnreferencedCodeData>
       <OpenMPSupport>true</OpenMPSupport>
@@ -350,7 +350,9 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <EnableModules>false</EnableModules>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <Optimization>Disabled</Optimization>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Link>
       <SubSystem>

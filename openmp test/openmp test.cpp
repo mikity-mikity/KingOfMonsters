@@ -12,7 +12,11 @@ int main()
 	}
 	std::string a = "";
 	std::cin >> a;
-
+#pragma omp parallel for
+	for (int64_t i = 0; i < 100; i++)
+	{
+		std::cout << i;
+	}
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

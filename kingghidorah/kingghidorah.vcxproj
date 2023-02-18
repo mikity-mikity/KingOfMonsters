@@ -135,7 +135,7 @@
     <LibraryPath>$(SolutionDir)packages\inteltbb.devel.win.2021.1.1.133\lib\native\win-x64;$(SolutionDir)packages\intelmkl.static.win-x64.2022.2.1.19754\lib\native\win-x64;$(CUDA_PATH_V11_8)\lib\x64;$(LibraryPath)</LibraryPath>
     <EnableManagedIncrementalBuild>false</EnableManagedIncrementalBuild>
     <TargetName>KingOfMonsters</TargetName>
-    <threading-MKL-static-win-x64>tbb-cluster</threading-MKL-static-win-x64>
+    <threading-MKL-static-win-x64>sequential-cluster</threading-MKL-static-win-x64>
     <interface-MKL-static-win-x64>lp64-cluster</interface-MKL-static-win-x64>
     <linkage-MKL-static-win-x64>static-cluster</linkage-MKL-static-win-x64>
     <linkage-MPI-devel-win-x64>dynamic</linkage-MPI-devel-win-x64>
@@ -145,7 +145,7 @@
     <LibraryPath>$(SolutionDir)packages\inteltbb.devel.win.2021.1.1.133\lib\native\win-x64;$(SolutionDir)packages\intelmkl.static.win-x64.2022.2.1.19754\lib\native\win-x64;$(CUDA_PATH_V11_8)\lib\x64;$(LibraryPath)</LibraryPath>
     <EnableManagedIncrementalBuild>false</EnableManagedIncrementalBuild>
     <TargetName>KingOfMonsters</TargetName>
-    <threading-MKL-static-win-x64>tbb-cluster</threading-MKL-static-win-x64>
+    <threading-MKL-static-win-x64>sequential-cluster</threading-MKL-static-win-x64>
     <interface-MKL-static-win-x64>lp64-cluster</interface-MKL-static-win-x64>
     <linkage-MKL-static-win-x64>static-cluster</linkage-MKL-static-win-x64>
     <linkage-MPI-devel-win-x64>dynamic</linkage-MPI-devel-win-x64>
@@ -154,7 +154,7 @@
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(CUDA_PATH_V11_8)\include;$(IncludePath);$(SolutionDir)packages\intelmkl.static.win-x64.2022.2.1.19754\lib\native\include</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(SolutionDir)packages\inteltbb.devel.win.2021.1.1.133\lib\native\win-x64;$(SolutionDir)packages\intelmkl.static.win-x64.2022.2.1.19754\lib\native\win-x64;$(CUDA_PATH_V11_8)\lib\x64;$(LibraryPath)</LibraryPath>
     <linkage-MKL-static-win-x64>static-cluster</linkage-MKL-static-win-x64>
-    <threading-MKL-static-win-x64>tbb-cluster</threading-MKL-static-win-x64>
+    <threading-MKL-static-win-x64>sequential-cluster</threading-MKL-static-win-x64>
     <interface-MKL-static-win-x64>lp64-cluster</interface-MKL-static-win-x64>
     <linkage-MPI-devel-win-x64>dynamic</linkage-MPI-devel-win-x64>
     <TargetName>KingOfMonsters</TargetName>
@@ -164,7 +164,7 @@
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(CUDA_PATH_V11_8)\include;$(IncludePath);$(SolutionDir)packages\intelmkl.static.win-x64.2022.2.1.19754\lib\native\include</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(SolutionDir)packages\inteltbb.devel.win.2021.1.1.133\lib\native\win-x64;$(SolutionDir)packages\intelmkl.static.win-x64.2022.2.1.19754\lib\native\win-x64;$(CUDA_PATH_V11_8)\lib\x64;$(LibraryPath)</LibraryPath>
     <linkage-MKL-static-win-x64>static-cluster</linkage-MKL-static-win-x64>
-    <threading-MKL-static-win-x64>tbb-cluster</threading-MKL-static-win-x64>
+    <threading-MKL-static-win-x64>sequential-cluster</threading-MKL-static-win-x64>
     <interface-MKL-static-win-x64>lp64-cluster</interface-MKL-static-win-x64>
     <linkage-MPI-devel-win-x64>dynamic</linkage-MPI-devel-win-x64>
     <TargetName>KingOfMonsters</TargetName>

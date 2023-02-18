@@ -2,7 +2,7 @@
 
 //#define EIGEN_DONT_PARALLELIZE
 #define EIGEN_USE_MKL_ALL
-#define EIGEN_USE_LAPACKE
+#define EIGEN_USE_LAPACK
 #include "eigen-3.4.0/Eigen/Sparse"
 #include "eigen-3.4.0/Eigen/Dense"
 #include "eigen-3.4.0/Eigen/SparseQR"
