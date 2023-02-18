@@ -2,13 +2,13 @@
 //
 
 #include <iostream>
-
+#include <omp.h> 
 int main()
 {
 #pragma omp parallel
 	{
 #pragma omp single
-		std::cout << "hello";
+		std::cout << omp_get_num_threads();
 	}
 	std::string a = "";
 	std::cin >> a;
