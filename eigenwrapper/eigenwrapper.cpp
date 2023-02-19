@@ -1276,13 +1276,13 @@ KingOfMonsters::_mySparse::_mySparse()
 	_coeff.reserve(1000);
 	_mat.reserve(1000);
 	_mt = omp_get_max_threads();
-	int _mt2 = 0;
+	/*int _mt2 = 0;
 #pragma omp parallel
 	{
 #pragma omp single
 		_mt = omp_get_num_threads();
 	}
-	if (_mt2 > _mt)_mt = _mt2;
+	if (_mt2 > _mt)_mt = _mt2;*/
 	Eigen::setNbThreads(_mt);
 	omp_set_num_threads(_mt);
 	//prevmat.resize(1, 1);
@@ -3107,16 +3107,19 @@ std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs,
 {
 	//MKL_Set_Num_Threads(16);
 	//MKL_Set_Dynamic(false);
- 	int th=Eigen::nbThreads();
+	_mt = MKL_Get_Max_Threads();
+	if(_mt>1)
+	MKL_Set_Num_Threads(_mt - 1);
+
 	Eigen::setNbThreads(_mt);
-	th= Eigen::nbThreads();
 	
 	this->_mat[0].makeCompressed();
 	//Eigen::SparseLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	//Eigen::SparseQR< Eigen::SparseMatrix<double, 0, int64_t>, Eigen::COLAMDOrdering<int64_t>>lu;
 	//Eigen::BiCGSTAB< Eigen::SparseMatrix<double, 0, int64_t>> lu;
-	MKL_Set_Num_Threads(_mt-1);
+	
 	MKL_Set_Dynamic(true);
+	
 	Eigen::PardisoLU < Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	//lu.pardisoParameterArray()[59] = 1;
 	//pardiso.compute(this->_mat[0]);
