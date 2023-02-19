@@ -3110,7 +3110,7 @@ std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs,
  	int th=Eigen::nbThreads();
 	Eigen::setNbThreads(_mt);
 	th= Eigen::nbThreads();
-	int th2 = th * 2;
+	
 	this->_mat[0].makeCompressed();
 	//Eigen::SparseLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	//Eigen::SparseQR< Eigen::SparseMatrix<double, 0, int64_t>, Eigen::COLAMDOrdering<int64_t>>lu;
