@@ -1191,6 +1191,15 @@ namespace KingOfMonsters {
 			ptr = nullptr;
 			return ret;
 		}
+		void Atb(array<double>^ b,  KingOfMonsters::myDoubleArray^  ret)
+		{
+			pin_ptr<double> ptr = &b[0];
+			dat->Atb(ptr,0, 1, b->Length,&ret->_arr->__v);
+			//array<double>^ ret = gcnew array<double>(rhs.rows());
+			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)rhs.data(), ret, 0, rhs.rows());
+			ptr = nullptr;
+			//return ret;
+		}
 		void Atb(array<double>^ b, array<double>^ c, double sc, KingOfMonsters::myDoubleArray^ ret)
 		{
 			pin_ptr<double> ptr = &b[0];

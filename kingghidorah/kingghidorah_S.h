@@ -1872,6 +1872,8 @@ namespace KingOfMonsters {
 		{
 			return _K_phi[l];// val;
 		}
+
+
 		//stress function
 		double F(int i, int j) {
 			int e = i * _nNode + j;
@@ -2023,6 +2025,40 @@ namespace KingOfMonsters {
 				ptr2++;
 			}
 			//mat->_mat[0].setFromTriplets(_dat->begin(), _dat->end());
+		}
+		double detZ()
+		{
+			double* pptr = &_ref->__mat[0];
+			double* pptr1 = &_ref->buf_z[0];
+			double val3 = 0;
+			for (int i = 0; i < _ref->_nNode; i++)
+			{
+				double* pptr2 = &_ref->buf_z[0];
+				for (int j = 0; j < _ref->_nNode; j++) {
+					val3 += *pptr * (*pptr1) */*_ref->buf_z[j] **/ (*pptr2);//_ref->buf_phi[i];
+					pptr++;
+					pptr2++;
+				}
+				pptr1++;
+			}
+			return val3;
+		}
+		double detphi()
+		{
+			double* pptr = &_ref->__mat[0];
+			double* pptr1 = &_ref->buf_phi[0];
+			double val3 = 0;
+			for (int i = 0; i < _ref->_nNode; i++)
+			{
+				double* pptr2 = &_ref->buf_phi[0];
+				for (int j = 0; j < _ref->_nNode; j++) {
+					val3 += *pptr * (*pptr1) */*_ref->buf_z[j] **/ (*pptr2);//_ref->buf_phi[i];
+					pptr++;
+					pptr2++;
+				}
+				pptr1++;
+			}
+			return val3;
 		}
 		//stress function L2
 		double F2(int i, int j) {
@@ -3150,6 +3186,24 @@ namespace KingOfMonsters {
 
 public ref class memS_ref {
 public:
+	double _lambda;
+	double lambda;
+	double getlambda()
+	{
+		return lambda;
+	}
+	void setlambda(double val)
+	{
+		lambda = val;
+	}
+	double get_lambda()
+	{
+		return _lambda;
+	}
+	void set_lambda(double val)
+	{
+		_lambda = val;
+	}
 	_memS_ref* __mem=0;
 	void setbuffer(buffer^ buf) {
 		__mem->set_buffer(buf->_buf->mem);
@@ -3572,7 +3626,14 @@ public:
 		void getmat_slope(myIntArray^ index, workspace^ _dat,double dcdt1,double dcdt2,bool airy) {
 			__mem->getMat_slope(index->data(), _dat->_dat, dcdt1, dcdt2, airy);
 		}
-
+		double detZ()
+		{
+			return __mem->detZ();
+		}
+		double detphi()
+		{
+			return __mem->detphi();
+		}
 		double bodyF() {
 			//double sc = 1.0/__mem->_ref->_refDv/ __mem->_ref->_refDv;
 			return __mem->sc *  __mem->bodyF;

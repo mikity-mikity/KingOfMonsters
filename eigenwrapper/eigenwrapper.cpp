@@ -2740,11 +2740,21 @@ void KingOfMonsters::_mySparse::Atb(double* ptr, double* ptr2, double sc,int64_t
 		
 
 				Eigen::Map<Eigen::VectorXd> b(ptr + offset, ee);
-				Eigen::Map<Eigen::VectorXd> b2(ptr2 + offset, ee);
-				if (this->_mat[i].rows() > 0 && this->_mat[i].cols() > 0)
+				if (ptr2 != 0)
 				{
-					tmp += _mat[i].transpose() * coeff[i].asDiagonal() *(b + sc * b2);
-					
+					Eigen::Map<Eigen::VectorXd> b2(ptr2 + offset, ee);
+					if (this->_mat[i].rows() > 0 && this->_mat[i].cols() > 0)
+					{
+						tmp += _mat[i].transpose() * coeff[i].asDiagonal() * (b + sc * b2);
+
+					}
+				}
+				else {
+					if (this->_mat[i].rows() > 0 && this->_mat[i].cols() > 0)
+					{
+						tmp += _mat[i].transpose() * coeff[i].asDiagonal() * (b);
+
+					}
 				}
 				offset += ee;
 			}
