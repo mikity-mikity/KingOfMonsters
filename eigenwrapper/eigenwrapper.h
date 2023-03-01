@@ -276,6 +276,7 @@ namespace KingOfMonsters {
 		void set_uselocation(int64_t location, double val);
 		std::string ofAtA_gpu(cuda* _cuda, _mySparse* A, bool sparse);
 		std::string _ofAtA(_mySparse* A);
+		std::string _ofAtA_sparse(_mySparse* A);
 		//void ofAtB_gpu(_mySparse* B, bool sparse);
 		void ofAtB(_mySparse* B, bool sparse);
 		void _ofAtB(_mySparse* B, _mySparse* C);
@@ -286,6 +287,7 @@ namespace KingOfMonsters {
 		//void _ofBtAB_qr(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret);
 		Eigen::VectorXd Atb(double* ptr, int64_t N);
 		Eigen::VectorXd _Atb(double* ptr, int64_t N);
+		void Atb(double* ptr, int64_t N, Eigen::VectorXd* c);
 		void Atb(double* ptr, double* ptr2, double sc, int64_t N, Eigen::VectorXd* c);
 		void merge();
 		void computeQR();

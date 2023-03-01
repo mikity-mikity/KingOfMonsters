@@ -1864,7 +1864,7 @@ void KingOfMonsters::_mySparse::OfDuplicate(_mySparse* mat)
 		this->coeff[ii].resize(mat->coeff[ii].size());
 		this->_coeff[ii].resize(mat->coeff[ii].size());
 
-		this->coeff[ii] = mat->coeff[ii];
+		this->coeff[ii] =  mat->coeff[ii];
 		this->_coeff[ii] = mat->_coeff[ii];
 	}
 }
@@ -2244,6 +2244,41 @@ std::string KingOfMonsters::_mySparse::_ofAtA(_mySparse* A)
 
 			auto _ret = (A->_mat[ii].transpose() * coeff[ii].asDiagonal() * A->_mat[ii]);
 			_dmat += _ret;
+		}
+	}
+	return ss.str();
+}
+std::string KingOfMonsters::_mySparse::_ofAtA_sparse(_mySparse* A)
+{
+
+	//__r = A->cols();
+	//__c = A->cols();
+	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, A->cols(), A->cols());
+	std::stringstream ss;
+#ifdef _DEBUG
+	ss << _nt << std::endl;
+	for (int64_t ii = 0; ii < _nt; ii++)
+	{
+		if (this->_mat[ii].rows() > 0 && this->_mat[ii].cols() > 0)
+		{
+			ss << ii << "th" << std::endl;
+			ss << A->_mat[ii].rows() << "," << A->_mat[ii].cols() << "," << coeff[ii].size() << std::endl;
+
+		}
+	}
+#endif
+
+	//this->_dmat.resize(A->cols(), A->cols());
+	_mat[0].resize(A->cols(), A->cols());
+	_mat[0].setZero();
+	//_tmp.setZero(__r, __c);
+	for (int64_t ii = 0; ii < _nt; ii++)
+	{
+		if (this->_mat[ii].rows() > 0 && this->_mat[ii].cols() > 0)
+		{
+
+			auto _ret = (A->_mat[ii].transpose() * coeff[ii].asDiagonal() * A->_mat[ii]);
+			_mat[0] += _ret;
 		}
 	}
 	return ss.str();
@@ -2784,6 +2819,25 @@ Eigen::VectorXd KingOfMonsters::_mySparse::Atb(double* ptr, int64_t N)
 		offset += ee;
 	}
 	return ret;
+}
+void KingOfMonsters::_mySparse::Atb(double* ptr, int64_t N,Eigen::VectorXd* c)
+{
+	//Eigen::VectorXd ret(this->cols());
+	c->resize(this->cols());
+	c->setZero();
+	//ret.setZero();
+	int64_t offset = 0;
+	for (int64_t ii = 0; ii < _nt; ii++)
+	{
+		int64_t ee = coeff[ii].rows();
+		Eigen::Map<Eigen::VectorXd> b(ptr + offset, ee);
+		if (this->_mat[ii].rows() > 0 && this->_mat[ii].cols() > 0)
+		{
+			*c += _mat[ii].transpose() * coeff[ii].asDiagonal() * b;
+		}
+		offset += ee;
+	}
+	//return ret;
 }
 Eigen::VectorXd KingOfMonsters::_mySparse::_Atb(double* ptr, int64_t N)
 {

@@ -986,6 +986,11 @@ namespace KingOfMonsters {
 			auto ret = gcnew System::String(str.c_str());
 			return ret;
 		}
+		System::String^ _ofAtA_sparse(mySparse^ m) {
+			auto str = dat->_ofAtA_sparse(m->dat);
+			auto ret = gcnew System::String(str.c_str());
+			return ret;
+		}
 		void ofAtB(mySparse^ m, bool sparse) {
 			dat->ofAtB(m->dat, sparse);
 		}
@@ -1194,7 +1199,7 @@ namespace KingOfMonsters {
 		void Atb(array<double>^ b,  KingOfMonsters::myDoubleArray^  ret)
 		{
 			pin_ptr<double> ptr = &b[0];
-			dat->Atb(ptr,0, 1, b->Length,&ret->_arr->__v);
+			dat->Atb(ptr, b->Length,&ret->_arr->__v);
 			//array<double>^ ret = gcnew array<double>(rhs.rows());
 			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)rhs.data(), ret, 0, rhs.rows());
 			ptr = nullptr;
