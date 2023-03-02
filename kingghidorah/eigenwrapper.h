@@ -260,6 +260,7 @@ namespace KingOfMonsters {
 		void addemptyrow(int64_t ii);
 		void addrow(int64_t ii, int64_t* ptr, double* data, double sc, int64_t N);
 		void addrow(int64_t ii, int64_t* ptr, double* data, double sc, int64_t N, double _coeff);
+		void addrow(int64_t ii, int64_t* ptr, double* data, double* data2, double sc, int64_t N, double c1, double c2);
 		void addrow(int64_t ii, int64_t* ptr, double* data, int64_t shift, double sc, int64_t N, bool add, double __coeff);
 		void adddat(int64_t ii, int64_t j, double value);
 		void addcoeff(double sc);

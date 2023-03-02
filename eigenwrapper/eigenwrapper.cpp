@@ -1760,6 +1760,34 @@ void KingOfMonsters::_mySparse::addrow(int64_t ii, int64_t* ptr, double* data, d
 {
 	addrow(ii, ptr, data, 0, sc, N, true, coeff);
 }
+void KingOfMonsters::_mySparse::addrow(int64_t ii, int64_t* ptr, double* data, double* data2,double sc, int64_t N, double c1,double c2)
+{
+	//data += shift;
+	//data += shift;
+	//ptr += shift;
+	if (dat.size() != 1)dat.resize(1);
+	if (_coeff.size() != 1)_coeff.resize(1);
+	dat[0].reserve(dat[0].size() + N);
+	for (int64_t i = 0; i < N; i++)
+	{
+		//eigen_assert(*data != 0);
+		//eigen_assert(*data < 10000);
+		//eigen_assert(*data > -10000);
+		//eigen_assert(*ptr < _mat[0].cols());
+		//eigen_assert(*ptr >= 0);
+		//if(*data!=0 && *data<100&&*data>-100)
+		dat[0].push_back(Eigen::Triplet<double>(ii, *ptr, (*data) * c1+(*data2)*c2));
+		ptr++;
+		data++;
+		data2++;
+	}
+	//if (add)
+	{
+		eigen_assert(ii == _coeff[0].size());
+		_coeff[0].push_back(sc);
+	}
+}
+
 void KingOfMonsters::_mySparse::addrow(int64_t ii, int64_t* ptr, double* data, int64_t shift, double sc, int64_t N, bool add,double __coeff)
 {
 	data += shift;

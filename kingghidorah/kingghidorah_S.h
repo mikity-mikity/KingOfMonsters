@@ -3377,6 +3377,12 @@ public:
 		mat->dat->addrow(ii, index->_arr, __mem->__grad_z, sc, __mem->_nNode);
 
 	}
+	void U_mix(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1,double c2)
+	{
+
+		mat->dat->addrow(ii, index->_arr, __mem->__grad_phi, __mem->__grad_phi, sc, __mem->_nNode, c1,c2);
+
+	}
 	void U_z(mySparse^ mat, int ii, myIntArray^ index, double sc,double coeff)
 	{
 
