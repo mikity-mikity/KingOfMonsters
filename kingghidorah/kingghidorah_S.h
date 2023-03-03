@@ -2053,6 +2053,7 @@ namespace KingOfMonsters {
 			}
 			return val3;
 		}
+
 		double _detZ()
 		{
 			
