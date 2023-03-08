@@ -16,7 +16,7 @@ namespace KingOfMonsters {
 	
 	public class _buffer {
 	public:
-		double mem[18000];
+		double mem[10000];
 	};
 	public ref class buffer {
 	public:
@@ -109,7 +109,7 @@ namespace KingOfMonsters {
 			//buf_psi = &buf[10000];
 			//buf_b = &buf[12000];
 			//buf_D = &buf[14000];
-			buf_W = &buf[16000];
+			buf_W = &buf[8000];
 		}
 		inline void set_node(const int &i, const int &s, const double val) {
 			node[___ll[i] + s] = val;
