@@ -19,6 +19,16 @@ namespace KingOfMonsters {
 	private:
 		Eigen::MatrixXd* mat = 0;
 	public:
+		void genEigen(denseMatrix ^a,denseMatrix ^ b, [Runtime::InteropServices::Out]double%  l1, [Runtime::InteropServices::Out]double% l1i,[Runtime::InteropServices::Out]double% l2, [Runtime::InteropServices::Out]double% l2i){
+			Eigen::GeneralizedEigenSolver<Eigen::MatrixXd> solve(* (a->mat), * (b->mat), true);
+			
+			* this->mat = solve.eigenvectors().real();
+			l1 = solve.eigenvalues()(0).real();
+			l2 = solve.eigenvalues()(1).real();
+			l1i = solve.eigenvalues()(0).imag();
+			l2i = solve.eigenvalues()(1).imag();
+
+		}
 		Eigen::MatrixXd& get()
 		{
 			return *mat;
@@ -30,6 +40,10 @@ namespace KingOfMonsters {
 		void set(int i, int j, double val)
 		{
 			(*mat)(i, j) = val;
+		}
+		double get(int i, int j)
+		{
+			return (*mat)(i, j);
 		}
 		void setzero() {
 			mat->setZero();

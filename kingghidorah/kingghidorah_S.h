@@ -52,10 +52,10 @@ namespace KingOfMonsters {
 		double* def = 0;
 		double* buf_z = 0;
 		double* buf_phi = 0;
-		double* buf_chi = 0;
-		double* buf_psi = 0;
-		double* buf_b = 0;
-		double* buf_D = 0;
+		//double* buf_chi = 0;
+		//double* buf_psi = 0;
+		//double* buf_b = 0;
+		//double* buf_D = 0;
 		double* buf_W = 0;
 
 		double _gi[6];
@@ -105,10 +105,10 @@ namespace KingOfMonsters {
 			def = &buf[2000];
 			buf_z = &buf[4000];
 			buf_phi = &buf[6000];
-			buf_chi = &buf[8000];
-			buf_psi = &buf[10000];
-			buf_b = &buf[12000];
-			buf_D = &buf[14000];
+			//buf_chi = &buf[8000];
+			//buf_psi = &buf[10000];
+			//buf_b = &buf[12000];
+			//buf_D = &buf[14000];
 			buf_W = &buf[16000];
 		}
 		inline void set_node(const int &i, const int &s, const double val) {
@@ -129,14 +129,14 @@ namespace KingOfMonsters {
 			//buf_z[i] = val;
 			memcpy(buf_phi, ptr, sizeof(double) * N);
 		}
-		inline void set_buf_chi(double* ptr, const int& N) {
+		/*inline void set_buf_chi(double* ptr, const int& N) {
 			//buf_z[i] = val;
 			memcpy(buf_chi, ptr, sizeof(double) * N);
 		}
 		inline void set_buf_psi(double* ptr, const int& N) {
 			//buf_z[i] = val;
 			memcpy(buf_psi, ptr, sizeof(double) * N);
-		}
+		}*/
 		inline void set_buf_W(double* ptr, const int& N) {
 			//buf_z[i] = val;
 			memcpy(buf_W, ptr, sizeof(double) * N);
@@ -148,12 +148,12 @@ namespace KingOfMonsters {
 		inline void set_buf_phi(const int& i, const double val) {
 			buf_phi[i] = val;
 		}
-		inline void set_buf_chi(const int& i, const double val) {
+		/*inline void set_buf_chi(const int& i, const double val) {
 			buf_chi[i] = val;
 		}
 		inline void set_buf_psi(const int& i, const double val) {
 			buf_psi[i] = val;
-		}
+		}*/
 		inline void set_def(const int &i, const int &s, const double &val) {
 			def[___ll[i]  + s] = val;
 		}
@@ -1832,6 +1832,80 @@ namespace KingOfMonsters {
 
 			return sc*(_SLOPE_z[0]*dcdtstar0+_SLOPE_z[1]*dcdtstar1);// val;
 		}
+		inline void shear(double* ptr,int uv)
+		{
+			double* ptr1 = ptr;
+			if (uv == 0)
+			{
+				for (int i = 0; i < _ref->_nNode; i++)
+				{
+					*ptr1 = 0;
+					*ptr1 += _ref->_Gij[2] * _ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i];
+					//*ptr1 += _ref->_Gij[2] * _ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i];
+					*ptr1 += _ref->_Gij[3] * _ref->d2[2][i] - _ref->_Gammaijk[4] * _ref->d1[0][i] - _ref->_Gammaijk[5] * _ref->d1[1][i];
+					//*ptr1 += _ref->_Gij[3] * _ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i];
+				}
+			}
+			else {
+				for (int i = 0; i < _ref->_nNode; i++)
+				{
+					*ptr1 = 0;
+					//*ptr1 += _ref->_Gij[0] * _ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i];
+					*ptr1 += _ref->_Gij[0] * _ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i];
+					//*ptr1 += _ref->_Gij[1] * _ref->d2[2][i] - _ref->_Gammaijk[4] * _ref->d1[0][i] - _ref->_Gammaijk[5] * _ref->d1[1][i];
+					*ptr1 += _ref->_Gij[1] * _ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i];
+				}
+			}
+		}
+		inline double shear_z(int uv)
+		{
+			double val = 0;
+			if (uv == 0)
+			{
+				for (int i = 0; i < _ref->_nNode; i++)
+				{
+					val += (_ref->_Gij[2] * _ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i]) * _ref->buf_z[i];
+					//val += (_ref->_Gij[2] * _ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * _ref->buf_z[i];
+					val += (_ref->_Gij[3] * _ref->d2[2][i] - _ref->_Gammaijk[4] * _ref->d1[0][i] - _ref->_Gammaijk[5] * _ref->d1[1][i]) * _ref->buf_z[i];
+					//val += (_ref->_Gij[3] * _ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i]) * _ref->buf_z[i];
+				}
+			}
+			else {
+				for (int i = 0; i < _ref->_nNode; i++)
+				{
+					//val += (_ref->_Gij[0] * _ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i]) * _ref->buf_z[i];
+					val += (_ref->_Gij[0] * _ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * _ref->buf_z[i];
+					//val += (_ref->_Gij[1] * _ref->d2[2][i] - _ref->_Gammaijk[4] * _ref->d1[0][i] - _ref->_Gammaijk[5] * _ref->d1[1][i]) * _ref->buf_z[i];
+					val += (_ref->_Gij[1] * _ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i]) * _ref->buf_z[i];
+				}
+			}
+			return val;
+		}
+		inline double shear_phi(int uv)
+		{
+			double val = 0;
+			if (uv == 0)
+			{
+				for (int i = 0; i < _ref->_nNode; i++)
+				{
+					val += (_ref->_Gij[2] * _ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i]) * _ref->buf_z[i];
+					//val += (_ref->_Gij[2] * _ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * _ref->buf_z[i];
+					val += (_ref->_Gij[3] * _ref->d2[2][i] - _ref->_Gammaijk[4] * _ref->d1[0][i] - _ref->_Gammaijk[5] * _ref->d1[1][i]) * _ref->buf_z[i];
+					//val += (_ref->_Gij[3] * _ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i]) * _ref->buf_z[i];
+				}
+			}
+			else
+			{
+				for (int i = 0; i < _ref->_nNode; i++)
+				{
+					//val += (_ref->_Gij[0] * _ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i]) * _ref->buf_z[i];
+					val += (_ref->_Gij[0] * _ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * _ref->buf_z[i];
+					//val += (_ref->_Gij[1] * _ref->d2[2][i] - _ref->_Gammaijk[4] * _ref->d1[0][i] - _ref->_Gammaijk[5] * _ref->d1[1][i]) * _ref->buf_z[i];
+					val += (_ref->_Gij[1] * _ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i]) * _ref->buf_z[i];
+				}
+			}
+			return val;
+		}
 		inline double SLOPE(int l,int i) {
 			return _ref->d1[0][i]*get_Gij(0, l)+ _ref->d1[1][i] * get_Gij(1, l);
 
@@ -2134,8 +2208,8 @@ namespace KingOfMonsters {
 			for (int i = 0; i < _ref->_nNode; i++)
 			{
 				a += pptr1[i] * (_ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i]);
-				b += pptr1[i] * (_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i]);
-				c += pptr1[i] * (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]);
+				c += pptr1[i] * (_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i]);
+				b += pptr1[i] * (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]);
 			}
 			return a * c - b * b;
 		}
@@ -3640,6 +3714,18 @@ public:
 			ret[5] = _ret[5];
 
 		}*/
+	double shear_z(int uv)
+	{
+		return __mem->shear_z(uv);
+	}
+	double shear_phi(int uv)
+	{
+		return __mem->shear_phi(uv);
+	}
+	void shear(myDoubleArray^ arr, int uv)
+	{
+		__mem->shear(arr->_arr->__v.data(), uv);
+	}
 	double SLOPE_phi(int l) {
 		return __mem->SLOPE_phi(l);
 	}
