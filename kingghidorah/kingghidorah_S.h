@@ -523,6 +523,8 @@ namespace KingOfMonsters {
 	public:
 		double* __grad_z=0;
 		double* __grad_phi = 0;
+		double* __grad = 0;
+		double* __grad2 = 0;
 		int _nNode;
 	private:
 		//double* __mat = 0;
@@ -769,6 +771,7 @@ namespace KingOfMonsters {
 			this->mode = ultimate;
 			this->RAM = RAM;
 			if (mode=="U") {
+				__grad = 0;
 				__grad_z = 0;
 				__grad_phi = 0;
 				__grad_C_z = 0;
@@ -1429,7 +1432,11 @@ namespace KingOfMonsters {
 				if (__grad_C_phi != 0)delete[] __grad_C_phi;
 				if (__grad_D_z != 0)delete[] __grad_D_z;
 				if (__grad_D_phi != 0)delete[] __grad_D_phi;
+				if (__grad != 0)delete[] __grad;
+				if (__grad2 != 0)delete[] __grad2;
 				if (_K != 0)delete[] _K;
+				__grad = 0;
+				__grad2 = 0;
 				__grad_z = 0;
 				__grad_phi = 0;
 				//__mat = 0;
@@ -1619,6 +1626,8 @@ namespace KingOfMonsters {
 				dim[1] = _vDim;
 				if (mode=="U"||mode=="SLOPE")
 				{
+					__grad = new double[nNode];
+					__grad2 = new double[nNode];
 					__grad_z = new double[nNode];
 					__grad_phi = new double[nNode];
 					//__mat = new double[nNode * nNode];
@@ -3219,8 +3228,92 @@ namespace KingOfMonsters {
 			}
 			return val;
 		}
-
-
+		double D1()
+		{
+			double val = 0;
+			for (int i = 0; i < _ref->_nNode; i++)
+			{
+				for (int j = 0; j < _ref->_nNode; j++)
+				{
+					val += (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * ((_ref->d2[3][j] - _ref->_Gammaijk[6] * _ref->d1[0][j] - _ref->_Gammaijk[7] * _ref->d1[1][j])) * _ref->buf_phi[i] * _ref->buf_z[j];
+					val -= (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * ((_ref->d2[3][j] - _ref->_Gammaijk[6] * _ref->d1[0][j] - _ref->_Gammaijk[7] * _ref->d1[1][j])) * _ref->buf_phi[j] * _ref->buf_z[i];
+				}
+			}
+			return val;
+		}
+		double D2()
+		{
+			double val = 0;
+			for (int i = 0; i < _ref->_nNode; i++)
+			{
+				for (int j = 0; j < _ref->_nNode; j++)
+				{
+					val += (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * ((_ref->d2[0][j] - _ref->_Gammaijk[0] * _ref->d1[0][j] - _ref->_Gammaijk[1] * _ref->d1[1][j])) * _ref->buf_phi[i] * _ref->buf_z[j];
+					val -= (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * ((_ref->d2[0][j] - _ref->_Gammaijk[0] * _ref->d1[0][j] - _ref->_Gammaijk[1] * _ref->d1[1][j])) * _ref->buf_phi[j] * _ref->buf_z[i];
+				}
+			}
+			return val;
+		}
+		void D1_phi(double* ptr)
+		{
+			double* ptr1 = ptr;
+			for (int j = 0; j < _ref->_nNode; j++)
+			{
+				double val = 0;
+				for (int i = 0; i < _ref->_nNode; i++)
+				{
+					val += (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * ((_ref->d2[3][j] - _ref->_Gammaijk[6] * _ref->d1[0][j] - _ref->_Gammaijk[7] * _ref->d1[1][j])) * _ref->buf_phi[i];// *_ref->buf_z[j];
+					val -= (_ref->d2[1][j] - _ref->_Gammaijk[2] * _ref->d1[0][j] - _ref->_Gammaijk[3] * _ref->d1[1][j]) * ((_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i])) * _ref->buf_phi[i];// *_ref->buf_z[i];
+				}
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		void D1_z(double* ptr)
+		{
+			double* ptr1 = ptr;
+			for (int j = 0; j < _ref->_nNode; j++)
+			{
+				double val = 0;
+				for (int i = 0; i < _ref->_nNode; i++)
+				{
+					val += (_ref->d2[1][j] - _ref->_Gammaijk[2] * _ref->d1[0][j] - _ref->_Gammaijk[3] * _ref->d1[1][j]) * ((_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i])) * _ref->buf_z[i];// *_ref->buf_z[j];
+					val -= (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * ((_ref->d2[3][j] - _ref->_Gammaijk[6] * _ref->d1[0][j] - _ref->_Gammaijk[7] * _ref->d1[1][j])) * _ref->buf_z[i];// *_ref->buf_z[i];
+				}
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		void D2_phi(double* ptr)
+		{
+			double* ptr1 = ptr;
+			for (int j = 0; j < _ref->_nNode; j++)
+			{
+				double val = 0;
+				for (int i = 0; i < _ref->_nNode; i++)
+				{
+					val += (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * ((_ref->d2[3][j] - _ref->_Gammaijk[6] * _ref->d1[0][j] - _ref->_Gammaijk[7] * _ref->d1[1][j])) * _ref->buf_phi[i];// *_ref->buf_z[j];
+					val -= (_ref->d2[1][j] - _ref->_Gammaijk[2] * _ref->d1[0][j] - _ref->_Gammaijk[3] * _ref->d1[1][j]) * ((_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i])) * _ref->buf_phi[i];// *_ref->buf_z[i];
+				}
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		void D2_z(double* ptr)
+		{
+			double* ptr1 = ptr;
+			for (int j = 0; j < _ref->_nNode; j++)
+			{
+				double val = 0;
+				for (int i = 0; i < _ref->_nNode; i++)
+				{
+					val += (_ref->d2[1][j] - _ref->_Gammaijk[2] * _ref->d1[0][j] - _ref->_Gammaijk[3] * _ref->d1[1][j]) * ((_ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i])) * _ref->buf_z[i];// *_ref->buf_z[j];
+					val -= (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * ((_ref->d2[0][j] - _ref->_Gammaijk[0] * _ref->d1[0][j] - _ref->_Gammaijk[1] * _ref->d1[1][j])) * _ref->buf_z[i];// *_ref->buf_z[i];
+				}
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
 		double U(int I, int J) {
 			double val = 0;
 			//double sc = 1.0 / _ref->_refDv / _ref->_refDv;
@@ -3653,6 +3746,27 @@ public:
 	double U_phi(int J) {
 		return __mem->U_phi(J);
 	}
+	double D1()
+	{
+		return __mem->D1();
+	}
+	double D2()
+	{
+		return __mem->D2();
+	}
+	void D_phi(mySparse^ mat, int ii, myIntArray^ index, double sc,double c1,double c2)
+	{
+		__mem->D1_phi(__mem->__grad);
+		__mem->D2_phi(__mem->__grad2);
+		mat->dat->addrow(ii, index->_arr, __mem->__grad, __mem->__grad2, sc, __mem->_nNode, c1, c2);
+	}
+	void D_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double c2)
+	{
+		__mem->D1_z(__mem->__grad);
+		__mem->D2_z(__mem->__grad2);
+		mat->dat->addrow(ii, index->_arr, __mem->__grad, __mem->__grad2, sc, __mem->_nNode, c1, c2);
+	}
+
 	void d0(mySparse^ mat, int ii, myIntArray^ index, double sc)
 	{
 		mat->dat->addrow(ii, index->_arr, __mem->_ref->d0, sc, __mem->_nNode);

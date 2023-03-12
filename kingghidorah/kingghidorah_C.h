@@ -13,8 +13,8 @@ namespace KingOfMonsters {
 		double* def = 0;
 		double* buf_z = 0;
 		double* buf_phi = 0;
-		double* buf_b = 0;
-		double* buf_D = 0;
+		//double* buf_b = 0;
+		//double* buf_D = 0;
 		double* buf_W = 0;
 
 		double _gi[3];
@@ -40,9 +40,9 @@ namespace KingOfMonsters {
 			def = &buf[2000];
 			buf_z = &buf[4000];
 			buf_phi = &buf[6000];
-			buf_b = &buf[8000];
-			buf_D = &buf[10000];
-			buf_W = &buf[12000];
+			//buf_b = &buf[8000];
+			//buf_D = &buf[10000];
+			buf_W = &buf[8000];
 		}
 		inline void set_node(int i, int s, double val) {
 			node[i * 3 + s] = val;
