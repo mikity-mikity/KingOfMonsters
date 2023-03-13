@@ -3230,86 +3230,195 @@ namespace KingOfMonsters {
 		}
 		double D1()
 		{
-			double val = 0;
+			double S11=0, S12 = 0, S22 = 0;
+			double s11 = 0, s12 = 0, s22 = 0;
 			for (int i = 0; i < _ref->_nNode; i++)
 			{
-				for (int j = 0; j < _ref->_nNode; j++)
-				{
-					val += (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * ((_ref->d2[3][j] - _ref->_Gammaijk[6] * _ref->d1[0][j] - _ref->_Gammaijk[7] * _ref->d1[1][j])) * _ref->buf_phi[i] * _ref->buf_z[j];
-					val -= (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * ((_ref->d2[3][j] - _ref->_Gammaijk[6] * _ref->d1[0][j] - _ref->_Gammaijk[7] * _ref->d1[1][j])) * _ref->buf_phi[j] * _ref->buf_z[i];
-				}
+				S11 += (_ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i]) * _ref->buf_phi[i];
+				S12 += (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * _ref->buf_phi[i];
+				S22 += (_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i]) * _ref->buf_phi[i];
+				s11 += (_ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i]) * _ref->buf_z[i];
+				s12 += (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * _ref->buf_z[i];
+				s22 += (_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i]) * _ref->buf_z[i];
 			}
-			return val;
+			double b11 = S11 * _ref->_Gi[0] * _ref->_Gi[0] + 2 * S12 * _ref->_Gi[0] * _ref->_Gi[3] + S22 * _ref->_Gi[3] * _ref->_Gi[3];
+			double b12 = S11 * _ref->_Gi[0] * _ref->_Gi[1] + 2 * S12 * _ref->_Gi[0] * _ref->_Gi[4] + S22 * _ref->_Gi[3] * _ref->_Gi[4];
+			double b22 = S11 * _ref->_Gi[1] * _ref->_Gi[1] + 2 * S12 * _ref->_Gi[1] * _ref->_Gi[4] + S22 * _ref->_Gi[4] * _ref->_Gi[4];
+			double c11 = s11 * _ref->_Gi[0] * _ref->_Gi[0] + 2 * s12 * _ref->_Gi[0] * _ref->_Gi[3] + s22 * _ref->_Gi[3] * _ref->_Gi[3];
+			double c12 = s11 * _ref->_Gi[0] * _ref->_Gi[1] + 2 * s12 * _ref->_Gi[0] * _ref->_Gi[4] + s22 * _ref->_Gi[3] * _ref->_Gi[4];
+			double c22 = s11 * _ref->_Gi[1] * _ref->_Gi[1] + 2 * s12 * _ref->_Gi[1] * _ref->_Gi[4] + s22 * _ref->_Gi[4] * _ref->_Gi[4];
+
+			return b12* c22 - b22 * c12;
 		}
 		double D2()
 		{
-			double val = 0;
+			double S11 = 0, S12 = 0, S22 = 0;
+			double s11 = 0, s12 = 0, s22 = 0;
 			for (int i = 0; i < _ref->_nNode; i++)
 			{
-				for (int j = 0; j < _ref->_nNode; j++)
-				{
-					val += (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * ((_ref->d2[0][j] - _ref->_Gammaijk[0] * _ref->d1[0][j] - _ref->_Gammaijk[1] * _ref->d1[1][j])) * _ref->buf_phi[i] * _ref->buf_z[j];
-					val -= (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * ((_ref->d2[0][j] - _ref->_Gammaijk[0] * _ref->d1[0][j] - _ref->_Gammaijk[1] * _ref->d1[1][j])) * _ref->buf_phi[j] * _ref->buf_z[i];
-				}
+				S11 += (_ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i]) * _ref->buf_phi[i];
+				S12 += (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * _ref->buf_phi[i];
+				S22 += (_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i]) * _ref->buf_phi[i];
+				s11 += (_ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i]) * _ref->buf_z[i];
+				s12 += (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * _ref->buf_z[i];
+				s22 += (_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i]) * _ref->buf_z[i];
 			}
-			return val;
+			double b11 = S11 * _ref->_Gi[0] * _ref->_Gi[0] + 2 * S12 * _ref->_Gi[0] * _ref->_Gi[3] + S22 * _ref->_Gi[3] * _ref->_Gi[3];
+			double b12 = S11 * _ref->_Gi[0] * _ref->_Gi[1] + 2 * S12 * _ref->_Gi[0] * _ref->_Gi[4] + S22 * _ref->_Gi[3] * _ref->_Gi[4];
+			double b22 = S11 * _ref->_Gi[1] * _ref->_Gi[1] + 2 * S12 * _ref->_Gi[1] * _ref->_Gi[4] + S22 * _ref->_Gi[4] * _ref->_Gi[4];
+			double c11 = s11 * _ref->_Gi[0] * _ref->_Gi[0] + 2 * s12 * _ref->_Gi[0] * _ref->_Gi[3] + s22 * _ref->_Gi[3] * _ref->_Gi[3];
+			double c12 = s11 * _ref->_Gi[0] * _ref->_Gi[1] + 2 * s12 * _ref->_Gi[0] * _ref->_Gi[4] + s22 * _ref->_Gi[3] * _ref->_Gi[4];
+			double c22 = s11 * _ref->_Gi[1] * _ref->_Gi[1] + 2 * s12 * _ref->_Gi[1] * _ref->_Gi[4] + s22 * _ref->_Gi[4] * _ref->_Gi[4];
+
+			return b12 * c11 - b11 * c12;
 		}
 		void D1_phi(double* ptr)
 		{
 			double* ptr1 = ptr;
-			for (int j = 0; j < _ref->_nNode; j++)
+			double S11 = 0, S12 = 0, S22 = 0;
+			double s11 = 0, s12 = 0, s22 = 0;
+			for (int i = 0; i < _ref->_nNode; i++)
+			{
+				S11 += (_ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i]) * _ref->buf_phi[i];
+				S12 += (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * _ref->buf_phi[i];
+				S22 += (_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i]) * _ref->buf_phi[i];
+				s11 += (_ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i]) * _ref->buf_z[i];
+				s12 += (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * _ref->buf_z[i];
+				s22 += (_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i]) * _ref->buf_z[i];
+			}
+			double b11 = S11 * _ref->_Gi[0] * _ref->_Gi[0] + 2 * S12 * _ref->_Gi[0] * _ref->_Gi[3] + S22 * _ref->_Gi[3] * _ref->_Gi[3];
+			double b12 = S11 * _ref->_Gi[0] * _ref->_Gi[1] + 2 * S12 * _ref->_Gi[0] * _ref->_Gi[4] + S22 * _ref->_Gi[3] * _ref->_Gi[4];
+			double b22 = S11 * _ref->_Gi[1] * _ref->_Gi[1] + 2 * S12 * _ref->_Gi[1] * _ref->_Gi[4] + S22 * _ref->_Gi[4] * _ref->_Gi[4];
+			double c11 = s11 * _ref->_Gi[0] * _ref->_Gi[0] + 2 * s12 * _ref->_Gi[0] * _ref->_Gi[3] + s22 * _ref->_Gi[3] * _ref->_Gi[3];
+			double c12 = s11 * _ref->_Gi[0] * _ref->_Gi[1] + 2 * s12 * _ref->_Gi[0] * _ref->_Gi[4] + s22 * _ref->_Gi[3] * _ref->_Gi[4];
+			double c22 = s11 * _ref->_Gi[1] * _ref->_Gi[1] + 2 * s12 * _ref->_Gi[1] * _ref->_Gi[4] + s22 * _ref->_Gi[4] * _ref->_Gi[4];
+			//b12* c22 - b22 * c12;
+			for (int i = 0; i < _ref->_nNode; i++)
 			{
 				double val = 0;
-				for (int i = 0; i < _ref->_nNode; i++)
-				{
-					val += (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * ((_ref->d2[3][j] - _ref->_Gammaijk[6] * _ref->d1[0][j] - _ref->_Gammaijk[7] * _ref->d1[1][j])) * _ref->buf_phi[i];// *_ref->buf_z[j];
-					val -= (_ref->d2[1][j] - _ref->_Gammaijk[2] * _ref->d1[0][j] - _ref->_Gammaijk[3] * _ref->d1[1][j]) * ((_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i])) * _ref->buf_phi[i];// *_ref->buf_z[i];
-				}
+				val = 0;
+				val += b12 * (_ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i]) * _ref->_Gi[1] * _ref->_Gi[1];
+				val += b12 * 2 * (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i])* _ref->_Gi[1] * _ref->_Gi[4];
+				val += b12 * (_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i]) * _ref->_Gi[4] * _ref->_Gi[4];
+				
+				val += -b22 * (_ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i])* _ref->_Gi[0] * _ref->_Gi[1];
+				val += -b22 * 2 * (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i])  * _ref->_Gi[0] * _ref->_Gi[4];
+				val += -b22 * (_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i])  * _ref->_Gi[3] * _ref->_Gi[4];
 				*ptr1 = val;
 				ptr1++;
 			}
+
+
 		}
 		void D1_z(double* ptr)
 		{
 			double* ptr1 = ptr;
-			for (int j = 0; j < _ref->_nNode; j++)
+			double S11 = 0, S12 = 0, S22 = 0;
+			double s11 = 0, s12 = 0, s22 = 0;
+			for (int i = 0; i < _ref->_nNode; i++)
+			{
+				S11 += (_ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i]) * _ref->buf_phi[i];
+				S12 += (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * _ref->buf_phi[i];
+				S22 += (_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i]) * _ref->buf_phi[i];
+				s11 += (_ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i]) * _ref->buf_z[i];
+				s12 += (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * _ref->buf_z[i];
+				s22 += (_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i]) * _ref->buf_z[i];
+			}
+			double b11 = S11 * _ref->_Gi[0] * _ref->_Gi[0] + 2 * S12 * _ref->_Gi[0] * _ref->_Gi[3] + S22 * _ref->_Gi[3] * _ref->_Gi[3];
+			double b12 = S11 * _ref->_Gi[0] * _ref->_Gi[1] + 2 * S12 * _ref->_Gi[0] * _ref->_Gi[4] + S22 * _ref->_Gi[3] * _ref->_Gi[4];
+			double b22 = S11 * _ref->_Gi[1] * _ref->_Gi[1] + 2 * S12 * _ref->_Gi[1] * _ref->_Gi[4] + S22 * _ref->_Gi[4] * _ref->_Gi[4];
+			double c11 = s11 * _ref->_Gi[0] * _ref->_Gi[0] + 2 * s12 * _ref->_Gi[0] * _ref->_Gi[3] + s22 * _ref->_Gi[3] * _ref->_Gi[3];
+			double c12 = s11 * _ref->_Gi[0] * _ref->_Gi[1] + 2 * s12 * _ref->_Gi[0] * _ref->_Gi[4] + s22 * _ref->_Gi[3] * _ref->_Gi[4];
+			double c22 = s11 * _ref->_Gi[1] * _ref->_Gi[1] + 2 * s12 * _ref->_Gi[1] * _ref->_Gi[4] + s22 * _ref->_Gi[4] * _ref->_Gi[4];
+			//b12* c22 - b22 * c12;
+			for (int i = 0; i < _ref->_nNode; i++)
 			{
 				double val = 0;
-				for (int i = 0; i < _ref->_nNode; i++)
-				{
-					val += (_ref->d2[1][j] - _ref->_Gammaijk[2] * _ref->d1[0][j] - _ref->_Gammaijk[3] * _ref->d1[1][j]) * ((_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i])) * _ref->buf_z[i];// *_ref->buf_z[j];
-					val -= (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * ((_ref->d2[3][j] - _ref->_Gammaijk[6] * _ref->d1[0][j] - _ref->_Gammaijk[7] * _ref->d1[1][j])) * _ref->buf_z[i];// *_ref->buf_z[i];
-				}
+				val = 0;
+				val += c22 * (_ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i]) * _ref->_Gi[0] * _ref->_Gi[1];
+				val += c22 * 2 * (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i])* _ref->_Gi[0] * _ref->_Gi[4];
+				val += c22 * (_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i])  * _ref->_Gi[3] * _ref->_Gi[4];
+
+				val += -c12 * (_ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i])  * _ref->_Gi[1] * _ref->_Gi[1];
+				val += -c12 * 2 * (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * _ref->_Gi[1] * _ref->_Gi[4];
+				val += -c12 * (_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i])  * _ref->_Gi[4] * _ref->_Gi[4];
 				*ptr1 = val;
 				ptr1++;
 			}
 		}
+
+
 		void D2_phi(double* ptr)
 		{
 			double* ptr1 = ptr;
-			for (int j = 0; j < _ref->_nNode; j++)
+			double S11 = 0, S12 = 0, S22 = 0;
+			double s11 = 0, s12 = 0, s22 = 0;
+			for (int i = 0; i < _ref->_nNode; i++)
+			{
+				S11 += (_ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i]) * _ref->buf_phi[i];
+				S12 += (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * _ref->buf_phi[i];
+				S22 += (_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i]) * _ref->buf_phi[i];
+				s11 += (_ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i]) * _ref->buf_z[i];
+				s12 += (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * _ref->buf_z[i];
+				s22 += (_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i]) * _ref->buf_z[i];
+			}
+			//b12 * c11 - b11 * c12;
+			double b11 = S11 * _ref->_Gi[0] * _ref->_Gi[0] + 2 * S12 * _ref->_Gi[0] * _ref->_Gi[3] + S22 * _ref->_Gi[3] * _ref->_Gi[3];
+			double b12 = S11 * _ref->_Gi[0] * _ref->_Gi[1] + 2 * S12 * _ref->_Gi[0] * _ref->_Gi[4] + S22 * _ref->_Gi[3] * _ref->_Gi[4];
+			double b22 = S11 * _ref->_Gi[1] * _ref->_Gi[1] + 2 * S12 * _ref->_Gi[1] * _ref->_Gi[4] + S22 * _ref->_Gi[4] * _ref->_Gi[4];
+			double c11 = s11 * _ref->_Gi[0] * _ref->_Gi[0] + 2 * s12 * _ref->_Gi[0] * _ref->_Gi[3] + s22 * _ref->_Gi[3] * _ref->_Gi[3];
+			double c12 = s11 * _ref->_Gi[0] * _ref->_Gi[1] + 2 * s12 * _ref->_Gi[0] * _ref->_Gi[4] + s22 * _ref->_Gi[3] * _ref->_Gi[4];
+			double c22 = s11 * _ref->_Gi[1] * _ref->_Gi[1] + 2 * s12 * _ref->_Gi[1] * _ref->_Gi[4] + s22 * _ref->_Gi[4] * _ref->_Gi[4];
+
+			for (int i = 0; i < _ref->_nNode; i++)
 			{
 				double val = 0;
-				for (int i = 0; i < _ref->_nNode; i++)
-				{
-					val += (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * ((_ref->d2[3][j] - _ref->_Gammaijk[6] * _ref->d1[0][j] - _ref->_Gammaijk[7] * _ref->d1[1][j])) * _ref->buf_phi[i];// *_ref->buf_z[j];
-					val -= (_ref->d2[1][j] - _ref->_Gammaijk[2] * _ref->d1[0][j] - _ref->_Gammaijk[3] * _ref->d1[1][j]) * ((_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i])) * _ref->buf_phi[i];// *_ref->buf_z[i];
-				}
+				val = 0;
+				val += b12 * (_ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i]) * _ref->_Gi[0] * _ref->_Gi[0];
+				val += b12 * 2 * (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * _ref->_Gi[0] * _ref->_Gi[3];
+				val += b12 * (_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i]) * _ref->_Gi[3] * _ref->_Gi[3];
+
+				val += -b11 * (_ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i]) * _ref->_Gi[0] * _ref->_Gi[1];
+				val += -b11 * 2 * (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i])* _ref->_Gi[0] * _ref->_Gi[4];
+				val += -b11 * (_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i])* _ref->_Gi[3] * _ref->_Gi[4];
 				*ptr1 = val;
 				ptr1++;
 			}
+
+
 		}
 		void D2_z(double* ptr)
 		{
 			double* ptr1 = ptr;
-			for (int j = 0; j < _ref->_nNode; j++)
+			double S11 = 0, S12 = 0, S22 = 0;
+			double s11 = 0, s12 = 0, s22 = 0;
+			for (int i = 0; i < _ref->_nNode; i++)
+			{
+				S11 += (_ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i]) * _ref->buf_phi[i];
+				S12 += (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * _ref->buf_phi[i];
+				S22 += (_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i]) * _ref->buf_phi[i];
+				s11 += (_ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i]) * _ref->buf_z[i];
+				s12 += (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * _ref->buf_z[i];
+				s22 += (_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i]) * _ref->buf_z[i];
+			}
+			double b11 = S11 * _ref->_Gi[0] * _ref->_Gi[0] + 2 * S12 * _ref->_Gi[0] * _ref->_Gi[3] + S22 * _ref->_Gi[3] * _ref->_Gi[3];
+			double b12 = S11 * _ref->_Gi[0] * _ref->_Gi[1] + 2 * S12 * _ref->_Gi[0] * _ref->_Gi[4] + S22 * _ref->_Gi[3] * _ref->_Gi[4];
+			double b22 = S11 * _ref->_Gi[1] * _ref->_Gi[1] + 2 * S12 * _ref->_Gi[1] * _ref->_Gi[4] + S22 * _ref->_Gi[4] * _ref->_Gi[4];
+			double c11 = s11 * _ref->_Gi[0] * _ref->_Gi[0] + 2 * s12 * _ref->_Gi[0] * _ref->_Gi[3] + s22 * _ref->_Gi[3] * _ref->_Gi[3];
+			double c12 = s11 * _ref->_Gi[0] * _ref->_Gi[1] + 2 * s12 * _ref->_Gi[0] * _ref->_Gi[4] + s22 * _ref->_Gi[3] * _ref->_Gi[4];
+			double c22 = s11 * _ref->_Gi[1] * _ref->_Gi[1] + 2 * s12 * _ref->_Gi[1] * _ref->_Gi[4] + s22 * _ref->_Gi[4] * _ref->_Gi[4];
+			//return b12 * c11 - b11 * c12;
+			for (int i = 0; i < _ref->_nNode; i++)
 			{
 				double val = 0;
-				for (int i = 0; i < _ref->_nNode; i++)
-				{
-					val += (_ref->d2[1][j] - _ref->_Gammaijk[2] * _ref->d1[0][j] - _ref->_Gammaijk[3] * _ref->d1[1][j]) * ((_ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i])) * _ref->buf_z[i];// *_ref->buf_z[j];
-					val -= (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * ((_ref->d2[0][j] - _ref->_Gammaijk[0] * _ref->d1[0][j] - _ref->_Gammaijk[1] * _ref->d1[1][j])) * _ref->buf_z[i];// *_ref->buf_z[i];
-				}
+				val = 0;
+				val += c11 * (_ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i]) * _ref->_Gi[0] * _ref->_Gi[1];
+				val += c11 * 2 * (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * _ref->_Gi[0] * _ref->_Gi[4];
+				val += c11 * (_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i])* _ref->_Gi[3] * _ref->_Gi[4];
+
+				val += -c12 * (_ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i]) * _ref->_Gi[0] * _ref->_Gi[0];
+				val += -c12 * 2 * (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]) * _ref->_Gi[0] * _ref->_Gi[3];
+				val += -c12 * (_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i])  * _ref->_Gi[3] * _ref->_Gi[3];
 				*ptr1 = val;
 				ptr1++;
 			}
