@@ -20,9 +20,9 @@ namespace KingOfMonsters {
 		Eigen::MatrixXd* mat = 0;
 	public:
 		void genEigen(denseMatrix ^a,denseMatrix ^ b, [Runtime::InteropServices::Out]double%  l1, [Runtime::InteropServices::Out]double% l1i,[Runtime::InteropServices::Out]double% l2, [Runtime::InteropServices::Out]double% l2i){
-			//Eigen::GeneralizedEigenSolver<Eigen::MatrixXd> solve(* (a->mat), * (b->mat), true);
+			Eigen::GeneralizedEigenSolver<Eigen::MatrixXd> solve(* (a->mat), * (b->mat), true);
 			
-			if (std::abs(a->mat->determinant()) > std::abs(b->mat->determinant()))
+			/*if (std::abs(a->mat->determinant()) > std::abs(b->mat->determinant()))
 			{
 				Eigen::MatrixXd M=a->mat->inverse() * *b->mat;
 				Eigen::EigenSolver<Eigen::MatrixXd> solve(M);
@@ -40,13 +40,13 @@ namespace KingOfMonsters {
 				l2 = solve.eigenvalues()(1).real();
 				l1i = solve.eigenvalues()(0).imag();
 				l2i = solve.eigenvalues()(1).imag();
-			}
+			}*/
 
-			/** this->mat = solve.eigenvectors().real();
+			* this->mat = solve.eigenvectors().real();
 			l1 = solve.eigenvalues()(0).real();
 			l2 = solve.eigenvalues()(1).real();
 			l1i = solve.eigenvalues()(0).imag();
-			l2i = solve.eigenvalues()(1).imag();*/
+			l2i = solve.eigenvalues()(1).imag();
 
 		}
 		Eigen::MatrixXd& get()
