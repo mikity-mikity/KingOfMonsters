@@ -9,7 +9,6 @@
 #include "eigen-3.4.0/Eigen/SparseLU"
 #include "eigen-3.4.0/Eigen/SparseCholesky"	
 #include "eigen-3.4.0/Eigen/PardisoSupport"
-#include "libigl-main/libigl-main/include/igl/quad_grid.h"
 /*#include "eigen-3.3.8/Eigen/Sparse"
 #include "eigen-3.3.8/Eigen/Dense"
 #include "eigen-3.3.8/Eigen/SparseQR"
