@@ -3228,7 +3228,7 @@ namespace KingOfMonsters {
 			}
 			return val;
 		}
-		double theta()
+		double theta(bool accurate)
 		{
 			double val = 0;
 
@@ -3247,10 +3247,17 @@ namespace KingOfMonsters {
 				S12 += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->buf_z[s];
 				S22 += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_z[s];
 			}
-			return s11 * _ref->get__Gij(0, 0) * S12 + s11 * _ref->get__Gij(0, 1) * S22 + s12 * _ref->get__Gij(1, 0) * S12 + s12 * _ref->get__Gij(1, 1) * S22
-				- S11 * _ref->get__Gij(0, 0) * s12 - S11 * _ref->get__Gij(0, 1) * s22 -S12 * _ref->get__Gij(1, 0) * s12 - S12 * _ref->get__Gij(1, 1) * s22;
+			if (accurate)
+			{
+				return s11 * this->get_Gij(0,0) * S12 + s11 * this->get_Gij(0, 1) * S22 + s12 * this->get_Gij(1, 0) * S12 + s12 * this->get_Gij(1, 1) * S22
+					- S11 * this->get_Gij(0, 0) * s12 - S11 * this->get_Gij(0, 1) * s22 - S12 * this->get_Gij(1, 0) * s12 - S12 * this->get_Gij(1, 1) * s22;
+			}
+			else {
+				return s11 * _ref->get__Gij(0, 0) * S12 + s11 * _ref->get__Gij(0, 1) * S22 + s12 * _ref->get__Gij(1, 0) * S12 + s12 * _ref->get__Gij(1, 1) * S22
+					- S11 * _ref->get__Gij(0, 0) * s12 - S11 * _ref->get__Gij(0, 1) * s22 - S12 * _ref->get__Gij(1, 0) * s12 - S12 * _ref->get__Gij(1, 1) * s22;
+			}
 		}
-		void theta_phi(double* ptr)
+		void theta_phi(double* ptr, bool accurate)
 		{
 			//double S11 = 0;
 			//double S12 = 0;
@@ -3271,22 +3278,34 @@ namespace KingOfMonsters {
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				double val = 0;
+				if (accurate)
+				{
+					val += s11 * this->get_Gij(0, 0) * (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+					val += s11 * this->get_Gij(0, 1) * (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+					val += s12 * this->get_Gij(1, 0) * (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+					val += s12 * this->get_Gij(1, 1) * (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
 
-				val += s11 * _ref->get__Gij(0, 0) * (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
-				val += s11 * _ref->get__Gij(0, 1) * (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				val += s12 * _ref->get__Gij(1, 0) * (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
-				val += s12 * _ref->get__Gij(1, 1) * (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+					val -= (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * this->get_Gij(0, 0) * s12;
+					val -= (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * this->get_Gij(0, 1) * s22;
+					val -= (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * this->get_Gij(1, 0) * s12;
+					val -= (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * this->get_Gij(1, 1) * s22;
+				}
+				else {
+					val += s11 * _ref->get__Gij(0, 0) * (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+					val += s11 * _ref->get__Gij(0, 1) * (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+					val += s12 * _ref->get__Gij(1, 0) * (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+					val += s12 * _ref->get__Gij(1, 1) * (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
 
-				val -= (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->get__Gij(0, 0) * s12;
-				val -= (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->get__Gij(0, 1) * s22;
-				val -= (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->get__Gij(1, 0) * s12;
-				val -= (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->get__Gij(1, 1) * s22;
-
+					val -= (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->get__Gij(0, 0) * s12;
+					val -= (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->get__Gij(0, 1) * s22;
+					val -= (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->get__Gij(1, 0) * s12;
+					val -= (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->get__Gij(1, 1) * s22;
+				}
 				*ptr1 = val;
 				ptr1++;
 			}
 		}
-		void theta_Z(double* ptr)
+		void theta_Z(double* ptr, bool accurate)
 		{
 			double S11 = 0;
 			double S12 = 0;
@@ -3307,17 +3326,29 @@ namespace KingOfMonsters {
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				double val = 0;
+				if (accurate)
+				{
+					val -= S11 * this->get_Gij(0, 0) * (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+					val -= S11 * this->get_Gij(0, 1) * (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+					val -= S12 * this->get_Gij(1, 0) * (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+					val -= S12 * this->get_Gij(1, 1) * (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
 
-				val -= S11 * _ref->get__Gij(0, 0) * (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
-				val -= S11 * _ref->get__Gij(0, 1) * (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				val -= S12 * _ref->get__Gij(1, 0) * (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
-				val -= S12 * _ref->get__Gij(1, 1) * (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+					val += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * this->get_Gij(0, 0) * S12;
+					val += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * this->get_Gij(0, 1) * S22;
+					val += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * this->get_Gij(1, 0) * S12;
+					val += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * this->get_Gij(1, 1) * S22;
+				}
+				else {
+					val -= S11 * _ref->get__Gij(0, 0) * (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+					val -= S11 * _ref->get__Gij(0, 1) * (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+					val -= S12 * _ref->get__Gij(1, 0) * (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+					val -= S12 * _ref->get__Gij(1, 1) * (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
 
-				val += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->get__Gij(0, 0) * S12;
-				val += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->get__Gij(0, 1) * S22;
-				val += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->get__Gij(1, 0) * S12;
-				val += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->get__Gij(1, 1) * S22;
-
+					val += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->get__Gij(0, 0) * S12;
+					val += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->get__Gij(0, 1) * S22;
+					val += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->get__Gij(1, 0) * S12;
+					val += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->get__Gij(1, 1) * S22;
+				}
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -3950,18 +3981,18 @@ public:
 	double U_phi(int J) {
 		return __mem->U_phi(J);
 	}
-	double theta()
+	double theta(bool accurate)
 	{
-		return __mem->theta();
+		return __mem->theta(accurate);
 	}
-	void theta_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1)
+	void theta_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1,bool accurate)
 	{
-		__mem->theta_phi(__mem->__grad);
+		__mem->theta_phi(__mem->__grad,accurate);
 		mat->dat->addrow(ii, index->_arr, __mem->__grad, sc, __mem->_nNode, c1);
 	}
-	void theta_Z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1)
+	void theta_Z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1,bool accurate)
 	{
-		__mem->theta_Z(__mem->__grad);
+		__mem->theta_Z(__mem->__grad,accurate);
 		mat->dat->addrow(ii, index->_arr, __mem->__grad, sc, __mem->_nNode, c1);
 	}
 	double D1()
