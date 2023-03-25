@@ -2402,7 +2402,7 @@ namespace KingOfMonsters {
 		{
 			_mySparse::project(i1->dat, i2->dat, t1->dat, v1->_arr, v2->_arr, ret1->_arr, ret2->_arr);
 		}
-		static void GN(mySparse^ mat1, mySparse^ mat2, mySparse^ mat3, myDoubleArray^ rhs1, myDoubleArray^ rhs2, myDoubleArray^ ret1, myDoubleArray^ ret2,int L1phi,int L1Z)
+		static void GN(mySparse^ mat1, mySparse^ mat2, mySparse^ mat3, myDoubleArray^ rhs1, myDoubleArray^ rhs2, myDoubleArray^ ret1, myDoubleArray^ ret2,int L1phi,int L1Z,myCuda ^cuda)
 		{
 			Eigen::MatrixXd M(L1phi + L1Z, L1phi + L1Z);
 			M.topLeftCorner(L1phi, L1phi) = mat1->dat->_mat[0];
@@ -2415,11 +2415,20 @@ namespace KingOfMonsters {
 			rhs.topRows(L1phi) = rhs1->_arr->__v;
 			rhs.bottomRows(L1Z) = rhs2->_arr->__v;
 
-			Eigen::FullPivLU<Eigen::MatrixXd> lu(M);
+			mySparse^ m = gcnew mySparse();
+			m->dat->_dmat = M;
+			myDoubleArray^ _rhs = gcnew myDoubleArray(L1phi+L1Z);
+			_rhs->_arr->__v = rhs;
+			myDoubleArray^ _ret = gcnew myDoubleArray(L1phi + L1Z);
+			m->_solveLU_gpu(cuda,_rhs, _ret,cuda->fastest());
+			ret1->_arr->__v = _ret->_arr->__v.topRows(L1phi);
+			ret2->_arr->__v = _ret->_arr->__v.bottomRows(L1Z);
+			/*Eigen::FullPivLU<Eigen::MatrixXd> lu(M);
 			auto ret=lu.solve(rhs);
 
 			ret1->_arr->__v = ret.topRows(L1phi);
 			ret2->_arr->__v = ret.bottomRows(L1Z);
+			*/
 
 		}
 		//helper.pushforward(_mats,mZ,mphi,L1Z,L1phi);
@@ -2474,7 +2483,7 @@ namespace KingOfMonsters {
 			
 		}*/
 		static double VarPro(System::Collections::Generic::List<double>^ __coeff, myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt);
-		static double GN(System::Collections::Generic::List<double>^ __coeff, myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt);
+		static double GN(System::Collections::Generic::List<double>^ __coeff, myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt,myCuda ^ cuda);
 		static double ALT(System::Collections::Generic::List<double>^ __coeff, myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt);
 		static double simple(System::Collections::Generic::List<double>^ __coeff, myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt);
 		static void write(System::Collections::Generic::List<double>^ __coeff, myDoubleArray^ phi0, myDoubleArray^ zz0, myDoubleArray^ phi, myDoubleArray^ zz,denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt);

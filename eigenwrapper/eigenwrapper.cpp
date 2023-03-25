@@ -421,7 +421,7 @@ double KingOfMonsters::_helper::Simple(Eigen::VectorXd* coeff, Eigen::VectorXd* 
 	return rhsX.norm();
 }
 
-double KingOfMonsters::_helper::GN(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int tt)
+double KingOfMonsters::_helper::GN(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int tt,KingOfMonsters::cuda *cuda)
 {
 	Eigen::VectorXd X0 = *zz;
 	Eigen::VectorXd x0 = *phi;
@@ -498,7 +498,7 @@ double KingOfMonsters::_helper::GN(Eigen::VectorXd* coeff, Eigen::VectorXd* phi,
 	rhsx = (b1 - ___r1).transpose() * coeff->asDiagonal() * Jx;
 	rhsX = (b2 - ___r2).transpose() * coeff->asDiagonal() * JX;
 
-	Eigen::FullPivLU<Eigen::MatrixXd> qr;
+	//Eigen::FullPivLU<Eigen::MatrixXd> qr;
 	Eigen::MatrixXd I(2*n, 2*n);
 	I.setIdentity();
 	
@@ -510,12 +510,18 @@ double KingOfMonsters::_helper::GN(Eigen::VectorXd* coeff, Eigen::VectorXd* phi,
 	Eigen::VectorXd rhs(2 * n);
 	rhs.topRows(n) = rhsx;
 	rhs.topRows(n) = rhsX;
-
-	qr.compute(SYS+I*0.0000001);
+	SYS = SYS + I * 0.000000001;
+	//qr.compute(SYS+I*0.0000001);
 	//Eigen::MatrixXd eei = ee.inverse();
-	Eigen::VectorXd dxX = -qr.solve(rhs);
-	auto dx = dxX.topRows(n);
-	auto dX = dxX.bottomRows(n);
+	//Eigen::VectorXd dxX = -qr.solve(rhs);
+	Eigen::VectorXd ret;
+	KingOfMonsters::_mySparse* mm = new KingOfMonsters::_mySparse();
+	mm->_dmat = SYS;
+	mm->_solve0_gpu(cuda,& rhs, &ret, cuda->fastest());
+	//auto dx = dxX.topRows(n);
+	//auto dX = dxX.bottomRows(n);
+	auto dx = ret.topRows(n);
+	auto dX = ret.bottomRows(n);
 
 	x0 += dx * 1;
 	X0 += dX * 1;
@@ -523,6 +529,7 @@ double KingOfMonsters::_helper::GN(Eigen::VectorXd* coeff, Eigen::VectorXd* phi,
 
 	*zz = X0;
 	*phi = x0;
+	delete mm;
 	return rhsX.norm();
 }
 

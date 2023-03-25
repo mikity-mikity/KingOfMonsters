@@ -138,7 +138,7 @@ void KingOfMonsters::helper::contract(System::Collections::Generic::List<workspa
 	*/
 
 }
-double KingOfMonsters::helper::GN(System::Collections::Generic::List<double>^ __coeff, myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt)
+double KingOfMonsters::helper::GN(System::Collections::Generic::List<double>^ __coeff, myDoubleArray^ phi, myDoubleArray^ zz, denseMatrix^ __U, denseMatrix^ __V, denseMatrix^ __W, array<sparseMatrix^>^ _mats1, array<sparseMatrix^>^ _mats2, array<sparseMatrix^>^ _mats3, myDoubleArray^ _r1, myDoubleArray^ _r2, double dt, int tt,myCuda ^cuda)
 {
 	std::vector<Eigen::SparseMatrix<double>*> __mats1;
 	std::vector<Eigen::SparseMatrix<double>*> __mats2;
@@ -165,7 +165,7 @@ double KingOfMonsters::helper::GN(System::Collections::Generic::List<double>^ __
 	{
 		__mats3.push_back(&_mats3[i]->get());
 	}
-	double norm = KingOfMonsters::_helper::GN(&coeff, &phi->_arr->__v, &zz->_arr->__v, &__U->get(), &__V->get(), &__W->get(), __mats1, __mats2, __mats3, &_r1->_arr->__v, &_r2->_arr->__v, dt, tt);
+	double norm = KingOfMonsters::_helper::GN(&coeff, &phi->_arr->__v, &zz->_arr->__v, &__U->get(), &__V->get(), &__W->get(), __mats1, __mats2, __mats3, &_r1->_arr->__v, &_r2->_arr->__v, dt, tt,cuda->cuda());
 	System::Console::WriteLine("normGrad=" + norm.ToString());
 	return norm;
 }
