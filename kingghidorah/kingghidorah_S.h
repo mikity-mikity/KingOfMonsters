@@ -3262,8 +3262,8 @@ namespace KingOfMonsters {
 					- S11 * this->get_Gij2(0, 0) * s12 - S11 * this->get_Gij2(0, 1) * s22 - S12 * this->get_Gij2(1, 0) * s12 - S12 * this->get_Gij2(1, 1) * s22;
 			}
 			else {
-				return s11 * _ref->get__Gij(0, 0) * S12 + s11 * _ref->get__Gij(0, 1) * S22 + s12 * _ref->get__Gij(1, 0) * S12 + s12 * _ref->get__Gij(1, 1) * S22
-					- S11 * _ref->get__Gij(0, 0) * s12 - S11 * _ref->get__Gij(0, 1) * s22 - S12 * _ref->get__Gij(1, 0) * s12 - S12 * _ref->get__Gij(1, 1) * s22;
+				return s11 * _ref->get__Gij(0, 0) * S12 + s11 * _ref->get__Gij(0, 1) * S22 + s12 * _ref->get__Gij(0, 1) * S12 + s12 * _ref->get__Gij(1, 1) * S22
+					- S11 * _ref->get__Gij(0, 0) * s12 - S11 * _ref->get__Gij(0, 1) * s22 - S12 * _ref->get__Gij(0, 1) * s12 - S12 * _ref->get__Gij(1, 1) * s22;
 			}
 		}
 		void theta_phi(double* ptr, bool accurate)
