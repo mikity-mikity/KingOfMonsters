@@ -2431,7 +2431,35 @@ namespace KingOfMonsters {
 			*/
 
 		}
+		static void GN2(mySparse^ mat1, mySparse^ mat2, mySparse^ mat3, myDoubleArray^ rhs1, myDoubleArray^ rhs2, myDoubleArray^ ret1, myDoubleArray^ ret2, int L1phi, int L1Z, myCuda^ cuda)
+		{
+			Eigen::MatrixXd M(L1phi + L1Z, L1phi + L1Z);
+			M.topLeftCorner(L1phi, L1phi) = mat1->dat->_mat[0];
+			M.topRightCorner(L1phi, L1Z) = mat3->dat->_mat[0];
 
+			//M.bottomLeftCorner(L1Z, L1phi) = mat3->dat->_mat[0].transpose();
+			//M.bottomRightCorner(L1Z, L1Z) = mat2->dat->_mat[0];
+			M += Eigen::MatrixXd::Identity(L1phi + L1Z, L1phi + L1Z) * 0.000000000000001;
+			Eigen::VectorXd rhs(L1phi+L1Z);
+			rhs.topRows(L1phi) = rhs1->_arr->__v;
+			rhs.bottomRows(L1Z) = rhs2->_arr->__v;
+
+			/*mySparse^ m = gcnew mySparse();
+			m->dat->_dmat = M;
+			myDoubleArray^ _rhs = gcnew myDoubleArray(L1phi + L1Z);
+			_rhs->_arr->__v = rhs;
+			myDoubleArray^ _ret = gcnew myDoubleArray(L1phi + L1Z);
+			m->_solveLU_gpu(cuda, _rhs, _ret, cuda->fastest());
+			ret1->_arr->__v = _ret->_arr->__v.topRows(L1phi);
+			ret2->_arr->__v = _ret->_arr->__v.bottomRows(L1Z);
+			*/
+			Eigen::FullPivLU<Eigen::MatrixXd> lu(M);
+			auto ret=lu.solve(rhs);
+			ret1->_arr->__v = ret.topRows(L1phi);
+			ret2->_arr->__v = ret.bottomRows(L1Z);
+			
+
+		}
 		//helper.pushforward(_mats,mZ,mphi,L1Z,L1phi);
 		//helper.computeKrylovSubspace(_mats, __U, __V, __W, _C, 200);
 

@@ -3633,7 +3633,20 @@ namespace KingOfMonsters {
 			}*/
 			memcpy(ptr, __grad_phi, sizeof(double) * _nNode);
 		}
-
+		void U_phi_z(mySparse^ mat, myIntArray^ index,int N,long long * map,double R)
+		{
+			for (int i = 0; i < _nNode; i++)
+			{
+				for (int j = 0; j < _nNode; j++)
+				{
+					int I = index->data()[i];
+					int J = index->data()[J];
+					double val = __grad_phi[i] * __grad_z[j]*R;
+					mat->dat->_mat[0].coeffRef(I, J) += val;
+					mat->dat->_mat[0].data().valuePtr()[map[I*N+J]] += val;
+				}
+			}
+		}
 		double U_z(int I) {
 			//double val = 0;
 			//double sc = 1.0 / _ref->_refDv / _ref->_refDv;
