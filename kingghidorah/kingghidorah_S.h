@@ -1944,6 +1944,14 @@ namespace KingOfMonsters {
 			double f2 = a * this->get_gi(1, 0) + b * this->get_gi(1, 1);
 			return f1* get_Gij(0, l) + f2 * get_Gij(1, l);
 		}
+		inline double __a(int l)
+		{
+			return this->get_gi(0, 0) * get_Gij(0, l) + this->get_gi(1, 0) * get_Gij(1, l);
+		}
+		inline double __b(int l)
+		{
+			return this->get_gi(0, 1) * get_Gij(0, l) + this->get_gi(1, 1) * get_Gij(1, l);
+		}
 		inline double __K(int l, int I) {
 			double val = 0;
 			for (int k = 0; k < 2; k++)
@@ -4234,8 +4242,14 @@ public:
 		double F3_z(int i) {
 			return __mem->F3_z(i);
 		}
-		double Dc(double a, double b,int l) {
+		double Dc(double a, double b, int l) {
 			return __mem->Dc(a, b, l);
+		}
+		double get_a(int l) {
+			return __mem->__a(l);
+		}
+		double get_b(int l) {
+			return __mem->__b(l);
 		}
 		double F4(int i, int I, int J) {
 			return __mem->F4(i, I, J);
