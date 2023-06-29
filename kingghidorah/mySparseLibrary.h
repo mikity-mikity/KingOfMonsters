@@ -364,6 +364,51 @@ namespace KingOfMonsters {
 			return _arr[i];
 		}
 	};
+	public ref class myIntArray2 {
+	public:
+		Int64* _arr = 0;
+		Int64 _N = 0;  //rows
+		Int64 _M = 0;  //cols
+	public:		
+		myIntArray2(Int64 N,Int64 M)
+		{
+			_arr = new Int64[N*M];
+			_N = N;
+		}
+		inline Int64* data()
+		{
+			return _arr;
+		}
+		inline Int64 size()
+		{
+			return _N*_M;
+		}
+		!myIntArray2()
+		{
+			if (_arr != 0)
+			{
+				delete[] _arr;
+			}
+			_arr = 0;
+			_N = 0;
+		}
+		~myIntArray2()
+		{
+			if (_arr != 0) {
+				delete[] _arr;
+			}
+			_arr = 0;
+			_N = 0;
+		}
+		void set(Int64 i, int j,Int64 val)
+		{
+			_arr[i*_M+j] = val;
+		}
+		Int64 at(Int64 i,Int64 j)
+		{
+			return _arr[i*_M+j];
+		}
+	};
 	public ref class myCuda {
 	private:
 		cuda* _cuda = 0;

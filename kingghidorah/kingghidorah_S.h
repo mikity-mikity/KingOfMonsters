@@ -3641,17 +3641,65 @@ namespace KingOfMonsters {
 			}*/
 			memcpy(ptr, __grad_phi, sizeof(double) * _nNode);
 		}
-		void U_phi_z(mySparse^ mat, myIntArray^ index,int N,long long * map,double R)
+		void U_phi_z(_mySparse* mat, long long* index,int N,long long * map,double R)
 		{
-			for (int i = 0; i < _nNode; i++)
+			if (map == 0)
 			{
-				for (int j = 0; j < _nNode; j++)
+				for (int i = 0; i < _nNode; i++)
 				{
-					int I = index->data()[i];
-					int J = index->data()[J];
-					double val = __grad_phi[i] * __grad_z[j]*R;
-					mat->dat->_mat[0].coeffRef(I, J) += val;
-					mat->dat->_mat[0].data().valuePtr()[map[I*N+J]] += val;
+					for (int j = 0; j < _nNode; j++)
+					{
+						int I = index[i];
+						int J = index[j];
+						double val = __grad_phi[i] * __grad_z[j] * R;
+						mat->_mat[0].coeffRef(I, J) += val;
+						//mat->_mat[0].data().valuePtr()[map[I*N+J]] += val;
+					}
+				}
+			}
+			else
+			{
+				for (int i = 0; i < _nNode; i++)
+				{
+					for (int j = 0; j < _nNode; j++)
+					{
+						int I = index[i];
+						int J = index[j];
+						double val = __grad_phi[i] * __grad_z[j] * R;
+						//mat->_mat[0].coeffRef(I, J) += val;
+						mat->_mat[0].data().valuePtr()[map[I*N+J]] += val;
+					}
+				}
+			}
+		}
+		void D_phi_z(_mySparse* mat, long long* index, int N, long long* map, double sc)
+		{
+			if (map == 0)
+			{
+				for (int i = 0; i < _nNode; i++)
+				{
+					for (int j = 0; j < _nNode; j++)
+					{
+						int I = index[i];
+						int J = index[j];
+						double val = _ref->__mat[i*_nNode+j] * sc;
+						mat->_mat[0].coeffRef(I, J) += val;
+						//mat->_mat[0].data().valuePtr()[map[I*N+J]] += val;
+					}
+				}
+			}
+			else
+			{
+				for (int i = 0; i < _nNode; i++)
+				{
+					for (int j = 0; j < _nNode; j++)
+					{
+						int I = index[i];
+						int J = index[j];
+						double val = _ref->__mat[i * _nNode + j] * sc;
+						//mat->_mat[0].coeffRef(I, J) += val;
+						mat->_mat[0].data().valuePtr()[map[I * N + J]] += val;
+					}
 				}
 			}
 		}
@@ -3665,6 +3713,7 @@ namespace KingOfMonsters {
 			//double sc = 1.0 / _ref->_refDv / _ref->_refDv;
 			return  __grad_phi[J];
 		}
+		
 		//membrane boundary term
 		double MB(int i,int k)
 		{
@@ -4054,6 +4103,21 @@ public:
 	double U_phi(int J) {
 		return __mem->U_phi(J);
 	}
+	void U_phi_z(mySparse^ mat, myIntArray^ index, int N, myIntArray2^ map, double R)
+	{
+		if(map==nullptr)
+			__mem->U_phi_z(mat->dat, index->_arr, N, 0, R);
+		else
+			__mem->U_phi_z(mat->dat, index->_arr, N, map->_arr, R);
+	}
+	void D_phi_z(mySparse^ mat, myIntArray^ index, int N, myIntArray2^ map, double sc)
+	{
+		if (map == nullptr)
+			__mem->D_phi_z(mat->dat, index->_arr, N, 0, sc);
+		else
+			__mem->D_phi_z(mat->dat, index->_arr, N, map->_arr, sc);
+	}
+
 	double theta(bool accurate)
 	{
 		return __mem->theta(accurate);
