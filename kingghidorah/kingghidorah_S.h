@@ -1842,13 +1842,123 @@ namespace KingOfMonsters {
 			return val;*/
 			return _SLOPE_z[l];// val;
 		}
-		inline double SLOPE_phi(double dcdtstar0, double dcdtstar1,double sc){
+		inline double SLOPE_phi(double dcdtstar0, double dcdtstar1, double sc) {
 
-			return sc*(_SLOPE_phi[0] * dcdtstar0 + _SLOPE_phi[1] * dcdtstar1);// val;
+			return sc * (_SLOPE_phi[0] * dcdtstar0 + _SLOPE_phi[1] * dcdtstar1);// val;
 		}
-		inline double SLOPE_z(double dcdtstar0,double dcdtstar1,double sc) {
+		inline double SLOPE_z(double dcdtstar0, double dcdtstar1, double sc) {
 
-			return sc*(_SLOPE_z[0]*dcdtstar0+_SLOPE_z[1]*dcdtstar1);// val;
+			return sc * (_SLOPE_z[0] * dcdtstar0 + _SLOPE_z[1] * dcdtstar1);// val;
+		}
+
+
+		inline void constant_SLOPE(double* ptr, double dcdtstar0, double dcdtstar1, double sc,bool accurate)
+		{
+			
+			double U1 = dcdtstar1;
+			double U2 = -dcdtstar0;
+			double v1 = dcdtstar0;
+			double v2 = dcdtstar1;
+			double* ptr1 = ptr;
+			if (accurate)
+			{
+				for (int l = 0; l < _nNode; l++)
+				{
+					double H11 = 0, H12 = 0, H22 = 0;
+					H11 += (_ref->d2[0][l] - _ref->_Gammaijk[0] * _ref->d1[0][l] - _ref->_Gammaijk[1] * _ref->d1[1][l]);
+					H22 += (_ref->d2[3][l] - _ref->_Gammaijk[6] * _ref->d1[0][l] - _ref->_Gammaijk[7] * _ref->d1[1][l]);
+					H12 += (_ref->d2[1][l] - _ref->_Gammaijk[2] * _ref->d1[0][l] - _ref->_Gammaijk[3] * _ref->d1[1][l]);
+					double val = 0;
+
+					val += H11 * U1 * (v1 * this->get_Gij(0, 0) + v2 * this->get_Gij(1, 0));
+					val += H12 * U2 * (v1 * this->get_Gij(0, 0) + v2 * this->get_Gij(1, 0));
+					val += H12 * U1 * (v1 * this->get_Gij(0, 1) + v2 * this->get_Gij(1, 1));
+					val += H22 * U2 * (v1 * this->get_Gij(0, 1) + v2 * this->get_Gij(1, 1));
+					*ptr1 = val;
+					ptr1++;
+				}
+			}
+			else {
+				for (int l = 0; l < _nNode; l++)
+				{
+					double H11 = 0, H12 = 0, H22 = 0;
+					H11 += (_ref->d2[0][l] - _ref->_Gammaijk[0] * _ref->d1[0][l] - _ref->_Gammaijk[1] * _ref->d1[1][l]);
+					H22 += (_ref->d2[3][l] - _ref->_Gammaijk[6] * _ref->d1[0][l] - _ref->_Gammaijk[7] * _ref->d1[1][l]);
+					H12 += (_ref->d2[1][l] - _ref->_Gammaijk[2] * _ref->d1[0][l] - _ref->_Gammaijk[3] * _ref->d1[1][l]);
+					double val = 0;
+
+					val += H11 * U1 * (v1 * _ref->get__Gij(0, 0) + v2 * _ref->get__Gij(1, 0));
+					val += H12 * U2 * (v1 * _ref->get__Gij(0, 0) + v2 * _ref->get__Gij(1, 0));
+					val += H12 * U1 * (v1 * _ref->get__Gij(0, 1) + v2 * _ref->get__Gij(1, 1));
+					val += H22 * U2 * (v1 * _ref->get__Gij(0, 1) + v2 * _ref->get__Gij(1, 1));
+					*ptr1 = val;
+					ptr1++;
+				}
+			}
+		}
+		
+
+		inline double constant_SLOPE_z(double dcdtstar0, double dcdtstar1, bool accurate) {
+
+			double H11 = 0, H12 = 0, H22 = 0;
+			double* pptr1 = &_ref->buf_z[0];
+
+			double U1 = dcdtstar1;
+			double U2 = -dcdtstar0;
+			double v1 = dcdtstar0;
+			double v2 = dcdtstar1;
+			for (int i = 0; i < _ref->_nNode; i++)
+			{
+				H11 += pptr1[i] * (_ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i]);
+				H22 += pptr1[i] * (_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i]);
+				H12 += pptr1[i] * (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]);
+			}
+			double val = 0;
+			if (accurate)
+			{
+				val += H11 * U1 * (v1 * this->get_Gij(0, 0) + v2 * this->get_Gij(1, 0));
+				val += H12 * U2 * (v1 * this->get_Gij(0, 0) + v2 * this->get_Gij(1, 0));
+				val += H12 * U1 * (v1 * this->get_Gij(0, 1) + v2 * this->get_Gij(1, 1));
+				val += H22 * U2 * (v1 * this->get_Gij(0, 1) + v2 * this->get_Gij(1, 1));
+			}
+			else {
+				val += H11 * U1 * (v1 * _ref->get__Gij(0, 0) + v2 * this->get_Gij(1, 0));
+				val += H12 * U2 * (v1 * _ref->get__Gij(0, 0) + v2 * this->get_Gij(1, 0));
+				val += H12 * U1 * (v1 * _ref->get__Gij(0, 1) + v2 * this->get_Gij(1, 1));
+				val += H22 * U2 * (v1 * _ref->get__Gij(0, 1) + v2 * this->get_Gij(1, 1));
+			}
+			return val;
+		}
+		inline double constant_SLOPE_phi(double dcdtstar0, double dcdtstar1, bool accurate) {
+
+			double H11 = 0, H12 = 0, H22 = 0;
+			double* pptr1 = &_ref->buf_phi[0];
+
+			double U1 = dcdtstar1;
+			double U2 = -dcdtstar0;
+			double v1 = dcdtstar0;
+			double v2 = dcdtstar1;
+			for (int i = 0; i < _ref->_nNode; i++)
+			{
+				H11 += pptr1[i] * (_ref->d2[0][i] - _ref->_Gammaijk[0] * _ref->d1[0][i] - _ref->_Gammaijk[1] * _ref->d1[1][i]);
+				H22 += pptr1[i] * (_ref->d2[3][i] - _ref->_Gammaijk[6] * _ref->d1[0][i] - _ref->_Gammaijk[7] * _ref->d1[1][i]);
+				H12 += pptr1[i] * (_ref->d2[1][i] - _ref->_Gammaijk[2] * _ref->d1[0][i] - _ref->_Gammaijk[3] * _ref->d1[1][i]);
+			}
+			double val = 0;
+			if (accurate)
+			{
+				val += H11 * U1 * (v1 * this->get_Gij(0, 0) + v2 * this->get_Gij(1, 0));
+				val += H12 * U2 * (v1 * this->get_Gij(0, 0) + v2 * this->get_Gij(1, 0));
+				val += H12 * U1 * (v1 * this->get_Gij(0, 1) + v2 * this->get_Gij(1, 1));
+				val += H22 * U2 * (v1 * this->get_Gij(0, 1) + v2 * this->get_Gij(1, 1));
+			}
+			else {
+				val += H11 * U1 * (v1 * _ref->get__Gij(0, 0) + v2 * this->get_Gij(1, 0));
+				val += H12 * U2 * (v1 * _ref->get__Gij(0, 0) + v2 * this->get_Gij(1, 0));
+				val += H12 * U1 * (v1 * _ref->get__Gij(0, 1) + v2 * this->get_Gij(1, 1));
+				val += H22 * U2 * (v1 * _ref->get__Gij(0, 1) + v2 * this->get_Gij(1, 1));
+			}
+			return val;
 		}
 		inline void shear(double* ptr,int uv)
 		{
@@ -4241,7 +4351,23 @@ public:
 	double SLOPE(int l, int i) {
 		return __mem->SLOPE(l, i);
 	}
+	double constant_SLOPE_z(double dcdtstar0, double dcdtstar1, bool accurate) {
+		return __mem->constant_SLOPE_z(dcdtstar0, dcdtstar1, accurate);
+	}
+	double constant_SLOPE_phi(double dcdtstar0, double dcdtstar1, bool accurate) {
+		return __mem->constant_SLOPE_phi(dcdtstar0, dcdtstar1, accurate);
+	}
 
+	void constant_SLOPE(myDoubleArray^ arr, double dcdt1, double dcdt2, double sc, bool accurate)
+	{
+		__mem->constant_SLOPE(arr->_arr->__v.data(), dcdt1, dcdt2, sc, accurate);
+
+	}
+	void constant_SLOPE(myDoubleArray^ arr, double dcdt1, double dcdt2, double sc,int shift, bool accurate)
+	{
+		__mem->constant_SLOPE(arr->_arr->__v.data() + shift, dcdt1, dcdt2, sc, accurate);
+
+	}
 	void SLOPE(myDoubleArray^ arr,double dcdt1,double dcdt2,double sc) {
 		__mem->SLOPE(arr->_arr->__v.data(), dcdt1, dcdt2, sc);
 		//return __mem->SLOPE(l, i);
