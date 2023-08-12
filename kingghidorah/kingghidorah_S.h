@@ -3452,6 +3452,11 @@ namespace KingOfMonsters {
 			}
 			double S21 = S12;
 			double s21 = s12;
+			s11 *= sc;
+			s12 *= sc;
+			s21 *= sc;
+			s22 *= sc;
+
 			if (accurate)
 			{
 				return this->get_gij2(0, 0) * (s11 * S12 + s12 * S22)
@@ -3487,6 +3492,11 @@ namespace KingOfMonsters {
 				//S22 += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_z[s];
 			}
 			double s21 = s12;
+			s11 *= sc;
+			s12 *= sc;
+			s21 *= sc;
+			s22 *= sc;
+
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
@@ -3574,6 +3584,11 @@ namespace KingOfMonsters {
 				double s12 = -(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double s21 = s12;
 				double s11 = (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+				s11 *= sc;
+				s12 *= sc;
+				s21 *= sc;
+				s22 *= sc;
+
 				if (accurate)
 				{
 					//double S21 = S12;
@@ -3695,9 +3710,12 @@ namespace KingOfMonsters {
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				double val = 0;
-
-				val += (s12 * v1 + s22 * v2) * (-(_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * v1 - (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * v2);
-				val -= (-s11 * v1 - s12 * v2) * ((_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * v1 + (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * v2);				
+			    double S11 = (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+				double S12 = (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+				double S22 = (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+				double S21 = S12;
+				val += (s12 * v1 + s22 * v2)* (-S11 * v1 - S12 * v2);
+				val -= (-s11 * v1 - s12 * v2) * (S12 * v1 + S22 * v2);
 				*ptr1 = val;
 				ptr1++;
 			}
