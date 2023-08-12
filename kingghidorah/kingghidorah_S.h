@@ -3491,7 +3491,7 @@ namespace KingOfMonsters {
 			val += s1 * s11 * v1;
 			val += s1 * s12 * v2;
 			val += s2 * s21 * v1;
-			val += s1 * s22 * v1;
+			val += s2 * s22 * v2;
 			double norm1 = 0,norm2 = 0;
 			if (accurate)
 			{
@@ -3573,7 +3573,7 @@ namespace KingOfMonsters {
 				val += s1 * s11 * v1;
 				val += s1 * s12 * v2;
 				val += s2 * s21 * v1;
-				val += s1 * s22 * v1;
+				val += s2 * s22 * v2;
 				*ptr1 = val / norm;
 				ptr1++;
 			}
@@ -3609,7 +3609,7 @@ namespace KingOfMonsters {
 			val += v1 * s11 * v1;
 			val += v1 * s12 * v2;
 			val += v2 * s21 * v1;
-			val += v1 * s22 * v1;
+			val += v2 * s22 * v2;
 			double norm = 0;
 			if (accurate)
 			{
@@ -3674,7 +3674,7 @@ namespace KingOfMonsters {
 				val += v1 * s11 * v1;
 				val += v1 * s12 * v2;
 				val += v2 * s21 * v1;
-				val += v1 * s22 * v1;
+				val += v2 * s22 * v2;
 				*ptr1 = val/norm;
 				ptr1++;
 			}
@@ -3689,14 +3689,14 @@ namespace KingOfMonsters {
 			{
 				s11 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_z[s];
 				s12 += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->buf_z[s];
-				s11 += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_z[s];
+				s22 += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_z[s];
 			}
 			double s21 = s12;
 			double val = 0;
 			val += s1 * s11 * v1;
 			val += s1 * s12 * v2;
 			val += s2 * s21 * v1;
-			val += s1 * s22 * v1;
+			val += s2 * s22 * v2;
 			double norm1 = 0, norm2 = 0;
 			if (accurate)
 			{
@@ -3765,7 +3765,7 @@ namespace KingOfMonsters {
 				val += s1 * s11 * v1;
 				val += s1 * s12 * v2;
 				val += s2 * s21 * v1;
-				val += s1 * s22 * v1;
+				val += s2 * s22 * v2;
 				*ptr1 = val / norm;
 				ptr1++;
 			}
@@ -3779,16 +3779,16 @@ namespace KingOfMonsters {
 			double s22 = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				s22 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_z[s];
+				s11 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_z[s];
 				s12 += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->buf_z[s];
-				s11 += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_z[s];
+				s22 += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_z[s];
 			}
 			double s21 = s12;
 			double val = 0;
 			val += v1 * s11 * v1;
 			val += v1 * s12 * v2;
 			val += v2 * s21 * v1;
-			val += v1 * s22 * v1;
+			val += v2 * s22 * v2;
 			double norm = 0;
 			if (accurate)
 			{
@@ -3841,7 +3841,7 @@ namespace KingOfMonsters {
 				val += v1 * s11 * v1;
 				val += v1 * s12 * v2;
 				val += v2 * s21 * v1;
-				val += v1 * s22 * v1;
+				val += v2 * s22 * v2;
 				*ptr1 = val / norm;
 				ptr1++;
 			}
