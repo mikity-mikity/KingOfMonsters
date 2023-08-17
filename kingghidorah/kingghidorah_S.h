@@ -3613,7 +3613,7 @@ namespace KingOfMonsters {
 				norm += v2 * _ref->get__gij(1, 0) * v1;
 				norm += v2 * _ref->get__gij(1, 1) * v2;
 			}
-			return val / sqrt(norm);
+			return val/ norm;
 		}
 		void tt_z(double* ptr, double v1, double v2, bool accurate)
 		{
@@ -3652,7 +3652,7 @@ namespace KingOfMonsters {
 				val += v1 * s12 * v2;
 				val += v2 * s21 * v1;
 				val += v2 * s22 * v2;
-				*ptr1 = val / sqrt(norm);
+				*ptr1 = val/ norm;
 				ptr1++;
 			}
 		}
