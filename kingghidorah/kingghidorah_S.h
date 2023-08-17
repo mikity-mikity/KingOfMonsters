@@ -3844,26 +3844,20 @@ namespace KingOfMonsters {
 			}
 			double S21 = S12;
 			double s21 = s12;
-			s11 *= sc;
-			s12 *= sc;
-			s21 *= sc;
-			s22 *= sc;
+			s11 *= sc;s12 *= sc;s21 *= sc;s22 *= sc;
 
 			if (accurate)
 			{
 				return this->get_gij2(0, 0) * (s11 * S12 + s12 * S22)
 					+ this->get_gij2(0, 1) * (s21 * S12 + s22 * S22)
 					- this->get_gij2(1, 0) * (s11 * S11 + s12 * S21)
-					- this->get_gij2(1, 1) * (s21 * S11 + s22 * S21)
-					;
+					- this->get_gij2(1, 1) * (s21 * S11 + s22 * S21);
 			}
 			else {
 				return _ref->get__gij(0, 0) * (s11 * S12 + s12 * S22)
 					+ _ref->get__gij(0, 1) * (s21 * S12 + s22 * S22)
 					- _ref->get__gij(1, 0) * (s11 * S11 + s12 * S21)
 					- _ref->get__gij(1, 1) * (s21 * S11 + s22 * S21);
-				//s11* _ref->get__Gij(0, 0)* S12 + s11 * _ref->get__Gij(0, 1) * S22 + s12 * _ref->get__Gij(0, 1) * S12 + s12 * _ref->get__Gij(1, 1) * S22
-					//- S11 * _ref->get__Gij(0, 0) * s12 - S11 * _ref->get__Gij(0, 1) * s22 - S12 * _ref->get__Gij(0, 1) * s12 - S12 * _ref->get__Gij(1, 1) * s22;
 			}
 		}
 		void theta_phi(double* ptr, bool accurate)
@@ -4216,13 +4210,8 @@ namespace KingOfMonsters {
 			}
 			double S21 = S12;
 			double _s21 = _s12;
-
-		
-
-			double s11 = 0;
-			double s12 = 0;
-			double s22 = 0;
-			double s21 = 0;
+				
+			double s11 = 0;	double s12 = 0;	double s22 = 0;	double s21 = 0;
 			if (accurate)
 			{
 				s11 = this->get_gij2(0, 0) * _s11 + this->get_gij2(0, 1) * _s21;
@@ -4236,10 +4225,7 @@ namespace KingOfMonsters {
 				s21 = _ref->get__gij(1, 0) * _s11 + _ref->get__gij(1, 1) * _s21;
 				s22 = _ref->get__gij(1, 0) * _s12 + _ref->get__gij(1, 1) * _s22;
 			}
-			s11 *= sc;
-			s12 *= sc;
-			s22 *= sc;
-			s21 *= sc;
+			s11 *= sc;s12 *= sc;s22 *= sc;s21 *= sc;
 			val += w1  * ((s21 * V1 + s22 * V2) * (-S11 * v1 - S12 * v2) - (-s11 * V1 - s12 * V2) * (S21 * v1 + S22 * v2));
 			val += w2 * ((s21 * S1 + s22 * S2) * (-S11 * s1 - S12 * s2) - (-s11 * S1 - s12 * S2) * (S21 * s1 + S22 * s2));
 			return val;
