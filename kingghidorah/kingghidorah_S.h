@@ -4461,7 +4461,7 @@ namespace KingOfMonsters {
 				ptr1++;
 			}
 		}
-		double BCEQ(double _t1/*up*/, double _t2/*up*/, bool accurate)
+		double BCEQ(double _t1/*up*/, double _t2/*up*/,double stt, bool accurate)
 		{
 			double val = 0;
 
@@ -4529,14 +4529,20 @@ namespace KingOfMonsters {
 			double S21 = S12;
 			double s21 = s12;
 			//s11 = 0;
-			//val += (s11 * t1 * t1 + 2 * s12 * t1 * t2 + s22 * t2 * t2) * (D1 * n1 + D2 * n2);
+			//if (stt < -100)
+			{
+				val += (s11 * t1 * t1 + 2 * s12 * t1 * t2 + s22 * t2 * t2) * (D1 * n1 + D2 * n2);
+			}
+			/*else {
+				//val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2);
+				val += stt * (D1 * t1 + D2 * t2);
+			}*/
 			val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2);
-			
-			val += (s11 * n1 * t1 + s12 * n1 * t2+ s21 * n2 * t1 + s22 * n2 * t2) * (D1 * t1 + D2 * t2);
-			
+			val += (s11 * n1 * t1 + s12 * n1 * t2 + s21 * n2 * t1 + s22 * n2 * t2) * (D1 * t1 + D2 * t2);
+
 			return val;
 		}
-		void BCEQ_z(double* ptr, double _t1, double _t2, bool accurate)
+		void BCEQ_z(double* ptr, double _t1, double _t2,double stt, bool accurate)
 		{
 
 
@@ -4610,7 +4616,13 @@ namespace KingOfMonsters {
 				double S21 = S12;
 				double s21 = s12;
 				//s11 = 0;
-				//val += (s11 * t1 * t1 + 2 * s12 * t1 * t2 + s22 * t2 * t2) * (D1 * n1 + D2 * n2);
+				//if (stt < -100)
+				{
+					val += (s11 * t1 * t1 + 2 * s12 * t1 * t2 + s22 * t2 * t2) * (D1 * n1 + D2 * n2);
+				}
+				/*else {
+					val += 0;
+				}*/
 				val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2);
 
 				val += (s11 * n1 * t1 + s12 * n1 * t2 + s21 * n2 * t1 + s22 * n2 * t2) * (D1 * t1 + D2 * t2);
@@ -4622,7 +4634,7 @@ namespace KingOfMonsters {
 
 
 		}
-		void BCEQ_phi(double* ptr, double _t1, double _t2, bool accurate)
+		void BCEQ_phi(double* ptr, double _t1, double _t2,double stt, bool accurate)
 		{
 			double S11 = 0;
 			double S12 = 0;
@@ -4693,7 +4705,13 @@ namespace KingOfMonsters {
 				double S21 = S12;
 				double s21 = s12;
 				//s11 = 0;
-				//val += (s11 * t1 * t1 + 2 * s12 * t1 * t2 + s22 * t2 * t2) * (D1 * n1 + D2 * n2);
+				//if (stt < -100)
+				{
+					val += (s11 * t1 * t1 + 2 * s12 * t1 * t2 + s22 * t2 * t2) * (D1 * n1 + D2 * n2);
+				}
+				/*else {
+					val += stt * (D1 * t1 + D2 * t2);
+				}*/
 				val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2);
 
 				val += (s11 * n1 * t1 + s12 * n1 * t2 + s21 * n2 * t1 + s22 * n2 * t2) * (D1 * t1 + D2 * t2);
@@ -4791,8 +4809,8 @@ namespace KingOfMonsters {
 			double E12 = 1 * (V1 * v2);// + w2 * (S1 * s2);
 			double E21 = 1 * (V2 * v1);// + w2 * (S2 * s1);
 			double E22 = 1 * (V2 * v2);// + w2 * (S2 * s2);
-			val += (s21 * E11 * S11 + s21 * E12 * S21 + s22 * E21 * S11 + s22 * E22 * S21);
-			val -= (s11 * E11 * S12 + s11 * E12 * S22 + s12 * E21 * S12 + s12 * E22 * S22);
+			val += (s11 * E11 * S12 + s11 * E12 * S22 + s12 * E21 * S12 + s12 * E22 * S22);
+			val -= (s21 * E11 * S11 + s21 * E12 * S21 + s22 * E21 * S11 + s22 * E22 * S21);
 			return val;
 		}
 		void mix_BC_phi(double* ptr, double v1, double v2, bool accurate)
@@ -4898,8 +4916,8 @@ namespace KingOfMonsters {
 				//val += w2 * ((s12 * v1 + s22 * v2) * (-(_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * v1 - (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * v2));
 				//val -= w2 * ((-s11 * v1 - s12 * v2) * ((_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * v1 + (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * v2));
 				//val += ((s21 * V1 + s22 * V2) * (-S11 * v1 - S12 * v2) - (-s11 * V1 - s12 * V2) * (S21 * v1 + S22 * v2));
-				val += (s21 * E11 * S11 + s21 * E12 * S21 + s22 * E21 * S11 + s22 * E22 * S21);
-				val -= (s11 * E11 * S12 + s11 * E12 * S22 + s12 * E21 * S12 + s12 * E22 * S22);
+				val += (s11 * E11 * S12 + s11 * E12 * S22 + s12 * E21 * S12 + s12 * E22 * S22);
+				val -= (s21 * E11 * S11 + s21 * E12 * S21 + s22 * E21 * S11 + s22 * E22 * S21);
 
 
 				*ptr1 = val;
@@ -4992,8 +5010,8 @@ namespace KingOfMonsters {
 				//val += ((s21 * V1 + s22 * V2) * (-S11 * v1 - S12 * v2) - (-s11 * V1 - s12 * V2) * (S21 * v1 + S22 * v2));
 				
 
-				val += (s21 * E11 * S11 + s21 * E12 * S21 + s22 * E21 * S11 + s22 * E22 * S21);
-				val -= (s11 * E11 * S12 + s11 * E12 * S22 + s12 * E21 * S12 + s12 * E22 * S22);
+				val += (s11 * E11 * S12 + s11 * E12 * S22 + s12 * E21 * S12 + s12 * E22 * S22);
+				val -= (s21 * E11 * S11 + s21 * E12 * S21 + s22 * E21 * S11 + s22 * E22 * S21);
 
 
 				*ptr1 = val;
@@ -5750,18 +5768,18 @@ namespace KingOfMonsters {
 			__mem->mix_Z(__mem->__grad, v1, v2, w1, w2, accurate);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, sc, __mem->_nNode, c1);
 		}
-		double BCEQ(double _t1, double _t2, bool accurate)
+		double BCEQ(double _t1, double _t2, double s11,bool accurate)
 		{
-			return __mem->BCEQ(_t1, _t2,accurate);
+			return __mem->BCEQ(_t1, _t2,s11,accurate);
 		}
-		void BCEQ_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double _t1, double _t2, bool accurate)
+		void BCEQ_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double _t1, double _t2,double  stt,bool accurate)
 		{
-			__mem->BCEQ_phi(__mem->__grad, _t1, _t2, accurate);
+			__mem->BCEQ_phi(__mem->__grad, _t1, _t2, stt, accurate);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, sc, __mem->_nNode, c1);
 		}
-		void BCEQ_Z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double _t1, double _t2, bool accurate)
+		void BCEQ_Z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double _t1, double _t2,double stt,bool accurate)
 		{
-			__mem->BCEQ_z(__mem->__grad, _t1,_t2,accurate);
+			__mem->BCEQ_z(__mem->__grad, _t1,_t2, stt, accurate);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, sc, __mem->_nNode, c1);
 		}
 		double mix_BC(double v1, double v2,  bool accurate)
