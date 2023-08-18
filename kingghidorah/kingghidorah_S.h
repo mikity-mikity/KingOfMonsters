@@ -4155,6 +4155,247 @@ namespace KingOfMonsters {
 				ptr1++;
 			}
 		}
+		double BCEQ(double _t1/*up*/, double _t2/*up*/, bool accurate)
+		{
+			double val = 0;
+
+			double S11 = 0;
+			double S12 = 0;
+			double S22 = 0;
+			double s11 = 0;
+			double s12 = 0;
+			double s22 = 0;
+			double length = 0;
+			double t1 = 0;//up
+			double t2 = 0;//up
+			double T1 = 0;//down
+			double T2 = 0;//down
+			double n1 = 0;//up
+			double n2 = 0;//up
+			double N1 = 0;//down
+			double N2 = 0;//down
+			double gamma = 0;
+			if (accurate)
+			{
+				length = sqrt(_t1 * _t1 * this->get_gij(0, 0) + _t2 * _t1 * this->get_gij(1, 0) + _t1 * _t2 * this->get_gij(0, 1) + _t2 * _t2 * this->get_gij(1, 1));
+				gamma = length* length;
+				t1 = _t1/length;
+				t2 = _t2/length;
+				T1 = this->get_gij(0, 0) * t1 + this->get_gij(0, 1) * t2;
+				T2 = this->get_gij(1, 0) * t1 + this->get_gij(1, 1) * t2;
+				n1 = T2;
+				n2 = -T1;
+				length = sqrt(n1 * n1 * this->get_gij(0, 0) + n2 * n1 * this->get_gij(1, 0) + n1 * n2 * this->get_gij(0, 1) + n2 * n2 * this->get_gij(1, 1));
+				n1 /= length;
+				n2 /= length;
+				N1 = this->get_gij(0, 0) * n1 + this->get_gij(0, 1) * n2;
+				N2 = this->get_gij(1, 0) * n1 + this->get_gij(1, 1) * n2;
+			}
+			else {
+				length = sqrt(_t1 * _t1 * _ref->get__gij(0, 0) + _t2 * _t1 * _ref->get__gij(1, 0) + _t1 * _t2 * _ref->get__gij(0, 1) + _t2 * _t2 * _ref->get__gij(1, 1));
+				gamma = length * length;
+				t1 = _t1 / length;
+				t2 = _t2 / length;
+				T1 = _ref->get__gij(0, 0) * t1 + _ref->get__gij(0, 1) * t2;
+				T2 = _ref->get__gij(1, 0) * t1 + _ref->get__gij(1, 1) * t2;
+				n1 = T2;
+				n2 = -T1;
+				length = sqrt(n1 * n1 * _ref->get__gij(0, 0) + n2 * n1 * _ref->get__gij(1, 0) + n1 * n2 * _ref->get__gij(0, 1) + n2 * n2 * _ref->get__gij(1, 1));
+				n1 /= length;
+				n2 /= length;
+				N1 = _ref->get__gij(0, 0) * n1 + _ref->get__gij(0, 1) * n2;
+				N2 = _ref->get__gij(1, 0) * n1 + _ref->get__gij(1, 1) * n2;
+			}
+			double d1 = 0, d2 = 0, D1 = 0, D2 = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				d1 += _ref->d1[0][s] * _ref->buf_phi[s];
+				d2 += _ref->d1[1][s] * _ref->buf_phi[s];
+				D1 += _ref->d1[0][s] * _ref->buf_z[s];
+				D2 += _ref->d1[1][s] * _ref->buf_z[s];
+				s11 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_phi[s];
+				s12 += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->buf_phi[s];
+				s22 += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_phi[s];
+				S11 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_z[s];
+				S12 += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->buf_z[s];
+				S22 += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_z[s];
+			}
+			double S21 = S12;
+			double s21 = s12;
+			//s11 = 0;
+			//val += (s11 * t1 * t1 + 2 * s12 * t1 * t2 + s22 * t2 * t2) * (D1 * n1 + D2 * n2);
+			val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2);
+			
+			val += (s11 * n1 * t1 + s12 * n1 * t2+ s21 * n2 * t1 + s22 * n2 * t2) * (D1 * t1 + D2 * t2);
+			
+			return val;
+		}
+		void BCEQ_z(double* ptr, double _t1, double _t2, bool accurate)
+		{
+
+
+			double S11 = 0;
+			double S12 = 0;
+			double S22 = 0;
+			double s11 = 0;
+			double s12 = 0;
+			double s22 = 0;
+			double length = 0;
+			double t1 = 0;//up
+			double t2 = 0;//up
+			double T1 = 0;//down
+			double T2 = 0;//down
+			double n1 = 0;//up
+			double n2 = 0;//up
+			double N1 = 0;//down
+			double N2 = 0;//down
+			double gamma = 0;
+			double eta = 0;
+			if (accurate)
+			{
+				length = sqrt(_t1 * _t1 * this->get_gij(0, 0) + _t2 * _t1 * this->get_gij(1, 0) + _t1 * _t2 * this->get_gij(0, 1) + _t2 * _t2 * this->get_gij(1, 1));
+				gamma = length * length;
+				t1 = _t1 / length;
+				t2 = _t2 / length;
+				T1 = this->get_gij(0, 0) * t1 + this->get_gij(0, 1) * t2;
+				T2 = this->get_gij(1, 0) * t1 + this->get_gij(1, 1) * t2;
+				n1 = T2;
+				n2 = -T1;
+				length = sqrt(n1 * n1 * this->get_gij(0, 0) + n2 * n1 * this->get_gij(1, 0) + n1 * n2 * this->get_gij(0, 1) + n2 * n2 * this->get_gij(1, 1));
+
+				n1 /= length;
+				n2 /= length;
+				N1 = this->get_gij(0, 0) * n1 + this->get_gij(0, 1) * n2;
+				N2 = this->get_gij(1, 0) * n1 + this->get_gij(1, 1) * n2;
+			}
+			else {
+				length = sqrt(_t1 * _t1 * _ref->get__gij(0, 0) + _t2 * _t1 * _ref->get__gij(1, 0) + _t1 * _t2 * _ref->get__gij(0, 1) + _t2 * _t2 * _ref->get__gij(1, 1));
+				gamma = length * length;
+				t1 = _t1 / length;
+				t2 = _t2 / length;
+				T1 = _ref->get__gij(0, 0) * t1 + _ref->get__gij(0, 1) * t2;
+				T2 = _ref->get__gij(1, 0) * t1 + _ref->get__gij(1, 1) * t2;
+				n1 = T2;
+				n2 = -T1;
+				length = sqrt(n1 * n1 * _ref->get__gij(0, 0) + n2 * n1 * _ref->get__gij(1, 0) + n1 * n2 * _ref->get__gij(0, 1) + n2 * n2 * _ref->get__gij(1, 1));
+				n1 /= length;
+				n2 /= length;
+				N1 = _ref->get__gij(0, 0) * n1 + _ref->get__gij(0, 1) * n2;
+				N2 = _ref->get__gij(1, 0) * n1 + _ref->get__gij(1, 1) * n2;
+			}
+			double d1 = 0, d2 = 0, D1 = 0, D2 = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				D1 += _ref->d1[0][s] * _ref->buf_z[s];
+				D2 += _ref->d1[1][s] * _ref->buf_z[s];
+				S11 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_z[s];
+				S12 += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->buf_z[s];
+				S22 += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_z[s];
+			}
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double val = 0;
+				d1 = _ref->d1[0][s];
+				d2 = _ref->d1[1][s];
+				s11 = (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+				s12 = (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+				s22 = (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+				double S21 = S12;
+				double s21 = s12;
+				//s11 = 0;
+				//val += (s11 * t1 * t1 + 2 * s12 * t1 * t2 + s22 * t2 * t2) * (D1 * n1 + D2 * n2);
+				val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2);
+
+				val += (s11 * n1 * t1 + s12 * n1 * t2 + s21 * n2 * t1 + s22 * n2 * t2) * (D1 * t1 + D2 * t2);
+				
+
+				*ptr1 = val;
+				ptr1 ++;
+			}
+
+
+		}
+		void BCEQ_phi(double* ptr, double _t1, double _t2, bool accurate)
+		{
+			double S11 = 0;
+			double S12 = 0;
+			double S22 = 0;
+			double s11 = 0;
+			double s12 = 0;
+			double s22 = 0;
+			double length = 0;
+			double t1 = 0;//up
+			double t2 = 0;//up
+			double T1 = 0;//down
+			double T2 = 0;//down
+			double n1 = 0;//up
+			double n2 = 0;//up
+			double N1 = 0;//down
+			double N2 = 0;//down
+			double gamma = 0;
+			if (accurate)
+			{
+				length = sqrt(_t1 * _t1 * this->get_gij(0, 0) + _t2 * _t1 * this->get_gij(1, 0) + _t1 * _t2 * this->get_gij(0, 1) + _t2 * _t2 * this->get_gij(1, 1));
+				gamma = length * length;
+				t1 = _t1 / length;
+				t2 = _t2 / length;
+				T1 = this->get_gij(0, 0) * t1 + this->get_gij(0, 1) * t2;
+				T2 = this->get_gij(1, 0) * t1 + this->get_gij(1, 1) * t2;
+				n1 = T2;
+				n2 = -T1;
+				length = sqrt(n1 * n1 * this->get_gij(0, 0) + n2 * n1 * this->get_gij(1, 0) + n1 * n2 * this->get_gij(0, 1) + n2 * n2 * this->get_gij(1, 1));
+				n1 /= length;
+				n2 /= length;
+				N1 = this->get_gij(0, 0) * n1 + this->get_gij(0, 1) * n2;
+				N2 = this->get_gij(1, 0) * n1 + this->get_gij(1, 1) * n2;
+			}
+			else {
+				length = sqrt(_t1 * _t1 * _ref->get__gij(0, 0) + _t2 * _t1 * _ref->get__gij(1, 0) + _t1 * _t2 * _ref->get__gij(0, 1) + _t2 * _t2 * _ref->get__gij(1, 1));
+				gamma = length * length;
+				t1 = _t1 / length;
+				t2 = _t2 / length;
+				T1 = _ref->get__gij(0, 0) * t1 + _ref->get__gij(0, 1) * t2;
+				T2 = _ref->get__gij(1, 0) * t1 + _ref->get__gij(1, 1) * t2;
+				n1 = T2;
+				n2 = -T1;
+				length = sqrt(n1 * n1 * _ref->get__gij(0, 0) + n2 * n1 * _ref->get__gij(1, 0) + n1 * n2 * _ref->get__gij(0, 1) + n2 * n2 * _ref->get__gij(1, 1));
+				n1 /= length;
+				n2 /= length;
+				N1 = _ref->get__gij(0, 0) * n1 + _ref->get__gij(0, 1) * n2;
+				N2 = _ref->get__gij(1, 0) * n1 + _ref->get__gij(1, 1) * n2;
+			}
+			double d1 = 0, d2 = 0, D1 = 0, D2 = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				d1 += _ref->d1[0][s] * _ref->buf_phi[s];
+				d2 += _ref->d1[1][s] * _ref->buf_phi[s];
+				s11 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_phi[s];
+				s12 += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->buf_phi[s];
+				s22 += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_phi[s];
+			}
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double val = 0;
+
+				D1 = _ref->d1[0][s];
+				D2 = _ref->d1[1][s];
+				S11 = (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+				S12 = (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+				S22 = (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+				double S21 = S12;
+				double s21 = s12;
+				//s11 = 0;
+				//val += (s11 * t1 * t1 + 2 * s12 * t1 * t2 + s22 * t2 * t2) * (D1 * n1 + D2 * n2);
+				val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2);
+
+				val += (s11 * n1 * t1 + s12 * n1 * t2 + s21 * n2 * t1 + s22 * n2 * t2) * (D1 * t1 + D2 * t2);
+				
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
 		double mix(double v1, double v2, double w1, double w2, bool accurate)
 		{
 			double val = 0;
@@ -5500,6 +5741,20 @@ namespace KingOfMonsters {
 		void mix_Z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, double w1, double w2, bool accurate)
 		{
 			__mem->mix_Z(__mem->__grad, v1, v2, w1, w2, accurate);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, sc, __mem->_nNode, c1);
+		}
+		double BCEQ(double _t1, double _t2, bool accurate)
+		{
+			return __mem->BCEQ(_t1, _t2,accurate);
+		}
+		void BCEQ_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double _t1, double _t2, bool accurate)
+		{
+			__mem->BCEQ_phi(__mem->__grad, _t1, _t2, accurate);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, sc, __mem->_nNode, c1);
+		}
+		void BCEQ_Z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double _t1, double _t2, bool accurate)
+		{
+			__mem->BCEQ_z(__mem->__grad, _t1,_t2,accurate);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, sc, __mem->_nNode, c1);
 		}
 		double mix_BC(double v1, double v2,  bool accurate)
