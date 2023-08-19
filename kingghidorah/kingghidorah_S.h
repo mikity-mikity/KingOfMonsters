@@ -4540,14 +4540,14 @@ namespace KingOfMonsters {
 				//val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2);
 				val += stt * (D1 * t1 + D2 * t2) * sc;
 			}*/
-			if (stt < -100)
+			//if (stt < -100)
 			{
 				val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2) * sc;
 			}
-			else {
+			/*else {
 				val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * stt * sc;
 
-			}
+			}*/
 			return val;
 		}
 		void BCEQ_z(double* ptr, double _t1, double _t2,double stt, bool accurate)
@@ -4627,14 +4627,14 @@ namespace KingOfMonsters {
 				{
 					val += (s11 * t1 * t1 + 2 * s12 * t1 * t2 + s22 * t2 * t2) * (D1 * n1 + D2 * n2) * sc;
 				}
-				if (stt < -100)
+				//if (stt < -100)
 				{
 					val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2) * sc;
 
 				}
-				else {
+				/*else {
 					val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (stt) * sc;
-				}
+				}*/
 
 				
 
@@ -4728,12 +4728,12 @@ namespace KingOfMonsters {
 				else {
 					val += stt * (D1 * t1 + D2 * t2) * sc;
 				}*/
-				if (stt < -100)
+				//if (stt < -100)
 				{
 					val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2) * sc;
 				}
-				else {
-				}
+				/*else {
+				}*/
 
 				
 				*ptr1 = val;
