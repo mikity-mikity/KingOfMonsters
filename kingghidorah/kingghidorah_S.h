@@ -4481,6 +4481,7 @@ namespace KingOfMonsters {
 			double N1 = 0;//down
 			double N2 = 0;//down
 			double gamma = 0;
+			double eta = 0;
 			if (accurate)
 			{
 				length = sqrt(_t1 * _t1 * this->get_gij(0, 0) + _t2 * _t1 * this->get_gij(1, 0) + _t1 * _t2 * this->get_gij(0, 1) + _t2 * _t2 * this->get_gij(1, 1));
@@ -4494,6 +4495,7 @@ namespace KingOfMonsters {
 				length = sqrt(n1 * n1 * this->get_gij(0, 0) + n2 * n1 * this->get_gij(1, 0) + n1 * n2 * this->get_gij(0, 1) + n2 * n2 * this->get_gij(1, 1));
 				n1 /= length;
 				n2 /= length;
+				eta = length * length;
 				N1 = this->get_gij(0, 0) * n1 + this->get_gij(0, 1) * n2;
 				N2 = this->get_gij(1, 0) * n1 + this->get_gij(1, 1) * n2;
 			}
@@ -4507,6 +4509,7 @@ namespace KingOfMonsters {
 				n1 = T2;
 				n2 = -T1;
 				length = sqrt(n1 * n1 * _ref->get__gij(0, 0) + n2 * n1 * _ref->get__gij(1, 0) + n1 * n2 * _ref->get__gij(0, 1) + n2 * n2 * _ref->get__gij(1, 1));
+				eta = length * length;
 				n1 /= length;
 				n2 /= length;
 				N1 = _ref->get__gij(0, 0) * n1 + _ref->get__gij(0, 1) * n2;
@@ -4531,14 +4534,14 @@ namespace KingOfMonsters {
 			//s11 = 0;
 			//if (stt < -100)
 			{
-				val += (s11 * t1 * t1 + 2 * s12 * t1 * t2 + s22 * t2 * t2) * (D1 * n1 + D2 * n2);
+				val += (s11 * t1 * t1 + 2 * s12 * t1 * t2 + s22 * t2 * t2) * (D1 * n1 + D2 * n2) * sc;
 			}
 			/*else {
 				//val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2);
 				val += stt * (D1 * t1 + D2 * t2);
 			}*/
-			val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2);
-			val += (s11 * n1 * t1 + s12 * n1 * t2 + s21 * n2 * t1 + s22 * n2 * t2) * (D1 * t1 + D2 * t2);
+			val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2) * sc;
+			val += (s11 * n1 * t1 + s12 * n1 * t2 + s21 * n2 * t1 + s22 * n2 * t2) * (D1 * t1 + D2 * t2) * sc;
 
 			return val;
 		}
@@ -4618,14 +4621,14 @@ namespace KingOfMonsters {
 				//s11 = 0;
 				//if (stt < -100)
 				{
-					val += (s11 * t1 * t1 + 2 * s12 * t1 * t2 + s22 * t2 * t2) * (D1 * n1 + D2 * n2);
+					val += (s11 * t1 * t1 + 2 * s12 * t1 * t2 + s22 * t2 * t2) * (D1 * n1 + D2 * n2) * sc;
 				}
 				/*else {
 					val += 0;
 				}*/
-				val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2);
+				val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2) * sc;
 
-				val += (s11 * n1 * t1 + s12 * n1 * t2 + s21 * n2 * t1 + s22 * n2 * t2) * (D1 * t1 + D2 * t2);
+				val += (s11 * n1 * t1 + s12 * n1 * t2 + s21 * n2 * t1 + s22 * n2 * t2) * (D1 * t1 + D2 * t2) * sc;
 				
 
 				*ptr1 = val;
@@ -4652,6 +4655,8 @@ namespace KingOfMonsters {
 			double N1 = 0;//down
 			double N2 = 0;//down
 			double gamma = 0;
+			//double eta = 0;
+			//double det = 0;
 			if (accurate)
 			{
 				length = sqrt(_t1 * _t1 * this->get_gij(0, 0) + _t2 * _t1 * this->get_gij(1, 0) + _t1 * _t2 * this->get_gij(0, 1) + _t2 * _t2 * this->get_gij(1, 1));
@@ -4663,6 +4668,7 @@ namespace KingOfMonsters {
 				n1 = T2;
 				n2 = -T1;
 				length = sqrt(n1 * n1 * this->get_gij(0, 0) + n2 * n1 * this->get_gij(1, 0) + n1 * n2 * this->get_gij(0, 1) + n2 * n2 * this->get_gij(1, 1));
+				//eta = length * length;
 				n1 /= length;
 				n2 /= length;
 				N1 = this->get_gij(0, 0) * n1 + this->get_gij(0, 1) * n2;
@@ -4678,11 +4684,13 @@ namespace KingOfMonsters {
 				n1 = T2;
 				n2 = -T1;
 				length = sqrt(n1 * n1 * _ref->get__gij(0, 0) + n2 * n1 * _ref->get__gij(1, 0) + n1 * n2 * _ref->get__gij(0, 1) + n2 * n2 * _ref->get__gij(1, 1));
+				//eta = length * length;
 				n1 /= length;
 				n2 /= length;
 				N1 = _ref->get__gij(0, 0) * n1 + _ref->get__gij(0, 1) * n2;
 				N2 = _ref->get__gij(1, 0) * n1 + _ref->get__gij(1, 1) * n2;
 			}
+			//det = eta * gamma;
 			double d1 = 0, d2 = 0, D1 = 0, D2 = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
@@ -4707,14 +4715,14 @@ namespace KingOfMonsters {
 				//s11 = 0;
 				//if (stt < -100)
 				{
-					val += (s11 * t1 * t1 + 2 * s12 * t1 * t2 + s22 * t2 * t2) * (D1 * n1 + D2 * n2);
+					val += (s11 * t1 * t1 + 2 * s12 * t1 * t2 + s22 * t2 * t2) * (D1 * n1 + D2 * n2)*sc;
 				}
 				/*else {
 					val += stt * (D1 * t1 + D2 * t2);
 				}*/
-				val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2);
+				val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2)*sc;
 
-				val += (s11 * n1 * t1 + s12 * n1 * t2 + s21 * n2 * t1 + s22 * n2 * t2) * (D1 * t1 + D2 * t2);
+				val += (s11 * n1 * t1 + s12 * n1 * t2 + s21 * n2 * t1 + s22 * n2 * t2) * (D1 * t1 + D2 * t2)*sc;
 				
 				*ptr1 = val;
 				ptr1++;
