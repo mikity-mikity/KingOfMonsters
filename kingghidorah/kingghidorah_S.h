@@ -4538,11 +4538,16 @@ namespace KingOfMonsters {
 			}
 			/*else {
 				//val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2);
-				val += stt * (D1 * t1 + D2 * t2);
+				val += stt * (D1 * t1 + D2 * t2) * sc;
 			}*/
-			val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2) * sc;
-			val += (s11 * n1 * t1 + s12 * n1 * t2 + s21 * n2 * t1 + s22 * n2 * t2) * (D1 * t1 + D2 * t2) * sc;
+			if (stt < -100)
+			{
+				val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2) * sc;
+			}
+			else {
+				val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * stt * sc;
 
+			}
 			return val;
 		}
 		void BCEQ_z(double* ptr, double _t1, double _t2,double stt, bool accurate)
@@ -4619,16 +4624,18 @@ namespace KingOfMonsters {
 				double S21 = S12;
 				double s21 = s12;
 				//s11 = 0;
-				//if (stt < -100)
 				{
 					val += (s11 * t1 * t1 + 2 * s12 * t1 * t2 + s22 * t2 * t2) * (D1 * n1 + D2 * n2) * sc;
 				}
-				/*else {
-					val += 0;
-				}*/
-				val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2) * sc;
+				if (stt < -100)
+				{
+					val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2) * sc;
 
-				val += (s11 * n1 * t1 + s12 * n1 * t2 + s21 * n2 * t1 + s22 * n2 * t2) * (D1 * t1 + D2 * t2) * sc;
+				}
+				else {
+					val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (stt) * sc;
+				}
+
 				
 
 				*ptr1 = val;
@@ -4717,12 +4724,17 @@ namespace KingOfMonsters {
 				{
 					val += (s11 * t1 * t1 + 2 * s12 * t1 * t2 + s22 * t2 * t2) * (D1 * n1 + D2 * n2)*sc;
 				}
-				/*else {
-					val += stt * (D1 * t1 + D2 * t2);
+				/*
+				else {
+					val += stt * (D1 * t1 + D2 * t2) * sc;
 				}*/
-				val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2)*sc;
+				if (stt < -100)
+				{
+					val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2) * sc;
+				}
+				else {
+				}
 
-				val += (s11 * n1 * t1 + s12 * n1 * t2 + s21 * n2 * t1 + s22 * n2 * t2) * (D1 * t1 + D2 * t2)*sc;
 				
 				*ptr1 = val;
 				ptr1++;
