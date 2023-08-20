@@ -4836,26 +4836,26 @@ namespace KingOfMonsters {
 			double s21 = 0;
 			if (accurate)
 			{
-				s11 = this->get_gij(0, 0) * _s11 + this->get_gij(0, 1) * _s21;
-				s12 = this->get_gij(0, 0) * _s12 + this->get_gij(0, 1) * _s22;
-				s21 = this->get_gij(1, 0) * _s11 + this->get_gij(1, 1) * _s21;
-				s22 = this->get_gij(1, 0) * _s12 + this->get_gij(1, 1) * _s22;
+				s11 = this->get_gij(0, 0) * _s11 * this->get_gij(0, 0) + this->get_gij(0, 0) * _s12 * this->get_gij(1, 0) + this->get_gij(0, 1) * _s21 * this->get_gij(0, 0) + this->get_gij(0, 1) * _s22 * this->get_gij(1, 0);
+				s12 = this->get_gij(0, 0) * _s11 * this->get_gij(0, 1) + this->get_gij(0, 0) * _s12 * this->get_gij(1, 1) + this->get_gij(0, 1) * _s21 * this->get_gij(0, 1) + this->get_gij(0, 1) * _s22 * this->get_gij(1, 1);
+				s22 = this->get_gij(1, 0) * _s11 * this->get_gij(0, 1) + this->get_gij(1, 0) * _s12 * this->get_gij(1, 1) + this->get_gij(1, 1) * _s21 * this->get_gij(0, 1) + this->get_gij(1, 1) * _s22 * this->get_gij(1, 1);
+				s21 = s12;
 			}
 			else {
-				s11 = _ref->get__gij(0, 0) * _s11 + _ref->get__gij(0, 1) * _s21;
-				s12 = _ref->get__gij(0, 0) * _s12 + _ref->get__gij(0, 1) * _s22;
-				s21 = _ref->get__gij(1, 0) * _s11 + _ref->get__gij(1, 1) * _s21;
-				s22 = _ref->get__gij(1, 0) * _s12 + _ref->get__gij(1, 1) * _s22;
+				s11 = _ref->get__gij(0, 0) * _s11 * _ref->get__gij(0, 0) + _ref->get__gij(0, 0) * _s12 * _ref->get__gij(1, 0) + _ref->get__gij(0, 1) * _s21 * _ref->get__gij(0, 0) + _ref->get__gij(0, 1) * _s22 * _ref->get__gij(1, 0);
+				s12 = _ref->get__gij(0, 0) * _s11 * _ref->get__gij(0, 1) + _ref->get__gij(0, 0) * _s12 * _ref->get__gij(1, 1) + _ref->get__gij(0, 1) * _s21 * _ref->get__gij(0, 1) + _ref->get__gij(0, 1) * _s22 * _ref->get__gij(1, 1);
+				s22 = _ref->get__gij(1, 0) * _s11 * _ref->get__gij(0, 1) + _ref->get__gij(1, 0) * _s12 * _ref->get__gij(1, 1) + _ref->get__gij(1, 1) * _s21 * _ref->get__gij(0, 1) + _ref->get__gij(1, 1) * _s22 * _ref->get__gij(1, 1);
+				s21 = s12;
 			}
 			s11 *= sc;
 			s12 *= sc;
 			s22 *= sc;
 			s21 *= sc;
 			//val +=  ((s21 * V1 + s22 * V2) * (-S11 * v1 - S12 * v2) - (-s11 * V1 - s12 * V2) * (S21 * v1 + S22 * v2));
-			double E11 = 1 * (V1 * v1);// +w2 * (S1 * s1);
-			double E12 = 1 * (V1 * v2);// + w2 * (S1 * s2);
-			double E21 = 1 * (V2 * v1);// + w2 * (S2 * s1);
-			double E22 = 1 * (V2 * v2);// + w2 * (S2 * s2);
+			double E11 = 1 * (v1 * v1);// +w2 * (S1 * s1);
+			double E12 = 1 * (v1 * v2);// + w2 * (S1 * s2);
+			double E21 = 1 * (v2 * v1);// + w2 * (S2 * s1);
+			double E22 = 1 * (v2 * v2);// + w2 * (S2 * s2);
 			val += (s11 * E11 * S12 + s11 * E12 * S22 + s12 * E21 * S12 + s12 * E22 * S22);
 			val -= (s21 * E11 * S11 + s21 * E12 * S21 + s22 * E21 * S11 + s22 * E22 * S21);
 			return val;
@@ -4921,40 +4921,28 @@ namespace KingOfMonsters {
 			double s21 = 0;
 			double s22 = 0;
 
-			/*if (accurate)
-			{
-				s11 = this->get_gij2(0, 0) * _s11 * this->get_gij2(0, 0) + 2 * this->get_gij2(0, 0) * _s12 * this->get_gij2(1, 0) + this->get_gij2(0, 1) * _s22 * this->get_gij2(1, 0);
-				s12 = this->get_gij2(0, 0) * _s11 * this->get_gij2(0, 1) + this->get_gij2(0, 0) * _s12 * this->get_gij2(1, 1) + this->get_gij2(0, 1) * _s12 * this->get_gij2(0, 1) + this->get_gij2(0, 1) * _s22 * this->get_gij2(1, 1);
-				s22 = this->get_gij2(1, 0) * _s11 * this->get_gij2(0, 1) + 2 * this->get_gij2(1, 0) * _s12 * this->get_gij2(1, 1) + this->get_gij2(1, 1) * _s22 * this->get_gij2(1, 1);
-			}
-			else
-			{
-				s11 = _ref->get__gij(0, 0) * _s11 * _ref->get__gij(0, 0) + 2 * _ref->get__gij(0, 0) * _s12 * _ref->get__gij(1, 0) + _ref->get__gij(0, 1) * _s22 * _ref->get__gij(1, 0);
-				s12 = _ref->get__gij(0, 0) * _s11 * _ref->get__gij(0, 1) + _ref->get__gij(0, 0) * _s12 * _ref->get__gij(1, 1) + _ref->get__gij(0, 1) * _s12 * _ref->get__gij(0, 1) + _ref->get__gij(0, 1) * _s22 * _ref->get__gij(1, 1);
-				s22 = _ref->get__gij(1, 0) * _s11 * _ref->get__gij(0, 1) + 2 * _ref->get__gij(1, 0) * _s12 * _ref->get__gij(1, 1) + _ref->get__gij(1, 1) * _s22 * _ref->get__gij(1, 1);
-			}*/
 			if (accurate)
 			{
-				s11 = this->get_gij(0, 0) * _s11 + this->get_gij(0, 1) * _s21;
-				s12 = this->get_gij(0, 0) * _s12 + this->get_gij(0, 1) * _s22;
-				s21 = this->get_gij(1, 0) * _s11 + this->get_gij(1, 1) * _s21;
-				s22 = this->get_gij(1, 0) * _s12 + this->get_gij(1, 1) * _s22;
+				s11 = this->get_gij(0, 0) * _s11 * this->get_gij(0, 0) + this->get_gij(0, 0) * _s12 * this->get_gij(1, 0) + this->get_gij(0, 1) * _s21 * this->get_gij(0, 0) + this->get_gij(0, 1) * _s22 * this->get_gij(1, 0);
+				s12 = this->get_gij(0, 0) * _s11 * this->get_gij(0, 1) + this->get_gij(0, 0) * _s12 * this->get_gij(1, 1) + this->get_gij(0, 1) * _s21 * this->get_gij(0, 1) + this->get_gij(0, 1) * _s22 * this->get_gij(1, 1);
+				s22 = this->get_gij(1, 0) * _s11 * this->get_gij(0, 1) + this->get_gij(1, 0) * _s12 * this->get_gij(1, 1) + this->get_gij(1, 1) * _s21 * this->get_gij(0, 1) + this->get_gij(1, 1) * _s22 * this->get_gij(1, 1);
+				s21 = s12;
 			}
 			else {
-				s11 = _ref->get__gij(0, 0) * _s11 + _ref->get__gij(0, 1) * _s21;
-				s12 = _ref->get__gij(0, 0) * _s12 + _ref->get__gij(0, 1) * _s22;
-				s21 = _ref->get__gij(1, 0) * _s11 + _ref->get__gij(1, 1) * _s21;
-				s22 = _ref->get__gij(1, 0) * _s12 + _ref->get__gij(1, 1) * _s22;
+				s11 = _ref->get__gij(0, 0) * _s11 * _ref->get__gij(0, 0) + _ref->get__gij(0, 0) * _s12 * _ref->get__gij(1, 0) + _ref->get__gij(0, 1) * _s21 * _ref->get__gij(0, 0) + _ref->get__gij(0, 1) * _s22 * _ref->get__gij(1, 0);
+				s12 = _ref->get__gij(0, 0) * _s11 * _ref->get__gij(0, 1) + _ref->get__gij(0, 0) * _s12 * _ref->get__gij(1, 1) + _ref->get__gij(0, 1) * _s21 * _ref->get__gij(0, 1) + _ref->get__gij(0, 1) * _s22 * _ref->get__gij(1, 1);
+				s22 = _ref->get__gij(1, 0) * _s11 * _ref->get__gij(0, 1) + _ref->get__gij(1, 0) * _s12 * _ref->get__gij(1, 1) + _ref->get__gij(1, 1) * _s21 * _ref->get__gij(0, 1) + _ref->get__gij(1, 1) * _s22 * _ref->get__gij(1, 1);
+				s21 = s12;
 			}
 			s11 *= sc;
 			s12 *= sc;
 			s22 *= sc;
 			s21 *= sc;
 
-			double E11 = 1 * (V1 * v1);// +w2 * (S1 * s1);
-			double E12 = 1 * (V1 * v2);// + w2 * (S1 * s2);
-			double E21 = 1 * (V2 * v1);// + w2 * (S2 * s1);
-			double E22 = 1 * (V2 * v2);// + w2 * (S2 * s2);
+			double E11 = 1 * (v1 * v1);// +w2 * (S1 * s1);
+			double E12 = 1 * (v1 * v2);// + w2 * (S1 * s2);
+			double E21 = 1 * (v2 * v1);// + w2 * (S2 * s1);
+			double E22 = 1 * (v2 * v2);// + w2 * (S2 * s2);
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				double val = 0;
@@ -5032,10 +5020,10 @@ namespace KingOfMonsters {
 			}
 			double S21 = S12;
 			double* ptr1 = ptr;
-			double E11 = 1 * (V1 * v1);// +w2 * (S1 * s1);
-			double E12 = 1 * (V1 * v2);// + w2 * (S1 * s2);
-			double E21 = 1 * (V2 * v1);// + w2 * (S2 * s1);
-			double E22 = 1 * (V2 * v2);// + w2 * (S2 * s2);
+			double E11 = 1 * (v1 * v1);// +w2 * (S1 * s1);
+			double E12 = 1 * (v1 * v2);// + w2 * (S1 * s2);
+			double E21 = 1 * (v2 * v1);// + w2 * (S2 * s1);
+			double E22 = 1 * (v2 * v2);// + w2 * (S2 * s2);
 
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
@@ -5047,16 +5035,16 @@ namespace KingOfMonsters {
 				double s11 = 0, s12 = 0, s22 = 0, s21 = 0;
 				if (accurate)
 				{
-					s11 = this->get_gij(0, 0) * _s11 + this->get_gij(0, 1) * _s21;
-					s12 = this->get_gij(0, 0) * _s12 + this->get_gij(0, 1) * _s22;
-					s21 = this->get_gij(1, 0) * _s11 + this->get_gij(1, 1) * _s21;
-					s22 = this->get_gij(1, 0) * _s12 + this->get_gij(1, 1) * _s22;
+					s11 = this->get_gij(0, 0) * _s11 * this->get_gij(0, 0) + this->get_gij(0, 0) * _s12 * this->get_gij(1, 0) + this->get_gij(0, 1) * _s21 * this->get_gij(0, 0) + this->get_gij(0, 1) * _s22 * this->get_gij(1, 0);
+					s12 = this->get_gij(0, 0) * _s11 * this->get_gij(0, 1) + this->get_gij(0, 0) * _s12 * this->get_gij(1, 1) + this->get_gij(0, 1) * _s21 * this->get_gij(0, 1) + this->get_gij(0, 1) * _s22 * this->get_gij(1, 1);
+					s22 = this->get_gij(1, 0) * _s11 * this->get_gij(0, 1) + this->get_gij(1, 0) * _s12 * this->get_gij(1, 1) + this->get_gij(1, 1) * _s21 * this->get_gij(0, 1) + this->get_gij(1, 1) * _s22 * this->get_gij(1, 1);
+					s21 = s12;
 				}
 				else {
-					s11 = _ref->get__gij(0, 0) * _s11 + _ref->get__gij(0, 1) * _s21;
-					s12 = _ref->get__gij(0, 0) * _s12 + _ref->get__gij(0, 1) * _s22;
-					s21 = _ref->get__gij(1, 0) * _s11 + _ref->get__gij(1, 1) * _s21;
-					s22 = _ref->get__gij(1, 0) * _s12 + _ref->get__gij(1, 1) * _s22;
+					s11 = _ref->get__gij(0, 0) * _s11 * _ref->get__gij(0, 0) + _ref->get__gij(0, 0) * _s12 * _ref->get__gij(1, 0) + _ref->get__gij(0, 1) * _s21 * _ref->get__gij(0, 0) + _ref->get__gij(0, 1) * _s22 * _ref->get__gij(1, 0);
+					s12 = _ref->get__gij(0, 0) * _s11 * _ref->get__gij(0, 1) + _ref->get__gij(0, 0) * _s12 * _ref->get__gij(1, 1) + _ref->get__gij(0, 1) * _s21 * _ref->get__gij(0, 1) + _ref->get__gij(0, 1) * _s22 * _ref->get__gij(1, 1);
+					s22 = _ref->get__gij(1, 0) * _s11 * _ref->get__gij(0, 1) + _ref->get__gij(1, 0) * _s12 * _ref->get__gij(1, 1) + _ref->get__gij(1, 1) * _s21 * _ref->get__gij(0, 1) + _ref->get__gij(1, 1) * _s22 * _ref->get__gij(1, 1);
+					s21 = s12;
 				}
 				s11 *= sc;
 				s12 *= sc;
