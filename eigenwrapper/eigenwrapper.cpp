@@ -1580,6 +1580,56 @@ void KingOfMonsters::_mySparse::_permuteCols(Eigen::PermutationMatrix<Eigen::Dyn
 	}
 
 }
+void KingOfMonsters::_mySparse::_permuteRows(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, int64_t>& perm, bool sparse, bool dense)
+{
+	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
+	//Eigen::Map<Eigen::MatrixXd> _tmp(___dmat+__r*__c, __r, __c);
+	int64_t nn = _dmat.cols();// __r;
+	int64_t numthreads = 0;
+	//_mt=omp_get_max_threads();
+	int64_t S = nn / _mt / ((int64_t)2);
+	//auto pt = perm.transpose();
+	if (sparse || dense)
+		if (_mat.size() >= 1)
+		{
+			//if (_mat[0].rows() == _dmat.rows() && _mat[0].cols() == _dmat.cols())
+			{
+				_mat[0] = perm * (_mat[0]);// *pt;
+			}
+		}
+/*	if (false)
+	{
+		//_tmp.noalias() = _dmat * pt;
+		//_dmat.noalias() = perm * _tmp;
+		//_dmat.applyOnTheLeft(perm);
+		//_dmat.applyOnTheRight(perm.transpose());
+		//prrm.transpose().applyThisOnTheRight(_dmat);
+		//perm.applyThisOnTheLeft(_dmat);
+
+#pragma omp parallel for
+		for (int64_t i = 0; i < nn; i += S)
+		{
+			int64_t start = i;
+			int64_t end = i + S;
+			if (end > nn)end = nn;
+			_dmat.middleRows(start, end - start).applyOnTheRight(pt);// = _dmat.middleRows(start, end - start) * pt;
+			//_tmp.middleRows(start, end - start).noalias()= _dmat.middleRows(start, end - start) * pt;
+			//perm.transpose().applyThisOnTheRight(_dmat.middleRows(start, end - start));
+		}
+
+#pragma omp parallel for
+		for (int64_t i = 0; i < nn; i += S)
+		{
+			int64_t start = i;
+			int64_t end = i + S;
+			if (end > nn)end = nn;
+			//_dmat.middleCols(start, end - start).noalias() = perm * _dmat.middleCols(start, end - start);
+			_dmat.middleCols(start, end - start).applyOnTheLeft(perm);// = perm * _dmat.middleCols(start, end - start);
+			//perm.applyThisOnTheLeft(_dmat.middleCols(start, end - start));
+		}
+	}
+	*/
+}
 void KingOfMonsters::_mySparse::shrink(int64_t M)
 {
 	for (int64_t ii = 0; ii < _nt; ii++)
@@ -1651,6 +1701,7 @@ void KingOfMonsters::_mySparse::_shrinkCols(int64_t M, bool sparse, bool dense)
 }
 void KingOfMonsters::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic,int64_t>& perm, Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic,int64_t>& perm2)
 {
+	
 	auto pt = perm2.transpose();
 
 	if (_mat.size() >= 1)
@@ -2377,7 +2428,7 @@ void KingOfMonsters::_mySparse::_ofAtB(_mySparse* B, _mySparse* C)
 }*/
 
 
-void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySparse* C,Eigen::VectorXd* ret)
+void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B,/* Eigen::VectorXd* b, */_mySparse* C/*, Eigen::VectorXd* ret*/)
 {
 	Eigen::MatrixXd D;
 
@@ -2717,7 +2768,7 @@ void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)
 			dict2[this] = *prevmat;
 			//build map
 			std::vector<int64_t> __map;
-			__map.resize(nn * nn);
+			__map.resize(nn * mm);
 			for (int64_t k = 0; k < prevmat->outerSize(); ++k) {
 				for (Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>::InnerIterator it(*prevmat, k); it; ++it) {
 					int64_t S = prevmat->outerIndexPtr()[k];
