@@ -58,7 +58,7 @@ namespace KingOfMonsters {
 		std::vector<std::vector<cusolverSpHandle_t>> solver_handleSp;
 		std::vector<std::vector<cusparseHandle_t>> cusparse_handle;
 
-		//cublasHandle_t cublas_handle[MAXDEVICE];
+		cublasHandle_t cublas_handle[MAXDEVICE];
 		double* __mgM[MAXDEVICE];
 		double* __mgM2[MAXDEVICE];
 		double* __mgrhs[MAXDEVICE];
@@ -94,7 +94,7 @@ namespace KingOfMonsters {
 		~cuda();
 		cusolverDnHandle_t& solver(int64_t ii, int64_t kk);
 		cusolverSpHandle_t& solverSp(int64_t ii, int64_t kk);
-		//cublasHandle_t& blas(int64_t ii);
+		cublasHandle_t& blas(int64_t ii);
 		//cusolverMgHandle_t mgsolver();
 		//double* L();
 		bool valid();
@@ -214,6 +214,7 @@ namespace KingOfMonsters {
 		_mySparse();
 		~_mySparse();
 		void freeze(bool _do);
+		void freeze2();
 		void _freeze();
 		double L2Norm(Eigen::VectorXd* a, Eigen::VectorXd* b);
 		Eigen::VectorXd Vector(double* ptr1, int64_t N1);
@@ -316,6 +317,7 @@ namespace KingOfMonsters {
 		std::string _solveI_gpu(KingOfMonsters::cuda* cuda, _mySparse* ret);
 		std::string _solveI_cpu(_mySparse* ret);
 		std::string _solveI_gpu_omp(KingOfMonsters::cuda* cuda, _mySparse* ret);
+		//std::string AinvBA(KingOfMonsters::cuda* cuda, _mySparse* A, _mySparse* ret);
 		std::string _solveI_gpu_single(KingOfMonsters::cuda* cuda, _mySparse* ret);
 		void plus(Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>* m);
 		//void _solveI_gpu_mg(KingOfMonsters::cuda* cuda, _mySparse* ret);

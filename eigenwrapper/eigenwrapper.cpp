@@ -3781,6 +3781,7 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu_omp(KingOfMonsters::cuda* cud
 	return sss.str();
 #endif
 }
+
 std::string KingOfMonsters::_mySparse::_solveI_gpu_sparse(KingOfMonsters::cuda* cuda, _mySparse* ret)
 {
 	//this->_freeze();

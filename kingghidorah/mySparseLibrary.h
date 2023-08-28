@@ -1664,6 +1664,11 @@ namespace KingOfMonsters {
 			auto ee = gcnew System::String(ss.c_str());
 			return ee;
 		}
+		/*System::String^ AinvBA(myCuda^ gpu, mySparse^ A, mySparse^ ret) {
+			std::string ss = this->dat->AinvBA(gpu->cuda(), A->dat, ret->dat);
+			auto ee = gcnew System::String(ss.c_str());
+			return ee;
+		}*/
 		System::String^ solveI_gpu_single(myCuda^ gpu, mySparse^ ret) {
 			std::string ss = this->dat->_solveI_gpu_single(gpu->cuda(), ret->dat);
 			auto ee = gcnew System::String(ss.c_str());
