@@ -5064,10 +5064,12 @@ namespace KingOfMonsters {
 			//double E12 = w1 * (v1 * v2) + w2 * (s1 * s2);
 			//double E21 = w1 * (v2 * v1) + w2 * (s2 * s1);
 			//double E22 = w1 * (v2 * v2) + w2 * (s2 * s2);
+			double __scale = sqrt(_ref->get__gij(0, 0)* _ref->get__gij(1, 1));
+			
 			val += (s11 * E11 * S12 + s11 * E12 * S22 + s12 * E21 * S12 + s12 * E22 * S22);
 			val -= (s21 * E11 * S11 + s21 * E12 * S21 + s22 * E21 * S11 + s22 * E22 * S21);
-
-			return val;
+			
+			return __scale*val;
 		}
 		void mix_xi(double* ptr, double v1, double v2, double w1, double w2, bool accurate)
 		{
@@ -5133,7 +5135,7 @@ namespace KingOfMonsters {
 				s21 = s12;
 			}
 			s11 *= sc; s12 *= sc; s22 *= sc; s21 *= sc;
-
+			double __scale = sqrt(_ref->get__gij(0, 0) * _ref->get__gij(1, 1));
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				double val;
@@ -5154,7 +5156,7 @@ namespace KingOfMonsters {
 				val += -tr2 / tr / tr * (s11 * E11 * S12 + s11 * E12 * S22 + s12 * E21 * S12 + s12 * E22 * S22) * (e11_xi + e22_xi);
 				val -= -tr2 / tr / tr * (s21 * E11 * S11 + s21 * E12 * S21 + s22 * E21 * S11 + s22 * E22 * S21) * (e11_xi + e22_xi);
 
-				*ptr1 = val;
+				*ptr1 = __scale*val;
 				ptr1++;
 			}
 		}
@@ -5223,7 +5225,7 @@ namespace KingOfMonsters {
 				s21 = s12;
 			}
 			s11 *= sc; s12 *= sc; s22 *= sc; s21 *= sc;
-
+			double __scale = sqrt(_ref->get__gij(0, 0) * _ref->get__gij(1, 1));
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				double val;
@@ -5244,7 +5246,7 @@ namespace KingOfMonsters {
 				val -= scale * (s21 * E11_eta * S11 + s21 * E12_eta * S21 + s22 * E21_eta * S11 + s22 * E22_eta * S21);
 				val += -tr2 / tr / tr * (s11 * E11 * S12 + s11 * E12 * S22 + s12 * E21 * S12 + s12 * E22 * S22) * (e11_eta + e22_eta);
 				val -= -tr2 / tr / tr * (s21 * E11 * S11 + s21 * E12 * S21 + s22 * E21 * S11 + s22 * E22 * S21) * (e11_eta + e22_eta);
-				*ptr1 = val;
+				*ptr1 = __scale*val;
 				ptr1++;
 			}
 		}
@@ -5314,7 +5316,7 @@ namespace KingOfMonsters {
 			}
 			s11 *= sc; s12 *= sc; s22 *= sc; s21 *= sc;
 
-
+			double __scale = sqrt(_ref->get__gij(0, 0) * _ref->get__gij(1, 1));
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				double val;
@@ -5335,7 +5337,7 @@ namespace KingOfMonsters {
 				val -= scale * (s21 * E11_chi * S11 + s21 * E12_chi * S21 + s22 * E21_chi * S11 + s22 * E22_chi * S21);
 				val += -tr2 / tr / tr * (s11 * E11 * S12 + s11 * E12 * S22 + s12 * E21 * S12 + s12 * E22 * S22) * (e11_chi + e22_chi);
 				val -= -tr2 / tr / tr * (s21 * E11 * S11 + s21 * E12 * S21 + s22 * E21 * S11 + s22 * E22 * S21) * (e11_chi + e22_chi);
-				*ptr1 = val;
+				*ptr1 = __scale*val;
 				ptr1++;
 			}
 		}
@@ -6916,7 +6918,7 @@ namespace KingOfMonsters {
 			double s12 = 0;
 			double s21 = 0;
 			double s22 = 0;
-
+			double __scale = sqrt(_ref->get__gij(0, 0) * _ref->get__gij(1, 1));
 			/*if (accurate)
 			{
 				s11 = this->get_gij2(0, 0) * _s11 * this->get_gij2(0, 0) + 2 * this->get_gij2(0, 0) * _s12 * this->get_gij2(1, 0) + this->get_gij2(0, 1) * _s22 * this->get_gij2(1, 0);
@@ -6980,7 +6982,7 @@ namespace KingOfMonsters {
 				val -= (s21 * E11 * S11 + s21 * E12 * S21 + s22 * E21 * S11 + s22 * E22 * S21);
 
 
-				*ptr1 = val;
+				*ptr1 = __scale*val;
 				ptr1++;
 			}
 		}
@@ -7039,6 +7041,7 @@ namespace KingOfMonsters {
 			s1 = 0; s2 = 1;
 			S1 = 0; S2 = 1;
 			*/
+			double __scale = sqrt(_ref->get__gij(0, 0) * _ref->get__gij(1, 1));
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				//s11 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_phi[s];
@@ -7114,7 +7117,7 @@ namespace KingOfMonsters {
 
 
 
-				*ptr1 = val;
+				*ptr1 = __scale*val;
 				ptr1++;
 			}
 		}
