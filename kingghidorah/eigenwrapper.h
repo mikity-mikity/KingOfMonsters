@@ -188,7 +188,7 @@ namespace KingOfMonsters {
 		vector<vector<double>> _coeff;
 		std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>> _mat;
 		Eigen::MatrixXd _dmat;
-
+		Eigen::MatrixXd _prevmat;
 		vector<Eigen::VectorXd> coeff;
 	private:
 		int64_t space = 0;
@@ -235,6 +235,8 @@ namespace KingOfMonsters {
 		void _permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, int64_t>& perm, bool sparse, bool dense);
 		void _permuteCols(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, int64_t>& perm, bool sparse, bool dense);
 		void _permuteRows(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, int64_t>& perm, bool sparse, bool dense);
+		void __permuteCols(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, int64_t>& perm);
+		void __permuteRows(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, int64_t>& perm);
 		void _shrink(int64_t M, bool sparse, bool dense);
 		void _shrinkCols(int64_t M, bool sparse, bool dense);
 		void _permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, int64_t>& perm, Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, int64_t>& perm2);

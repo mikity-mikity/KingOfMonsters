@@ -1038,6 +1038,21 @@ namespace KingOfMonsters {
 		{
 			dat->_shrinkCols(M, sparse, dense);
 		}
+		void memory()
+		{
+			this->dat->_prevmat = this->dat->_dmat;
+		}
+		double approximate(mySparse^ A,double sc)
+		{
+			Eigen::MatrixXd deltaA = A->dat->_dmat - A->dat->_prevmat;
+			deltaA *= sc;
+			auto I = Eigen::MatrixXd::Identity(A->dat->_dmat.rows(), A->dat->_dmat.cols());
+			Eigen::MatrixXd C = I - A->dat->_prevmat * this->dat->_dmat;
+			Eigen::MatrixXd deltaB=this->dat->_dmat*(C - deltaA * this->dat->_dmat);
+			this->dat->_dmat += deltaB;
+			return (Eigen::MatrixXd::Identity(A->dat->_dmat.rows(), A->dat->_dmat.cols()) - A->dat->_dmat * this->dat->_dmat).sum();
+
+		}
 		void _permute(myPermutation^ p, bool sparse, bool dense)
 		{
 			dat->_permute(p->p->perm, sparse, dense);
@@ -1059,11 +1074,11 @@ namespace KingOfMonsters {
 			}else
 				if (p != nullptr)
 				{
-					dat->_permuteRows(p->p->perm,true,false);
+					dat->__permuteRows(p->p->perm);
 				}
 				else
 				{
-					dat->_permuteCols(p->p->perm, true, false);
+					dat->__permuteCols(q->p->perm);
 				}
 			
 		}

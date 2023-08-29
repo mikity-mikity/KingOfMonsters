@@ -1712,6 +1712,32 @@ void KingOfMonsters::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic
 		}
 	}
 }
+void KingOfMonsters::_mySparse::__permuteRows(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, int64_t>& perm)
+{
+
+	
+
+	if (_mat.size() >= 1)
+	{
+		//if (_mat[0].rows() == _dmat.rows() && _mat[0].cols() == _dmat.cols())
+		{
+			_mat[0] = perm * (_mat[0]) ;
+		}
+	}
+}
+void KingOfMonsters::_mySparse::__permuteCols(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, int64_t>& perm)
+{
+
+	auto pt = perm.transpose();
+
+	if (_mat.size() >= 1)
+	{
+		//if (_mat[0].rows() == _dmat.rows() && _mat[0].cols() == _dmat.cols())
+		{
+			_mat[0] =  (_mat[0]) * pt;
+		}
+	}
+}
 void KingOfMonsters::_mySparse::_shrink(int64_t M, int64_t N)
 {
 	if (_mat.size() >= 1)
