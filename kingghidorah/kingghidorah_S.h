@@ -9102,7 +9102,7 @@ namespace KingOfMonsters {
 				__mem->set_buf_phi(phi->_arr->__v.data(), nNode);
 			}
 		}
-		void update_xi_eta_chi(int nNode, KingOfMonsters::myDoubleArray^ xi, KingOfMonsters::myDoubleArray^ eta, KingOfMonsters::myDoubleArray^ chi) {
+		void update_xi_eta(int nNode, KingOfMonsters::myDoubleArray^ xi, KingOfMonsters::myDoubleArray^ eta) {
 			if (xi != nullptr)
 			{
 				__mem->set_buf_xi(xi->_arr->__v.data(), nNode);
@@ -9111,10 +9111,7 @@ namespace KingOfMonsters {
 			{
 				__mem->set_buf_eta(eta->_arr->__v.data(), nNode);
 			}
-			if (chi != nullptr)
-			{
-				__mem->set_buf_chi(chi->_arr->__v.data(), nNode);
-			}
+			
 		}
 		void update3(int nNode, KingOfMonsters::myDoubleArray^ node, KingOfMonsters::myDoubleArray^ weights, KingOfMonsters::myDoubleArray^ def, bool ignoreZ) {
 			if (node != nullptr) {
