@@ -1067,20 +1067,29 @@ namespace KingOfMonsters {
 		}
 		void _permute(myPermutation^ p, myPermutation^ q)
 		{
-			if (p != nullptr && q != nullptr)
-			{
+			
 
 				dat->_permute(p->p->perm, q->p->perm);
-			}else
-				if (p != nullptr)
+			
+			
+		}
+		void _permuteL(myPermutation^ p, myPermutation^ q)
+		{
+			
+				
 				{
 					dat->__permuteRows(p->p->perm);
 				}
-				else
-				{
-					dat->__permuteCols(q->p->perm);
-				}
-			
+				
+
+		}
+		void _permuteR(myPermutation^ p, myPermutation^ q)
+		{
+
+			{
+				dat->__permuteCols(q->p->perm);
+			}
+
 		}
 		System::String^ ofAtA(mySparse^ m, bool sparse) {
 			return gcnew System::String(dat->ofAtA(m->dat, sparse).c_str());
