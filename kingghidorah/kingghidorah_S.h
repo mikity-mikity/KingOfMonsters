@@ -3501,8 +3501,173 @@ namespace KingOfMonsters {
 				*s2 = (_ref->get__Gij(1, 0) * v2 - _ref->get__Gij(1, 1) * v1);
 			}
 		}
-		double st(double v1, double v2, double s1, double s2, bool accurate)
+
+		double st2(double v1, double v2, bool accurate)
 		{
+			double length = 0, gamma = 0, _t1 = v1, _t2 = v2, t1 = 0, t2 = 0, n1 = 0, n2 = 0, T1 = 0, T2 = 0, N1 = 0, N2 = 0;
+
+			if (accurate)
+			{
+				length = sqrt(_t1 * _t1 * this->get_gij(0, 0) + _t2 * _t1 * this->get_gij(1, 0) + _t1 * _t2 * this->get_gij(0, 1) + _t2 * _t2 * this->get_gij(1, 1));
+				if (length == 0)length = 1;
+				gamma = length * length;
+				t1 = _t1 / length;
+				t2 = _t2 / length;
+				T1 = this->get_gij(0, 0) * t1 + this->get_gij(0, 1) * t2;
+				T2 = this->get_gij(1, 0) * t1 + this->get_gij(1, 1) * t2;
+				n1 = T2;
+				n2 = -T1;
+				length = sqrt(n1 * n1 * this->get_gij(0, 0) + n2 * n1 * this->get_gij(1, 0) + n1 * n2 * this->get_gij(0, 1) + n2 * n2 * this->get_gij(1, 1));
+				if (length == 0)length = 1;
+				n1 /= length;
+				n2 /= length;
+				eta = length * length;
+				N1 = this->get_gij(0, 0) * n1 + this->get_gij(0, 1) * n2;
+				N2 = this->get_gij(1, 0) * n1 + this->get_gij(1, 1) * n2;
+			}
+			else {
+				length = sqrt(_t1 * _t1 * _ref->get__gij(0, 0) + _t2 * _t1 * _ref->get__gij(1, 0) + _t1 * _t2 * _ref->get__gij(0, 1) + _t2 * _t2 * _ref->get__gij(1, 1));
+				if (length == 0)length = 1;
+				gamma = length * length;
+				t1 = _t1 / length;
+				t2 = _t2 / length;
+				T1 = _ref->get__gij(0, 0) * t1 + _ref->get__gij(0, 1) * t2;
+				T2 = _ref->get__gij(1, 0) * t1 + _ref->get__gij(1, 1) * t2;
+				n1 = T2;
+				n2 = -T1;
+				length = sqrt(n1 * n1 * _ref->get__gij(0, 0) + n2 * n1 * _ref->get__gij(1, 0) + n1 * n2 * _ref->get__gij(0, 1) + n2 * n2 * _ref->get__gij(1, 1));
+				if (length == 0)length = 1;
+				eta = length * length;
+				n1 /= length;
+				n2 /= length;
+				N1 = _ref->get__gij(0, 0) * n1 + _ref->get__gij(0, 1) * n2;
+				N2 = _ref->get__gij(1, 0) * n1 + _ref->get__gij(1, 1) * n2;
+			}
+			double S11 = 0;
+			double S12 = 0;
+			double S22 = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				S11 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_phi[s];
+				S12 += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->buf_phi[s];
+				S22 += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_phi[s];
+			}
+			
+			double S21 = S12;
+			double val = 0;
+			val += n1 * S11 * t1;
+			val += n1 * S12 * t2;
+			val += n2 * S21 * t1;
+			val += n2 * S22 * t2;
+
+
+			return val;
+		}
+		void st2_phi(double* ptr, double v1, double v2, bool accurate)
+		{
+			double S11 = 0;
+			double S12 = 0;
+			double S22 = 0;
+			double length = 0, gamma = 0, _t1 = v1, _t2 = v2, t1 = 0, t2 = 0, n1 = 0, n2 = 0, T1 = 0, T2 = 0, N1 = 0, N2 = 0;
+			if (accurate)
+			{
+				length = sqrt(_t1 * _t1 * this->get_gij(0, 0) + _t2 * _t1 * this->get_gij(1, 0) + _t1 * _t2 * this->get_gij(0, 1) + _t2 * _t2 * this->get_gij(1, 1));
+				if (length == 0)length = 1;
+				gamma = length * length;
+				t1 = _t1 / length;
+				t2 = _t2 / length;
+				T1 = this->get_gij(0, 0) * t1 + this->get_gij(0, 1) * t2;
+				T2 = this->get_gij(1, 0) * t1 + this->get_gij(1, 1) * t2;
+				n1 = T2;
+				n2 = -T1;
+				length = sqrt(n1 * n1 * this->get_gij(0, 0) + n2 * n1 * this->get_gij(1, 0) + n1 * n2 * this->get_gij(0, 1) + n2 * n2 * this->get_gij(1, 1));
+				if (length == 0)length = 1;
+				n1 /= length;
+				n2 /= length;
+				eta = length * length;
+				N1 = this->get_gij(0, 0) * n1 + this->get_gij(0, 1) * n2;
+				N2 = this->get_gij(1, 0) * n1 + this->get_gij(1, 1) * n2;
+			}
+			else {
+				length = sqrt(_t1 * _t1 * _ref->get__gij(0, 0) + _t2 * _t1 * _ref->get__gij(1, 0) + _t1 * _t2 * _ref->get__gij(0, 1) + _t2 * _t2 * _ref->get__gij(1, 1));
+				if (length == 0)length = 1;
+				gamma = length * length;
+				t1 = _t1 / length;
+				t2 = _t2 / length;
+				T1 = _ref->get__gij(0, 0) * t1 + _ref->get__gij(0, 1) * t2;
+				T2 = _ref->get__gij(1, 0) * t1 + _ref->get__gij(1, 1) * t2;
+				n1 = T2;
+				n2 = -T1;
+				length = sqrt(n1 * n1 * _ref->get__gij(0, 0) + n2 * n1 * _ref->get__gij(1, 0) + n1 * n2 * _ref->get__gij(0, 1) + n2 * n2 * _ref->get__gij(1, 1));
+				if (length == 0)length = 1;
+				eta = length * length;
+				n1 /= length;
+				n2 /= length;
+				N1 = _ref->get__gij(0, 0) * n1 + _ref->get__gij(0, 1) * n2;
+				N2 = _ref->get__gij(1, 0) * n1 + _ref->get__gij(1, 1) * n2;
+			}
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double val = 0;
+
+				S11 = (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+				S12 = (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+				S22 = (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+
+				double S21 = S12;
+				val += n1 * S11 * t1;
+				val += n1 * S12 * t2;
+				val += n2 * S21 * t1;
+				val += n2 * S22 * t2;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+
+
+
+		double st(double v1, double v2, bool accurate)
+		{
+			double length = 0, gamma = 0, _t1 = v1, _t2 = v2, t1 =0, t2 = 0, n1 = 0, n2 = 0, T1 = 0, T2 = 0, N1 = 0, N2 = 0;
+
+			if (accurate)
+			{
+				length = sqrt(_t1 * _t1 * this->get_gij(0, 0) + _t2 * _t1 * this->get_gij(1, 0) + _t1 * _t2 * this->get_gij(0, 1) + _t2 * _t2 * this->get_gij(1, 1));
+				if (length == 0)length = 1;
+				gamma = length * length;
+				t1 = _t1 / length;
+				t2 = _t2 / length;
+				T1 = this->get_gij(0, 0) * t1 + this->get_gij(0, 1) * t2;
+				T2 = this->get_gij(1, 0) * t1 + this->get_gij(1, 1) * t2;
+				n1 = T2;
+				n2 = -T1;
+				length = sqrt(n1 * n1 * this->get_gij(0, 0) + n2 * n1 * this->get_gij(1, 0) + n1 * n2 * this->get_gij(0, 1) + n2 * n2 * this->get_gij(1, 1));
+				if (length == 0)length = 1;
+				n1 /= length;
+				n2 /= length;
+				eta = length * length;
+				N1 = this->get_gij(0, 0) * n1 + this->get_gij(0, 1) * n2;
+				N2 = this->get_gij(1, 0) * n1 + this->get_gij(1, 1) * n2;
+			}
+			else {
+				length = sqrt(_t1 * _t1 * _ref->get__gij(0, 0) + _t2 * _t1 * _ref->get__gij(1, 0) + _t1 * _t2 * _ref->get__gij(0, 1) + _t2 * _t2 * _ref->get__gij(1, 1));
+				if (length == 0)length = 1;
+				gamma = length * length;
+				t1 = _t1 / length;
+				t2 = _t2 / length;
+				T1 = _ref->get__gij(0, 0) * t1 + _ref->get__gij(0, 1) * t2;
+				T2 = _ref->get__gij(1, 0) * t1 + _ref->get__gij(1, 1) * t2;
+				n1 = T2;
+				n2 = -T1;
+				length = sqrt(n1 * n1 * _ref->get__gij(0, 0) + n2 * n1 * _ref->get__gij(1, 0) + n1 * n2 * _ref->get__gij(0, 1) + n2 * n2 * _ref->get__gij(1, 1));
+				if (length == 0)length = 1;
+				eta = length * length;
+				n1 /= length;
+				n2 /= length;
+				N1 = _ref->get__gij(0, 0) * n1 + _ref->get__gij(0, 1) * n2;
+				N2 = _ref->get__gij(1, 0) * n1 + _ref->get__gij(1, 1) * n2;
+			}
 			double _s11 = 0;
 			double _s12 = 0;
 			double _s22 = 0;
@@ -3527,65 +3692,57 @@ namespace KingOfMonsters {
 			}
 			double s21 = s12;
 			double val = 0;
-			val += s1 * s11 * v1;
-			val += s1 * s12 * v2;
-			val += s2 * s21 * v1;
-			val += s2 * s22 * v2;
-			double norm1 = 0, norm2 = 0;
-			if (accurate)
-			{
-				norm1 += v1 * this->get_gij(0, 0) * v1;
-				norm1 += v1 * this->get_gij(0, 1) * v2;
-				norm1 += v2 * this->get_gij(1, 0) * v1;
-				norm1 += v2 * this->get_gij(1, 1) * v2;
-				norm2 += s1 * this->get_gij(0, 0) * s1;
-				norm2 += s1 * this->get_gij(0, 1) * s2;
-				norm2 += s2 * this->get_gij(1, 0) * s1;
-				norm2 += s2 * this->get_gij(1, 1) * s2;
-			}
-			else
-			{
-				norm1 += v1 * _ref->get__gij(0, 0) * v1;
-				norm1 += v1 * _ref->get__gij(0, 1) * v2;
-				norm1 += v2 * _ref->get__gij(1, 0) * v1;
-				norm1 += v2 * _ref->get__gij(1, 1) * v2;
-				norm2 += s1 * _ref->get__gij(0, 0) * s1;
-				norm2 += s1 * _ref->get__gij(0, 1) * s2;
-				norm2 += s2 * _ref->get__gij(1, 0) * s1;
-				norm2 += s2 * _ref->get__gij(1, 1) * s2;
-			}
-			return val / sqrt(norm1 * norm2);
+			val += n1 * s11 * t1;
+			val += n1 * s12 * t2;
+			val += n2 * s21 * t1;
+			val += n2 * s22 * t2;
+			
+			
+			return val ;
 		}
-		void st_z(double* ptr, double v1, double v2, double s1, double s2, bool accurate)
+		void st_z(double* ptr, double v1, double v2,  bool accurate)
 		{
 			double _s11 = 0;
 			double _s12 = 0;
 			double _s22 = 0;
-			double norm = 0;
-			double norm1 = 0, norm2 = 0;
+			double length = 0, gamma = 0, _t1 = v1, _t2 = v2, t1=0,t2=0,n1 = 0, n2 = 0, T1 = 0, T2 = 0, N1 = 0, N2 = 0;
 			if (accurate)
 			{
-				norm1 += v1 * this->get_gij(0, 0) * v1;
-				norm1 += v1 * this->get_gij(0, 1) * v2;
-				norm1 += v2 * this->get_gij(1, 0) * v1;
-				norm1 += v2 * this->get_gij(1, 1) * v2;
-				norm2 += s1 * this->get_gij(0, 0) * s1;
-				norm2 += s1 * this->get_gij(0, 1) * s2;
-				norm2 += s2 * this->get_gij(1, 0) * s1;
-				norm2 += s2 * this->get_gij(1, 1) * s2;
+				length = sqrt(_t1 * _t1 * this->get_gij(0, 0) + _t2 * _t1 * this->get_gij(1, 0) + _t1 * _t2 * this->get_gij(0, 1) + _t2 * _t2 * this->get_gij(1, 1));
+				if (length == 0)length = 1;
+				gamma = length * length;
+				t1 = _t1 / length;
+				t2 = _t2 / length;
+				T1 = this->get_gij(0, 0) * t1 + this->get_gij(0, 1) * t2;
+				T2 = this->get_gij(1, 0) * t1 + this->get_gij(1, 1) * t2;
+				n1 = T2;
+				n2 = -T1;
+				length = sqrt(n1 * n1 * this->get_gij(0, 0) + n2 * n1 * this->get_gij(1, 0) + n1 * n2 * this->get_gij(0, 1) + n2 * n2 * this->get_gij(1, 1));
+				if (length == 0)length = 1;
+				n1 /= length;
+				n2 /= length;
+				eta = length * length;
+				N1 = this->get_gij(0, 0) * n1 + this->get_gij(0, 1) * n2;
+				N2 = this->get_gij(1, 0) * n1 + this->get_gij(1, 1) * n2;
 			}
-			else
-			{
-				norm1 += v1 * _ref->get__gij(0, 0) * v1;
-				norm1 += v1 * _ref->get__gij(0, 1) * v2;
-				norm1 += v2 * _ref->get__gij(1, 0) * v1;
-				norm1 += v2 * _ref->get__gij(1, 1) * v2;
-				norm2 += s1 * _ref->get__gij(0, 0) * s1;
-				norm2 += s1 * _ref->get__gij(0, 1) * s2;
-				norm2 += s2 * _ref->get__gij(1, 0) * s1;
-				norm2 += s2 * _ref->get__gij(1, 1) * s2;
+			else {
+				length = sqrt(_t1 * _t1 * _ref->get__gij(0, 0) + _t2 * _t1 * _ref->get__gij(1, 0) + _t1 * _t2 * _ref->get__gij(0, 1) + _t2 * _t2 * _ref->get__gij(1, 1));
+				if (length == 0)length = 1;
+				gamma = length * length;
+				t1 = _t1 / length;
+				t2 = _t2 / length;
+				T1 = _ref->get__gij(0, 0) * t1 + _ref->get__gij(0, 1) * t2;
+				T2 = _ref->get__gij(1, 0) * t1 + _ref->get__gij(1, 1) * t2;
+				n1 = T2;
+				n2 = -T1;
+				length = sqrt(n1 * n1 * _ref->get__gij(0, 0) + n2 * n1 * _ref->get__gij(1, 0) + n1 * n2 * _ref->get__gij(0, 1) + n2 * n2 * _ref->get__gij(1, 1));
+				if (length == 0)length = 1;
+				eta = length * length;
+				n1 /= length;
+				n2 /= length;
+				N1 = _ref->get__gij(0, 0) * n1 + _ref->get__gij(0, 1) * n2;
+				N2 = _ref->get__gij(1, 0) * n1 + _ref->get__gij(1, 1) * n2;
 			}
-			norm = sqrt(norm1 * norm2);
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
@@ -3609,11 +3766,11 @@ namespace KingOfMonsters {
 
 				}
 				double s21 = s12;
-				val += s1 * s11 * v1;
-				val += s1 * s12 * v2;
-				val += s2 * s21 * v1;
-				val += s2 * s22 * v2;
-				*ptr1 = val / norm;
+				val += n1 * s11 * t1;
+				val += n1 * s12 * t2;
+				val += n2 * s21 * t1;
+				val += n2 * s22 * t2;
+				*ptr1 = val;
 				ptr1++;
 			}
 		}
@@ -3695,97 +3852,7 @@ namespace KingOfMonsters {
 			}
 		}
 
-		double st2(double v1, double v2, double s1, double s2, bool accurate)
-		{
-			double s11 = 0;
-			double s12 = 0;
-			double s22 = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				s11 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_z[s];
-				s12 += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->buf_z[s];
-				s22 += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_z[s];
-			}
-			double s21 = s12;
-			double val = 0;
-			val += s1 * s11 * v1;
-			val += s1 * s12 * v2;
-			val += s2 * s21 * v1;
-			val += s2 * s22 * v2;
-			double norm1 = 0, norm2 = 0;
-			if (accurate)
-			{
-				norm1 += v1 * this->get_gij(0, 0) * v1;
-				norm1 += v1 * this->get_gij(0, 1) * v2;
-				norm1 += v2 * this->get_gij(1, 0) * v1;
-				norm1 += v2 * this->get_gij(1, 1) * v2;
-				norm2 += s1 * this->get_gij(0, 0) * s1;
-				norm2 += s1 * this->get_gij(0, 1) * s2;
-				norm2 += s2 * this->get_gij(1, 0) * s1;
-				norm2 += s2 * this->get_gij(1, 1) * s2;
-			}
-			else
-			{
-				norm1 += v1 * _ref->get__gij(0, 0) * v1;
-				norm1 += v1 * _ref->get__gij(0, 1) * v2;
-				norm1 += v2 * _ref->get__gij(1, 0) * v1;
-				norm1 += v2 * _ref->get__gij(1, 1) * v2;
-				norm2 += s1 * _ref->get__gij(0, 0) * s1;
-				norm2 += s1 * _ref->get__gij(0, 1) * s2;
-				norm2 += s2 * _ref->get__gij(1, 0) * s1;
-				norm2 += s2 * _ref->get__gij(1, 1) * s2;
-			}
-			return val / sqrt(norm1 * norm2);
-		}
-		void st2_phi(double* ptr, double v1, double v2, double s1, double s2, bool accurate)
-		{
-			double s11 = 0;
-			double s12 = 0;
-			double s22 = 0;
-			double norm = 0;
-			double norm1 = 0, norm2 = 0;
-			if (accurate)
-			{
-				norm1 += v1 * this->get_gij(0, 0) * v1;
-				norm1 += v1 * this->get_gij(0, 1) * v2;
-				norm1 += v2 * this->get_gij(1, 0) * v1;
-				norm1 += v2 * this->get_gij(1, 1) * v2;
-				norm2 += s1 * this->get_gij(0, 0) * s1;
-				norm2 += s1 * this->get_gij(0, 1) * s2;
-				norm2 += s2 * this->get_gij(1, 0) * s1;
-				norm2 += s2 * this->get_gij(1, 1) * s2;
-			}
-			else
-			{
-				norm1 += v1 * _ref->get__gij(0, 0) * v1;
-				norm1 += v1 * _ref->get__gij(0, 1) * v2;
-				norm1 += v2 * _ref->get__gij(1, 0) * v1;
-				norm1 += v2 * _ref->get__gij(1, 1) * v2;
-				norm2 += s1 * _ref->get__gij(0, 0) * s1;
-				norm2 += s1 * _ref->get__gij(0, 1) * s2;
-				norm2 += s2 * _ref->get__gij(1, 0) * s1;
-				norm2 += s2 * _ref->get__gij(1, 1) * s2;
-			}
-			norm = sqrt(norm1 * norm2);
-			double* ptr1 = ptr;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				double val = 0;
-
-				s11 = (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
-				s12 = (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
-				s22 = (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-
-				double s21 = s12;
-				val += s1 * s11 * v1;
-				val += s1 * s12 * v2;
-				val += s2 * s21 * v1;
-				val += s2 * s22 * v2;
-				*ptr1 = val / norm;
-				ptr1++;
-			}
-		}
-
+		
 
 		double tt_2(double v1, double v2, bool accurate)
 		{
@@ -5517,6 +5584,7 @@ namespace KingOfMonsters {
 			v1 = 1; v2 = 0;
 			s1 = 0; s2 = 1;
 			S1 = 0; S2 = 1;*/
+			double e1x=0, e1y=0, e2x=0, e2y=0;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				_s22 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_phi[s];
@@ -5525,16 +5593,18 @@ namespace KingOfMonsters {
 				S11 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_z[s];
 				S12 += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->buf_z[s];
 				S22 += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_z[s];
-				for (int t = 0; t < _ref->_nNode; t++)
-				{
-					e11 += (_ref->d1[0][s]) * _ref->buf_xi[s] * (_ref->d1[0][t]) * _ref->buf_xi[t];
-					e11 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[0][t]) * _ref->buf_eta[t];
-					e12 += (_ref->d1[0][s]) * _ref->buf_xi[s] * (_ref->d1[1][t]) * _ref->buf_xi[t];
-					e12 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
-					e22 += (_ref->d1[1][s]) * _ref->buf_xi[s] * (_ref->d1[1][t]) * _ref->buf_xi[t];
-					e22 += (_ref->d1[1][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
-				}
+				//for (int t = 0; t < _ref->_nNode; t++)
+				//{
+				e1x += (_ref->d1[0][s]) * _ref->buf_xi[s];
+				e1y += (_ref->d1[0][s]) * _ref->buf_eta[s];
+				e2x += (_ref->d1[1][s]) * _ref->buf_xi[s];
+				e2y += (_ref->d1[1][s]) * _ref->buf_eta[s];
+				//}
 			}
+			e11 = e1x * e1x + e1y * e1y;
+			e12 = e1x * e2x + e1y * e2y;
+			e22 = e2x * e2x + e2y * e2y;
+
 			/*for (int s = 0; s < _ref->_nNode; s++)
 			{
 				s22 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_phi[s];
@@ -5554,7 +5624,7 @@ namespace KingOfMonsters {
 			//E22 = _ref->get__gij(0, 0);
 
 
-			double tr = (E11 + E22) / (_ref->get__Gij(0, 0) + _ref->get__Gij(1, 1));
+			double tr = (E11 + E22)/ (_ref->get__Gij(0, 0) + _ref->get__Gij(1, 1));
 
 			//E11 *= scale;
 			//E12 *= scale;
@@ -5651,7 +5721,7 @@ namespace KingOfMonsters {
 			v1 = 1; v2 = 0;
 			s1 = 0; s2 = 1;
 			S1 = 0; S2 = 1;*/
-
+			double e1x = 0, e1y = 0, e2x = 0, e2y = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				_s22 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_phi[s];
@@ -5660,19 +5730,17 @@ namespace KingOfMonsters {
 				_S11 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_z[s];
 				_S12 += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->buf_z[s];
 				_S22 += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_z[s];
-				for (int t = 0; t < _ref->_nNode; t++)
-				{
-					e11 += (_ref->d1[0][s]) * _ref->buf_xi[s] * (_ref->d1[0][t]) * _ref->buf_xi[t];
-					e11 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[0][t]) * _ref->buf_eta[t];
-	
-					e12 += (_ref->d1[0][s]) * _ref->buf_xi[s] * (_ref->d1[1][t]) * _ref->buf_xi[t];
-					e12 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
-				
-					e22 += (_ref->d1[1][s]) * _ref->buf_xi[s] * (_ref->d1[1][t]) * _ref->buf_xi[t];
-					e22 += (_ref->d1[1][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
-		
-				}
+				e1x += (_ref->d1[0][s]) * _ref->buf_xi[s];
+				e1y += (_ref->d1[0][s]) * _ref->buf_eta[s];
+				e2x += (_ref->d1[1][s]) * _ref->buf_xi[s];
+				e2y += (_ref->d1[1][s]) * _ref->buf_eta[s];
+
+
+				//}
 			}
+			e11 = e1x * e1x + e1y * e1y;
+			e12 = e1x * e2x + e1y * e2y;
+			e22 = e2x * e2x + e2y * e2y;
 			double _s21 = _s12;
 			double* ptr1 = ptr;
 			double s11 = 0;
@@ -5706,7 +5774,7 @@ namespace KingOfMonsters {
 
 			
 			
-			double tr = (E11 + E22) / (_ref->get__Gij(0, 0) + _ref->get__Gij(1, 1));
+			double tr = (E11 + E22)/ (_ref->get__Gij(0, 0) + _ref->get__Gij(1, 1));
 			if (tr == 0)tr = 1;
 			double _S21 = _S12;
 			double TRACE = (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
@@ -5796,7 +5864,7 @@ namespace KingOfMonsters {
 			v1 = 1; v2 = 0;
 			s1 = 0; s2 = 1;
 			S1 = 0; S2 = 1;*/
-
+			double e1x = 0, e1y = 0, e2x = 0, e2y = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				_s22 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_phi[s];
@@ -5805,19 +5873,17 @@ namespace KingOfMonsters {
 				_S11 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_z[s];
 				_S12 += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->buf_z[s];
 				_S22 += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_z[s];
-				for (int t = 0; t < _ref->_nNode; t++)
-				{
-					e11 += (_ref->d1[0][s]) * _ref->buf_xi[s] * (_ref->d1[0][t]) * _ref->buf_xi[t];
-					e11 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[0][t]) * _ref->buf_eta[t];
+				e1x += (_ref->d1[0][s]) * _ref->buf_xi[s];
+				e1y += (_ref->d1[0][s]) * _ref->buf_eta[s];
+				e2x += (_ref->d1[1][s]) * _ref->buf_xi[s];
+				e2y += (_ref->d1[1][s]) * _ref->buf_eta[s];
+				
 
-					e12 += (_ref->d1[0][s]) * _ref->buf_xi[s] * (_ref->d1[1][t]) * _ref->buf_xi[t];
-					e12 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
-
-					e22 += (_ref->d1[1][s]) * _ref->buf_xi[s] * (_ref->d1[1][t]) * _ref->buf_xi[t];
-					e22 += (_ref->d1[1][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
-
-				}
+				//}
 			}
+			e11 = e1x * e1x + e1y * e1y;
+			e12 = e1x * e2x + e1y * e2y;
+			e22 = e2x * e2x + e2y * e2y;
 			double _s21 = _s12;
 			double* ptr1 = ptr;
 			double s11 = 0;
@@ -5909,6 +5975,7 @@ namespace KingOfMonsters {
 			double _s12 = 0;
 			double _s22 = 0;
 		
+			double e1x = 0, e1y = 0, e2x = 0, e2y = 0;
 			double e11 = 0, e12 = 0, e22 = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
@@ -5918,16 +5985,17 @@ namespace KingOfMonsters {
 				S11 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_z[s];
 				S12 += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->buf_z[s];
 				S22 += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_z[s];
-				for (int t = 0; t < _ref->_nNode; t++)
-				{
-					e11 += (_ref->d1[0][s]) * _ref->buf_xi[s] * (_ref->d1[0][t]) * _ref->buf_xi[t];
-					e11 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[0][t]) * _ref->buf_eta[t];
-					e12 += (_ref->d1[0][s]) * _ref->buf_xi[s] * (_ref->d1[1][t]) * _ref->buf_xi[t];
-					e12 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
-					e22 += (_ref->d1[1][s]) * _ref->buf_xi[s] * (_ref->d1[1][t]) * _ref->buf_xi[t];
-					e22 += (_ref->d1[1][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
-				}
+				//for (int t = 0; t < _ref->_nNode; t++)
+				e1x += (_ref->d1[0][s]) * _ref->buf_xi[s];
+				e1y += (_ref->d1[0][s]) * _ref->buf_eta[s];
+				e2x += (_ref->d1[1][s]) * _ref->buf_xi[s];
+				e2y += (_ref->d1[1][s]) * _ref->buf_eta[s];
+
+				//}
 			}
+			e11 = e1x * e1x + e1y * e1y;
+			e12 = e1x * e2x + e1y * e2y;
+			e22 = e2x * e2x + e2y * e2y;
 			double E11 = e22;
 			double E22 = e11;
 			double E12 = -e12;
@@ -5938,7 +6006,7 @@ namespace KingOfMonsters {
 			//E22 = _ref->get__gij(0, 0);
 
 
-			double tr = (E11 + E22) / (_ref->get__Gij(0, 0) + _ref->get__Gij(1, 1));
+			double tr = (E11 + E22)/ (_ref->get__Gij(0, 0) + _ref->get__Gij(1, 1));
 			//double tr = E11 + E22;			
 			if (tr == 0) {
 				
@@ -6005,7 +6073,7 @@ namespace KingOfMonsters {
 			double _s11 = 0;
 			double _s12 = 0;
 			double _s22 = 0;
-
+			double e1x = 0, e1y = 0, e2x = 0, e2y = 0;
 			double e11 = 0, e12 = 0, e22 = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
@@ -6015,15 +6083,17 @@ namespace KingOfMonsters {
 				S11 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_z[s];
 				S12 += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->buf_z[s];
 				S22 += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_z[s];
-				for (int t = 0; t < _ref->_nNode; t++)
-				{
-					e11 += (_ref->d1[0][s]) * _ref->buf_xi[s] * (_ref->d1[0][t]) * _ref->buf_xi[t];
-					e11 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[0][t]) * _ref->buf_eta[t];
-					e12 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
-					e22 += (_ref->d1[1][s]) * _ref->buf_xi[s] * (_ref->d1[1][t]) * _ref->buf_xi[t];
-					e22 += (_ref->d1[1][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
-				}
+				//for (int t = 0; t < _ref->_nNode; t++)
+			//{
+				e1x += (_ref->d1[0][s]) * _ref->buf_xi[s];
+				e1y += (_ref->d1[0][s]) * _ref->buf_eta[s];
+				e2x += (_ref->d1[1][s]) * _ref->buf_xi[s];
+				e2y += (_ref->d1[1][s]) * _ref->buf_eta[s];
+				//}
 			}
+			e11 = e1x * e1x + e1y * e1y;
+			e12 = e1x * e2x + e1y * e2y;
+			e22 = e2x * e2x + e2y * e2y;
 			double E11 = e22;
 			double E22 = e11;
 			double E12 = -e12;
@@ -9047,40 +9117,43 @@ namespace KingOfMonsters {
 
 			return __mem->tt(v1, v2, accurate);
 		}
-		double st(double v1, double v2, double s1, double s2, bool accurate)
+		double st(double v1, double v2, bool accurate)
 		{
 
-			return __mem->st(v1, v2, s1, s2, accurate);
+			return __mem->st(v1, v2,  accurate);
+		}
+		void st_z(myDoubleArray^ arr, double v1, double v2, bool accurate)
+		{
+
+			__mem->st_z(arr->_arr->__v.data(), v1, v2, accurate);
+
+		}
+		double st2(double v1, double v2, bool accurate)
+		{
+
+			return __mem->st2(v1, v2, accurate);
+		}
+		void st2_phi(myDoubleArray^ arr, double v1, double v2, bool accurate)
+		{
+
+			__mem->st2_phi(arr->_arr->__v.data(), v1, v2, accurate);
+
 		}
 		void tt_z(myDoubleArray^ arr, double v1, double v2, bool accurate)
 		{
 			__mem->tt_z(arr->_arr->__v.data(), v1, v2, accurate);
 		}
-		void st_z(myDoubleArray^ arr, double v1, double v2, double s1, double s2, bool accurate)
-		{
-
-			__mem->st_z(arr->_arr->__v.data(), v1, v2, s1, s2, accurate);
-
-		}
+		
 		double tt_2(double v1, double v2, bool accurate) {
 
 			return __mem->tt_2(v1, v2, accurate);
 		}
-		double st2(double v1, double v2, double s1, double s2, bool accurate)
-		{
-
-			return __mem->st2(v1, v2, s1, s2, accurate);
-		}
+		
 		void tt2_phi(myDoubleArray^ arr, double v1, double v2, bool accurate)
 		{
 			__mem->tt2_phi(arr->_arr->__v.data(), v1, v2, accurate);
 		}
-		void st2_phi(myDoubleArray^ arr, double v1, double v2, double s1, double s2, bool accurate)
-		{
-
-			__mem->st2_phi(arr->_arr->__v.data(), v1, v2, s1, s2, accurate);
-
-		}
+		
 		double CC(double v1, double v2, bool accurate)
 		{
 			return __mem->CC(v1, v2, accurate);
