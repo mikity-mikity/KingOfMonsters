@@ -524,6 +524,13 @@ namespace KingOfMonsters {
 		double* __grad_phi = 0;
 		double* __grad = 0;
 		double* __grad2 = 0;
+		double* __grad_z_tmp = 0;
+		double* __grad_phi_tmp = 0;
+		double* __mix_phi = 0;
+		double* __mix_z = 0;
+
+		double* __guide2_xieta = 0;
+		double* __guide_xieta = 0;
 		int _nNode;
 	private:
 		//double* __mat = 0;
@@ -786,6 +793,12 @@ namespace KingOfMonsters {
 				__grad = 0;
 				__grad_z = 0;
 				__grad_phi = 0;
+				__grad_z_tmp = 0;
+				__grad_phi_tmp = 0;
+				__guide2_xieta = 0;
+				__guide_xieta = 0;
+				__mix_phi = 0;
+				__mix_z = 0;
 				__grad_C_z = 0;
 				__grad_C_phi = 0;
 				__grad_D_z = 0;
@@ -1550,6 +1563,14 @@ namespace KingOfMonsters {
 			if (mode == "U") {
 				if (__grad_z != 0)delete[] __grad_z;
 				if (__grad_phi != 0)delete[] __grad_phi;
+				if (__grad_z_tmp != 0)delete[] __grad_z_tmp;
+				if (__grad_phi_tmp != 0)delete[] __grad_phi_tmp;
+				if (__guide_xieta != 0)delete[] __guide_xieta;
+				if (__guide2_xieta != 0)delete[] __guide2_xieta;
+				if (__mix_phi != 0)delete[] __mix_phi;
+				if (__mix_z != 0)delete[] __mix_z;
+
+
 				//if (__mat != 0)delete[] __mat;
 				if (__grad_C_z != 0)delete[] __grad_C_z;
 				if (__grad_C_phi != 0)delete[] __grad_C_phi;
@@ -1562,6 +1583,12 @@ namespace KingOfMonsters {
 				__grad2 = 0;
 				__grad_z = 0;
 				__grad_phi = 0;
+				__grad_z_tmp = 0;
+				__grad_phi_tmp = 0;
+				__guide_xieta = 0;
+				__guide2_xieta = 0;
+				__mix_phi = 0;
+				__mix_z = 0;
 				//__mat = 0;
 				__grad_C_z = 0;
 				__grad_C_phi = 0;
@@ -1752,6 +1779,13 @@ namespace KingOfMonsters {
 					__grad = new double[nNode];
 					__grad2 = new double[nNode];
 					__grad_z = new double[nNode];
+					__grad_z_tmp = new double[nNode];
+					__grad_phi_tmp = new double[nNode];
+					__guide_xieta = new double[2*nNode];
+					__guide2_xieta = new double[2*nNode];
+					__mix_z = new double [nNode];
+					__mix_phi = new double[ nNode];
+
 					__grad_phi = new double[nNode];
 					//__mat = new double[nNode * nNode];
 					//__mat2 = new double[nNode * nNode];
@@ -3548,9 +3582,9 @@ namespace KingOfMonsters {
 			double S22 = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				S11 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_phi[s];
-				S12 += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->buf_phi[s];
-				S22 += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_phi[s];
+				S11 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_z[s];
+				S12 += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->buf_z[s];
+				S22 += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_z[s];
 			}
 			
 			double S21 = S12;
@@ -4829,7 +4863,7 @@ namespace KingOfMonsters {
 			val = scale * (e11 * v1 * s1 + e12 * v1 * s2 + e12 * v2 * s1 + e22 * v2 * s2);
 			return val;
 		}
-		void guide_xi(double* ptr, double v1, double v2, bool accurate)
+		void guide_xi(double v1, double v2, bool accurate)
 		{
 			double val = 0;
 
@@ -4897,7 +4931,7 @@ namespace KingOfMonsters {
 				tr = 1;
 			}
 			double _e11 = e11, _e12 = e12, _e22 = e22;
-			double* ptr1 = ptr;
+			double* ptr1 = __guide2_xieta;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				e11 = 0, e12 = 0, e22 = 0;
@@ -4914,12 +4948,12 @@ namespace KingOfMonsters {
 				val = scale * (e11 * v1 * s1 + e12 * v1 * s2 + e12 * v2 * s1 + e22 * v2 * s2);
 				val += -tr2 / tr / tr * (_e11 * v1 * s1 + _e12 * v1 * s2 + _e12 * v2 * s1 + _e22 * v2 * s2) * (e11 * _ref->get__Gij(0, 0) + 2 * e12 * _ref->get__Gij(0, 1) + e22 * _ref->get__Gij(1, 1));
 				*ptr1 = val;
-				ptr1++;
+				ptr1+=2;
 			}
 			
 		}
 
-		void guide_eta(double* ptr, double v1, double v2, bool accurate)
+		void guide_eta(double v1, double v2, bool accurate)
 		{
 			double val = 0;
 
@@ -4987,7 +5021,7 @@ namespace KingOfMonsters {
 				tr = 1;
 			}
 			double _e11 = e11, _e12 = e12, _e22 = e22;
-			double* ptr1 = ptr;
+			double* ptr1 = __guide2_xieta+1;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				e11 = 0, e12 = 0, e22 = 0;
@@ -5004,7 +5038,7 @@ namespace KingOfMonsters {
 				val = scale * (e11 * v1 * s1 + e12 * v1 * s2 + e12 * v2 * s1 + e22 * v2 * s2);
 				val += -tr2 / tr / tr * (_e11 * v1 * s1 + _e12 * v1 * s2 + _e12 * v2 * s1 + _e22 * v2 * s2) * (e11 * _ref->get__Gij(0, 0) + 2 * e12 * _ref->get__Gij(0, 1) + e22 * _ref->get__Gij(1, 1));
 				*ptr1 = val;
-				ptr1++;
+				ptr1+=2;
 			}
 
 		}
@@ -5624,7 +5658,7 @@ namespace KingOfMonsters {
 			//E22 = _ref->get__gij(0, 0);
 
 
-			double tr = (E11 + E22);// / (_ref->get__Gij(0, 0) + _ref->get__Gij(1, 1));
+			double tr = (E11 + E22) / (_ref->get__Gij(0, 0) + _ref->get__Gij(1, 1));
 
 			//E11 *= scale;
 			//E12 *= scale;
@@ -5660,11 +5694,57 @@ namespace KingOfMonsters {
 			double TRACE = (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
 
 			if (TRACE == 0)TRACE = 1;
-			TRACE = 1;
+			//TRACE = 1;
 			val = 1. / tr / TRACE * (s11 * E11 * S12 + s11 * E12 * S22 + s12 * E21 * S12 + s12 * E22 * S22);// / sc;
 			val -= 1. / tr / TRACE * (s21 * E11 * S11 + s21 * E12 * S21 + s22 * E21 * S11 + s22 * E22 * S21);// / sc;
 			
 			return val;
+
+		}
+		void remove2(int N)
+		{
+		
+			double __dot = 0, __norm = 0;
+			double* ptr1 = __mix_phi;
+			double* ptr2 = __grad_phi_tmp;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				__dot += *ptr1 * *ptr2;
+				__norm += *ptr2 * *ptr2;
+				ptr1++;
+				ptr2++;
+			}
+			ptr1 = __mix_z;
+			ptr2 = __grad_z_tmp;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				__dot += *ptr1 * *ptr2;
+				__norm += *ptr2 * *ptr2;
+				ptr1++;
+				ptr2++;
+			}
+
+
+			ptr1 = __mix_phi;
+			ptr2 = __grad_phi_tmp;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				*ptr1 -= *ptr2 * __dot / __norm;
+				ptr1++;
+				ptr2++;
+			}
+			ptr1 = __mix_z;
+			ptr2 = __grad_z_tmp;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				*ptr1 -= *ptr2 * __dot / __norm;
+				ptr1++;
+				ptr2++;
+			}
 
 		}
 		void mix_phi(double* ptr, double v1, double v2, double w1, double w2, bool accurate)
@@ -5774,7 +5854,7 @@ namespace KingOfMonsters {
 
 			
 			
-			double tr = (E11 + E22);// / (_ref->get__Gij(0, 0) + _ref->get__Gij(1, 1));
+			double tr = (E11 + E22) / (_ref->get__Gij(0, 0) + _ref->get__Gij(1, 1));
 			if (tr == 0)tr = 1;
 			double _S21 = _S12;
 			double TRACE = (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
@@ -5799,16 +5879,17 @@ namespace KingOfMonsters {
 				//val += w2 * ((s21 * S1 + s22 * S2) * (-S11 * s1 - S12 * s2) - (-s11 * S1 - s12 * S2) * (S21 * s1 + S22 * s2));
 				//double dTRACE = (S11_z + S22_z) / (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
 
-				TRACE = 1;
+				//TRACE = 1;
 				val = 1. / tr / TRACE * (s11 * E11 * S12_z + s11 * E12 * S22_z + s12 * E21 * S12_z + s12 * E22 * S22_z);// / sc;
 				val -= 1. / tr / TRACE * (s21 * E11 * S11_z + s21 * E12 * S21_z + s22 * E21 * S11_z + s22 * E22 * S21_z);// / sc;
 				//val += -1. / tr / TRACE / TRACE * (s11 * E11 * _S12 + s11 * E12 * _S22 + s12 * E21 * _S12 + s12 * E22 * _S22) * dTRACE;// / sc;
 				//val -= -1. / tr / TRACE / TRACE * (s21 * E11 * _S11 + s21 * E12 * _S21 + s22 * E21 * _S11 + s22 * E22 * _S21) * dTRACE;// / sc;
-
+				
 
 				*ptr1 = val;
 				ptr1++;
 			}
+			
 		}
 		void mix_Z(double* ptr, double v1, double v2, double w1, double w2, bool accurate)
 		{
@@ -5916,7 +5997,7 @@ namespace KingOfMonsters {
 			//E22 = _ref->get__gij(0, 0);
 
 
-			double tr = (E11 + E22);// / (_ref->get__Gij(0, 0) + _ref->get__Gij(1, 1));
+			double tr = (E11 + E22) / (_ref->get__Gij(0, 0) + _ref->get__Gij(1, 1));
 			if (tr == 0)tr = 1;
 
 			double _S21 = _S12;
@@ -5957,16 +6038,17 @@ namespace KingOfMonsters {
 				//val += w2 * ((s21 * S1 + s22 * S2) * (-S11 * s1 - S12 * s2) - (-s11 * S1 - s12 * S2) * (S21 * s1 + S22 * s2));
 				
 				
-				TRACE = 1;
+				//TRACE = 1;
 				val = 1. / tr / TRACE * (s11_phi * E11 * _S12 + s11_phi * E12 * _S22 + s12_phi * E21 * _S12 + s12_phi * E22 * _S22);// / sc;
 				val -= 1. / tr / TRACE * (s21_phi * E11 * _S11 + s21_phi * E12 * _S21 + s22_phi * E21 * _S11 + s22_phi * E22 * _S21);// / sc;
 
 				*ptr1 =val;
 				ptr1++;
 			}
+			
 		}
 
-		void mix_xi(double* ptr, double v1, double v2, double w1, double w2, bool accurate)
+		void mix_xi( double v1, double v2, double w1, double w2, bool accurate)
 		{
 			double S11 = 0;
 			double S12 = 0;
@@ -6006,7 +6088,7 @@ namespace KingOfMonsters {
 			//E22 = _ref->get__gij(0, 0);
 
 
-			double tr = (E11 + E22);// / (_ref->get__Gij(0, 0) + _ref->get__Gij(1, 1));
+			double tr = (E11 + E22) / (_ref->get__Gij(0, 0) + _ref->get__Gij(1, 1));
 			//double tr = E11 + E22;			
 			if (tr == 0) {
 				
@@ -6014,7 +6096,6 @@ namespace KingOfMonsters {
 			}
 			double S21 = S12;
 			double _s21 = _s12;
-			double* ptr1 = ptr;
 			double s11 = 0;
 			double s12 = 0;
 			double s21 = 0;
@@ -6036,6 +6117,8 @@ namespace KingOfMonsters {
 			s11 *= sc; s12 *= sc; s22 *= sc; s21 *= sc;
 
 			double TRACE = (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
+			double* ptr1 = __guide_xieta;
+
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				double val;
@@ -6050,10 +6133,10 @@ namespace KingOfMonsters {
 					e22_xi += 2*(_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_xi[t];
 				}
 				double _E11_xi = e22_xi, _E12_xi = -e12_xi, _E22_xi = e11_xi, _E21_xi = _E12_xi;
-				TRACE = 1;
+				//TRACE = 1;
 				val = 1./tr /TRACE* (s11 * _E11_xi * S12 + s11 * _E12_xi * S22 + s12 * _E21_xi * S12 + s12 * _E22_xi * S22);
 				val -=1./tr/TRACE * (s21 * _E11_xi * S11 + s21 * _E12_xi * S21 + s22 * _E21_xi * S11 + s22 * _E22_xi * S21);
-				double dtr = (_E11_xi + _E22_xi);// / (_ref->get__Gij(0, 0) + _ref->get__Gij(1, 1));
+				double dtr = (_E11_xi + _E22_xi) / (_ref->get__Gij(0, 0) + _ref->get__Gij(1, 1));
 				val += -1. / tr / tr /TRACE* (s11 * E11 * S12 + s11 * E12 * S22 + s12 * E21 * S12 + s12 * E22 * S22) * dtr;
 				val -= -1. / tr / tr /TRACE* (s21 * E11 * S11 + s21 * E12 * S21 + s22 * E21 * S11 + s22 * E22 * S21) * dtr ;
 				
@@ -6062,10 +6145,32 @@ namespace KingOfMonsters {
 
 				
 				*ptr1 = val;
-				ptr1++;
+				ptr1+=2;
 			}
 		}
-		void mix_eta(double* ptr, double v1, double v2, double w1, double w2, bool accurate)
+		void remove(int N)
+		{
+			double* ptr1 = __guide_xieta;
+			double* ptr2 = __guide2_xieta;
+			double norm = 0, dot = 0;
+			for (int i = 0; i < N; i++)
+			{
+				norm += *ptr2 * *ptr2;
+				dot += *ptr2 * *ptr1;
+				ptr1 ++;
+				ptr2++;
+			}
+			ptr1 = __guide_xieta;
+			ptr2 = __guide2_xieta;
+
+			for (int i = 0; i < N; i++)
+			{
+				*ptr1 -= *ptr2 * dot / norm;
+				ptr1++;
+				ptr2++;
+			}
+		}
+		void mix_eta( double v1, double v2, double w1, double w2, bool accurate)
 		{
 			double S11 = 0;
 			double S12 = 0;
@@ -6104,14 +6209,14 @@ namespace KingOfMonsters {
 			//E22 = _ref->get__gij(0, 0);
 
 
-			double tr = (E11 + E22);// / (_ref->get__Gij(0, 0) + _ref->get__Gij(1, 1));
+			double tr = (E11 + E22) / (_ref->get__Gij(0, 0) + _ref->get__Gij(1, 1));
 			if (tr == 0) {
 				
 				tr = 1;
 			}
 			double S21 = S12;
 			double _s21 = _s12;
-			double* ptr1 = ptr;
+			double* ptr1 = __guide_xieta+1;
 			double s11 = 0;
 			double s12 = 0;
 			double s21 = 0;
@@ -6148,16 +6253,16 @@ namespace KingOfMonsters {
 					e22_eta += 2 * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_eta[t];
 				}
 				double _E11_eta = e22_eta, _E12_eta = -e12_eta, _E22_eta = e11_eta, _E21_eta = _E12_eta;
-				TRACE = 1;
+				//TRACE = 1;
 				val = 1. / tr / TRACE * (s11 * _E11_eta * S12 + s11 * _E12_eta * S22 + s12 * _E21_eta * S12 + s12 * _E22_eta * S22);// / sc;
 				val -= 1. / tr / TRACE * (s21 * _E11_eta * S11 + s21 * _E12_eta * S21 + s22 * _E21_eta * S11 + s22 * _E22_eta * S21);// / sc;
 
-				double dtr = (_E11_eta + _E22_eta);// / (_ref->get__Gij(0, 0) + _ref->get__Gij(1, 1));
+				double dtr = (_E11_eta + _E22_eta) / (_ref->get__Gij(0, 0) + _ref->get__Gij(1, 1));
 				val += -1. / tr / tr / TRACE * (s11 * E11 * S12 + s11 * E12 * S22 + s12 * E21 * S12 + s12 * E22 * S22) * dtr;// / sc;
 				val -= -1. / tr / tr / TRACE * (s21 * E11 * S11 + s21 * E12 * S21 + s22 * E21 * S11 + s22 * E22 * S21) * dtr;// / sc;
 
 				*ptr1 = val;
-				ptr1++;
+				ptr1+=2;
 			}
 		}
 	
@@ -8944,18 +9049,37 @@ namespace KingOfMonsters {
 		{
 			return __mem->guide(v1, v2,  accurate);
 		}
-		void guide_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2,  bool accurate)
+		void guide_xi( double v1, double v2,  bool accurate)
 		{
-			__mem->guide_xi(__mem->__grad, v1, v2, accurate);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
+			__mem->guide_xi( v1, v2, accurate);
+			//mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
 		}
-		void guide_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2,  bool accurate)
+		void guide_eta( double v1, double v2,  bool accurate)
 		{
-			__mem->guide_eta(__mem->__grad, v1, v2,  accurate);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
+			__mem->guide_eta(v1, v2,  accurate);
+			//mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
 		}
 	
-
+		void guide_write(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1)
+		{
+			mat->dat->addrow(ii, index->_arr, __mem->__guide2_xieta, 0, sc, __mem->_nNode * 2, true, c1);
+		}
+		
+		void mix_write(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1,bool remove)
+		{
+			if(remove)__mem->remove(__mem->_nNode*2);
+			mat->dat->addrow(ii, index->_arr, __mem->__guide_xieta, 0, sc, __mem->_nNode * 2, true, c1);
+		}
+		void mix_xi(double v1, double v2,double w1,double w2, bool accurate)
+		{
+			__mem->mix_xi( v1, v2,w1,w2, accurate);
+			//mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
+		}
+		void mix_eta(double v1, double v2, double w1,double w2,bool accurate)
+		{
+			__mem->mix_eta(v1, v2,w1,w2, accurate);
+			//mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
+		}
 		double guide_supported(double v1, double v2, bool accurate)
 		{
 			return __mem->guide_supported(v1, v2, accurate);
@@ -9050,7 +9174,7 @@ namespace KingOfMonsters {
 		{
 			return __mem->mix(v1, v2, w1, w2, accurate);
 		}
-		void mix_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, double w1, double w2, bool accurate)
+		/*void mix_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, double w1, double w2, bool accurate)
 		{
 			__mem->mix_xi(__mem->__grad, v1, v2, w1, w2, accurate);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad,0, sc, __mem->_nNode, true, c1);
@@ -9059,7 +9183,7 @@ namespace KingOfMonsters {
 		{
 			__mem->mix_eta(__mem->__grad, v1, v2, w1, w2, accurate);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0,sc, __mem->_nNode, false, c1);
-		}
+		}*/
 	
 		void mix_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, double w1, double w2, bool accurate)
 		{
@@ -9070,6 +9194,18 @@ namespace KingOfMonsters {
 		{
 			__mem->mix_Z(__mem->__grad, v1, v2, w1, w2, accurate);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, sc, __mem->_nNode, c1);
+		}
+		void mix_phiZ(mySparse^ mat, mySparse^ mat2, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, double w1, double w2, bool accurate, bool remove)
+		{
+			__mem->mix_phi(__mem->__mix_phi , v1, v2, w1, w2, accurate);
+			__mem->mix_Z(__mem->__mix_z, v1, v2, w1, w2, accurate);
+			if (remove)
+			{
+				__mem->remove2(__mem->_nNode);
+			}
+			mat->dat->addrow(ii, index->_arr, __mem->__mix_phi, sc, __mem->_nNode, c1);
+			mat2->dat->addrow(ii, index->_arr, __mem->__mix_z, sc, __mem->_nNode, c1);
+
 		}
 		double BCEQ(double _t1, double _t2, double s11,double a,double b,bool accurate)
 		{
@@ -9197,6 +9333,7 @@ namespace KingOfMonsters {
 		{
 
 			mat->dat->addrow(ii, index->_arr, __mem->__grad_z, sc, __mem->_nNode);
+			memcpy(__mem->__grad_z_tmp, __mem->__grad_z, sizeof(double) * __mem->_nNode);
 
 		}
 		void U_mix(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double c2)
@@ -9209,25 +9346,31 @@ namespace KingOfMonsters {
 		{
 
 			mat->dat->addrow(ii, index->_arr, __mem->__grad_z, sc, __mem->_nNode, coeff);
+			memcpy(__mem->__grad_z_tmp, __mem->__grad_z, sizeof(double) * __mem->_nNode);
 
 		}
 		void U_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
 		{
 
 			mat->dat->addrow(ii, index->_arr, __mem->__grad_phi, sc, __mem->_nNode, coeff);
+			memcpy(__mem->__grad_phi_tmp, __mem->__grad_phi, sizeof(double) * __mem->_nNode);
 
 		}
 		void U_z(array<double>^ X) {
 			System::Runtime::InteropServices::Marshal::Copy((IntPtr)__mem->__grad_z, X, 0, __mem->_nNode);
+			memcpy(__mem->__grad_z_tmp, __mem->__grad_z, sizeof(double) * __mem->_nNode);
 		}
 		void U_phi(array<double>^ x) {
 			System::Runtime::InteropServices::Marshal::Copy((IntPtr)__mem->__grad_phi, x, 0, __mem->_nNode);
+			memcpy(__mem->__grad_phi_tmp, __mem->__grad_phi, sizeof(double) * __mem->_nNode);
 		}
 		void U_z(myDoubleArray^ X) {
 			memcpy(X->_arr->__v.data(), __mem->__grad_z, sizeof(double) * __mem->_nNode);
+			memcpy(__mem->__grad_z_tmp, __mem->__grad_z, sizeof(double) * __mem->_nNode);
 		}
 		void U_phi(myDoubleArray^ x) {
 			memcpy(x->_arr->__v.data(), __mem->__grad_phi, sizeof(double) * __mem->_nNode);
+			memcpy(__mem->__grad_phi_tmp, __mem->__grad_phi, sizeof(double) * __mem->_nNode);
 		}
 		array<double>^ fM(double _la, double _mu)
 		{
