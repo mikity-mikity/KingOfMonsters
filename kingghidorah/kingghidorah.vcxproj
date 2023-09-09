@@ -180,7 +180,7 @@
       <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>mkl_core.lib;mkl_intel_lp64.lib;mkl_intel_thread.lib;cuda.lib;cudart_static.lib;cusolver.lib;cusparse.lib</AdditionalDependencies>
+      <AdditionalDependencies>mkl_core.lib;mkl_intel_lp64.lib;mkl_intel_thread.lib;cublas.lib;cuda.lib;cudart_static.lib;cusolver.lib;cusparse.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_CPU|x64'">
@@ -252,7 +252,7 @@
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>mkl_core.lib;mkl_intel_lp64.lib;mkl_intel_thread.lib;cuda.lib;cudart_static.lib;cusolver.lib;cusparse.lib</AdditionalDependencies>
+      <AdditionalDependencies>mkl_core.lib;mkl_intel_lp64.lib;mkl_intel_thread.lib;cuda.lib;cudart_static.lib;cusolver.lib;cublas.lib;cusparse.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Releast_CPU|x64'">

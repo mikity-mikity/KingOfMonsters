@@ -60,7 +60,7 @@ namespace KingOfMonsters {
 		std::vector<std::vector<cusolverSpHandle_t>> solver_handleSp;
 		std::vector<std::vector<cusparseHandle_t>> cusparse_handle;
 
-		//cublasHandle_t cublas_handle[MAXDEVICE];
+		cublasHandle_t cublas_handle[MAXDEVICE];
 		double* __mgM[MAXDEVICE];
 		double* __mgM2[MAXDEVICE];
 		double* __mgrhs[MAXDEVICE];
@@ -96,7 +96,7 @@ namespace KingOfMonsters {
 		~cuda();
 		cusolverDnHandle_t& solver(int64_t ii, int64_t kk);
 		cusolverSpHandle_t& solverSp(int64_t ii, int64_t kk);
-		//cublasHandle_t& blas(int64_t ii);
+		cublasHandle_t& blas(int64_t ii);
 		//cusolverMgHandle_t mgsolver();
 		//double* L();
 		bool valid();
@@ -188,7 +188,7 @@ namespace KingOfMonsters {
 		vector<vector<double>> _coeff;
 		std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>> _mat;
 		Eigen::MatrixXd _dmat;
-
+		Eigen::MatrixXd _prevmat;
 		vector<Eigen::VectorXd> coeff;
 	private:
 		int64_t space = 0;
@@ -216,6 +216,7 @@ namespace KingOfMonsters {
 		_mySparse();
 		~_mySparse();
 		void freeze(bool _do);
+		void freeze2();
 		void _freeze();
 		double L2Norm(Eigen::VectorXd* a, Eigen::VectorXd* b);
 		Eigen::VectorXd Vector(double* ptr1, int64_t N1);
@@ -233,6 +234,9 @@ namespace KingOfMonsters {
 		void shrink(int64_t M);
 		void _permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, int64_t>& perm, bool sparse, bool dense);
 		void _permuteCols(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, int64_t>& perm, bool sparse, bool dense);
+		void _permuteRows(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, int64_t>& perm, bool sparse, bool dense);
+		void __permuteCols(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, int64_t>& perm);
+		void __permuteRows(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, int64_t>& perm);
 		void _shrink(int64_t M, bool sparse, bool dense);
 		void _shrinkCols(int64_t M, bool sparse, bool dense);
 		void _permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, int64_t>& perm, Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, int64_t>& perm2);
@@ -274,8 +278,9 @@ namespace KingOfMonsters {
 		//void ofAtB_gpu(_mySparse* B, bool sparse);
 		void ofAtB(_mySparse* B, bool sparse);
 		void _ofAtB(_mySparse* B, _mySparse* C);
-		void _ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret);
-		void _ofBtAB2(_mySparse* B, _mySparse* C, _mySparse* Q, _mySparse* R, KingOfMonsters::cuda* cuda);
+		//void _ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret);
+		void _ofBtAB(_mySparse* B, /*Eigen::VectorXd* b, */_mySparse* C/*, Eigen::VectorXd* ret*/);
+		//void _ofBtAB2(_mySparse* B, _mySparse* C, _mySparse* Q, _mySparse* R, KingOfMonsters::cuda* cuda);
 		void _ofCBtAB(_mySparse* B, _mySparse* C, _mySparse* D);
 		void _ofCBtAB2(_mySparse* B, _mySparse* C, _mySparse* D, _mySparse* E);
 		//void _ofBtAB_qr(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret);
@@ -316,6 +321,7 @@ namespace KingOfMonsters {
 		std::string _solveI_gpu(KingOfMonsters::cuda* cuda, _mySparse* ret);
 		std::string _solveI_cpu(_mySparse* ret);
 		std::string _solveI_gpu_omp(KingOfMonsters::cuda* cuda, _mySparse* ret);
+		//std::string AinvBA(KingOfMonsters::cuda* cuda, _mySparse* A, _mySparse* ret);
 		std::string _solveI_gpu_single(KingOfMonsters::cuda* cuda, _mySparse* ret);
 		void plus(Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>* m);
 		//void _solveI_gpu_mg(KingOfMonsters::cuda* cuda, _mySparse* ret);
