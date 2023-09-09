@@ -3017,7 +3017,7 @@ namespace KingOfMonsters {
 			double gg22 = _ref->get__gi(1, 0) * _ref->get__gi(1, 0) + _ref->get__gi(1, 1) * _ref->get__gi(1, 1);
 			double det2 = gg11 * gg22 - gg12 * gg21;
 			double J = sqrt(det / det2);
-			bool isxnan1 = isnan(J);
+		
 			*a = S[0] * _ref->get__gi(0, 0) * _ref->get__gi(0, 0) + S[1] * _ref->get__gi(0, 0) * _ref->get__gi(1, 0) + S[2] * _ref->get__gi(1, 0) * _ref->get__gi(0, 0) + S[3] * _ref->get__gi(1, 0) * _ref->get__gi(1, 0);
 			*b = S[0] * _ref->get__gi(0, 0) * _ref->get__gi(0, 1) + S[1] * _ref->get__gi(0, 0) * _ref->get__gi(1, 1) + S[2] * _ref->get__gi(1, 0) * _ref->get__gi(0, 1) + S[3] * _ref->get__gi(1, 0) * _ref->get__gi(1, 1);
 			*c = S[0] * _ref->get__gi(0, 1) * _ref->get__gi(0, 0) + S[1] * _ref->get__gi(0, 1) * _ref->get__gi(1, 0) + S[2] * _ref->get__gi(1, 1) * _ref->get__gi(0, 0) + S[3] * _ref->get__gi(1, 1) * _ref->get__gi(1, 0);
@@ -3973,8 +3973,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij(0, 0) * v1 + this->get_gij(0, 1) * v2;
@@ -3982,8 +3980,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij(0, 0) + s2 * s1 * this->get_gij(1, 0) + s1 * s2 * this->get_gij(0, 1) + s2 * s2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij(0, 0) * s1 + this->get_gij(0, 1) * s2;
@@ -3991,8 +3987,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -4000,8 +3994,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -4062,8 +4054,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij(0, 0) * v1 + this->get_gij(0, 1) * v2;
@@ -4071,8 +4061,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij(0, 0) + s2 * s1 * this->get_gij(1, 0) + s1 * s2 * this->get_gij(0, 1) + s2 * s2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij(0, 0) * s1 + this->get_gij(0, 1) * s2;
@@ -4080,8 +4068,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -4089,8 +4075,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -4161,8 +4145,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij(0, 0) * v1 + this->get_gij(0, 1) * v2;
@@ -4170,8 +4152,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij(0, 0) + s2 * s1 * this->get_gij(1, 0) + s1 * s2 * this->get_gij(0, 1) + s2 * s2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij(0, 0) * s1 + this->get_gij(0, 1) * s2;
@@ -4179,8 +4159,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -4188,8 +4166,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -4260,8 +4236,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij(0, 0) * v1 + this->get_gij(0, 1) * v2;
@@ -4269,8 +4243,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij(0, 0) + s2 * s1 * this->get_gij(1, 0) + s1 * s2 * this->get_gij(0, 1) + s2 * s2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij(0, 0) * s1 + this->get_gij(0, 1) * s2;
@@ -4278,8 +4250,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -4287,8 +4257,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -4349,8 +4317,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij(0, 0) * v1 + this->get_gij(0, 1) * v2;
@@ -4358,8 +4324,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij(0, 0) + s2 * s1 * this->get_gij(1, 0) + s1 * s2 * this->get_gij(0, 1) + s2 * s2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij(0, 0) * s1 + this->get_gij(0, 1) * s2;
@@ -4367,8 +4331,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -4376,8 +4338,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -4448,8 +4408,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij(0, 0) * v1 + this->get_gij(0, 1) * v2;
@@ -4457,8 +4415,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij(0, 0) + s2 * s1 * this->get_gij(1, 0) + s1 * s2 * this->get_gij(0, 1) + s2 * s2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij(0, 0) * s1 + this->get_gij(0, 1) * s2;
@@ -4466,8 +4422,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -4475,8 +4429,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -4551,8 +4503,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij(0, 0) * v1 + this->get_gij(0, 1) * v2;
@@ -4560,8 +4510,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij(0, 0) + s2 * s1 * this->get_gij(1, 0) + s1 * s2 * this->get_gij(0, 1) + s2 * s2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij(0, 0) * s1 + this->get_gij(0, 1) * s2;
@@ -4569,8 +4517,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -4578,8 +4524,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -4623,8 +4567,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij(0, 0) * v1 + this->get_gij(0, 1) * v2;
@@ -4632,8 +4574,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij(0, 0) + s2 * s1 * this->get_gij(1, 0) + s1 * s2 * this->get_gij(0, 1) + s2 * s2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij(0, 0) * s1 + this->get_gij(0, 1) * s2;
@@ -4641,8 +4581,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -4650,8 +4588,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -4714,8 +4650,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij(0, 0) * v1 + this->get_gij(0, 1) * v2;
@@ -4723,8 +4657,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij(0, 0) + s2 * s1 * this->get_gij(1, 0) + s1 * s2 * this->get_gij(0, 1) + s2 * s2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij(0, 0) * s1 + this->get_gij(0, 1) * s2;
@@ -4732,8 +4664,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -4741,8 +4671,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -4805,8 +4733,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij2(0, 0) * v1 + this->get_gij2(0, 1) * v2;
@@ -4814,8 +4740,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij2(0, 0) + s2 * s1 * this->get_gij2(1, 0) + s1 * s2 * this->get_gij2(0, 1) + s2 * s2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij2(0, 0) * s1 + this->get_gij2(0, 1) * s2;
@@ -4823,8 +4747,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -4832,8 +4754,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -4877,8 +4797,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij2(0, 0) * v1 + this->get_gij2(0, 1) * v2;
@@ -4886,8 +4804,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij2(0, 0) + s2 * s1 * this->get_gij2(1, 0) + s1 * s2 * this->get_gij2(0, 1) + s2 * s2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij2(0, 0) * s1 + this->get_gij2(0, 1) * s2;
@@ -4895,8 +4811,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if(double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -4904,8 +4818,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -4967,8 +4879,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij2(0, 0) * v1 + this->get_gij2(0, 1) * v2;
@@ -4976,8 +4886,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij2(0, 0) + s2 * s1 * this->get_gij2(1, 0) + s1 * s2 * this->get_gij2(0, 1) + s2 * s2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij2(0, 0) * s1 + this->get_gij2(0, 1) * s2;
@@ -4985,8 +4893,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -4994,8 +4900,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -5059,8 +4963,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij(0, 0) * v1 + this->get_gij(0, 1) * v2;
@@ -5068,8 +4970,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij(0, 0) + s2 * s1 * this->get_gij(1, 0) + s1 * s2 * this->get_gij(0, 1) + s2 * s2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij(0, 0) * s1 + this->get_gij(0, 1) * s2;
@@ -5077,8 +4977,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -5086,8 +4984,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -5130,8 +5026,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij(0, 0) * v1 + this->get_gij(0, 1) * v2;
@@ -5139,8 +5033,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij(0, 0) + s2 * s1 * this->get_gij(1, 0) + s1 * s2 * this->get_gij(0, 1) + s2 * s2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij(0, 0) * s1 + this->get_gij(0, 1) * s2;
@@ -5148,8 +5040,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -5157,8 +5047,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -5221,8 +5109,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
-				if (double::IsNaN(length))length = 1;
-				if (length == 0)length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij(0, 0) * v1 + this->get_gij(0, 1) * v2;
@@ -5230,8 +5116,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij(0, 0) + s2 * s1 * this->get_gij(1, 0) + s1 * s2 * this->get_gij(0, 1) + s2 * s2 * this->get_gij(1, 1));
-				if (double::IsNaN(length))length = 1;
-				if (length == 0)length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij(0, 0) * s1 + this->get_gij(0, 1) * s2;
@@ -5239,8 +5123,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (double::IsNaN(length))length = 1;
-				if (length == 0)length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -5248,8 +5130,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -5314,8 +5194,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij(0, 0) * v1 + this->get_gij(0, 1) * v2;
@@ -5323,8 +5201,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij(0, 0) + s2 * s1 * this->get_gij(1, 0) + s1 * s2 * this->get_gij(0, 1) + s2 * s2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij(0, 0) * s1 + this->get_gij(0, 1) * s2;
@@ -5332,8 +5208,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -5341,8 +5215,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -5387,8 +5259,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij(0, 0) * v1 + this->get_gij(0, 1) * v2;
@@ -5396,8 +5266,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij(0, 0) + s2 * s1 * this->get_gij(1, 0) + s1 * s2 * this->get_gij(0, 1) + s2 * s2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij(0, 0) * s1 + this->get_gij(0, 1) * s2;
@@ -5405,8 +5273,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -5414,8 +5280,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -5480,8 +5344,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij(0, 0) * v1 + this->get_gij(0, 1) * v2;
@@ -5489,8 +5351,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij(0, 0) + s2 * s1 * this->get_gij(1, 0) + s1 * s2 * this->get_gij(0, 1) + s2 * s2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij(0, 0) * s1 + this->get_gij(0, 1) * s2;
@@ -5498,8 +5358,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -5507,8 +5365,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -5580,8 +5436,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij2(0, 0) * v1 + this->get_gij2(0, 1) * v2;
@@ -5589,8 +5443,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij2(0, 0) + s2 * s1 * this->get_gij2(1, 0) + s1 * s2 * this->get_gij2(0, 1) + s2 * s2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij2(0, 0) * s1 + this->get_gij2(0, 1) * s2;
@@ -5598,8 +5450,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (double::IsNaN(length))length = 1;
-				if (length == 0)length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -5607,8 +5457,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -5693,7 +5541,7 @@ namespace KingOfMonsters {
 			//double TRACE = (S11 + S22)/(_ref->get__gij(0,0)+ _ref->get__gij(1, 1));
 			double TRACE = (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
 
-			if (TRACE == 0)TRACE = 1;
+			//if (TRACE == 0)TRACE = 1;
 			//TRACE = 1;
 			val = 1. / tr / TRACE * (s11 * E11 * S12 + s11 * E12 * S22 + s12 * E21 * S12 + s12 * E22 * S22);// / sc;
 			val -= 1. / tr / TRACE * (s21 * E11 * S11 + s21 * E12 * S21 + s22 * E21 * S11 + s22 * E22 * S21);// / sc;
@@ -5763,8 +5611,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij2(0, 0) * v1 + this->get_gij2(0, 1) * v2;
@@ -5772,8 +5618,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij2(0, 0) + s2 * s1 * this->get_gij2(1, 0) + s1 * s2 * this->get_gij2(0, 1) + s2 * s2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij2(0, 0) * s1 + this->get_gij2(0, 1) * s2;
@@ -5781,8 +5625,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -5790,8 +5632,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -5858,7 +5698,7 @@ namespace KingOfMonsters {
 			if (tr == 0)tr = 1;
 			double _S21 = _S12;
 			double TRACE = (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
-			if (TRACE == 0)TRACE = 1;
+			//if (TRACE == 0)TRACE = 1;
 			/*
 			double E11 = w1 * (v1 * v1) + w2 * (s1 * s1);
 			double E12 = w1 * (v1 * v2) + w2 * (s1 * s2);
@@ -5907,8 +5747,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij2(0, 0) * v1 + this->get_gij2(0, 1) * v2;
@@ -5916,8 +5754,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij2(0, 0) + s2 * s1 * this->get_gij2(1, 0) + s1 * s2 * this->get_gij2(0, 1) + s2 * s2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij2(0, 0) * s1 + this->get_gij2(0, 1) * s2;
@@ -5925,8 +5761,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -5934,8 +5768,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -6003,7 +5835,7 @@ namespace KingOfMonsters {
 			double _S21 = _S12;
 			double TRACE = (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
 
-			if (TRACE == 0)TRACE = 1;
+			//if (TRACE == 0)TRACE = 1;
 			/*
 			double E11 = w1 * (v1 * v1) + w2 * (s1 * s1);
 			double E12 = w1 * (v1 * v2) + w2 * (s1 * s2);
@@ -6279,8 +6111,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij2(0, 0) * v1 + this->get_gij2(0, 1) * v2;
@@ -6288,8 +6118,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij2(0, 0) + s2 * s1 * this->get_gij2(1, 0) + s1 * s2 * this->get_gij2(0, 1) + s2 * s2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij2(0, 0) * s1 + this->get_gij2(0, 1) * s2;
@@ -6297,8 +6125,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -6306,8 +6132,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -6355,8 +6179,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij2(0, 0) * v1 + this->get_gij2(0, 1) * v2;
@@ -6364,8 +6186,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij2(0, 0) + s2 * s1 * this->get_gij2(1, 0) + s1 * s2 * this->get_gij2(0, 1) + s2 * s2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij2(0, 0) * s1 + this->get_gij2(0, 1) * s2;
@@ -6373,8 +6193,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -6382,8 +6200,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (double::IsNaN(length))length = 1;
-				if (length == 0)length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -6451,8 +6267,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij2(0, 0) * v1 + this->get_gij2(0, 1) * v2;
@@ -6460,8 +6274,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij2(0, 0) + s2 * s1 * this->get_gij2(1, 0) + s1 * s2 * this->get_gij2(0, 1) + s2 * s2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij2(0, 0) * s1 + this->get_gij2(0, 1) * s2;
@@ -6469,8 +6281,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -6478,8 +6288,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -6546,8 +6354,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij2(0, 0) * v1 + this->get_gij2(0, 1) * v2;
@@ -6555,8 +6361,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij2(0, 0) + s2 * s1 * this->get_gij2(1, 0) + s1 * s2 * this->get_gij2(0, 1) + s2 * s2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij2(0, 0) * s1 + this->get_gij2(0, 1) * s2;
@@ -6564,8 +6368,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -6573,8 +6375,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -6623,8 +6423,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij2(0, 0) * v1 + this->get_gij2(0, 1) * v2;
@@ -6632,8 +6430,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij2(0, 0) + s2 * s1 * this->get_gij2(1, 0) + s1 * s2 * this->get_gij2(0, 1) + s2 * s2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij2(0, 0) * s1 + this->get_gij2(0, 1) * s2;
@@ -6641,8 +6437,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -6650,8 +6444,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -6719,8 +6511,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij2(0, 0) * v1 + this->get_gij2(0, 1) * v2;
@@ -6728,8 +6518,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij2(0, 0) + s2 * s1 * this->get_gij2(1, 0) + s1 * s2 * this->get_gij2(0, 1) + s2 * s2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij2(0, 0) * s1 + this->get_gij2(0, 1) * s2;
@@ -6737,8 +6525,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -6746,8 +6532,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -6815,8 +6599,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij2(0, 0) * v1 + this->get_gij2(0, 1) * v2;
@@ -6824,8 +6606,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij2(0, 0) + s2 * s1 * this->get_gij2(1, 0) + s1 * s2 * this->get_gij2(0, 1) + s2 * s2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij2(0, 0) * s1 + this->get_gij2(0, 1) * s2;
@@ -6833,8 +6613,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -6842,8 +6620,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -6892,8 +6668,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij2(0, 0) * v1 + this->get_gij2(0, 1) * v2;
@@ -6901,8 +6675,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij2(0, 0) + s2 * s1 * this->get_gij2(1, 0) + s1 * s2 * this->get_gij2(0, 1) + s2 * s2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij2(0, 0) * s1 + this->get_gij2(0, 1) * s2;
@@ -6910,8 +6682,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -6919,8 +6689,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -6971,8 +6739,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij2(0, 0) * v1 + this->get_gij2(0, 1) * v2;
@@ -6980,8 +6746,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij2(0, 0) + s2 * s1 * this->get_gij2(1, 0) + s1 * s2 * this->get_gij2(0, 1) + s2 * s2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij2(0, 0) * s1 + this->get_gij2(0, 1) * s2;
@@ -6989,8 +6753,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -6998,8 +6760,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -7068,8 +6828,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij2(0, 0) * v1 + this->get_gij2(0, 1) * v2;
@@ -7077,8 +6835,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij2(0, 0) + s2 * s1 * this->get_gij2(1, 0) + s1 * s2 * this->get_gij2(0, 1) + s2 * s2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij2(0, 0) * s1 + this->get_gij2(0, 1) * s2;
@@ -7086,8 +6842,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -7095,8 +6849,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -7159,8 +6911,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij2(0, 0) * v1 + this->get_gij2(0, 1) * v2;
@@ -7168,8 +6918,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij2(0, 0) + s2 * s1 * this->get_gij2(1, 0) + s1 * s2 * this->get_gij2(0, 1) + s2 * s2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij2(0, 0) * s1 + this->get_gij2(0, 1) * s2;
@@ -7177,8 +6925,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -7186,8 +6932,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -7250,8 +6994,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij2(0, 0) * v1 + this->get_gij2(0, 1) * v2;
@@ -7259,8 +7001,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij2(0, 0) + s2 * s1 * this->get_gij2(1, 0) + s1 * s2 * this->get_gij2(0, 1) + s2 * s2 * this->get_gij2(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij2(0, 0) * s1 + this->get_gij2(0, 1) * s2;
@@ -7268,8 +7008,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -7277,8 +7015,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				if (double::IsNaN(length))length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -7328,7 +7064,7 @@ namespace KingOfMonsters {
 			}
 
 		}
-\
+
 		
 		double theta(bool accurate)
 		{
@@ -7688,7 +7424,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(_t1 * _t1 * this->get_gij(0, 0) + _t2 * _t1 * this->get_gij(1, 0) + _t1 * _t2 * this->get_gij(0, 1) + _t2 * _t2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
 				gamma = length* length;
 				t1 = _t1/length;
 				t2 = _t2/length;
@@ -7697,7 +7432,6 @@ namespace KingOfMonsters {
 				n1 = T2;
 				n2 = -T1;
 				length = sqrt(n1 * n1 * this->get_gij(0, 0) + n2 * n1 * this->get_gij(1, 0) + n1 * n2 * this->get_gij(0, 1) + n2 * n2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
 				n1 /= length;
 				n2 /= length;
 				eta = length * length;
@@ -7706,7 +7440,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(_t1 * _t1 * _ref->get__gij(0, 0) + _t2 * _t1 * _ref->get__gij(1, 0) + _t1 * _t2 * _ref->get__gij(0, 1) + _t2 * _t2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
 				gamma = length * length;
 				t1 = _t1 / length;
 				t2 = _t2 / length;
@@ -7715,7 +7448,6 @@ namespace KingOfMonsters {
 				n1 = T2;
 				n2 = -T1;
 				length = sqrt(n1 * n1 * _ref->get__gij(0, 0) + n2 * n1 * _ref->get__gij(1, 0) + n1 * n2 * _ref->get__gij(0, 1) + n2 * n2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
 				eta = length * length;
 				n1 /= length;
 				n2 /= length;
@@ -7788,7 +7520,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(_t1 * _t1 * this->get_gij(0, 0) + _t2 * _t1 * this->get_gij(1, 0) + _t1 * _t2 * this->get_gij(0, 1) + _t2 * _t2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
 				gamma = length * length;
 				t1 = _t1 / length;
 				t2 = _t2 / length;
@@ -7797,7 +7528,6 @@ namespace KingOfMonsters {
 				n1 = T2;
 				n2 = -T1;
 				length = sqrt(n1 * n1 * this->get_gij(0, 0) + n2 * n1 * this->get_gij(1, 0) + n1 * n2 * this->get_gij(0, 1) + n2 * n2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
 
 				n1 /= length;
 				n2 /= length;
@@ -7806,7 +7536,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(_t1 * _t1 * _ref->get__gij(0, 0) + _t2 * _t1 * _ref->get__gij(1, 0) + _t1 * _t2 * _ref->get__gij(0, 1) + _t2 * _t2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
 				gamma = length * length;
 				t1 = _t1 / length;
 				t2 = _t2 / length;
@@ -7815,7 +7544,6 @@ namespace KingOfMonsters {
 				n1 = T2;
 				n2 = -T1;
 				length = sqrt(n1 * n1 * _ref->get__gij(0, 0) + n2 * n1 * _ref->get__gij(1, 0) + n1 * n2 * _ref->get__gij(0, 1) + n2 * n2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
 				n1 /= length;
 				n2 /= length;
 				N1 = _ref->get__gij(0, 0) * n1 + _ref->get__gij(0, 1) * n2;
@@ -7888,7 +7616,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(_t1 * _t1 * this->get_gij(0, 0) + _t2 * _t1 * this->get_gij(1, 0) + _t1 * _t2 * this->get_gij(0, 1) + _t2 * _t2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
 				gamma = length * length;
 				t1 = _t1 / length;
 				t2 = _t2 / length;
@@ -7897,7 +7624,6 @@ namespace KingOfMonsters {
 				n1 = T2;
 				n2 = -T1;
 				length = sqrt(n1 * n1 * this->get_gij(0, 0) + n2 * n1 * this->get_gij(1, 0) + n1 * n2 * this->get_gij(0, 1) + n2 * n2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
 				//eta = length * length;
 				n1 /= length;
 				n2 /= length;
@@ -7906,7 +7632,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(_t1 * _t1 * _ref->get__gij(0, 0) + _t2 * _t1 * _ref->get__gij(1, 0) + _t1 * _t2 * _ref->get__gij(0, 1) + _t2 * _t2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
 				gamma = length * length;
 				t1 = _t1 / length;
 				t2 = _t2 / length;
@@ -7915,7 +7640,6 @@ namespace KingOfMonsters {
 				n1 = T2;
 				n2 = -T1;
 				length = sqrt(n1 * n1 * _ref->get__gij(0, 0) + n2 * n1 * _ref->get__gij(1, 0) + n1 * n2 * _ref->get__gij(0, 1) + n2 * n2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
 				//eta = length * length;
 				n1 /= length;
 				n2 /= length;
@@ -7991,7 +7715,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij(0, 0) * v1 + this->get_gij(0, 1) * v2;
@@ -7999,7 +7722,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij(0, 0) + s2 * s1 * this->get_gij(1, 0) + s1 * s2 * this->get_gij(0, 1) + s2 * s2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij(0, 0) * s1 + this->get_gij(0, 1) * s2;
@@ -8007,7 +7729,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -8015,7 +7736,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -8081,7 +7801,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij(0, 0) * v1 + this->get_gij(0, 1) * v2;
@@ -8089,7 +7808,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij(0, 0) + s2 * s1 * this->get_gij(1, 0) + s1 * s2 * this->get_gij(0, 1) + s2 * s2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij(0, 0) * s1 + this->get_gij(0, 1) * s2;
@@ -8097,7 +7815,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -8105,7 +7822,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
@@ -8184,7 +7900,6 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = this->get_gij(0, 0) * v1 + this->get_gij(0, 1) * v2;
@@ -8192,7 +7907,6 @@ namespace KingOfMonsters {
 				s1 = V2;
 				s2 = -V1;
 				length = sqrt(s1 * s1 * this->get_gij(0, 0) + s2 * s1 * this->get_gij(1, 0) + s1 * s2 * this->get_gij(0, 1) + s2 * s2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = this->get_gij(0, 0) * s1 + this->get_gij(0, 1) * s2;
@@ -8200,7 +7914,6 @@ namespace KingOfMonsters {
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
 				v1 /= length;
 				v2 /= length;
 				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
@@ -8208,7 +7921,6 @@ namespace KingOfMonsters {
 				S1 = v2;
 				S2 = -v1;
 				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
 				s1 /= length;
 				s2 /= length;
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
