@@ -5539,10 +5539,9 @@ namespace KingOfMonsters {
 			//double E21 = w1 * (v2 * v1) + w2 * (s2 * s1);
 			//double E22 = w1 * (v2 * v2) + w2 * (s2 * s2);
 			//double TRACE = (S11 + S22)/(_ref->get__gij(0,0)+ _ref->get__gij(1, 1));
-			double TRACE = (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
-
+			//double TRACE = (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
+			double TRACE = 1;
 			//if (TRACE == 0)TRACE = 1;
-			//TRACE = 1;
 			val = 1. / tr / TRACE * (s11 * E11 * S12 + s11 * E12 * S22 + s12 * E21 * S12 + s12 * E22 * S22);// / sc;
 			val -= 1. / tr / TRACE * (s21 * E11 * S11 + s21 * E12 * S21 + s22 * E21 * S11 + s22 * E22 * S21);// / sc;
 			
@@ -5697,7 +5696,8 @@ namespace KingOfMonsters {
 			double tr = (E11 + E22) / (_ref->get__Gij(0, 0) + _ref->get__Gij(1, 1));
 			if (tr == 0)tr = 1;
 			double _S21 = _S12;
-			double TRACE = (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
+			//double TRACE = (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
+			double TRACE = 1;
 			//if (TRACE == 0)TRACE = 1;
 			/*
 			double E11 = w1 * (v1 * v1) + w2 * (s1 * s1);
@@ -5719,7 +5719,6 @@ namespace KingOfMonsters {
 				//val += w2 * ((s21 * S1 + s22 * S2) * (-S11 * s1 - S12 * s2) - (-s11 * S1 - s12 * S2) * (S21 * s1 + S22 * s2));
 				//double dTRACE = (S11_z + S22_z) / (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
 
-				//TRACE = 1;
 				val = 1. / tr / TRACE * (s11 * E11 * S12_z + s11 * E12 * S22_z + s12 * E21 * S12_z + s12 * E22 * S22_z);// / sc;
 				val -= 1. / tr / TRACE * (s21 * E11 * S11_z + s21 * E12 * S21_z + s22 * E21 * S11_z + s22 * E22 * S21_z);// / sc;
 				//val += -1. / tr / TRACE / TRACE * (s11 * E11 * _S12 + s11 * E12 * _S22 + s12 * E21 * _S12 + s12 * E22 * _S22) * dTRACE;// / sc;
@@ -5833,8 +5832,8 @@ namespace KingOfMonsters {
 			if (tr == 0)tr = 1;
 
 			double _S21 = _S12;
-			double TRACE = (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
-
+			//double TRACE = (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
+			double TRACE = 1;
 			//if (TRACE == 0)TRACE = 1;
 			/*
 			double E11 = w1 * (v1 * v1) + w2 * (s1 * s1);
@@ -5948,7 +5947,8 @@ namespace KingOfMonsters {
 			}
 			s11 *= sc; s12 *= sc; s22 *= sc; s21 *= sc;
 
-			double TRACE = (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
+			//double TRACE = (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
+			double TRACE = 1;
 			double* ptr1 = __guide_xieta;
 
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -5980,7 +5980,7 @@ namespace KingOfMonsters {
 				ptr1+=2;
 			}
 		}
-		void remove(int N)
+		void remove(int N,double * ptr,long long *index,double sc)
 		{
 			double* ptr1 = __guide_xieta;
 			double* ptr2 = __guide2_xieta;
@@ -5992,14 +5992,16 @@ namespace KingOfMonsters {
 				ptr1 ++;
 				ptr2++;
 			}
-			ptr1 = __guide_xieta;
+			//ptr1 = ptr;
+			long long * ptr3 = index;
 			ptr2 = __guide2_xieta;
 
 			for (int i = 0; i < N; i++)
 			{
-				*ptr1 -= *ptr2 * dot / norm;
+				ptr[*ptr3] += *ptr2 * dot / norm * sc;
 				ptr1++;
 				ptr2++;
+				ptr3++;
 			}
 		}
 		void mix_eta( double v1, double v2, double w1, double w2, bool accurate)
@@ -6070,8 +6072,9 @@ namespace KingOfMonsters {
 			}
 			//s11 *= sc; s12 *= sc; s22 *= sc; s21 *= sc;
 
-			double TRACE = (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
-			for (int s = 0; s < _ref->_nNode; s++)
+			//double TRACE = (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
+			double TRACE = 1;
+			for(int s = 0; s < _ref->_nNode; s++)
 			{
 				double val;
 				double e11_eta = 0, e12_eta = 0, e22_eta = 0;
@@ -8777,9 +8780,9 @@ namespace KingOfMonsters {
 			mat->dat->addrow(ii, index->_arr, __mem->__guide2_xieta, 0, sc, __mem->_nNode * 2, true, c1);
 		}
 		
-		void mix_write(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1,bool remove)
+		void mix_write(mySparse^ mat, int ii, myIntArray^ index,myDoubleArray^ constraint, double sc, double c1,bool remove)
 		{
-			if(remove)__mem->remove(__mem->_nNode*2);
+			if(remove)__mem->remove(__mem->_nNode*2,constraint->_arr->__v.data(), index->_arr,sc);
 			mat->dat->addrow(ii, index->_arr, __mem->__guide_xieta, 0, sc, __mem->_nNode * 2, true, c1);
 		}
 		void mix_xi(double v1, double v2,double w1,double w2, bool accurate)
