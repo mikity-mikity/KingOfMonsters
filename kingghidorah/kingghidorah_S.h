@@ -4001,47 +4001,51 @@ namespace KingOfMonsters {
 			}
 			val += (_ref->get__Gammaijk(0, 0, 0) * v1 * v1 + 2 * _ref->get__Gammaijk(0, 1, 0) * v1 * v2 + _ref->get__Gammaijk(1, 1, 0) * v2 * v2) * S1;
 			val += (_ref->get__Gammaijk(0, 0, 1) * v1 * v1 + 2 * _ref->get__Gammaijk(0, 1, 1) * v1 * v2 + _ref->get__Gammaijk(1, 1, 1) * v2 * v2) * S2;
-			double Gamma111=0, Gamma112=0, Gamma121=0, Gamma122=0, Gamma221=0, Gamma222=0;
+			double gamma111=0, gamma112=0, gamma121=0, gamma122=0, gamma221=0, gamma222=0;
 
-			double g1x = 0, g1y = 0, g2x = 0, g2y = 0;
+			//{ab,c}=ac,b + bc,a -ab,c
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				g1x += _ref->d1[0][s] * _ref->buf_xi[s];
-				g1y += _ref->d1[0][s] * _ref->buf_eta[s];
-				g2x += _ref->d1[1][s] * _ref->buf_xi[s];
-				g2y += _ref->d1[1][s] * _ref->buf_eta[s];
-			}
-			
-			double g11 = g1x * g1x + g1y * g1y;
-			double g12 = g1x * g2x + g1y * g2y;
-			double g22 = g2x * g2x + g2y * g2y;
-			double __scale = 1 / (g11 * g22 - g12 * g12);
+				for (int t = 0; t < _ref->_nNode; t++)
+				{
+					//gamma111=g11,1
+					gamma111 += 2*_ref->d2[0][s] * _ref->buf_xi[s] * _ref->d1[0][t] * _ref->buf_xi[t];
+					//gamma112=2*g12,1-g11,2
+					gamma112 += 2 * _ref->d2[0][s] * _ref->buf_xi[s] * _ref->d1[1][t] * _ref->buf_xi[t]
+						+ 2*_ref->d2[1][s] * _ref->buf_xi[s] * _ref->d1[1][t] * _ref->buf_xi[t]
+						- 2*_ref->d2[1][s] * _ref->buf_xi[s] * _ref->d1[0][t] * _ref->buf_xi[t];
+					//gamma121=g11,2
+					gamma121 += 2*_ref->d2[1][s] * _ref->buf_xi[s] * _ref->d1[0][t] * _ref->buf_xi[t];
+					//gamma122=g22,1
+					gamma122 += 2*_ref->d2[1][s] * _ref->buf_xi[s] * _ref->d1[1][t] * _ref->buf_xi[t];
+					//gamma221=2*g12,2-g22,1
+					gamma221 += 2*_ref->d2[1][s] * _ref->buf_xi[s] * _ref->d1[1][t] * _ref->buf_xi[t]
+						+ 2*_ref->d2[3][s] * _ref->buf_xi[s] * _ref->d1[0][t] * _ref->buf_xi[t]
+						- 2*_ref->d2[1][s] * _ref->buf_xi[s] * _ref->d1[1][t] * _ref->buf_xi[t];
+					//gamma222=g22,2
+					gamma222 += 2*_ref->d2[3][s] * _ref->buf_xi[s] * _ref->d1[1][t] * _ref->buf_xi[t];
 
-			double G1x = (g22 * g1x - g12 * g2x) * __scale;
-			double G1y = (g22 * g1y - g12 * g2y) * __scale;
-			double G2x = (-g12 * g1x + g11 * g2x) * __scale;
-			double G2y = (-g12 * g1y + g11 * g2y) * __scale;
-			double G11 = G1x * G1x + G1y * G1y;
-			double G12 = G1x * G2x + G1y * G2y;
-			double G22 = G2x * G2x + G2y * G2y;
+					//gamma111=g11,1
+					gamma111 += 2 * _ref->d2[0][s] * _ref->buf_eta[s] * _ref->d1[0][t] * _ref->buf_eta[t];
+					//gamma112=2*g12,1-g11,2
+					gamma112 += 2 * _ref->d2[0][s] * _ref->buf_eta[s] * _ref->d1[1][t] * _ref->buf_eta[t]
+						+ 2 * _ref->d2[1][s] * _ref->buf_eta[s] * _ref->d1[1][t] * _ref->buf_eta[t]
+						- 2 * _ref->d2[1][s] * _ref->buf_eta[s] * _ref->d1[0][t] * _ref->buf_eta[t];
+					//gamma121=g11,2
+					gamma121 += 2 * _ref->d2[1][s] * _ref->buf_eta[s] * _ref->d1[0][t] * _ref->buf_eta[t];
+					//gamma122=g22,1
+					gamma122 += 2 * _ref->d2[1][s] * _ref->buf_eta[s] * _ref->d1[1][t] * _ref->buf_eta[t];
+					//gamma221=2*g12,2-g22,1
+					gamma221 += 2 * _ref->d2[1][s] * _ref->buf_eta[s] * _ref->d1[1][t] * _ref->buf_eta[t]
+						+ 2 * _ref->d2[3][s] * _ref->buf_eta[s] * _ref->d1[0][t] * _ref->buf_eta[t]
+						- 2 * _ref->d2[1][s] * _ref->buf_eta[s] * _ref->d1[1][t] * _ref->buf_eta[t];
+					//gamma222=g22,2
+					gamma222 += 2 * _ref->d2[3][s] * _ref->buf_eta[s] * _ref->d1[1][t] * _ref->buf_eta[t];
 
-			double norm = std::sqrt(G11 * S1 * S1 + 2 * G12 * S1 * S2 + G22 * S2 * S2);
-			S1 /= norm;
-			S2 /= norm;
-			norm = std::sqrt(g11 * v1 * v1 + 2 * g12 * v1 * v2 + g22 * v2 * v2);
-			v1 /= norm;
-			v2 /= norm;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				Gamma111 += _ref->d2[0][s] * _ref->buf_xi[s] * G1x + _ref->d2[0][s] * _ref->buf_eta[s] * G1y;
-				Gamma112 += _ref->d2[0][s] * _ref->buf_xi[s] * G2x + _ref->d2[0][s] * _ref->buf_eta[s] * G2y;
-				Gamma121 += _ref->d2[1][s] * _ref->buf_xi[s] * G1x + _ref->d2[1][s] * _ref->buf_eta[s] * G1y;
-				Gamma122 += _ref->d2[1][s] * _ref->buf_xi[s] * G2x + _ref->d2[1][s] * _ref->buf_eta[s] * G2y;
-				Gamma221 += _ref->d2[3][s] * _ref->buf_xi[s] * G1x + _ref->d2[3][s] * _ref->buf_eta[s] * G1y;
-				Gamma222 += _ref->d2[3][s] * _ref->buf_xi[s] * G2x + _ref->d2[3][s] * _ref->buf_eta[s] * G2y;
+				}
 			}
-			val -= (Gamma111 * v1 * v1 + 2 * Gamma121 * v1 * v2 + Gamma221 * v2 * v2) * S1;
-			val -= (Gamma112 * v1 * v1 + 2 * Gamma122 * v1 * v2 + Gamma222 * v2 * v2) * S2;
+			val -= (gamma111 * v1 * v1 + 2 * gamma121 * v1 * v2 + gamma221 * v2 * v2) * s1;
+			val -= (gamma112 * v1 * v1 + 2 * gamma122 * v1 * v2 + gamma222 * v2 * v2) * s2;
 			return val;
 		}
 		void curvature_xi(double *ptr,double v1, double v2, bool accurate)
@@ -4080,61 +4084,56 @@ namespace KingOfMonsters {
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
 				S2 = _ref->get__gij(1, 0) * s1 + _ref->get__gij(1, 1) * s2;
 			}
-			double g1x = 0, g1y = 0, g2x = 0, g2y = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				g1x += _ref->d1[0][s] * _ref->buf_xi[s];
-				g1y += _ref->d1[0][s] * _ref->buf_eta[s];
-				g2x += _ref->d1[1][s] * _ref->buf_xi[s];
-				g2y += _ref->d1[1][s] * _ref->buf_eta[s];
-			}
+			
 
 			double* ptr1 = ptr;
-			double g11 = g1x * g1x + g1y * g1y;
-			double g12 = g1x * g2x + g1y * g2y;
-			double g22 = g2x * g2x + g2y * g2y;
-			double __scale = 1 / (g11 * g22 - g12 * g12);
+			
 
-			double G1x = (g22 * g1x - g12 * g2x) * __scale;
-			double G1y = (g22 * g1y - g12 * g2y) * __scale;
-			double G2x = (-g12 * g1x + g11 * g2x) * __scale;
-			double G2y = (-g12 * g1y + g11 * g2y) * __scale;
-			double G11 = G1x * G1x + G1y * G1y;
-			double G12 = G1x * G2x + G1y * G2y;
-			double G22 = G2x * G2x + G2y * G2y;
-			double norm = std::sqrt(G11 * S1 * S1 + 2 * G12 * S1 * S2 + G22 * S2 * S2);
-			S1 /= norm;
-			S2 /= norm;
-			norm = std::sqrt(g11 * v1 * v1 + 2 * g12 * v1 * v2 + g22 * v2 * v2);
-			v1 /= norm;
-			v2 /= norm;
+			//{ab,c}=ac,b + bc,a -ab,c
+			for (int t = 0; t < _ref->_nNode; t++)
+				{
+				double gamma111 = 0, gamma112 = 0, gamma121 = 0, gamma122 = 0, gamma221 = 0, gamma222 = 0;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+							//gamma111=g11,1
+					gamma111 += 2 * _ref->d2[0][s] * _ref->buf_xi[s] * _ref->d1[0][t];
+					//gamma112=2*g12,1-g11,2
+					gamma112 += 2 * _ref->d2[0][s] * _ref->buf_xi[s] * _ref->d1[1][t] 
+						+ 2 * _ref->d2[1][s] * _ref->buf_xi[s] * _ref->d1[1][t]
+						- 2 * _ref->d2[1][s] * _ref->buf_xi[s] * _ref->d1[0][t];
+					//gamma121=g11,2
+					gamma121 += 2 * _ref->d2[1][s] * _ref->buf_xi[s] * _ref->d1[0][t];
+					//gamma122=g22,1
+					gamma122 += 2 * _ref->d2[1][s] * _ref->buf_xi[s] * _ref->d1[1][t] ;
+					//gamma221=2*g12,2-g22,1
+					gamma221 += 2 * _ref->d2[1][s] * _ref->buf_xi[s] * _ref->d1[1][t] 
+						+ 2 * _ref->d2[3][s] * _ref->buf_xi[s] * _ref->d1[0][t] 
+						- 2 * _ref->d2[1][s] * _ref->buf_xi[s] * _ref->d1[1][t];
+					//gamma222=g22,2
+					gamma222 += 2 * _ref->d2[3][s] * _ref->buf_xi[s] * _ref->d1[1][t] ;
 
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				double val = 0;
 
-				double _Gamma111 = 0, _Gamma112 = 0, _Gamma121 = 0, _Gamma122 = 0, _Gamma221 = 0, _Gamma222 = 0;
-				double _g1x = 0, _g1y = 0, _g2x = 0, _g2y = 0;
-				_g1x = _ref->d1[0][s];
-				_g2x = _ref->d1[1][s];
-
-				double _G1x = (g22 * _g1x - g12 * _g2x + 2 * _g2x * g2x * g1x - (_g1x * g2x + g1x * _g2x) * g2x) * __scale;
-				double _G1y = (2 * (g2x * _g2x) * g1y - (g1x * _g2x + _g1x * g2x) * g2y) * __scale;
-				double _G2x = (-g12 * _g1x + g11 * _g2x + -(g1x * _g2x + _g1x * g2x) * g1x + 2 * (g1x * _g1x) * g2x) * __scale;
-				double _G2y = (-(g1x * _g2x + _g1x * g2x) * g1y + (2 * g1x * _g1x) * g2y) * __scale;
-
-				_Gamma111 += _ref->d2[0][s] * G1x + _ref->d2[0][s] * _ref->buf_xi[s] * _G1x+_ref->d2[0][s] * _ref->buf_eta[s] * _G1y;
-				_Gamma112 += _ref->d2[0][s] * G2x + _ref->d2[0][s] * _ref->buf_xi[s] * _G2x+_ref->d2[0][s] * _ref->buf_eta[s] * _G2y;
-				_Gamma121 += _ref->d2[1][s] * G1x + _ref->d2[1][s] * _ref->buf_xi[s] * _G1x+_ref->d2[1][s] * _ref->buf_eta[s] * _G1y;
-				_Gamma122 += _ref->d2[1][s] * G2x + _ref->d2[1][s] * _ref->buf_xi[s] * _G2x+_ref->d2[1][s] * _ref->buf_eta[s] * _G2y;
-				_Gamma221 += _ref->d2[3][s] * G1x + _ref->d2[3][s] * _ref->buf_xi[s] * _G1x+_ref->d2[3][s] * _ref->buf_eta[s] * _G1y;
-				_Gamma222 += _ref->d2[3][s] * G2x + _ref->d2[3][s] * _ref->buf_xi[s] * _G2x+_ref->d2[3][s] * _ref->buf_eta[s] * _G2y;
-
-				val -= (_Gamma111 * v1 * v1 + 2 * _Gamma121 * v1 * v2 + _Gamma221 * v2 * v2) * S1;
-				val -= (_Gamma112 * v1 * v1 + 2 * _Gamma122 * v1 * v2 + _Gamma222 * v2 * v2) * S2;
+					gamma111 += 2 * _ref->d2[0][t] * _ref->d1[0][s] * _ref->buf_xi[s];
+					//gamma112=2*g12,1-g11,2
+					gamma112 += 2 * _ref->d2[0][t]  * _ref->d1[1][s] * _ref->buf_xi[s]
+						+ 2 * _ref->d2[1][t] * _ref->d1[1][s] * _ref->buf_xi[s]
+						- 2 * _ref->d2[1][t] * _ref->d1[0][s] * _ref->buf_xi[s];
+					//gamma121=g11,2
+					gamma121 += 2 * _ref->d2[1][t]  * _ref->d1[0][s] * _ref->buf_xi[s];
+					//gamma122=g22,1
+					gamma122 += 2 * _ref->d2[1][t]  * _ref->d1[1][s] * _ref->buf_xi[s];
+					//gamma221=2*g12,2-g22,1
+					gamma221 += 2 * _ref->d2[1][t]  * _ref->d1[1][s] * _ref->buf_xi[s]
+						+ 2 * _ref->d2[3][t] * _ref->d1[0][s] * _ref->buf_xi[s]
+						- 2 * _ref->d2[1][t]* _ref->d1[1][s] * _ref->buf_xi[s];
+					//gamma222=g22,2
+				}
+				double val = -(gamma111 * v1 * v1 + 2 * gamma121 * v1 * v2 + gamma221 * v2 * v2) * s1;
+				val -= (gamma112 * v1 * v1 + 2 * gamma122 * v1 * v2 + gamma222 * v2 * v2) * s2;
 				*ptr1 = val;
 				ptr1++;
 			}
+	
 		}
 		void curvature_eta(double* ptr, double v1, double v2, bool accurate)
 		{
@@ -4171,324 +4170,55 @@ namespace KingOfMonsters {
 				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
 				S2 = _ref->get__gij(1, 0) * s1 + _ref->get__gij(1, 1) * s2;
 			}
-			double g1x = 0, g1y = 0, g2x = 0, g2y = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				g1x += _ref->d1[0][s] * _ref->buf_xi[s];
-				g1y += _ref->d1[0][s] * _ref->buf_eta[s];
-				g2x += _ref->d1[1][s] * _ref->buf_xi[s];
-				g2y += _ref->d1[1][s] * _ref->buf_eta[s];
-			}
-			double g11 = g1x * g1x + g1y * g1y;
-			double g12 = g1x * g2x + g1y * g2y;
-			double g22 = g2x * g2x + g2y * g2y;
-			double __scale = 1 / (g11 * g22 - g12 * g12);
-
-			double G1x = (g22 * g1x - g12 * g2x) * __scale;
-			double G1y = (g22 * g1y - g12 * g2y) * __scale;
-			double G2x = (-g12 * g1x + g11 * g2x) * __scale;
-			double G2y = (-g12 * g1y + g11 * g2y) * __scale;
-			double G11 = G1x * G1x + G1y * G1y;
-			double G12 = G1x * G2x + G1y * G2y;
-			double G22 = G2x * G2x + G2y * G2y;
-			double norm = std::sqrt(G11 * S1 * S1 + 2 * G12 * S1 * S2 + G22 * S2 * S2);
-			S1 /= norm;
-			S2 /= norm;
-			norm = std::sqrt(g11 * v1 * v1 + 2 * g12 * v1 * v2 + g22 * v2 * v2);
-			v1 /= norm;
-			v2 /= norm;
-
 			double* ptr1 = ptr;
-			for (int s = 0; s < _ref->_nNode; s++)
+
+
+			//{ab,c}=ac,b + bc,a -ab,c
+			for (int t = 0; t < _ref->_nNode; t++)
 			{
-				double val = 0;
+				double gamma111 = 0, gamma112 = 0, gamma121 = 0, gamma122 = 0, gamma221 = 0, gamma222 = 0;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					//gamma111=g11,1
+					gamma111 += 2 * _ref->d2[0][s] * _ref->buf_eta[s] * _ref->d1[0][t];
+					//gamma112=2*g12,1-g11,2
+					gamma112 += 2 * _ref->d2[0][s] * _ref->buf_eta[s] * _ref->d1[1][t]
+						+ 2 * _ref->d2[1][s] * _ref->buf_eta[s] * _ref->d1[1][t]
+						- 2 * _ref->d2[1][s] * _ref->buf_eta[s] * _ref->d1[0][t];
+					//gamma121=g11,2
+					gamma121 += 2 * _ref->d2[1][s] * _ref->buf_eta[s] * _ref->d1[0][t];
+					//gamma122=g22,1
+					gamma122 += 2 * _ref->d2[1][s] * _ref->buf_eta[s] * _ref->d1[1][t];
+					//gamma221=2*g12,2-g22,1
+					gamma221 += 2 * _ref->d2[1][s] * _ref->buf_eta[s] * _ref->d1[1][t]
+						+ 2 * _ref->d2[3][s] * _ref->buf_eta[s] * _ref->d1[0][t]
+						- 2 * _ref->d2[1][s] * _ref->buf_eta[s] * _ref->d1[1][t];
+					//gamma222=g22,2
+					gamma222 += 2 * _ref->d2[3][s] * _ref->buf_eta[s] * _ref->d1[1][t];
 
-				double _Gamma111 = 0, _Gamma112 = 0, _Gamma121 = 0, _Gamma122 = 0, _Gamma221 = 0, _Gamma222 = 0;
-				double _g1x = 0, _g1y = 0, _g2x = 0, _g2y = 0;
-				_g1y = _ref->d1[0][s];
-				_g2y = _ref->d1[1][s];
 
-				double _G1x = (2 * (g2y * _g2y) * g1x - (g1y * _g2y + _g1y * g2y) * g2x) * __scale;
-				double _G1y = (g22 * _g1y - g12 * _g2y + 2 * _g2y * g2y * g1y - (_g1y * g2y + g1y * _g2y) * g2y) * __scale;
-				double _G2x = (-(g1y * _g2y + _g1y * g2y) * g1x + (2 * g1y * _g1y) * g2x) * __scale;
-				double _G2y = (-g12 * _g1y + g11 * _g2y + -(g1y * _g2y + _g1y * g2y) * g1y + 2 * (g1y * _g1y) * g2y) * __scale;
-
-				_Gamma111 += _ref->d2[0][s] * G1y + _ref->d2[0][s] * _ref->buf_xi[s] * _G1x + _ref->d2[0][s] * _ref->buf_eta[s] * _G1y;
-				_Gamma112 += _ref->d2[0][s] * G2y + _ref->d2[0][s] * _ref->buf_xi[s] * _G2x + _ref->d2[0][s] * _ref->buf_eta[s] * _G2y;
-				_Gamma121 += _ref->d2[1][s] * G1y + _ref->d2[1][s] * _ref->buf_xi[s] * _G1x + _ref->d2[1][s] * _ref->buf_eta[s] * _G1y;
-				_Gamma122 += _ref->d2[1][s] * G2y + _ref->d2[1][s] * _ref->buf_xi[s] * _G2x + _ref->d2[1][s] * _ref->buf_eta[s] * _G2y;
-				_Gamma221 += _ref->d2[3][s] * G1y + _ref->d2[3][s] * _ref->buf_xi[s] * _G1x + _ref->d2[3][s] * _ref->buf_eta[s] * _G1y;
-				_Gamma222 += _ref->d2[3][s] * G2y + _ref->d2[3][s] * _ref->buf_xi[s] * _G2x + _ref->d2[3][s] * _ref->buf_eta[s] * _G2y;
-
-				val -= (_Gamma111 * v1 * v1 + 2 * _Gamma121 * v1 * v2 + _Gamma221 * v2 * v2) * S1;
-				val -= (_Gamma112 * v1 * v1 + 2 * _Gamma122 * v1 * v2 + _Gamma222 * v2 * v2) * S2;
-				*ptr1 = val;
-				ptr1++;
-			}
-		}double curvature2(double v1, double v2, bool accurate)
-		{
-			double val = 0;
-
-			double s1 = 0, s2 = 0;//up
-			double S1 = 0, S2 = 0;//down
-			double V1 = 0, V2 = 0;//down
-			double length = 0;
-			if (accurate)
-			{
-				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
-				v1 /= length;
-				v2 /= length;
-				V1 = this->get_gij(0, 0) * v1 + this->get_gij(0, 1) * v2;
-				V2 = this->get_gij(1, 0) * v1 + this->get_gij(1, 1) * v2;
-				s1 = V2;
-				s2 = -V1;
-				length = sqrt(s1 * s1 * this->get_gij(0, 0) + s2 * s1 * this->get_gij(1, 0) + s1 * s2 * this->get_gij(0, 1) + s2 * s2 * this->get_gij(1, 1));
-				s1 /= length;
-				s2 /= length;
-				S1 = this->get_gij(0, 0) * s1 + this->get_gij(0, 1) * s2;
-				S2 = this->get_gij(1, 0) * s1 + this->get_gij(1, 1) * s2;
-			}
-			else {
-				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				v1 /= length;
-				v2 /= length;
-				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
-				V2 = _ref->get__gij(1, 0) * v1 + _ref->get__gij(1, 1) * v2;
-				S1 = v2;
-				S2 = -v1;
-				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				s1 /= length;
-				s2 /= length;
-				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
-				S2 = _ref->get__gij(1, 0) * s1 + _ref->get__gij(1, 1) * s2;
-			}
-			val += (_ref->get__Gammaijk(0, 0, 0) * s1 * s1 + 2 * _ref->get__Gammaijk(0, 1, 0) * s1 * s2 + _ref->get__Gammaijk(1, 1, 0) * s2 * s2) * V1;
-			val += (_ref->get__Gammaijk(0, 0, 1) * s1 * s1 + 2 * _ref->get__Gammaijk(0, 1, 1) * s1 * s2 + _ref->get__Gammaijk(1, 1, 1) * s2 * s2) * V2;
-			double Gamma111 = 0, Gamma112 = 0, Gamma121 = 0, Gamma122 = 0, Gamma221 = 0, Gamma222 = 0;
-
-			double g1x = 0, g1y = 0, g2x = 0, g2y = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				g1x += _ref->d1[0][s] * _ref->buf_xi[s];
-				g1y += _ref->d1[0][s] * _ref->buf_eta[s];
-				g2x += _ref->d1[1][s] * _ref->buf_xi[s];
-				g2y += _ref->d1[1][s] * _ref->buf_eta[s];
-			}
-
-			double g11 = g1x * g1x + g1y * g1y;
-			double g12 = g1x * g2x + g1y * g2y;
-			double g22 = g2x * g2x + g2y * g2y;
-			double __scale = 1 / (g11 * g22 - g12 * g12);
-
-			double G1x = (g22 * g1x - g12 * g2x) * __scale;
-			double G1y = (g22 * g1y - g12 * g2y) * __scale;
-			double G2x = (-g12 * g1x + g11 * g2x) * __scale;
-			double G2y = (-g12 * g1y + g11 * g2y) * __scale;
-			double G11 = G1x * G1x + G1y * G1y;
-			double G12 = G1x * G2x + G1y * G2y;
-			double G22 = G2x * G2x + G2y * G2y;
-
-			double norm = std::sqrt(G11 * V1 * V1 + 2 * G12 * V1 * V2 + G22 * V2 * V2);
-			V1 /= norm;
-			V2 /= norm;
-			norm = std::sqrt(g11 * s1 * s1 + 2 * g12 * s1 * s2 + g22 * s2 * s2);
-			s1 /= norm;
-			s2 /= norm;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				Gamma111 += _ref->d2[0][s] * _ref->buf_xi[s] * G1x + _ref->d2[0][s] * _ref->buf_eta[s] * G1y;
-				Gamma112 += _ref->d2[0][s] * _ref->buf_xi[s] * G2x + _ref->d2[0][s] * _ref->buf_eta[s] * G2y;
-				Gamma121 += _ref->d2[1][s] * _ref->buf_xi[s] * G1x + _ref->d2[1][s] * _ref->buf_eta[s] * G1y;
-				Gamma122 += _ref->d2[1][s] * _ref->buf_xi[s] * G2x + _ref->d2[1][s] * _ref->buf_eta[s] * G2y;
-				Gamma221 += _ref->d2[3][s] * _ref->buf_xi[s] * G1x + _ref->d2[3][s] * _ref->buf_eta[s] * G1y;
-				Gamma222 += _ref->d2[3][s] * _ref->buf_xi[s] * G2x + _ref->d2[3][s] * _ref->buf_eta[s] * G2y;
-			}
-			val -= (Gamma111 * s1 * s1 + 2 * Gamma121 * s1 * s2 + Gamma221 * s2 * s2) * V1;
-			val -= (Gamma112 * s1 * s1 + 2 * Gamma122 * s1 * s2 + Gamma222 * s2 * s2) * V2;
-			return val;
-		}
-		void curvature2_xi(double* ptr, double v1, double v2, bool accurate)
-		{
-
-			double s1 = 0, s2 = 0;//up
-			double S1 = 0, S2 = 0;//down
-			double V1 = 0, V2 = 0;//down
-			double length = 0;
-			if (accurate)
-			{
-				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
-				v1 /= length;
-				v2 /= length;
-				V1 = this->get_gij(0, 0) * v1 + this->get_gij(0, 1) * v2;
-				V2 = this->get_gij(1, 0) * v1 + this->get_gij(1, 1) * v2;
-				s1 = V2;
-				s2 = -V1;
-				length = sqrt(s1 * s1 * this->get_gij(0, 0) + s2 * s1 * this->get_gij(1, 0) + s1 * s2 * this->get_gij(0, 1) + s2 * s2 * this->get_gij(1, 1));
-				s1 /= length;
-				s2 /= length;
-				S1 = this->get_gij(0, 0) * s1 + this->get_gij(0, 1) * s2;
-				S2 = this->get_gij(1, 0) * s1 + this->get_gij(1, 1) * s2;
-			}
-			else {
-				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				v1 /= length;
-				v2 /= length;
-				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
-				V2 = _ref->get__gij(1, 0) * v1 + _ref->get__gij(1, 1) * v2;
-				S1 = v2;
-				S2 = -v1;
-				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				s1 /= length;
-				s2 /= length;
-				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
-				S2 = _ref->get__gij(1, 0) * s1 + _ref->get__gij(1, 1) * s2;
-			}
-			double g1x = 0, g1y = 0, g2x = 0, g2y = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				g1x += _ref->d1[0][s] * _ref->buf_xi[s];
-				g1y += _ref->d1[0][s] * _ref->buf_eta[s];
-				g2x += _ref->d1[1][s] * _ref->buf_xi[s];
-				g2y += _ref->d1[1][s] * _ref->buf_eta[s];
-			}
-
-			double* ptr1 = ptr;
-			double g11 = g1x * g1x + g1y * g1y;
-			double g12 = g1x * g2x + g1y * g2y;
-			double g22 = g2x * g2x + g2y * g2y;
-			double __scale = 1 / (g11 * g22 - g12 * g12);
-
-			double G1x = (g22 * g1x - g12 * g2x) * __scale;
-			double G1y = (g22 * g1y - g12 * g2y) * __scale;
-			double G2x = (-g12 * g1x + g11 * g2x) * __scale;
-			double G2y = (-g12 * g1y + g11 * g2y) * __scale;
-			double G11 = G1x * G1x + G1y * G1y;
-			double G12 = G1x * G2x + G1y * G2y;
-			double G22 = G2x * G2x + G2y * G2y;
-			double norm = std::sqrt(G11 * V1 * V1 + 2 * G12 * V1 * V2 + G22 * V2 * V2);
-			V1 /= norm;
-			V2 /= norm;
-			norm = std::sqrt(g11 * s1 * s1 + 2 * g12 * s1 * s2 + g22 * s2 * s2);
-			s1 /= norm;
-			s2 /= norm;
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				double val = 0;
-
-				double _Gamma111 = 0, _Gamma112 = 0, _Gamma121 = 0, _Gamma122 = 0, _Gamma221 = 0, _Gamma222 = 0;
-				double _g1x = 0, _g1y = 0, _g2x = 0, _g2y = 0;
-				_g1x = _ref->d1[0][s];
-				_g2x = _ref->d1[1][s];
-
-				double _G1x = (g22 * _g1x - g12 * _g2x + 2 * _g2x * g2x * g1x - (_g1x * g2x + g1x * _g2x) * g2x) * __scale;
-				double _G1y = (2 * (g2x * _g2x) * g1y - (g1x * _g2x + _g1x * g2x) * g2y) * __scale;
-				double _G2x = (-g12 * _g1x + g11 * _g2x + -(g1x * _g2x + _g1x * g2x) * g1x + 2 * (g1x * _g1x) * g2x) * __scale;
-				double _G2y = (-(g1x * _g2x + _g1x * g2x) * g1y + (2 * g1x * _g1x) * g2y) * __scale;
-
-				_Gamma111 += _ref->d2[0][s] * G1x + _ref->d2[0][s] * _ref->buf_xi[s] * _G1x + _ref->d2[0][s] * _ref->buf_eta[s] * _G1y;
-				_Gamma112 += _ref->d2[0][s] * G2x + _ref->d2[0][s] * _ref->buf_xi[s] * _G2x + _ref->d2[0][s] * _ref->buf_eta[s] * _G2y;
-				_Gamma121 += _ref->d2[1][s] * G1x + _ref->d2[1][s] * _ref->buf_xi[s] * _G1x + _ref->d2[1][s] * _ref->buf_eta[s] * _G1y;
-				_Gamma122 += _ref->d2[1][s] * G2x + _ref->d2[1][s] * _ref->buf_xi[s] * _G2x + _ref->d2[1][s] * _ref->buf_eta[s] * _G2y;
-				_Gamma221 += _ref->d2[3][s] * G1x + _ref->d2[3][s] * _ref->buf_xi[s] * _G1x + _ref->d2[3][s] * _ref->buf_eta[s] * _G1y;
-				_Gamma222 += _ref->d2[3][s] * G2x + _ref->d2[3][s] * _ref->buf_xi[s] * _G2x + _ref->d2[3][s] * _ref->buf_eta[s] * _G2y;
-
-				val -= (_Gamma111 * s1 * s1 + 2 * _Gamma121 * s1 * s2 + _Gamma221 * s2 * s2) * V1;
-				val -= (_Gamma112 * s1 * s1 + 2 * _Gamma122 * s1 * s2 + _Gamma222 * s2 * s2) * V2;
+					gamma111 += 2 * _ref->d2[0][t] * _ref->d1[0][s] * _ref->buf_eta[s];
+					//gamma112=2*g12,1-g11,2
+					gamma112 += 2 * _ref->d2[0][t] * _ref->d1[1][s] * _ref->buf_eta[s]
+						+ 2 * _ref->d2[1][t] * _ref->d1[1][s] * _ref->buf_eta[s]
+						- 2 * _ref->d2[1][t] * _ref->d1[0][s] * _ref->buf_eta[s];
+					//gamma121=g11,2
+					gamma121 += 2 * _ref->d2[1][t] * _ref->d1[0][s] * _ref->buf_eta[s];
+					//gamma122=g22,1
+					gamma122 += 2 * _ref->d2[1][t] * _ref->d1[1][s] * _ref->buf_eta[s];
+					//gamma221=2*g12,2-g22,1
+					gamma221 += 2 * _ref->d2[1][t] * _ref->d1[1][s] * _ref->buf_eta[s]
+						+ 2 * _ref->d2[3][t] * _ref->d1[0][s] * _ref->buf_eta[s]
+						- 2 * _ref->d2[1][t] * _ref->d1[1][s] * _ref->buf_eta[s];
+					//gamma222=g22,2
+				}
+				double val = -(gamma111 * v1 * v1 + 2 * gamma121 * v1 * v2 + gamma221 * v2 * v2) * s1;
+				val -= (gamma112 * v1 * v1 + 2 * gamma122 * v1 * v2 + gamma222 * v2 * v2) * s2;
 				*ptr1 = val;
 				ptr1++;
 			}
 		}
-		void curvature2_eta(double* ptr, double v1, double v2, bool accurate)
-		{
-			double s1 = 0, s2 = 0;//up
-			double S1 = 0, S2 = 0;//down
-			double V1 = 0, V2 = 0;//down
-			double length = 0;
-			if (accurate)
-			{
-				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
-				v1 /= length;
-				v2 /= length;
-				V1 = this->get_gij(0, 0) * v1 + this->get_gij(0, 1) * v2;
-				V2 = this->get_gij(1, 0) * v1 + this->get_gij(1, 1) * v2;
-				s1 = V2;
-				s2 = -V1;
-				length = sqrt(s1 * s1 * this->get_gij(0, 0) + s2 * s1 * this->get_gij(1, 0) + s1 * s2 * this->get_gij(0, 1) + s2 * s2 * this->get_gij(1, 1));
-				s1 /= length;
-				s2 /= length;
-				S1 = this->get_gij(0, 0) * s1 + this->get_gij(0, 1) * s2;
-				S2 = this->get_gij(1, 0) * s1 + this->get_gij(1, 1) * s2;
-			}
-			else {
-				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				v1 /= length;
-				v2 /= length;
-				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
-				V2 = _ref->get__gij(1, 0) * v1 + _ref->get__gij(1, 1) * v2;
-				S1 = v2;
-				S2 = -v1;
-				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				s1 /= length;
-				s2 /= length;
-				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
-				S2 = _ref->get__gij(1, 0) * s1 + _ref->get__gij(1, 1) * s2;
-			}
-			double g1x = 0, g1y = 0, g2x = 0, g2y = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				g1x += _ref->d1[0][s] * _ref->buf_xi[s];
-				g1y += _ref->d1[0][s] * _ref->buf_eta[s];
-				g2x += _ref->d1[1][s] * _ref->buf_xi[s];
-				g2y += _ref->d1[1][s] * _ref->buf_eta[s];
-			}
-			double g11 = g1x * g1x + g1y * g1y;
-			double g12 = g1x * g2x + g1y * g2y;
-			double g22 = g2x * g2x + g2y * g2y;
-			double __scale = 1 / (g11 * g22 - g12 * g12);
-
-			double G1x = (g22 * g1x - g12 * g2x) * __scale;
-			double G1y = (g22 * g1y - g12 * g2y) * __scale;
-			double G2x = (-g12 * g1x + g11 * g2x) * __scale;
-			double G2y = (-g12 * g1y + g11 * g2y) * __scale;
-			double G11 = G1x * G1x + G1y * G1y;
-			double G12 = G1x * G2x + G1y * G2y;
-			double G22 = G2x * G2x + G2y * G2y;
-			double norm = std::sqrt(G11 * V1 * V1 + 2 * G12 * V1 * V2 + G22 * V2 * V2);
-			V1 /= norm;
-			V2 /= norm;
-			norm = std::sqrt(g11 * s1 * s1 + 2 * g12 * s1 * s2 + g22 * s2 * s2);
-			s1 /= norm;
-			s2 /= norm;
-
-			double* ptr1 = ptr;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				double val = 0;
-
-				double _Gamma111 = 0, _Gamma112 = 0, _Gamma121 = 0, _Gamma122 = 0, _Gamma221 = 0, _Gamma222 = 0;
-				double _g1x = 0, _g1y = 0, _g2x = 0, _g2y = 0;
-				_g1y = _ref->d1[0][s];
-				_g2y = _ref->d1[1][s];
-
-				double _G1x = (2 * (g2y * _g2y) * g1x - (g1y * _g2y + _g1y * g2y) * g2x) * __scale;
-				double _G1y = (g22 * _g1y - g12 * _g2y + 2 * _g2y * g2y * g1y - (_g1y * g2y + g1y * _g2y) * g2y) * __scale;
-				double _G2x = (-(g1y * _g2y + _g1y * g2y) * g1x + (2 * g1y * _g1y) * g2x) * __scale;
-				double _G2y = (-g12 * _g1y + g11 * _g2y + -(g1y * _g2y + _g1y * g2y) * g1y + 2 * (g1y * _g1y) * g2y) * __scale;
-
-				_Gamma111 += _ref->d2[0][s] * G1y + _ref->d2[0][s] * _ref->buf_xi[s] * _G1x + _ref->d2[0][s] * _ref->buf_eta[s] * _G1y;
-				_Gamma112 += _ref->d2[0][s] * G2y + _ref->d2[0][s] * _ref->buf_xi[s] * _G2x + _ref->d2[0][s] * _ref->buf_eta[s] * _G2y;
-				_Gamma121 += _ref->d2[1][s] * G1y + _ref->d2[1][s] * _ref->buf_xi[s] * _G1x + _ref->d2[1][s] * _ref->buf_eta[s] * _G1y;
-				_Gamma122 += _ref->d2[1][s] * G2y + _ref->d2[1][s] * _ref->buf_xi[s] * _G2x + _ref->d2[1][s] * _ref->buf_eta[s] * _G2y;
-				_Gamma221 += _ref->d2[3][s] * G1y + _ref->d2[3][s] * _ref->buf_xi[s] * _G1x + _ref->d2[3][s] * _ref->buf_eta[s] * _G1y;
-				_Gamma222 += _ref->d2[3][s] * G2y + _ref->d2[3][s] * _ref->buf_xi[s] * _G2x + _ref->d2[3][s] * _ref->buf_eta[s] * _G2y;
-
-				val -= (_Gamma111 * s1 * s1 + 2 * _Gamma121 * s1 * s2 + _Gamma221 * s2 * s2) * V1;
-				val -= (_Gamma112 * s1 * s1 + 2 * _Gamma122 * s1 * s2 + _Gamma222 * s2 * s2) * V2;
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
+		
 		double guideBC(double v1, double v2, bool accurate)
 		{
 			double val = 0;
@@ -5548,7 +5278,8 @@ namespace KingOfMonsters {
 			return val;
 
 		}
-		void remove2(int N)
+	
+		void remove2(int N, double* __ptr, double* __ptr2, long long* index, double sc)
 		{
 		
 			double __dot = 0, __norm = 0;
@@ -5564,7 +5295,6 @@ namespace KingOfMonsters {
 			}
 			ptr1 = __mix_z;
 			ptr2 = __grad_z_tmp;
-
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				__dot += *ptr1 * *ptr2;
@@ -5574,23 +5304,29 @@ namespace KingOfMonsters {
 			}
 
 
-			ptr1 = __mix_phi;
+			long long* ptr3 = index;
+
 			ptr2 = __grad_phi_tmp;
 
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				*ptr1 -= *ptr2 * __dot / __norm;
-				ptr1++;
+				__ptr[*ptr3] = *ptr2 * __dot / __norm * sc;
 				ptr2++;
+				ptr3++;
 			}
-			ptr1 = __mix_z;
+
+
+		
+
+		
 			ptr2 = __grad_z_tmp;
+			ptr3 = index;
 
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				*ptr1 -= *ptr2 * __dot / __norm;
-				ptr1++;
+				__ptr2[*ptr3] = *ptr2 * __dot / __norm*sc;
 				ptr2++;
+				ptr3++;
 			}
 
 		}
@@ -5999,7 +5735,6 @@ namespace KingOfMonsters {
 			for (int i = 0; i < N; i++)
 			{
 				ptr[*ptr3] += *ptr2 * dot / norm * sc;
-				ptr1++;
 				ptr2++;
 				ptr3++;
 			}
@@ -8731,21 +8466,7 @@ namespace KingOfMonsters {
 		{
 			__mem->curvature_eta(__mem->__grad, v1, v2, accurate);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
-		}
-		double curvature2(double v1, double v2, bool accurate)
-		{
-			return __mem->curvature2(v1, v2, accurate);
-		}
-		void  curvature2_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate)
-		{
-			__mem->curvature2_xi(__mem->__grad, v1, v2, accurate);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
-		}
-		void  curvature2_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate)
-		{
-			__mem->curvature2_eta(__mem->__grad, v1, v2, accurate);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
-		}
+		}		
 		double guideBC(double v1, double v2, bool accurate)
 		{
 			return __mem->guideBC(v1, v2, accurate);
@@ -8780,9 +8501,9 @@ namespace KingOfMonsters {
 			mat->dat->addrow(ii, index->_arr, __mem->__guide2_xieta, 0, sc, __mem->_nNode * 2, true, c1);
 		}
 		
-		void mix_write(mySparse^ mat, int ii, myIntArray^ index,myDoubleArray^ constraint, double sc, double c1,bool remove)
+		void mix_write(mySparse^ mat, int ii, myIntArray^ index,myDoubleArray^ constraint, double sc, double c1,bool remove,double f)
 		{
-			if(remove)__mem->remove(__mem->_nNode*2,constraint->_arr->__v.data(), index->_arr,sc);
+			if(remove)__mem->remove(__mem->_nNode*2,constraint->_arr->__v.data(), index->_arr,sc*c1*f);
 			mat->dat->addrow(ii, index->_arr, __mem->__guide_xieta, 0, sc, __mem->_nNode * 2, true, c1);
 		}
 		void mix_xi(double v1, double v2,double w1,double w2, bool accurate)
@@ -8910,17 +8631,18 @@ namespace KingOfMonsters {
 			__mem->mix_Z(__mem->__grad, v1, v2, w1, w2, accurate);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, sc, __mem->_nNode, c1);
 		}
-		void mix_phiZ(mySparse^ mat, mySparse^ mat2, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, double w1, double w2, bool accurate, bool remove)
+
+		void mix_phiZ(mySparse^ mat, mySparse^ mat2, int ii, myIntArray^ index, myDoubleArray^ constraint, myDoubleArray^ constraint2,double sc,
+			double c1, double v1, double v2, double w1, double w2, bool accurate, bool remove,double f)
 		{
 			__mem->mix_phi(__mem->__mix_phi , v1, v2, w1, w2, accurate);
 			__mem->mix_Z(__mem->__mix_z, v1, v2, w1, w2, accurate);
 			if (remove)
 			{
-				__mem->remove2(__mem->_nNode);
+				__mem->remove2(__mem->_nNode, constraint->_arr->__v.data(), constraint2->_arr->__v.data(),index->_arr, sc*c1*f);
 			}
 			mat->dat->addrow(ii, index->_arr, __mem->__mix_phi, sc, __mem->_nNode, c1);
 			mat2->dat->addrow(ii, index->_arr, __mem->__mix_z, sc, __mem->_nNode, c1);
-
 		}
 		double BCEQ(double _t1, double _t2, double s11,double a,double b,bool accurate)
 		{
