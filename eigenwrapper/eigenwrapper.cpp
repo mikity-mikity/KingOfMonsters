@@ -1738,7 +1738,7 @@ void KingOfMonsters::_mySparse::__permuteCols(Eigen::PermutationMatrix<Eigen::Dy
 		}
 	}
 }
-void KingOfMonsters::_mySparse::_shrink(int64_t M, int64_t N)
+void KingOfMonsters::_mySparse::_shrink(int64_t M, int64_t N,bool sparse,bool dense)
 {
 	if (_mat.size() >= 1)
 	{
@@ -1746,6 +1746,18 @@ void KingOfMonsters::_mySparse::_shrink(int64_t M, int64_t N)
 		{
 			_mat[0].conservativeResize(M, N);
 		}
+	}
+	if (dense)
+	{
+		
+			//__r = M;
+			//__c = M;
+			//Eigen::Map<Eigen::MatrixXd> map1(___dmat, __r, __c);
+			_dmat.resize(M,N);
+			_dmat = _mat[0];
+			//_resize(M, M);
+			//_dmat.conservativeResize(M, M);
+	
 	}
 	//_dmat.conservativeResize(M, N);//;// _dmat.topLeftCorner(M, N);// f;
 }
@@ -1768,6 +1780,10 @@ void  KingOfMonsters::_mySparse::scale(int i, double sc)
 void  KingOfMonsters::_mySparse::scale(double sc)
 {
 	_mat[0] *= sc;
+}
+void  KingOfMonsters::_mySparse::_scale(double sc)
+{
+	_dmat *= sc;
 }
 int64_t KingOfMonsters::_mySparse::_rows() {
 	return _dmat.rows();// __r;
@@ -2487,6 +2503,83 @@ void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B,/* Eigen::VectorXd* b, */_m
 		int64_t _E = ii + ss;
 		if (_E >= nn)_E = nn;
 		C->_dmat.middleCols(_S, _E - _S).noalias() = D * right.middleCols(_S, _E - _S);
+	}
+
+
+	//*ret = D.transpose() * *b;
+}
+void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B, _mySparse* B2,/* Eigen::VectorXd* b, */_mySparse* C/*, Eigen::VectorXd* ret*/)
+{
+	Eigen::MatrixXd D;
+	Eigen::MatrixXd D2;
+
+	int64_t nn = B->_mat[0].cols();
+	int64_t mm = B2->_mat[0].cols();
+	int64_t kk = _dmat.cols();
+
+	C->_dmat.setZero(nn+mm, nn+mm);
+
+	auto left = B->_mat[0].transpose();
+	auto mid = _dmat;
+	auto right = B->_mat[0];
+	auto left2 = B2->_mat[0].transpose();
+	auto right2 = B2->_mat[0];
+
+	D.resize(nn, kk);
+	D2.resize(mm, kk);
+	int64_t ss = kk / _mt / 2;
+
+//#pragma omp parallel for schedule(dynamic,4)
+	for (int64_t ii = 0; ii < kk; ii += ss)
+	{
+		int64_t _S = ii;
+		int64_t _E = ii + ss;
+		if (_E >= kk)_E = kk;
+		D.middleCols(_S, _E - _S).noalias() = left * mid.middleCols(_S, _E - _S);
+	}
+//#pragma omp parallel for schedule(dynamic,4)
+	for (int64_t ii = 0; ii < kk; ii += ss)
+	{
+		int64_t _S = ii;
+		int64_t _E = ii + ss;
+		if (_E >= kk)_E = kk;
+		D2.middleCols(_S, _E - _S).noalias() = left2 * mid.middleCols(_S, _E - _S);
+	}
+	//D.noalias() = left * mid;
+//#pragma omp parallel for schedule(dynamic,4)
+	for (int64_t ii = 0; ii < nn; ii += ss)
+	{
+		int64_t _S = ii;
+		int64_t _E = ii + ss;
+		if (_E >= nn)_E = nn;
+		C->_dmat.middleCols(_S, _E - _S).topRows(nn).noalias() = D * right.middleCols(_S, _E - _S);
+	}
+	ss = mm / _mt / 2;
+//#pragma omp parallel for schedule(dynamic,4)
+	for (int64_t ii = 0; ii < mm; ii += ss)
+	{
+		int64_t _S = ii;
+		int64_t _E = ii + ss;
+		if (_E >= mm)_E = mm;
+		C->_dmat.middleCols(_S+nn, _E - _S).bottomRows(mm).noalias() = D2 * right2.middleCols(_S, _E - _S);
+	}
+	ss = nn / _mt / 2;
+//#pragma omp parallel for schedule(dynamic,4)
+	for (int64_t ii = 0; ii < nn; ii += ss)
+	{
+		int64_t _S = ii;
+		int64_t _E = ii + ss;
+		if (_E >= nn)_E = nn;
+		C->_dmat.middleCols(_S, _E - _S).bottomRows(mm).noalias() = D2 * right.middleCols(_S, _E - _S);
+	}
+	ss = mm / _mt / 2;
+//#pragma omp parallel for schedule(dynamic,4)
+	for (int64_t ii = 0; ii < mm; ii += ss)
+	{
+		int64_t _S = ii;
+		int64_t _E = ii + ss;
+		if (_E >= mm)_E = mm;
+		C->_dmat.middleCols(_S+nn, _E - _S).topRows(nn).noalias() = D * right2.middleCols(_S, _E - _S);
 	}
 
 

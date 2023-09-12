@@ -146,9 +146,22 @@ namespace KingOfMonsters {
 	public ref class myDoubleArray {
 	public:
 		//double* _arr = 0;
-		_myDoubleArray *_arr=0;
+		_myDoubleArray* _arr = 0;
 		Int64 _N = 0;
 	public:
+		void assemble(myDoubleArray^ v, myDoubleArray^ w)
+		{
+			this->_arr->__v.resize(v->_arr->__v.rows() + w->_arr->__v.rows());
+			this->_arr->__v.topRows(v->_arr->__v.rows()) = v->_arr->__v;
+			this->_arr->__v.bottomRows(w->_arr->__v.rows()) = w->_arr->__v;
+
+		}
+		void split(myDoubleArray^ v, myDoubleArray^ w, int N)
+		{
+			v->_arr->__v = this->_arr->__v.topRows(N);
+			w->_arr->__v = this->_arr->__v.bottomRows(this->_arr->__v.rows()-N);
+
+		}
 		void transpose()
 		{
 			this->_arr->__v.transposeInPlace();
@@ -618,6 +631,10 @@ namespace KingOfMonsters {
 		{
 			this->dat->scale(sc);
 		}
+		void _scale(double sc)
+		{
+			this->dat->_scale(sc);
+		}
 		void plus(mySparse^ m, bool sparse)
 		{
 			if (sparse)
@@ -736,6 +753,19 @@ namespace KingOfMonsters {
 				M += jacobians[i]->dat->_mat[0].rows();
 			}
 			return;
+		}
+		void assemble(mySparse^ A, mySparse^ B, mySparse^ C)
+		{
+			this->dat->_dmat.resize(A->dat->_dmat.cols() + C->dat->_dmat.cols(), A->dat->_dmat.cols() + C->dat->_dmat.cols());
+			this->dat->_dmat.setZero();
+			this->dat->_dmat.topLeftCorner(A->dat->_dmat.cols(), A->dat->_dmat.cols()) = A->dat->_dmat;
+			this->dat->_dmat.bottomRightCorner(C->dat->_dmat.cols(), C->dat->_dmat.cols()) = C->dat->_dmat;
+			if (B != nullptr)
+			{
+				this->dat->_dmat.topRightCorner(A->dat->_dmat.rows(), C->dat->_dmat.cols()) = B->dat->_dmat;
+				this->dat->_dmat.bottomLeftCorner(C->dat->_dmat.cols(), A->dat->_dmat.cols()) = B->dat->_dmat.transpose();
+			}
+
 		}
 		void ofStack(mySparse^ A, mySparse^ B)
 		{
@@ -1061,9 +1091,9 @@ namespace KingOfMonsters {
 		{
 			dat->_permuteCols(p->p->perm, sparse, dense);
 		}
-		void _shrink(Int64 M, Int64 N)
+		void _shrink(Int64 M, Int64 N,bool sparse,bool dense)
 		{
-			dat->_shrink(M, N);
+			dat->_shrink(M, N,sparse,dense);
 		}
 		void _permute(myPermutation^ p, myPermutation^ q)
 		{
@@ -1121,13 +1151,23 @@ namespace KingOfMonsters {
 		{
 			//pin_ptr<double> ptr = &b[0];
 
-			A->dat->_ofBtAB(B->dat,  this->dat);
+			A->dat->_ofBtAB(B->dat, this->dat);
 			//array<double>^ ret = gcnew array<double>(_ret.rows());
 			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
 			//ptr = nullptr;
 			//return ret;
 		}
-	
+		void _ofBtAB(mySparse^ A, mySparse^ B, mySparse^ B2, myDoubleArray^ b, myDoubleArray^ ret)
+		{
+			//pin_ptr<double> ptr = &b[0];
+
+			A->dat->_ofBtAB(B->dat, B2->dat,this->dat);
+			//array<double>^ ret = gcnew array<double>(_ret.rows());
+			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
+			//ptr = nullptr;
+			//return ret;
+		}
+
 		double _trace()
 		{
 			return this->dat->_dmat.trace();

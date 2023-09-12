@@ -240,11 +240,12 @@ namespace KingOfMonsters {
 		void _shrink(int64_t M, bool sparse, bool dense);
 		void _shrinkCols(int64_t M, bool sparse, bool dense);
 		void _permute(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, int64_t>& perm, Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic, int64_t>& perm2);
-		void _shrink(int64_t M, int64_t N);
+		void _shrink(int64_t M, int64_t N, bool sparse, bool dense);
 		Eigen::VectorXd get_coeff(int64_t ii);
 		double __at(int64_t i, int64_t j);
 		void scale(int i, double sc);
 		void scale(double sc);
+		void _scale(double sc);
 		int64_t rows();
 		int64_t _rows();
 		int64_t _cols();
@@ -280,6 +281,8 @@ namespace KingOfMonsters {
 		void _ofAtB(_mySparse* B, _mySparse* C);
 		//void _ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret);
 		void _ofBtAB(_mySparse* B, /*Eigen::VectorXd* b, */_mySparse* C/*, Eigen::VectorXd* ret*/);
+		void _ofBtAB(_mySparse* B, _mySparse* B2, /*Eigen::VectorXd* b, */_mySparse* C/*, Eigen::VectorXd* ret*/);
+
 		//void _ofBtAB2(_mySparse* B, _mySparse* C, _mySparse* Q, _mySparse* R, KingOfMonsters::cuda* cuda);
 		void _ofCBtAB(_mySparse* B, _mySparse* C, _mySparse* D);
 		void _ofCBtAB2(_mySparse* B, _mySparse* C, _mySparse* D, _mySparse* E);
