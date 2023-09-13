@@ -4513,7 +4513,7 @@ namespace KingOfMonsters {
 			val = scale * (e11 * v1 * s1 + e12 * v1 * s2 + e12 * v2 * s1 + e22 * v2 * s2);
 			return val;
 		}
-		void guide_xi(double v1, double v2, bool accurate)
+		void guide_xi(double* ptr, double v1, double v2, bool accurate)
 		{
 			double val = 0;
 
@@ -4573,7 +4573,7 @@ namespace KingOfMonsters {
 				tr = 1;
 			}
 			double _e11 = e11, _e12 = e12, _e22 = e22;
-			double* ptr1 = __guide2_xieta;
+			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				e11 = 0, e12 = 0, e22 = 0;
@@ -4590,12 +4590,12 @@ namespace KingOfMonsters {
 				val = scale * (e11 * v1 * s1 + e12 * v1 * s2 + e12 * v2 * s1 + e22 * v2 * s2);
 				val += -tr2 / tr / tr * (_e11 * v1 * s1 + _e12 * v1 * s2 + _e12 * v2 * s1 + _e22 * v2 * s2) * (e11 * _ref->get__Gij(0, 0) + 2 * e12 * _ref->get__Gij(0, 1) + e22 * _ref->get__Gij(1, 1));
 				*ptr1 = val;
-				ptr1+=2;
+				ptr1++;
 			}
 			
 		}
 
-		void guide_eta(double v1, double v2, bool accurate)
+		void guide_eta(double* ptr, double v1, double v2, bool accurate)
 		{
 			double val = 0;
 
@@ -4655,7 +4655,7 @@ namespace KingOfMonsters {
 				tr = 1;
 			}
 			double _e11 = e11, _e12 = e12, _e22 = e22;
-			double* ptr1 = __guide2_xieta+1;
+			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				e11 = 0, e12 = 0, e22 = 0;
@@ -4672,7 +4672,7 @@ namespace KingOfMonsters {
 				val = scale * (e11 * v1 * s1 + e12 * v1 * s2 + e12 * v2 * s1 + e22 * v2 * s2);
 				val += -tr2 / tr / tr * (_e11 * v1 * s1 + _e12 * v1 * s2 + _e12 * v2 * s1 + _e22 * v2 * s2) * (e11 * _ref->get__Gij(0, 0) + 2 * e12 * _ref->get__Gij(0, 1) + e22 * _ref->get__Gij(1, 1));
 				*ptr1 = val;
-				ptr1+=2;
+				ptr1++;
 			}
 
 		}
@@ -5615,7 +5615,7 @@ namespace KingOfMonsters {
 			
 		}
 
-		void mix_xi( double v1, double v2, double w1, double w2, bool accurate)
+		void mix_xi(double* ptr, double v1, double v2, double w1, double w2, bool accurate)
 		{
 			double S11 = 0;
 			double S12 = 0;
@@ -5685,7 +5685,7 @@ namespace KingOfMonsters {
 
 			//double TRACE = (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
 			double TRACE = 1;
-			double* ptr1 = __guide_xieta;
+			double* ptr1 = ptr;
 
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
@@ -5713,7 +5713,7 @@ namespace KingOfMonsters {
 
 				
 				*ptr1 = val;
-				ptr1+=2;
+				ptr1++;
 			}
 		}
 		void remove(int N,double * ptr,long long *index,double sc)
@@ -5739,7 +5739,7 @@ namespace KingOfMonsters {
 				ptr3++;
 			}
 		}
-		void mix_eta( double v1, double v2, double w1, double w2, bool accurate)
+		void mix_eta( double *ptr,double v1, double v2, double w1, double w2, bool accurate)
 		{
 			double S11 = 0;
 			double S12 = 0;
@@ -5785,7 +5785,7 @@ namespace KingOfMonsters {
 			}
 			double S21 = S12;
 			double _s21 = _s12;
-			double* ptr1 = __guide_xieta+1;
+			double* ptr1 = ptr;
 			double s11 = 0;
 			double s12 = 0;
 			double s21 = 0;
@@ -5832,7 +5832,7 @@ namespace KingOfMonsters {
 				val -= -1. / tr / tr / TRACE * (s21 * E11 * S11 + s21 * E12 * S21 + s22 * E21 * S11 + s22 * E22 * S21) * dtr;// / sc;
 
 				*ptr1 = val;
-				ptr1+=2;
+				ptr1++;
 			}
 		}
 	
@@ -8807,15 +8807,15 @@ namespace KingOfMonsters {
 		}
 		void guide_xi(mySparse^ mat, int ii, myIntArray^ index, double sc,double c1,double v1, double v2, bool accurate)
 		{
-			__mem->guide_xi(v1, v2, accurate);
+			__mem->guide_xi(__mem->__grad,v1, v2, accurate);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
 		}
 		void guide_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate)
 		{
-			__mem->guide_eta(v1, v2, accurate);
+			__mem->guide_eta(__mem->__grad,v1, v2, accurate);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
 		}
-		void guide_xi( double v1, double v2,  bool accurate)
+		/*void guide_xi(double v1, double v2, bool accurate)
 		{
 			__mem->guide_xi( v1, v2, accurate);
 			//mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
@@ -8824,28 +8824,29 @@ namespace KingOfMonsters {
 		{
 			__mem->guide_eta(v1, v2,  accurate);
 			//mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
-		}
+		}*/
 	
-		void guide_write(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1)
+		/*void guide_write(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1)
 		{
 			mat->dat->addrow(ii, index->_arr, __mem->__guide2_xieta, 0, sc, __mem->_nNode * 2, true, c1);
-		}
+		}*/
 		
-		void mix_write(mySparse^ mat, int ii, myIntArray^ index,myDoubleArray^ constraint, double sc, double c1,bool remove,double f)
+		/*void mix_write(mySparse^ mat, int ii, myIntArray^ index, myDoubleArray^ constraint, double sc, double c1, bool remove, double f)
 		{
 			if(remove)__mem->remove(__mem->_nNode*2,constraint->_arr->__v.data(), index->_arr,sc*c1*f);
 			mat->dat->addrow(ii, index->_arr, __mem->__guide_xieta, 0, sc, __mem->_nNode * 2, true, c1);
-		}
-		void mix_xi(double v1, double v2,double w1,double w2, bool accurate)
+		}*/
+		void mix_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, double w1, double w2, bool accurate)
 		{
-			__mem->mix_xi( v1, v2,w1,w2, accurate);
-			//mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
+			__mem->mix_xi(__mem->__grad,v1, v2, w1, w2, accurate);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
 		}
-		void mix_eta(double v1, double v2, double w1,double w2,bool accurate)
+		void mix_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, double w1, double w2, bool accurate)
 		{
-			__mem->mix_eta(v1, v2,w1,w2, accurate);
-			//mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
+			__mem->mix_eta(__mem->__grad,v1, v2, w1, w2, accurate);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
 		}
+		
 		double guide_supported(double v1, double v2, bool accurate)
 		{
 			return __mem->guide_supported(v1, v2, accurate);
