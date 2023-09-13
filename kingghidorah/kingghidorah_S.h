@@ -8485,6 +8485,16 @@ namespace KingOfMonsters {
 		{
 			return __mem->guide(v1, v2,  accurate);
 		}
+		void guide_xi(mySparse^ mat, int ii, myIntArray^ index, double sc,double c1,double v1, double v2, bool accurate)
+		{
+			__mem->guide_xi(v1, v2, accurate);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
+		}
+		void guide_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate)
+		{
+			__mem->guide_eta(v1, v2, accurate);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
+		}
 		void guide_xi( double v1, double v2,  bool accurate)
 		{
 			__mem->guide_xi( v1, v2, accurate);
