@@ -5059,9 +5059,9 @@ namespace KingOfMonsters {
 			//scale = 1;
 			//val = scale * (e11 * v1 * s1 + e12 * v1 * s2 + e12 * v2 * s1 + e22 * v2 * s2);
 			double e21 = e12;
-			scale = 1;
-			val = scale * (e11 *this->get_gij2(0,1)+ e11 * this->get_gij2(1, 1));
-			val -=scale * (e21 * this->get_gij2(0, 0) + e21 * this->get_gij2(1, 0));
+			scale = 1.;
+			val = (e11 * _ref->get__Gij(0, 0) * this->get_gij2(0, 1) + e11 * _ref->get__Gij(0, 1) * this->get_gij2(1, 1) + e12 * _ref->get__Gij(1, 0) * this->get_gij2(0, 1) + e12 * _ref->get__Gij(1, 1) * this->get_gij2(1, 1));
+			val -= (e21 * _ref->get__Gij(0, 0) * this->get_gij2(0, 0) + e21 * _ref->get__Gij(0, 1) * this->get_gij2(1, 0) + e22 * _ref->get__Gij(1, 0) * this->get_gij2(0, 0) + e22 * _ref->get__Gij(1, 1) * this->get_gij2(1, 0));
 			return val;
 		}
 		void guide_xi(double* ptr, double v1, double v2, bool accurate)
@@ -5142,9 +5142,9 @@ namespace KingOfMonsters {
 				//val += -tr2 / tr / tr * (_e11 * v1 * s1 + _e12 * v1 * s2 + _e12 * v2 * s1 + _e22 * v2 * s2) * (e11 * _ref->get__Gij(0, 0) + 2 * e12 * _ref->get__Gij(0, 1) + e22 * _ref->get__Gij(1, 1));
 				
 				double e21 = e12;
-				scale = 1;
-				val = scale * (e11 * this->get_gij2(0, 1) + e11 * this->get_gij2(1, 1));
-				val -= scale * (e21 * this->get_gij2(0, 0) + e21 * this->get_gij2(1, 0));
+				scale = 1.;
+				val = (e11 * _ref->get__Gij(0, 0) * this->get_gij2(0, 1) + e11 * _ref->get__Gij(0, 1) * this->get_gij2(1, 1) + e12 * _ref->get__Gij(1, 0) * this->get_gij2(0, 1) + e12 * _ref->get__Gij(1, 1) * this->get_gij2(1, 1));
+				val -= (e21 * _ref->get__Gij(0, 0) * this->get_gij2(0, 0) + e21 * _ref->get__Gij(0, 1) * this->get_gij2(1, 0) + e22 * _ref->get__Gij(1, 0) * this->get_gij2(0, 0) + e22 * _ref->get__Gij(1, 1) * this->get_gij2(1, 0));
 
 				*ptr1 = val;
 				ptr1++;
@@ -5229,9 +5229,9 @@ namespace KingOfMonsters {
 				//val = scale * (e11 * v1 * s1 + e12 * v1 * s2 + e12 * v2 * s1 + e22 * v2 * s2);
 				//val += -tr2 / tr / tr * (_e11 * v1 * s1 + _e12 * v1 * s2 + _e12 * v2 * s1 + _e22 * v2 * s2) * (e11 * _ref->get__Gij(0, 0) + 2 * e12 * _ref->get__Gij(0, 1) + e22 * _ref->get__Gij(1, 1));
 				double e21 = e12;
-				scale = 1;
-				val = scale * (e11 * this->get_gij2(0, 1) + e11 * this->get_gij2(1, 1));
-				val -= scale * (e21 * this->get_gij2(0, 0) + e21 * this->get_gij2(1, 0));
+				scale = 1.;
+				val = (e11 * _ref->get__Gij(0, 0) * this->get_gij2(0, 1) + e11 * _ref->get__Gij(0, 1) * this->get_gij2(1, 1) + e12 * _ref->get__Gij(1, 0) * this->get_gij2(0, 1) + e12 * _ref->get__Gij(1, 1) * this->get_gij2(1, 1));
+				val -= (e21 * _ref->get__Gij(0, 0) * this->get_gij2(0, 0) + e21 * _ref->get__Gij(0, 1) * this->get_gij2(1, 0) + e22 * _ref->get__Gij(1, 0) * this->get_gij2(0, 0) + e22 * _ref->get__Gij(1, 1) * this->get_gij2(1, 0));
 
 				*ptr1 = val;
 				ptr1++;
