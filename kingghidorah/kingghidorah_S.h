@@ -4044,8 +4044,15 @@ namespace KingOfMonsters {
 
 				}
 			}
-			val -= (gamma111 * v1 * v1 + 2 * gamma121 * v1 * v2 + gamma221 * v2 * v2) * s1;
-			val -= (gamma112 * v1 * v1 + 2 * gamma122 * v1 * v2 + gamma222 * v2 * v2) * s2;
+			//val -= (gamma111 * v1 * v1 + 2 * gamma121 * v1 * v2 + gamma221 * v2 * v2) * s1;
+			//val -= (gamma112 * v1 * v1 + 2 * gamma122 * v1 * v2 + gamma222 * v2 * v2) * s2;
+			val = gamma111 - _ref->get__Gammaijk(0, 0, 0);
+			val += gamma112 - _ref->get__Gammaijk(0, 0, 1);
+			val += gamma121 - _ref->get__Gammaijk(0, 1, 0);
+			val += gamma122 - _ref->get__Gammaijk(0, 1, 1);
+			val += gamma221 - _ref->get__Gammaijk(1, 1, 0);
+			val += gamma222 - _ref->get__Gammaijk(1, 1, 1);
+
 			return val;
 		}
 		void curvature_xi(double *ptr,double v1, double v2, bool accurate)
@@ -4128,8 +4135,12 @@ namespace KingOfMonsters {
 						- 2 * _ref->d2[1][t]* _ref->d1[1][s] * _ref->buf_xi[s];
 					//gamma222=g22,2
 				}
-				double val = -(gamma111 * v1 * v1 + 2 * gamma121 * v1 * v2 + gamma221 * v2 * v2) * s1;
-				val -= (gamma112 * v1 * v1 + 2 * gamma122 * v1 * v2 + gamma222 * v2 * v2) * s2;
+				double val = gamma111 ;
+				val += gamma112;
+				val += gamma121;
+				val += gamma122;
+				val += gamma221;
+				val += gamma222;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -4212,8 +4223,12 @@ namespace KingOfMonsters {
 						- 2 * _ref->d2[1][t] * _ref->d1[1][s] * _ref->buf_eta[s];
 					//gamma222=g22,2
 				}
-				double val = -(gamma111 * v1 * v1 + 2 * gamma121 * v1 * v2 + gamma221 * v2 * v2) * s1;
-				val -= (gamma112 * v1 * v1 + 2 * gamma122 * v1 * v2 + gamma222 * v2 * v2) * s2;
+				double val = gamma111;
+				val += gamma112;
+				val += gamma121;
+				val += gamma122;
+				val += gamma221;
+				val += gamma222;
 				*ptr1 = val;
 				ptr1++;
 			}
