@@ -8794,7 +8794,7 @@ namespace KingOfMonsters {
 			__mem->theta_Z(__mem->__grad, accurate);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, sc, __mem->_nNode, c1);
 		}
-		double curvature(double v1, double v2, bool accurate)
+		double curvature(double v1, double v2, bool accurate,int i)
 		{
 			return __mem->curvature(v1, v2, accurate);
 		}
