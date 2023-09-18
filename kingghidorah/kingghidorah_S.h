@@ -5227,7 +5227,7 @@ namespace KingOfMonsters {
 			double val = 0;
 
 			double e11 = 0, e12 = 0, e22 = 0;
-			double E11 = 0, E12 = 0, E22 = 0, E21;
+			
 
 			double s1 = 0, s2 = 0;//up
 			double S1 = 0, S2 = 0;//down
@@ -5299,8 +5299,7 @@ namespace KingOfMonsters {
 			double val = 0;
 
 			double e11 = 0, e12 = 0, e22 = 0;
-			double E11 = 0, E12 = 0, E22 = 0, E21;
-
+			
 			double s1 = 0, s2 = 0;//up
 			double S1 = 0, S2 = 0;//down
 			double V1 = 0, V2 = 0;//down
@@ -5379,8 +5378,7 @@ namespace KingOfMonsters {
 			double val = 0;
 
 			double e11 = 0, e12 = 0, e22 = 0;
-			double E11 = 0, E12 = 0, E22 = 0, E21;
-
+			
 			double s1 = 0, s2 = 0;//up
 			double S1 = 0, S2 = 0;//down
 			double V1 = 0, V2 = 0;//down
@@ -5474,8 +5472,7 @@ namespace KingOfMonsters {
 			double val = 0;
 
 			double e11 = 0, e12 = 0, e22 = 0;
-			double E11 = 0, E12 = 0, E22 = 0, E21;
-
+			
 			double s1 = 0, s2 = 0;//up
 			double S1 = 0, S2 = 0;//down
 			double V1 = 0, V2 = 0;//down
