@@ -5276,7 +5276,7 @@ namespace KingOfMonsters {
 			}
 			double tr = e11 + e22;
 			double tr2 = 1;// _ref->get__gij(0, 0) + _ref->get__gij(1, 1);
-			double scale = tr2 / tr;
+			double scale = tr;
 			if (tr == 0) {
 				scale = 1;
 				tr = 1;
@@ -5347,7 +5347,7 @@ namespace KingOfMonsters {
 			}
 			double tr = e11 + e22;
 			double tr2 = 1;// _ref->get__gij(0, 0) + _ref->get__gij(1, 1);
-			double scale = tr2 / tr;
+			double scale = tr;
 			if (tr == 0) {
 				scale = 1;
 				tr = 1;
@@ -5426,7 +5426,7 @@ namespace KingOfMonsters {
 			}
 			double tr = e11 + e22;
 			double tr2 = 1;// _ref->get__gij(0, 0) + _ref->get__gij(1, 1);
-			double scale = tr2 / tr;
+			double scale =tr;
 			if (tr == 0) {
 				scale = 1;
 				tr = 1;
@@ -5520,7 +5520,7 @@ namespace KingOfMonsters {
 			}
 			double tr = e11 + e22;
 			double tr2 = 1;
-			double scale = tr2 / tr;
+			double scale = tr;
 			if (tr == 0) {
 				scale = 1;
 				tr = 1;
