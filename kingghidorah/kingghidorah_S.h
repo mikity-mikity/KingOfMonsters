@@ -5100,7 +5100,7 @@ namespace KingOfMonsters {
 					e22 += (_ref->d1[1][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
 				}
 			}
-			double tr = e11 * _ref->get__Gij(0, 0) + 2 * e12 * _ref->get__Gij(0, 1) + e22 * _ref->get__Gij(1, 1);
+			double tr = (e11 + e22) / (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
 			double tr2 = 1;// _ref->get__gij(0, 0) + _ref->get__gij(1, 1);
 			double scale = tr2 / tr;
 			if (tr == 0) {
@@ -5112,7 +5112,8 @@ namespace KingOfMonsters {
 
 			//double det = this->get_gij2(0, 0) * this->get_gij2(1, 1) - this->get_gij2(0, 1) * this->get_gij2(0,1);
 			//double sdet = sqrt(det);
-			val = scale * (e11 * v1 * s1 + e12 * v1 * s2 + e12 * v2 * s1 + e22 * v2 * s2) /_ref->_refDv;
+			val = scale * (e11 * v1 * v1 * this->get_gij2(0, 1) + e11 * v1 * v2 * this->get_gij2(1, 1) + e12 * v2 * v1 * this->get_gij2(0, 1) + e12 * v2 * v2 * this->get_gij2(1, 1)) / _ref->_refDv;
+			val += scale * (e11 * v1 * v1 * this->get_gij2(0, 1) + e11 * v1 * v2 * this->get_gij2(1, 1) + e12 * v2 * v1 * this->get_gij2(0, 1) + e12 * v2 * v2 * this->get_gij2(1, 1)) / _ref->_refDv;
 			return val;
 		}
 		void guide_xi(double* ptr, double v1, double v2, bool accurate)
@@ -5252,7 +5253,7 @@ namespace KingOfMonsters {
 					e22 += (_ref->d1[1][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
 				}
 			}
-			double tr = e11 * _ref->get__Gij(0, 0) + 2 * e12 * _ref->get__Gij(0, 1) + e22 * _ref->get__Gij(1, 1);
+			double tr = (e11 + e22) /(_ref->get__gij(0, 0)+ _ref->get__gij(1, 1));
 			double tr2 = 1;
 			double scale = tr2 / tr;
 			if (tr == 0) {
@@ -5279,7 +5280,7 @@ namespace KingOfMonsters {
 				}
 				//scale = 1;
 				val = scale * (e11 * v1 * s1 + e12 * v1 * s2 + e12 * v2 * s1 + e22 * v2 * s2) / _ref->_refDv;;
-				val += -tr2 / tr / tr * (_e11 * v1 * s1 + _e12 * v1 * s2 + _e12 * v2 * s1 + _e22 * v2 * s2) * (e11 * _ref->get__Gij(0, 0) + 2 * e12 * _ref->get__Gij(0, 1) + e22 * _ref->get__Gij(1, 1)) / _ref->_refDv;;
+				val += -tr2 / tr / tr * (_e11 * v1 * s1 + _e12 * v1 * s2 + _e12 * v2 * s1 + _e22 * v2 * s2) * ((e11 + e22) / (_ref->get__gij(0, 0) + _ref->get__gij(1, 1))) / _ref->_refDv;;
 				*ptr1 = val;
 				ptr1++;
 			}
