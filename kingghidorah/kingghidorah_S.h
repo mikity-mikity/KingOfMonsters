@@ -5570,6 +5570,63 @@ namespace KingOfMonsters {
 				ptr1++;
 			}
 		}
+		double guide6(double v1, double v2, bool accurate)
+		{
+			double val = 0;
+
+			double e11 = 0, e12 = 0, e22 = 0;
+			double E11 = 0, E12 = 0, E22 = 0, E21;
+
+			double s1 = 0, s2 = 0;//up
+			double S1 = 0, S2 = 0;//down
+			double V1 = 0, V2 = 0;//down
+			double length = 0;
+			double S11 = 0, S12 = 0, S22 = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				S11 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_z[s];
+				S12 += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->buf_z[s];
+				S22 += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_z[s];
+			}
+			double S21 = S12;
+			double det = (S11 * S22 - S12 * S12);
+			double tr = S11 + S22;
+			return (det*det) * sc*sc;
+		}
+		void guide6_Z(double* ptr, bool accurate)
+		{
+			double val = 0;
+
+
+			double* ptr1 = ptr;
+			double S11 = 0, S12 = 0, S22 = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				S11 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_z[s];
+				S12 += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->buf_z[s];
+				S22 += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_z[s];
+			}
+			double S21 = S12;
+			double det = (S11 * S22 - S12 * S12);
+			double tr = S11 + S22;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _S11 = 0, _S12 = 0, _S22 = 0;
+
+				_S11 = (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+				_S12 = (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+				_S22 = (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+
+				double _S21 = _S12;
+
+				double S21 = S12;
+				double ddet = (_S11 * S22 - _S12 * S12) + (S11 * _S22 - S12 * _S12);
+				//double dtr = _S11 + _S22;
+				*ptr1 = 2 * det * ddet * sc * sc;
+				ptr1++;
+			}
+		}
 
 		double guide2(double v1, double v2, bool accurate)
 		{
@@ -10621,6 +10678,23 @@ namespace KingOfMonsters {
 			for (int i = 0; i < __mem->_nNode; i++)
 			{
 				grad->_arr->__v(index->data()[i]) += __mem->__grad[i]*c1*lambda;
+			}
+
+			//mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
+		}
+		double guide6(double v1, double v2, bool accurate)
+		{
+			return __mem->guide6(v1, v2, accurate);
+		}
+		void guide6_Z(myDoubleArray^ grad, myIntArray^ index, double c1, double t1, double t2, bool accurate, bool remove)
+		{
+			__mem->guide6_Z(__mem->__grad, accurate);
+			double lambda = 1;
+			if (remove)
+				lambda = __mem->remove3(__mem->_nNode, __mem->__grad, __mem->__grad_phi_tmp, __mem->__grad_z_tmp, t1, t2);
+			for (int i = 0; i < __mem->_nNode; i++)
+			{
+				grad->_arr->__v(index->data()[i]) += __mem->__grad[i] * c1 * lambda;
 			}
 
 			//mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
