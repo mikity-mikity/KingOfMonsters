@@ -1870,12 +1870,6 @@ void KingOfMonsters::_mySparse::addrow(int64_t ii, int64_t* ptr, double* data, d
 	dat[0].reserve(dat[0].size() + N);
 	for (int64_t i = 0; i < N; i++)
 	{
-		//eigen_assert(*data != 0);
-		//eigen_assert(*data < 10000);
-		//eigen_assert(*data > -10000);
-		//eigen_assert(*ptr < _mat[0].cols());
-		//eigen_assert(*ptr >= 0);
-		//if(*data!=0 && *data<100&&*data>-100)
 		dat[0].push_back(Eigen::Triplet<double>(ii, *ptr, (*data) * c1+(*data2)*c2));
 		ptr++;
 		data++;
@@ -1897,13 +1891,7 @@ void KingOfMonsters::_mySparse::addrow(int64_t ii, int64_t* ptr, double* data, i
 	dat[0].reserve(dat[0].size() + N);
 	for (int64_t i = 0; i < N; i++)
 	{
-		//eigen_assert(*data != 0);
-		//eigen_assert(*data < 10000);
-		//eigen_assert(*data > -10000);
-		//eigen_assert(*ptr < _mat[0].cols());
-		//eigen_assert(*ptr >= 0);
-		//if(*data!=0 && *data<100&&*data>-100)
-			dat[0].push_back(Eigen::Triplet<double>(ii, *ptr, (*data)*__coeff));
+		dat[0].push_back(Eigen::Triplet<double>(ii, *ptr, (*data)*__coeff));
 		ptr++;
 		data++;
 	}
@@ -2069,7 +2057,7 @@ void KingOfMonsters::_mySparse::computeQR() {
 
 }
 void KingOfMonsters::_mySparse::freezecoeff() {
-#pragma omp parallel for schedule(dynamic,1)
+//#pragma omp parallel for schedule(dynamic,1)
 	for (int64_t ii = 0; ii < _nt; ii++)
 	{
 		coeff[ii] = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(_coeff[ii].data(), _coeff[ii].size());
@@ -3086,6 +3074,7 @@ void KingOfMonsters::_mySparse::solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* re
 	*ret = lu.solve(*rhs);
 }
 void KingOfMonsters::_mySparse::LSsolve(Eigen::VectorXd* rhs, Eigen::VectorXd* ret,double salt,int mode) {
+#ifdef _CPU
 	//Eigen::LLT<Eigen::MatrixXd> lu;
 	//MKL_Set_Num_Threads(16);
 	//MKL_Set_Dynamic(false);
@@ -3116,12 +3105,14 @@ void KingOfMonsters::_mySparse::LSsolve(Eigen::VectorXd* rhs, Eigen::VectorXd* r
 		*ret = lu.solve(vv);
 		return;
 	}
+#endif
 }
 
 void KingOfMonsters::_mySparse::Project(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, double salt) {
 	//Eigen::LLT<Eigen::MatrixXd> lu;
 	//MKL_Set_Num_Threads(16);
 	//MKL_Set_Dynamic(false);
+	#ifdef _CPU
 	Eigen::PardisoLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	lu.pardisoParameterArray()[59] = 1;
 	//Eigen::MatrixXd m(this->_mat[0].rows(), this->_mat[0].cols());
@@ -3145,6 +3136,7 @@ void KingOfMonsters::_mySparse::Project(Eigen::VectorXd* rhs, Eigen::VectorXd* r
 		*ret = lu.solve(v).transpose() * this->_mat[0].transpose();
 		return;
 	}
+#endif
 }
 
 
@@ -3376,6 +3368,7 @@ std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs,
 {
 	//MKL_Set_Num_Threads(16);
 	//MKL_Set_Dynamic(false);
+#ifdef _CPU
 	_mt = MKL_Get_Max_Threads();
 	if(_mt>1)
 	MKL_Set_Num_Threads(_mt - 1);
@@ -3425,6 +3418,8 @@ std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs,
 		return ss.str();
 		;
 	}
+#endif
+	return "_cpu only";
 }
 std::string KingOfMonsters::_mySparse::_solveCG_sparse_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret)
 {

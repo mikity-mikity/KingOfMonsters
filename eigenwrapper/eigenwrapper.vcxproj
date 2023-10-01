@@ -415,11 +415,6 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\intelopenmp.redist.win.2022.0.0.3663\build\native\intelopenmp.redist.win.targets" Condition="Exists('..\packages\intelopenmp.redist.win.2022.0.0.3663\build\native\intelopenmp.redist.win.targets')" />
-    <Import Project="..\packages\intelopenmp.devel.win.2022.0.0.3663\build\native\intelopenmp.devel.win.targets" Condition="Exists('..\packages\intelopenmp.devel.win.2022.0.0.3663\build\native\intelopenmp.devel.win.targets')" />
-    <Import Project="..\packages\inteltbb.redist.win.2021.1.1.133\build\native\nuget\inteltbb.redist.win.targets" Condition="Exists('..\packages\inteltbb.redist.win.2021.1.1.133\build\native\nuget\inteltbb.redist.win.targets')" />
-    <Import Project="..\packages\inteltbb.devel.win.2021.1.1.133\build\native\nuget\inteltbb.devel.win.targets" Condition="Exists('..\packages\inteltbb.devel.win.2021.1.1.133\build\native\nuget\inteltbb.devel.win.targets')" />
-    <Import Project="..\packages\intelmkl.static.win-x64.2022.2.1.19754\build\native\intelmkl.static.win-x64.targets" Condition="Exists('..\packages\intelmkl.static.win-x64.2022.2.1.19754\build\native\intelmkl.static.win-x64.targets')" />
     <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.8.targets" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
