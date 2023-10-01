@@ -5570,7 +5570,7 @@ namespace KingOfMonsters {
 				ptr1++;
 			}
 		}
-		double guide6(double v1, double v2, bool accurate)
+		double guide6( bool accurate)
 		{
 			double val = 0;
 
@@ -5591,7 +5591,7 @@ namespace KingOfMonsters {
 			double S21 = S12;
 			double det = (S11 * S22 - S12 * S12);
 			double tr = S11 + S22;
-			return tr * tr*sc;
+			return tr;
 		}
 		void guide6_Z(double* ptr, bool accurate)
 		{
@@ -5624,7 +5624,7 @@ namespace KingOfMonsters {
 				double ddet = (_S11 * S22 - _S12 * S12) + (S11 * _S22 - S12 * _S12);
 				double dtr = _S11 + _S22;
 				
-				*ptr1 = 2 * dtr * tr * sc * sc;
+				*ptr1 = dtr;
 				ptr1++;
 			}
 		}
@@ -10740,22 +10740,22 @@ namespace KingOfMonsters {
 
 			//mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
 		}
-		double guide6(double v1, double v2, bool accurate)
+		double guide6( bool accurate)
 		{
-			return __mem->guide6(v1, v2, accurate);
+			return __mem->guide6( accurate);
 		}
-		void guide6_Z(myDoubleArray^ grad, myIntArray^ index, double c1, double t1, double t2, bool accurate, bool remove)
+		void guide6_Z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1,  bool accurate, bool remove)
 		{
 			__mem->guide6_Z(__mem->__grad, accurate);
-			double lambda = 1;
+			
 			if (remove)
 				__mem->remove3(__mem->_nNode, __mem->__grad, __mem->__grad_phi_tmp, __mem->__grad_z_tmp);
-			for (int i = 0; i < __mem->_nNode; i++)
+			/*for (int i = 0; i < __mem->_nNode; i++)
 			{
 				grad->_arr->__v(index->data()[i]) += __mem->__grad[i] * c1;
-			}
+			}*/
 
-			//mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
 		
 		}double guide7(double v1, double v2, bool accurate)
 		{
