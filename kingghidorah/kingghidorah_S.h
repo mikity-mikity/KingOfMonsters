@@ -5590,8 +5590,8 @@ namespace KingOfMonsters {
 			}
 			double S21 = S12;
 			double det = (S11 * S22 - S12 * S12);
-			double tr = S11 + S22;
-			return tr;
+			double tr = (S11 + S22)*(S11+S22)*sc;
+			return det*sc;
 		}
 		void guide6_Z(double* ptr, bool accurate)
 		{
@@ -5624,7 +5624,8 @@ namespace KingOfMonsters {
 				double ddet = (_S11 * S22 - _S12 * S12) + (S11 * _S22 - S12 * _S12);
 				double dtr = _S11 + _S22;
 				
-				*ptr1 = dtr;
+				//*ptr1 = 2*tr*dtr*sc;
+				*ptr1 = ddet * sc;
 				ptr1++;
 			}
 		}
@@ -6891,12 +6892,12 @@ namespace KingOfMonsters {
 		}
 		void remove3(int N, double* __ptr, double* __ptr2, double* __ptr3 )
 		{
-			Eigen::MatrixXd J(2, N);
+			Eigen::MatrixXd J(1, N);
 			Eigen::VectorXd v(N);
 			for (int i = 0; i < N; i++)
 			{
 				J(0, i) = __ptr2[i];
-				J(1, i) = __ptr3[i];
+				//J(1, i) = __ptr3[i];
 				v(i) = __ptr[i];
 			}
 			v=v-J.transpose()*(J * J.transpose()).inverse()* J* v;
