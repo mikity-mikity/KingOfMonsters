@@ -529,8 +529,9 @@ namespace KingOfMonsters {
 		double* __mix_phi = 0;
 		double* __mix_z = 0;
 
-		double* __guide2_xieta = 0;
-		double* __guide_xieta = 0;
+		double* __grad_xi = 0;
+		double* __grad_eta = 0;
+
 		int _nNode;
 	private:
 		//double* __mat = 0;
@@ -795,8 +796,8 @@ namespace KingOfMonsters {
 				__grad_phi = 0;
 				__grad_z_tmp = 0;
 				__grad_phi_tmp = 0;
-				__guide2_xieta = 0;
-				__guide_xieta = 0;
+				__grad_xi = 0;
+				__grad_eta = 0;
 				__mix_phi = 0;
 				__mix_z = 0;
 				__grad_C_z = 0;
@@ -1565,8 +1566,8 @@ namespace KingOfMonsters {
 				if (__grad_phi != 0)delete[] __grad_phi;
 				if (__grad_z_tmp != 0)delete[] __grad_z_tmp;
 				if (__grad_phi_tmp != 0)delete[] __grad_phi_tmp;
-				if (__guide_xieta != 0)delete[] __guide_xieta;
-				if (__guide2_xieta != 0)delete[] __guide2_xieta;
+				if (__grad_xi != 0)delete[] __grad_xi;
+				if (__grad_eta != 0)delete[] __grad_eta;
 				if (__mix_phi != 0)delete[] __mix_phi;
 				if (__mix_z != 0)delete[] __mix_z;
 
@@ -1585,8 +1586,8 @@ namespace KingOfMonsters {
 				__grad_phi = 0;
 				__grad_z_tmp = 0;
 				__grad_phi_tmp = 0;
-				__guide_xieta = 0;
-				__guide2_xieta = 0;
+				__grad_xi = 0;
+				__grad_eta = 0;
 				__mix_phi = 0;
 				__mix_z = 0;
 				//__mat = 0;
@@ -1781,8 +1782,8 @@ namespace KingOfMonsters {
 					__grad_z = new double[nNode];
 					__grad_z_tmp = new double[nNode];
 					__grad_phi_tmp = new double[nNode];
-					__guide_xieta = new double[2*nNode];
-					__guide2_xieta = new double[2*nNode];
+					__grad_xi = new double[nNode];
+					__grad_eta = new double[nNode];
 					__mix_z = new double [nNode];
 					__mix_phi = new double[ nNode];
 
@@ -7011,12 +7012,12 @@ namespace KingOfMonsters {
 
 		}
 	
-		void remove2(int N, double* __ptr, double* __ptr2, long long* index, double sc)
+		void remove2(int N, double* __ptr, double* __ptr2, double* __ptr3, double* __ptr4, double sc)
 		{
 		
 			double __dot = 0, __norm = 0;
-			double* ptr1 = __mix_phi;
-			double* ptr2 = __grad_phi_tmp;
+			double* ptr1 = __ptr;
+			double* ptr2 = __ptr2;
 
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
@@ -7025,8 +7026,8 @@ namespace KingOfMonsters {
 				ptr1++;
 				ptr2++;
 			}
-			ptr1 = __mix_z;
-			ptr2 = __grad_z_tmp;
+			ptr1 = __ptr3;
+			ptr2 = __ptr4;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				__dot += *ptr1 * *ptr2;
@@ -7035,30 +7036,21 @@ namespace KingOfMonsters {
 				ptr2++;
 			}
 
-
-			long long* ptr3 = index;
-
-			ptr2 = __grad_phi_tmp;
-
+			ptr2 = __ptr2;
+			ptr1 = __ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				__ptr[*ptr3] = *ptr2 * __dot / __norm * sc;
+				*ptr1 -= *ptr2 * __dot / __norm;
+				ptr1++;
 				ptr2++;
-				ptr3++;
 			}
-
-
-		
-
-		
-			ptr2 = __grad_z_tmp;
-			ptr3 = index;
-
+			ptr2 = __ptr4;
+			ptr1 = __ptr3;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				__ptr2[*ptr3] = *ptr2 * __dot / __norm*sc;
+				*ptr1 -= *ptr2 * __dot / __norm;
+				ptr1++;
 				ptr2++;
-				ptr3++;
 			}
 
 		}
@@ -7449,29 +7441,7 @@ namespace KingOfMonsters {
 				ptr1++;
 			}
 		}
-		void remove(int N,double * ptr,long long *index,double sc)
-		{
-			double* ptr1 = __guide_xieta;
-			double* ptr2 = __guide2_xieta;
-			double norm = 0, dot = 0;
-			for (int i = 0; i < N; i++)
-			{
-				norm += *ptr2 * *ptr2;
-				dot += *ptr2 * *ptr1;
-				ptr1 ++;
-				ptr2++;
-			}
-			//ptr1 = ptr;
-			long long * ptr3 = index;
-			ptr2 = __guide2_xieta;
-
-			for (int i = 0; i < N; i++)
-			{
-				ptr[*ptr3] += *ptr2 * dot / norm * sc;
-				ptr2++;
-				ptr3++;
-			}
-		}
+		
 		void mix_eta( double *ptr,double v1, double v2, double w1, double w2, bool accurate)
 		{
 			double S11 = 0;
@@ -10693,11 +10663,13 @@ namespace KingOfMonsters {
 		{
 			__mem->guide_xi(__mem->__grad,v1, v2, accurate);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
+			memcpy(__mem->__grad_z_tmp, __mem->__grad, sizeof(double) * __mem->_nNode);
 		}
 		void guide_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate)
 		{
 			__mem->guide_eta(__mem->__grad,v1, v2, accurate);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
+			memcpy(__mem->__grad_phi_tmp, __mem->__grad, sizeof(double) * __mem->_nNode);
 		}
 		void guide_Z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate)
 		{
@@ -10720,11 +10692,15 @@ namespace KingOfMonsters {
 			mat->dat->addrow(ii, index->_arr, __mem->__guide2_xieta, 0, sc, __mem->_nNode * 2, true, c1);
 		}*/
 		
-		/*void mix_write(mySparse^ mat, int ii, myIntArray^ index, myDoubleArray^ constraint, double sc, double c1, bool remove, double f)
+		void mix_write(mySparse^ mat,  int ii, myIntArray^ index, myIntArray^ index2,double v1,double v2,double w1,double w2, double sc, double c1, bool accurate, bool remove)
 		{
-			if(remove)__mem->remove(__mem->_nNode*2,constraint->_arr->__v.data(), index->_arr,sc*c1*f);
-			mat->dat->addrow(ii, index->_arr, __mem->__guide_xieta, 0, sc, __mem->_nNode * 2, true, c1);
-		}*/
+			__mem->mix_xi(__mem->__grad_xi , v1, v2, w1, w2, accurate);
+			__mem->mix_eta(__mem->__grad_eta, v1, v2, w1, w2, accurate);
+			if(remove)
+			__mem->remove2(__mem->_nNode,__mem->__grad_xi, __mem->__grad_z_tmp, __mem->__grad_eta, __mem->__grad_phi_tmp, sc);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad_xi, 0, sc, __mem->_nNode, true, c1);
+			mat->dat->addrow(ii, index2->_arr, __mem->__grad_eta, 0, sc, __mem->_nNode, false, c1);
+		}
 		void mix_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, double w1, double w2, bool accurate)
 		{
 			__mem->mix_xi(__mem->__grad,v1, v2, w1, w2, accurate);
@@ -10879,18 +10855,7 @@ namespace KingOfMonsters {
 			__mem->mix2_Z(__mem->__grad, v1, v2, w1, w2, accurate);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, sc, __mem->_nNode, c1);
 		}
-		void mix_phiZ(mySparse^ mat, mySparse^ mat2, int ii, myIntArray^ index, myDoubleArray^ constraint, myDoubleArray^ constraint2,double sc,
-			double c1, double v1, double v2, double w1, double w2, bool accurate, bool remove,double f)
-		{
-			__mem->mix_phi(__mem->__mix_phi , v1, v2, w1, w2, accurate);
-			__mem->mix_Z(__mem->__mix_z, v1, v2, w1, w2, accurate);
-			if (remove)
-			{
-				__mem->remove2(__mem->_nNode, constraint->_arr->__v.data(), constraint2->_arr->__v.data(),index->_arr, sc*c1*f);
-			}
-			mat->dat->addrow(ii, index->_arr, __mem->__mix_phi, sc, __mem->_nNode, c1);
-			mat2->dat->addrow(ii, index->_arr, __mem->__mix_z, sc, __mem->_nNode, c1);
-		}
+	
 		double BCEQ(double _t1, double _t2, double s11,double a,double b,bool accurate)
 		{
 			return __mem->BCEQ(_t1, _t2,s11,a,b,accurate);
