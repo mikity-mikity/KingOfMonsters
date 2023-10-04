@@ -7266,7 +7266,7 @@ namespace KingOfMonsters {
 		void remove2(int N, double* __ptr, double* __ptr2, long long* index, double sc)
 		{
 		
-			double __dot = 0, __norm = 0;
+			/*double __dot = 0, __norm = 0;
 			double* ptr1 = __ptr;
 			double* ptr2 = __ptr2;
 
@@ -7302,7 +7302,7 @@ namespace KingOfMonsters {
 				*ptr1 -= *ptr2 * __dot / __norm;
 				ptr1++;
 				ptr2++;
-			}
+			}*/
 
 		}
 		void mix_phi(double* ptr, double v1, double v2, double w1, double w2, bool accurate)
@@ -11155,8 +11155,8 @@ namespace KingOfMonsters {
 		{
 			__mem->mix_xi(__mem->__grad_xi , v1, v2, w1, w2, accurate);
 			__mem->mix_eta(__mem->__grad_eta, v1, v2, w1, w2, accurate);
-			if(remove)
-			__mem->remove2(__mem->_nNode,__mem->__grad_xi, __mem->__grad_z_tmp, __mem->__grad_eta, __mem->__grad_phi_tmp, sc);
+			//if(remove)
+			//__mem->remove2(__mem->_nNode,__mem->__grad_xi, __mem->__grad_z_tmp, __mem->__grad_eta, __mem->__grad_phi_tmp, sc);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad_xi, 0, sc, __mem->_nNode, true, c1);
 			mat->dat->addrow(ii, index2->_arr, __mem->__grad_eta, 0, sc, __mem->_nNode, false, c1);
 		}
