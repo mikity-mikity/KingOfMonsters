@@ -4,7 +4,7 @@
 #include<math.h>
 using namespace System;
 #include <cstring>
-#include <string>
+#include <string>_SLOPE_z
 using std::vector;
 using std::string;
 
