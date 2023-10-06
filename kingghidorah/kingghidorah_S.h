@@ -5161,7 +5161,7 @@ namespace KingOfMonsters {
 			}
 
 		}
-		double guide(double v1, double v2, bool accurate)
+		double guide(double v1, double v2, bool accurate,int mode)
 		{
 			double val = 0;
 
@@ -5172,15 +5172,18 @@ namespace KingOfMonsters {
 			double S1 = 0, S2 = 0;//down
 			double V1 = 0, V2 = 0;//down
 			double length = 0;
-			double mu = 0;
-			double nu = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
+			if (mode == 1)
 			{
-				mu += (_ref->d0[s]) * _ref->buf_mu[s];
-				nu += (_ref->d0[s]) * _ref->buf_nu[s];
+				double mu = 0;
+				double nu = 0;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					mu += (_ref->d0[s]) * _ref->buf_mu[s];
+					nu += (_ref->d0[s]) * _ref->buf_nu[s];
+				}
+				v1 = mu * _ref->get__Gi(0, 0) + nu * _ref->get__Gi(0, 1);
+				v2 = mu * _ref->get__Gi(1, 0) + nu * _ref->get__Gi(1, 1);
 			}
-			v1 = mu * _ref->get__Gi(0, 0) + nu * _ref->get__Gi(0, 1);
-			v2 = mu * _ref->get__Gi(1, 0) + nu * _ref->get__Gi(1, 1);
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
@@ -5353,7 +5356,7 @@ namespace KingOfMonsters {
 				ptr1++;
 			}
 		}
-		void guide_xi(double* ptr, double v1, double v2, bool accurate)
+		void guide_xi(double* ptr, double v1, double v2, bool accurate,int mode)
 		{
 			double val = 0;
 
@@ -5364,16 +5367,18 @@ namespace KingOfMonsters {
 			double S1 = 0, S2 = 0;//down
 			double V1 = 0, V2 = 0;//down
 			double length = 0;
-			double mu = 0;
-			double nu = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
+			if (mode == 1)
 			{
-				mu += (_ref->d0[s]) * _ref->buf_mu[s];
-				nu += (_ref->d0[s]) * _ref->buf_nu[s];
+				double mu = 0;
+				double nu = 0;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					mu += (_ref->d0[s]) * _ref->buf_mu[s];
+					nu += (_ref->d0[s]) * _ref->buf_nu[s];
+				}
+				v1 = mu * _ref->get__Gi(0, 0) + nu * _ref->get__Gi(0, 1);
+				v2 = mu * _ref->get__Gi(1, 0) + nu * _ref->get__Gi(1, 1);
 			}
-			v1 = mu * _ref->get__Gi(0, 0) + nu * _ref->get__Gi(0, 1);
-			v2 = mu * _ref->get__Gi(1, 0) + nu * _ref->get__Gi(1, 1);
-
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
@@ -5453,7 +5458,7 @@ namespace KingOfMonsters {
 			}
 
 		}
-		void guide_eta(double* ptr, double v1, double v2, bool accurate)
+		void guide_eta(double* ptr, double v1, double v2, bool accurate,int mode)
 		{
 			double val = 0;
 
@@ -5464,15 +5469,18 @@ namespace KingOfMonsters {
 			double S1 = 0, S2 = 0;//down
 			double V1 = 0, V2 = 0;//down
 			double length = 0;
-			double mu = 0;
-			double nu = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
+			if (mode == 1)
 			{
-				mu += (_ref->d0[s]) * _ref->buf_mu[s];
-				nu += (_ref->d0[s]) * _ref->buf_nu[s];
+				double mu = 0;
+				double nu = 0;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					mu += (_ref->d0[s]) * _ref->buf_mu[s];
+					nu += (_ref->d0[s]) * _ref->buf_nu[s];
+				}
+				v1 = mu * _ref->get__Gi(0, 0) + nu * _ref->get__Gi(0, 1);
+				v2 = mu * _ref->get__Gi(1, 0) + nu * _ref->get__Gi(1, 1);
 			}
-			v1 = mu * _ref->get__Gi(0, 0) + nu * _ref->get__Gi(0, 1);
-			v2 = mu * _ref->get__Gi(1, 0) + nu * _ref->get__Gi(1, 1);
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
@@ -5981,20 +5989,23 @@ namespace KingOfMonsters {
 
 
 		}
-		double guide8(bool accurate,double v1,double v2)
+		double guide8(bool accurate,double v1,double v2,int mode)
 		{
 			double val = 0;
 			double length = 0;
 
 			double mu = 0;
 			double nu = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
+			if (mode == 1)
 			{
-				mu += (_ref->d0[s]) * _ref->buf_mu[s];
-				nu += (_ref->d0[s]) * _ref->buf_nu[s];
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					mu += (_ref->d0[s]) * _ref->buf_mu[s];
+					nu += (_ref->d0[s]) * _ref->buf_nu[s];
+				}
+				v1 = mu * _ref->get__Gi(0, 0) + nu * _ref->get__Gi(0, 1);
+				v2 = mu * _ref->get__Gi(1, 0) + nu * _ref->get__Gi(1, 1);
 			}
-			v1 = mu * _ref->get__Gi(0, 0) + nu * _ref->get__Gi(0, 1);
-			v2 = mu * _ref->get__Gi(1, 0) + nu * _ref->get__Gi(1, 1);
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
@@ -6247,23 +6258,26 @@ namespace KingOfMonsters {
 
 				//val = g121 * v1 + g122 * v2 - g211 * v1 - g212 * v2;
 				*ptr1 = val;
-				ptr1++;
+				ptr1 ++;
 				//	return val;
 			}
 		}
-		void guide8_xi(double* ptr, double v1, double v2, bool accurate)
+		void guide8_xi(double* ptr, double v1, double v2, bool accurate,int mode)
 		{
 			double val = 0;
 			double length = 0;
-			double mu = 0;
-			double nu = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
+			if (mode == 1)
 			{
-				mu += (_ref->d0[s]) * _ref->buf_mu[s];
-				nu += (_ref->d0[s]) * _ref->buf_nu[s];
+				double mu = 0;
+				double nu = 0;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					mu += (_ref->d0[s]) * _ref->buf_mu[s];
+					nu += (_ref->d0[s]) * _ref->buf_nu[s];
+				}
+				v1 = mu * _ref->get__Gi(0, 0) + nu * _ref->get__Gi(0, 1);
+				v2 = mu * _ref->get__Gi(1, 0) + nu * _ref->get__Gi(1, 1); 
 			}
-			v1 = mu * _ref->get__Gi(0, 0) + nu * _ref->get__Gi(0, 1);
-			v2 = mu * _ref->get__Gi(1, 0) + nu * _ref->get__Gi(1, 1);
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
@@ -6398,19 +6412,22 @@ namespace KingOfMonsters {
 			}
 			
 		}
-		void guide8_eta(double* ptr, double v1, double v2, bool accurate)
+		void guide8_eta(double* ptr, double v1, double v2, bool accurate,int mode)
 		{
 			double val = 0;
 			double length = 0;
-			double mu = 0;
-			double nu = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
+			if (mode == 1)
 			{
-				mu += (_ref->d0[s]) * _ref->buf_mu[s];
-				nu += (_ref->d0[s]) * _ref->buf_nu[s];
+				double mu = 0;
+				double nu = 0;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					mu += (_ref->d0[s]) * _ref->buf_mu[s];
+					nu += (_ref->d0[s]) * _ref->buf_nu[s];
+				}
+				v1 = mu * _ref->get__Gi(0, 0) + nu * _ref->get__Gi(0, 1);
+				v2 = mu * _ref->get__Gi(1, 0) + nu * _ref->get__Gi(1, 1); 
 			}
-			v1 = mu * _ref->get__Gi(0, 0) + nu * _ref->get__Gi(0, 1);
-			v2 = mu * _ref->get__Gi(1, 0) + nu * _ref->get__Gi(1, 1);
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
@@ -11528,19 +11545,19 @@ namespace KingOfMonsters {
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
 		}
 		
-		double guide(double v1, double v2, bool accurate)
+		double guide(double v1, double v2, bool accurate,int mode)
 		{
-			return __mem->guide(v1, v2,  accurate);
+			return __mem->guide(v1, v2,  accurate,mode);
 		}
-		void guide_xi(mySparse^ mat, int ii, myIntArray^ index, double sc,double c1,double v1, double v2, bool accurate)
+		void guide_xi(mySparse^ mat, int ii, myIntArray^ index, double sc,double c1,double v1, double v2, bool accurate,int mode)
 		{
-			__mem->guide_xi(__mem->__grad,v1, v2, accurate);
+			__mem->guide_xi(__mem->__grad,v1, v2, accurate,mode);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
 			memcpy(__mem->__grad_z_tmp, __mem->__grad, sizeof(double) * __mem->_nNode);
 		}
-		void guide_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate)
+		void guide_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate,int mode)
 		{
-			__mem->guide_eta(__mem->__grad,v1, v2, accurate);
+			__mem->guide_eta(__mem->__grad,v1, v2, accurate,mode);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
 			memcpy(__mem->__grad_phi_tmp, __mem->__grad, sizeof(double) * __mem->_nNode);
 		}
@@ -11660,9 +11677,9 @@ namespace KingOfMonsters {
 			__mem->vec_nu(__mem->__grad,V1, V2);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
 		}
-		double guide8(bool accurate,double v1,double v2)
+		double guide8(bool accurate,double v1,double v2,int mode)
 		{
-			return __mem->guide8(accurate,v1,v2);
+			return __mem->guide8(accurate,v1,v2,mode);
 		}
 		void guide8_mu(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate)
 		{
@@ -11692,9 +11709,9 @@ namespace KingOfMonsters {
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
 
 		}
-		void guide8_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate)
+		void guide8_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate,int mode)
 		{
-			__mem->guide8_xi(__mem->__grad, v1, v2, accurate);
+			__mem->guide8_xi(__mem->__grad, v1, v2, accurate,mode);
 
 			//if (remove)
 			//	__mem->remove3(__mem->_nNode, __mem->__grad, __mem->__grad_phi_tmp, __mem->__grad_z_tmp);
@@ -11706,9 +11723,9 @@ namespace KingOfMonsters {
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
 
 		}
-		void guide8_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate)
+		void guide8_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate,int mode)
 		{
-			__mem->guide8_eta(__mem->__grad, v1, v2, accurate);
+			__mem->guide8_eta(__mem->__grad, v1, v2, accurate,mode);
 
 			//if (remove)
 			//	__mem->remove3(__mem->_nNode, __mem->__grad, __mem->__grad_phi_tmp, __mem->__grad_z_tmp);
