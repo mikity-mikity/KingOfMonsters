@@ -91,7 +91,7 @@ namespace KingOfMonsters {
 		bool initialized = false;
 		double refDv = 0, _refDv = 0;
 		double _x = 0, _y = 0, _z = 0, __z = 0, Z = 0, _Z = 0;
-		double xi = 0, eta = 0;
+		double xi = 0, eta = 0,mu=0;
 		//double w = 0;
 		inline void set_z(double& z) {
 			this->_z = z;
@@ -1093,7 +1093,7 @@ namespace KingOfMonsters {
 			this->mu = val;
 
 
-			pptr1 = &_ref->buf_nu[0];
+			/*pptr1 = &_ref->buf_nu[0];
 			pptr2 = &_ref->d0[0];
 			val = 0;
 			for (int i = 0; i < _nNode; i++)
@@ -1103,7 +1103,7 @@ namespace KingOfMonsters {
 				pptr1++;
 				pptr2++;
 			}
-			this->nu = val;
+			this->nu = val;*/
 			/*pptr1 = &_ref->buf_chi[0];
 			pptr2 = &_ref->d0[0];
 			val = 0;
@@ -2033,7 +2033,7 @@ namespace KingOfMonsters {
 
 			return sc * (_SLOPE_z[0] * dcdtstar0 + _SLOPE_z[1] * dcdtstar1);// val;
 		}
-
+	
 
 		inline void constant_SLOPE(double* ptr, double dcdtstar0, double dcdtstar1, double sc, bool accurate)
 		{
@@ -2232,6 +2232,58 @@ namespace KingOfMonsters {
 			}
 
 		}
+		inline void _SLOPE(double* ptr, double dcdt1, double dcdt2,double sc) {
+			double* ptr1 = ptr;
+			for (int i = 0; i < _nNode; i++)
+			{
+				*ptr1 = ((_ref->d1[0][i] * _ref->get__Gij(0, 0) + _ref->d1[1][i] * _ref->get__Gij(1, 0)) * dcdt1 +
+					(_ref->d1[0][i] * _ref->get__Gij(0, 1) + _ref->d1[1][i] * _ref->get__Gij(1, 1)) * dcdt2)*sc;
+				ptr1++;
+
+			}
+
+		}
+		inline double SLOPE_xi(double dcdtstar0, double dcdtstar1) {
+
+			double xi_u = 0, xi_v = 0;
+			for (int i = 0; i < _nNode; i++)
+			{
+				xi_u += _ref->d1[0][i] * _ref->buf_xi[i];
+				xi_v += _ref->d1[1][i] * _ref->buf_xi[i];
+			}
+			double f_U = xi_u * _ref->get__Gij(0, 0) + xi_v * _ref->get__Gij(1, 0);
+			double f_V = xi_u * _ref->get__Gij(0, 1) + xi_v * _ref->get__Gij(1, 1);
+
+			return (f_U * dcdtstar0 + f_V * dcdtstar1);// val;
+		}
+		inline double SLOPE_eta(double dcdtstar0, double dcdtstar1) {
+
+			double eta_u = 0, eta_v = 0;
+			for (int i = 0; i < _nNode; i++)
+			{
+				eta_u += _ref->d1[0][i] * _ref->buf_eta[i];
+				eta_v += _ref->d1[1][i] * _ref->buf_eta[i];
+			}
+			double f_U = eta_u * _ref->get__Gij(0, 0) + eta_v * _ref->get__Gij(1, 0);
+			double f_V = eta_u * _ref->get__Gij(0, 1) + eta_v * _ref->get__Gij(1, 1);
+
+			return (f_U * dcdtstar0 + f_V * dcdtstar1);// val;
+		}
+
+		inline double SLOPE_mu(double dcdtstar0, double dcdtstar1) {
+
+			double f_u = 0, f_v = 0;
+			for (int i = 0; i < _nNode; i++)
+			{
+				f_u += _ref->d1[0][i] * _ref->buf_mu[i];
+				f_v += _ref->d1[1][i] * _ref->buf_mu[i];
+			}
+			double f_U = f_u * _ref->get__Gij(0, 0) + f_v * _ref->get__Gij(1, 0);
+			double f_V = f_u * _ref->get__Gij(0, 1) + f_v * _ref->get__Gij(1, 1);
+
+			return (f_U * dcdtstar0 + f_V * dcdtstar1);// val;
+		}
+
 		inline double Dc(double a, double b, int l) {
 			double f1 = a * this->get_gi(0, 0) + b * this->get_gi(0, 1);
 			double f2 = a * this->get_gi(1, 0) + b * this->get_gi(1, 1);
@@ -5167,21 +5219,21 @@ namespace KingOfMonsters {
 
 			double e11 = 0, e12 = 0, e22 = 0;
 			double E11 = 0, E12 = 0, E22 = 0, E21;
-
+			
 			double s1 = 0, s2 = 0;//up
 			double S1 = 0, S2 = 0;//down
 			double V1 = 0, V2 = 0;//down
 			double length = 0;
 			if (mode == 1) {
-				double mu = 0;
-				double nu = 0;
+				double __mu = 0;
+				double __nu = 0;
 				for (int s = 0; s < _ref->_nNode; s++)
 				{
-					mu += (_ref->d0[s]) * _ref->buf_mu[s];
-					nu += (_ref->d0[s]) * _ref->buf_nu[s];
+					__mu += (_ref->d0[s]) * _ref->buf_mu[s];
+					__nu += (_ref->d0[s]) * _ref->buf_nu[s];
 				}
-				v1 = mu * _ref->get__Gi(0, 0) + nu * _ref->get__Gi(0, 1);
-				v2 = mu * _ref->get__Gi(1, 0) + nu * _ref->get__Gi(1, 1);
+				v1 = __nu;
+				v2 = -__mu;
 			}
 			if (accurate)
 			{
@@ -5223,138 +5275,7 @@ namespace KingOfMonsters {
 			val += -scale * (e21 * v1 * v1 * this->get_gij2(0, 0) + e21 * v1 * v2 * this->get_gij2(1, 0) + e22 * v2 * v1 * this->get_gij2(0, 0) + e22 * v2 * v2 * this->get_gij2(1, 0)) / _ref->_refDv;
 			return val;
 		}
-		void guide_mu(double *ptr,double v1, double v2, bool accurate)
-		{
-			double val = 0;
-
-			double e11 = 0, e12 = 0, e22 = 0;
-			double E11 = 0, E12 = 0, E22 = 0, E21;
-
-			double s1 = 0, s2 = 0;//up
-			double S1 = 0, S2 = 0;//down
-			double V1 = 0, V2 = 0;//down
-			double length = 0;
-			double mu = 0;
-			double nu = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				mu += (_ref->d0[s]) * _ref->buf_mu[s];
-				nu += (_ref->d0[s]) * _ref->buf_nu[s];
-			}
-
-			if (accurate)
-			{
-				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
-				v1 /= length;
-				v2 /= length;
-			}
-			else {
-				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				v1 /= length;
-				v2 /= length;
-			}
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				for (int t = 0; t < _ref->_nNode; t++)
-				{
-					e11 += (_ref->d1[0][s]) * _ref->buf_xi[s] * (_ref->d1[0][t]) * _ref->buf_xi[t];
-					e11 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[0][t]) * _ref->buf_eta[t];
-					e12 += (_ref->d1[0][s]) * _ref->buf_xi[s] * (_ref->d1[1][t]) * _ref->buf_xi[t];
-					e12 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
-					e22 += (_ref->d1[1][s]) * _ref->buf_xi[s] * (_ref->d1[1][t]) * _ref->buf_xi[t];
-					e22 += (_ref->d1[1][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
-				}
-			}
-			double e21 = e12;
-			double tr = (e11 + e22) / (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
-			double tr2 = 1;// _ref->get__gij(0, 0) + _ref->get__gij(1, 1);
-			double scale = tr2 / tr;
-			if (tr == 0) {
-				scale = 1;
-				tr = 1;
-			}
-			//s1 = this->get_gij2(1, 0) * v1 + this->get_gij2(1, 1) * v2;
-			//s2 = -this->get_gij2(0, 0) * v1 - this->get_gij2(0, 1) * v2;
-
-			//double det = this->get_gij2(0, 0) * this->get_gij2(1, 1) - this->get_gij2(0, 1) * this->get_gij2(0,1);
-			//double sdet = sqrt(det);
-			double* ptr1 = ptr;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				v1 = _ref->d0[s] * _ref->get__Gi(0, 0);
-				v2 = _ref->d0[s] * _ref->get__Gi(1, 0) ;
-				val = scale * (e11 * v1 * v1 * this->get_gij2(0, 1) + e11 * v1 * v2 * this->get_gij2(1, 1) + e12 * v2 * v1 * this->get_gij2(0, 1) + e12 * v2 * v2 * this->get_gij2(1, 1)) / _ref->_refDv;
-				val += -scale * (e21 * v1 * v1 * this->get_gij2(0, 0) + e21 * v1 * v2 * this->get_gij2(1, 0) + e22 * v2 * v1 * this->get_gij2(0, 0) + e22 * v2 * v2 * this->get_gij2(1, 0)) / _ref->_refDv;
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
-		void guide_nu(double* ptr, double v1, double v2, bool accurate)
-		{
-			double val = 0;
-
-			double e11 = 0, e12 = 0, e22 = 0;
-			double E11 = 0, E12 = 0, E22 = 0, E21;
-
-			double s1 = 0, s2 = 0;//up
-			double S1 = 0, S2 = 0;//down
-			double V1 = 0, V2 = 0;//down
-			double length = 0;
-			double mu = 0;
-			double nu = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				mu += (_ref->d0[s]) * _ref->buf_mu[s];
-				nu += (_ref->d0[s]) * _ref->buf_nu[s];
-			}
-
-			if (accurate)
-			{
-				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
-				v1 /= length;
-				v2 /= length;
-			}
-			else {
-				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				v1 /= length;
-				v2 /= length;
-			}
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				for (int t = 0; t < _ref->_nNode; t++)
-				{
-					e11 += (_ref->d1[0][s]) * _ref->buf_xi[s] * (_ref->d1[0][t]) * _ref->buf_xi[t];
-					e11 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[0][t]) * _ref->buf_eta[t];
-					e12 += (_ref->d1[0][s]) * _ref->buf_xi[s] * (_ref->d1[1][t]) * _ref->buf_xi[t];
-					e12 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
-					e22 += (_ref->d1[1][s]) * _ref->buf_xi[s] * (_ref->d1[1][t]) * _ref->buf_xi[t];
-					e22 += (_ref->d1[1][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
-				}
-			}
-			double e21 = e12;
-			double tr = (e11 + e22) / (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
-			double tr2 = 1;// _ref->get__gij(0, 0) + _ref->get__gij(1, 1);
-			double scale = tr2 / tr;
-			if (tr == 0) {
-				scale = 1;
-				tr = 1;
-			}
-			//s1 = this->get_gij2(1, 0) * v1 + this->get_gij2(1, 1) * v2;
-			//s2 = -this->get_gij2(0, 0) * v1 - this->get_gij2(0, 1) * v2;
-
-			//double det = this->get_gij2(0, 0) * this->get_gij2(1, 1) - this->get_gij2(0, 1) * this->get_gij2(0,1);
-			//double sdet = sqrt(det);
-			double* ptr1 = ptr;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				v1 = _ref->d0[s] * _ref->get__Gi(0, 1);
-				v2 = _ref->d0[s] * _ref->get__Gi(1, 1);
-				val = scale * (e11 * v1 * v1 * this->get_gij2(0, 1) + e11 * v1 * v2 * this->get_gij2(1, 1) + e12 * v2 * v1 * this->get_gij2(0, 1) + e12 * v2 * v2 * this->get_gij2(1, 1)) / _ref->_refDv;
-				val += -scale * (e21 * v1 * v1 * this->get_gij2(0, 0) + e21 * v1 * v2 * this->get_gij2(1, 0) + e22 * v2 * v1 * this->get_gij2(0, 0) + e22 * v2 * v2 * this->get_gij2(1, 0)) / _ref->_refDv;
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
+		
 		void guide_xi(double* ptr, double v1, double v2, bool accurate,int mode)
 		{
 			double val = 0;
@@ -5367,15 +5288,15 @@ namespace KingOfMonsters {
 			double V1 = 0, V2 = 0;//down
 			double length = 0;
 			if (mode == 1) {
-				double mu = 0;
-				double nu = 0;
+				double __mu = 0;
+				double __nu = 0;
 				for (int s = 0; s < _ref->_nNode; s++)
 				{
-					mu += (_ref->d0[s]) * _ref->buf_mu[s];
-					nu += (_ref->d0[s]) * _ref->buf_nu[s];
+					__mu += (_ref->d0[s]) * _ref->buf_mu[s];
+					__nu += (_ref->d0[s]) * _ref->buf_nu[s];
 				}
-				v1 = mu * _ref->get__Gi(0, 0) + nu * _ref->get__Gi(0, 1);
-				v2 = mu * _ref->get__Gi(1, 0) + nu * _ref->get__Gi(1, 1);
+				v1 = __nu;
+				v2 = -__mu;
 			}
 			if (accurate)
 			{
@@ -5416,6 +5337,7 @@ namespace KingOfMonsters {
 					e12 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
 					e22 += (_ref->d1[1][s]) * _ref->buf_xi[s] * (_ref->d1[1][t]) * _ref->buf_xi[t];
 					e22 += (_ref->d1[1][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
+
 				}
 			}
 			double tr = (e11 + e22) / (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
@@ -5469,15 +5391,15 @@ namespace KingOfMonsters {
 			double length = 0;
 			if (mode == 1)
 			{
-				double mu = 0;
-				double nu = 0;
+				double __mu = 0;
+				double __nu = 0;
 				for (int s = 0; s < _ref->_nNode; s++)
 				{
-					mu += (_ref->d0[s]) * _ref->buf_mu[s];
-					nu += (_ref->d0[s]) * _ref->buf_nu[s];
+					__mu += (_ref->d0[s]) * _ref->buf_mu[s];
+					__nu += (_ref->d0[s]) * _ref->buf_nu[s];
 				}
-				v1 = mu * _ref->get__Gi(0, 0) + nu * _ref->get__Gi(0, 1);
-				v2 = mu * _ref->get__Gi(1, 0) + nu * _ref->get__Gi(1, 1);
+				v1 = __nu;
+				v2 = -__mu;
 			}
 			if (accurate)
 			{
@@ -5518,6 +5440,7 @@ namespace KingOfMonsters {
 					e12 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
 					e22 += (_ref->d1[1][s]) * _ref->buf_xi[s] * (_ref->d1[1][t]) * _ref->buf_xi[t];
 					e22 += (_ref->d1[1][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
+
 				}
 			}
 			double tr = (e11 + e22) / (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
@@ -5557,6 +5480,7 @@ namespace KingOfMonsters {
 			}
 
 		}
+		
 		void guide_Z(double* ptr, double v1, double v2, bool accurate)
 		{
 			double val = 0;
@@ -5894,14 +5818,17 @@ namespace KingOfMonsters {
 
 			double __mu = 0, __nu = 0;
 
-			for (int i = 0; i < _ref->_nNode; i++)
+			double v1 = V1 * _ref->get__Gi(0, 0)+ V2 * _ref->get__Gi(0, 1);
+			double v2 = V1 * _ref->get__Gi(1, 0)+ V2 * _ref->get__Gi(1, 1);
+
+			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				__mu += _ref->d0[i] * _ref->buf_mu[i];
-				__nu += _ref->d0[i] * _ref->buf_nu[i];
+				__mu += _ref->d0[s] * _ref->buf_mu[s];
+				__nu += _ref->d0[s] * _ref->buf_nu[s];
 			}
 
 
-			return __mu*V2 - __nu*V1;
+			return __mu*v1 + __nu*v2;
 
 		}
 		void vec_mu(double* ptr, double V1, double V2)
@@ -5909,13 +5836,15 @@ namespace KingOfMonsters {
 
 			double __mu = 0, __nu = 0;
 			double* ptr1 = ptr;
+			double v1 = V1 * _ref->get__Gi(0, 0) + V2 * _ref->get__Gi(0, 1);
+			double v2 = V1 * _ref->get__Gi(1, 0) + V2 * _ref->get__Gi(1, 1);
 
-			for (int i = 0; i < _ref->_nNode; i++)
+			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				__mu = _ref->d0[i];
+				__mu = _ref->d0[s];
 
 
-				double val = __mu * V2;
+				double val = __mu * v1;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -5924,84 +5853,147 @@ namespace KingOfMonsters {
 		{
 			double __mu = 0, __nu = 0;
 			double* ptr1 = ptr;
-			
-			for (int i = 0; i < _ref->_nNode; i++)
+			double v1 = V1 * _ref->get__Gi(0, 0) + V2 * _ref->get__Gi(0, 1);
+			double v2 = V1 * _ref->get__Gi(1, 0) + V2 * _ref->get__Gi(1, 1);
+			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				__nu = _ref->d0[i];
+				__nu = _ref->d0[s];
 
 
-				double val = -__nu * V1;
+				double val = __nu * v2;
 				*ptr1 = val;
 				ptr1++;
 			}
 		}
-		double curl_free()
+		double unit()
 		{
-			double mu_u=0,mu_v = 0, nu_v=0,nu_u = 0;
+			double __mu = 0, __nu = 0;
 			for (int i = 0; i < _ref->_nNode; i++)
 			{
-				mu_u += _ref->d1[0][i] * _ref->buf_mu[i];
-				nu_u += _ref->d1[0][i] * _ref->buf_nu[i];
-				mu_v += _ref->d1[1][i] * _ref->buf_mu[i];
-				nu_v += _ref->d1[1][i] * _ref->buf_nu[i];
-			}
-
-			return mu_u * _ref->get__Gi(0, 1) + mu_v * _ref->get__Gi(1, 1)
-				- nu_u * _ref->get__Gi(0, 0) - nu_v * _ref->get__Gi(1, 0);
-
-		}
-
-		void curl_free_mu(double* ptr)
-		{
-			double* ptr1 = ptr;
-
-			double mu_u = 0, mu_v = 0, nu_v = 0, nu_u = 0;
-			for (int i = 0; i < _ref->_nNode; i++)
-			{
-				mu_u += _ref->d1[0][i];				
-				mu_v += _ref->d1[1][i];
-
-				double val = mu_u * _ref->get__Gi(0, 1) + mu_v * _ref->get__Gi(1, 1);
-
-				*ptr1 = val;
-				ptr1++;
-			}
-
-		}
-		void curl_free_nu(double* ptr)
-		{
-			
-			double* ptr1 = ptr;
-
-			double mu_u = 0, mu_v = 0, nu_v = 0, nu_u = 0;
-			for (int i = 0; i < _ref->_nNode; i++)
-			{
+				__mu += _ref->d0[i] * _ref->buf_mu[i];
+				__nu += _ref->d0[i] * _ref->buf_nu[i];
 				
-				nu_u = _ref->d1[0][i];
-				nu_v = _ref->d1[1][i];
+			}
 
-				double val = -nu_u * _ref->get__Gi(0, 0) - nu_v * _ref->get__Gi(1, 0);
+			return __mu * __mu * _ref->get__Gij(0, 0) + 2 * __mu * __nu * _ref->get__Gij(0, 1) + __nu * __nu * _ref->get__Gij(1, 1)-1;
+
+		}
+		void unit_mu(double *ptr)
+		{
+			double __mu = 0, __nu = 0;
+			double *ptr1 = ptr;
+			for (int i = 0; i < _ref->_nNode; i++)
+			{
+				__mu += _ref->d0[i] * _ref->buf_mu[i];
+				__nu += _ref->d0[i] * _ref->buf_nu[i];
+
+			}
+
+			for (int i = 0; i < _ref->_nNode; i++)
+			{
+				double __dmu = _ref->d0[i];
+				double __dnu = 0;// _ref->d0[i] * _ref->buf_nu[i];
+				double val=2*__dmu * __mu * _ref->get__Gij(0, 0) + 2 * (__mu * __dnu+__dmu * __nu) * _ref->get__Gij(0, 1) + 2*(__dnu * __nu) * _ref->get__Gij(1, 1) ;
 				*ptr1 = val;
 				ptr1++;
 			}
 
 
 		}
+		void unit_nu(double* ptr)
+		{
+			double __mu = 0, __nu = 0;
+			double* ptr1 = ptr;
+			for (int i = 0; i < _ref->_nNode; i++)
+			{
+				__mu += _ref->d0[i] * _ref->buf_mu[i];
+				__nu += _ref->d0[i] * _ref->buf_nu[i];
+
+			}
+
+			for (int i = 0; i < _ref->_nNode; i++)
+			{
+				double __dmu = 0;// _ref->d0[i];
+				double __dnu =  _ref->d0[i];
+				double val = 2 * __dmu * __mu * _ref->get__Gij(0, 0) + 2 * (__mu * __dnu + __dmu * __nu) * _ref->get__Gij(0, 1) + 2 * (__dnu * __nu) * _ref->get__Gij(1, 1);
+				*ptr1 = val;
+				ptr1++;
+			}
+
+
+		}
+		double get_v1()
+		{
+			double f_u = 0,f_v=0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				f_u += (_ref->d1[0][s]) * _ref->buf_mu[s];
+				f_v += (_ref->d1[1][s]) * _ref->buf_mu[s];
+			}
+			return f_v;
+		}
+		double get_v2()
+		{
+			double f_u = 0, f_v = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				f_u += (_ref->d1[0][s]) * _ref->buf_mu[s];
+				f_v += (_ref->d1[1][s]) * _ref->buf_mu[s];
+			}
+			return -f_u;
+
+		}
+		double fair()
+		{
+			double f_uu = 0, f_uv = 0, f_vv = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				f_uu += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_mu[s];
+				f_uv += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->buf_mu[s];
+				f_vv += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_mu[s];
+			}
+
+			//return mu_u * _ref->get__Gi(0, 0) + mu_v * _ref->get__Gi(1, 0)
+			//	+ nu_u * _ref->get__Gi(0, 1) + nu_v * _ref->get__Gi(1, 1);
+			return f_uu * _ref->get__Gij(0, 0) + 2 * f_uv * _ref->get__Gij(0, 1) + f_vv * _ref->get__Gij(1, 1);
+
+		}
+
+		void fair_mu(double* ptr)
+		{
+			double* ptr1 = ptr;
+
+			double f_uu = 0, f_uv = 0, f_vv = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				f_uu = (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+				f_uv = (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+				f_vv = (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+			
+
+				double val= f_uu * _ref->get__Gij(0, 0) + 2 * f_uv * _ref->get__Gij(0, 1) + f_vv * _ref->get__Gij(1, 1);
+				*ptr1 = val;
+				ptr1 ++;
+			}
+
+
+		}
+		
 		double guide8(bool accurate,double v1,double v2,int mode)
 		{
 			double val = 0;
 			double length = 0;
 			if (mode == 1)
 			{
-				double mu = 0;
-				double nu = 0;
+				double __mu = 0;
+				double __nu = 0;
 				for (int s = 0; s < _ref->_nNode; s++)
 				{
-					mu += (_ref->d0[s]) * _ref->buf_mu[s];
-					nu += (_ref->d0[s]) * _ref->buf_nu[s];
+					__mu += (_ref->d0[s]) * _ref->buf_mu[s];
+					__nu += (_ref->d0[s]) * _ref->buf_nu[s];
 				}
-				v1 = mu * _ref->get__Gi(0, 0) + nu * _ref->get__Gi(0, 1);
-				v2 = mu * _ref->get__Gi(1, 0) + nu * _ref->get__Gi(1, 1);
+				v1 = __nu;
+				v2 = -__mu;
 			}
 			if (accurate)
 			{
@@ -6055,6 +6047,9 @@ namespace KingOfMonsters {
 					e12 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d1[1][j] * _ref->buf_eta[j]);
 					e22 += (_ref->d1[1][i] * _ref->buf_xi[i]) * (_ref->d1[1][j] * _ref->buf_xi[j]);
 					e22 += (_ref->d1[1][i] * _ref->buf_eta[i]) * (_ref->d1[1][j] * _ref->buf_eta[j]);
+					e11 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d1[0][j] * _ref->buf_mu[j]);
+					e12 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d1[1][j] * _ref->buf_mu[j]);
+					e22 += (_ref->d1[1][i] * _ref->buf_eta[i]) * (_ref->d1[1][j] * _ref->buf_mu[j]);
 				}
 
 			}
@@ -6075,205 +6070,22 @@ namespace KingOfMonsters {
 
 			return val;
 		}
-		void guide8_mu(double *ptr,bool accurate, double v1, double v2)
-		{
-			double val = 0;
-			double length = 0;
-
-			double mu = 0;
-			double nu = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				mu += (_ref->d0[s]) * _ref->buf_mu[s];
-				nu += (_ref->d0[s]) * _ref->buf_nu[s];
-			}
-			
-			if (accurate)
-			{
-				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
-				v1 /= length;
-				v2 /= length;
-			}
-			else {
-				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				v1 /= length;
-				v2 /= length;
-			}
-			double e11 = 0, e12 = 0, e22 = 0;
-			double g111 = 0, g112 = 0, g121 = 0, g122 = 0, g221 = 0, g222 = 0, g211 = 0, g212 = 0;
-
-			for (int i = 0; i < _ref->_nNode; i++)
-			{
-				for (int j = 0; j < _ref->_nNode; j++)
-				{
-					g111 += (_ref->d2[0][i] * _ref->buf_xi[i]) * (_ref->d1[0][j] * _ref->buf_xi[j]);
-					g211 += (_ref->d2[1][i] * _ref->buf_xi[i]) * (_ref->d1[0][j] * _ref->buf_xi[j]);
-					g112 += (_ref->d2[0][i] * _ref->buf_xi[i]) * (_ref->d1[1][j] * _ref->buf_xi[j]);
-					g212 += (_ref->d2[1][i] * _ref->buf_xi[i]) * (_ref->d1[1][j] * _ref->buf_xi[j]);
-					g122 += (_ref->d2[1][i] * _ref->buf_xi[i]) * (_ref->d1[1][j] * _ref->buf_xi[j]);
-					g222 += (_ref->d2[3][i] * _ref->buf_xi[i]) * (_ref->d1[1][j] * _ref->buf_xi[j]);
-
-					g111 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d2[0][j] * _ref->buf_xi[j]);
-					g211 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d2[1][j] * _ref->buf_xi[j]);
-					g112 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d2[1][j] * _ref->buf_xi[j]);
-					g212 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d2[3][j] * _ref->buf_xi[j]);
-					g122 += (_ref->d1[1][i] * _ref->buf_xi[i]) * (_ref->d2[1][j] * _ref->buf_xi[j]);
-					g222 += (_ref->d1[1][i] * _ref->buf_xi[i]) * (_ref->d2[3][j] * _ref->buf_xi[j]);
-
-					g111 += (_ref->d2[0][i] * _ref->buf_eta[i]) * (_ref->d1[0][j] * _ref->buf_eta[j]);
-					g211 += (_ref->d2[1][i] * _ref->buf_eta[i]) * (_ref->d1[0][j] * _ref->buf_eta[j]);
-					g112 += (_ref->d2[0][i] * _ref->buf_eta[i]) * (_ref->d1[1][j] * _ref->buf_eta[j]);
-					g212 += (_ref->d2[1][i] * _ref->buf_eta[i]) * (_ref->d1[1][j] * _ref->buf_eta[j]);
-					g122 += (_ref->d2[1][i] * _ref->buf_eta[i]) * (_ref->d1[1][j] * _ref->buf_eta[j]);
-					g222 += (_ref->d2[3][i] * _ref->buf_eta[i]) * (_ref->d1[1][j] * _ref->buf_eta[j]);
-
-					g111 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d2[0][j] * _ref->buf_eta[j]);
-					g211 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d2[1][j] * _ref->buf_eta[j]);
-					g112 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d2[1][j] * _ref->buf_eta[j]);
-					g212 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d2[3][j] * _ref->buf_eta[j]);
-					g122 += (_ref->d1[1][i] * _ref->buf_eta[i]) * (_ref->d2[1][j] * _ref->buf_eta[j]);
-					g222 += (_ref->d1[1][i] * _ref->buf_eta[i]) * (_ref->d2[3][j] * _ref->buf_eta[j]);
-
-					e11 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d1[0][j] * _ref->buf_xi[j]);
-					e11 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d1[0][j] * _ref->buf_eta[j]);
-					e12 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d1[1][j] * _ref->buf_xi[j]);
-					e12 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d1[1][j] * _ref->buf_eta[j]);
-					e22 += (_ref->d1[1][i] * _ref->buf_xi[i]) * (_ref->d1[1][j] * _ref->buf_xi[j]);
-					e22 += (_ref->d1[1][i] * _ref->buf_eta[i]) * (_ref->d1[1][j] * _ref->buf_eta[j]);
-				}
-
-			}
-			g121 = g112;
-			g221 = g212;
-
-			double e21 = e12;
-			double* ptr1 = ptr;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				v1 = _ref->d0[s]* _ref->get__Gi(0, 0);
-				v2 = _ref->d0[s] * _ref->get__Gi(1, 0);
-				val = g111 * this->get_Gij2(0, 0) * e12 * v1 + g211 * this->get_Gij2(0, 0) * e12 * v2 +
-					g112 * this->get_Gij2(1, 1) * e22 * v1 + g212 * this->get_Gij2(1, 1) * e22 * v2
-					+ g111 * this->get_Gij2(0, 1) * e22 * v1 + g211 * this->get_Gij2(0, 1) * e22 * v2 +
-					g112 * this->get_Gij2(1, 0) * e12 * v1 + g212 * this->get_Gij2(1, 0) * e12 * v2;
-				val -= g121 * this->get_Gij2(0, 0) * e11 * v1 + g221 * this->get_Gij2(0, 0) * e11 * v2 +
-					g121 * this->get_Gij2(0, 1) * e21 * v1 + g221 * this->get_Gij2(0, 1) * e21 * v2 +
-					g122 * this->get_Gij2(1, 0) * e11 * v1 + g222 * this->get_Gij2(1, 0) * e11 * v2 +
-					g122 * this->get_Gij2(1, 1) * e21 * v1 + g222 * this->get_Gij2(1, 1) * e21 * v2;
-
-				//val = g121 * v1 + g122 * v2 - g211 * v1 - g212 * v2;
-				*ptr1 = val;
-				ptr1 ++;
-			//	return val;
-			}
-		}
-		void guide8_nu(double* ptr, bool accurate, double v1, double v2)
-		{
-			double val = 0;
-			double length = 0;
-
-			double mu = 0;
-			double nu = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				mu += (_ref->d0[s]) * _ref->buf_mu[s];
-				nu += (_ref->d0[s]) * _ref->buf_nu[s];
-			}
-
-			if (accurate)
-			{
-				length = sqrt(v1 * v1 * this->get_gij2(0, 0) + v2 * v1 * this->get_gij2(1, 0) + v1 * v2 * this->get_gij2(0, 1) + v2 * v2 * this->get_gij2(1, 1));
-				v1 /= length;
-				v2 /= length;
-			}
-			else {
-				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				v1 /= length;
-				v2 /= length;
-			}
-			double e11 = 0, e12 = 0, e22 = 0;
-			double g111 = 0, g112 = 0, g121 = 0, g122 = 0, g221 = 0, g222 = 0, g211 = 0, g212 = 0;
-
-			for (int i = 0; i < _ref->_nNode; i++)
-			{
-				for (int j = 0; j < _ref->_nNode; j++)
-				{
-					g111 += (_ref->d2[0][i] * _ref->buf_xi[i]) * (_ref->d1[0][j] * _ref->buf_xi[j]);
-					g211 += (_ref->d2[1][i] * _ref->buf_xi[i]) * (_ref->d1[0][j] * _ref->buf_xi[j]);
-					g112 += (_ref->d2[0][i] * _ref->buf_xi[i]) * (_ref->d1[1][j] * _ref->buf_xi[j]);
-					g212 += (_ref->d2[1][i] * _ref->buf_xi[i]) * (_ref->d1[1][j] * _ref->buf_xi[j]);
-					g122 += (_ref->d2[1][i] * _ref->buf_xi[i]) * (_ref->d1[1][j] * _ref->buf_xi[j]);
-					g222 += (_ref->d2[3][i] * _ref->buf_xi[i]) * (_ref->d1[1][j] * _ref->buf_xi[j]);
-
-					g111 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d2[0][j] * _ref->buf_xi[j]);
-					g211 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d2[1][j] * _ref->buf_xi[j]);
-					g112 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d2[1][j] * _ref->buf_xi[j]);
-					g212 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d2[3][j] * _ref->buf_xi[j]);
-					g122 += (_ref->d1[1][i] * _ref->buf_xi[i]) * (_ref->d2[1][j] * _ref->buf_xi[j]);
-					g222 += (_ref->d1[1][i] * _ref->buf_xi[i]) * (_ref->d2[3][j] * _ref->buf_xi[j]);
-
-					g111 += (_ref->d2[0][i] * _ref->buf_eta[i]) * (_ref->d1[0][j] * _ref->buf_eta[j]);
-					g211 += (_ref->d2[1][i] * _ref->buf_eta[i]) * (_ref->d1[0][j] * _ref->buf_eta[j]);
-					g112 += (_ref->d2[0][i] * _ref->buf_eta[i]) * (_ref->d1[1][j] * _ref->buf_eta[j]);
-					g212 += (_ref->d2[1][i] * _ref->buf_eta[i]) * (_ref->d1[1][j] * _ref->buf_eta[j]);
-					g122 += (_ref->d2[1][i] * _ref->buf_eta[i]) * (_ref->d1[1][j] * _ref->buf_eta[j]);
-					g222 += (_ref->d2[3][i] * _ref->buf_eta[i]) * (_ref->d1[1][j] * _ref->buf_eta[j]);
-
-					g111 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d2[0][j] * _ref->buf_eta[j]);
-					g211 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d2[1][j] * _ref->buf_eta[j]);
-					g112 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d2[1][j] * _ref->buf_eta[j]);
-					g212 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d2[3][j] * _ref->buf_eta[j]);
-					g122 += (_ref->d1[1][i] * _ref->buf_eta[i]) * (_ref->d2[1][j] * _ref->buf_eta[j]);
-					g222 += (_ref->d1[1][i] * _ref->buf_eta[i]) * (_ref->d2[3][j] * _ref->buf_eta[j]);
-
-					e11 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d1[0][j] * _ref->buf_xi[j]);
-					e11 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d1[0][j] * _ref->buf_eta[j]);
-					e12 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d1[1][j] * _ref->buf_xi[j]);
-					e12 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d1[1][j] * _ref->buf_eta[j]);
-					e22 += (_ref->d1[1][i] * _ref->buf_xi[i]) * (_ref->d1[1][j] * _ref->buf_xi[j]);
-					e22 += (_ref->d1[1][i] * _ref->buf_eta[i]) * (_ref->d1[1][j] * _ref->buf_eta[j]);
-				}
-
-			}
-			g121 = g112;
-			g221 = g212;
-
-			double e21 = e12;
-			double* ptr1 = ptr;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				v1 = _ref->d0[s] * _ref->get__Gi(0, 1);
-				v2 = _ref->d0[s] * _ref->get__Gi(1, 1);
-				val = g111 * this->get_Gij2(0, 0) * e12 * v1 + g211 * this->get_Gij2(0, 0) * e12 * v2 +
-					g112 * this->get_Gij2(1, 1) * e22 * v1 + g212 * this->get_Gij2(1, 1) * e22 * v2
-					+ g111 * this->get_Gij2(0, 1) * e22 * v1 + g211 * this->get_Gij2(0, 1) * e22 * v2 +
-					g112 * this->get_Gij2(1, 0) * e12 * v1 + g212 * this->get_Gij2(1, 0) * e12 * v2;
-				val -= g121 * this->get_Gij2(0, 0) * e11 * v1 + g221 * this->get_Gij2(0, 0) * e11 * v2 +
-					g121 * this->get_Gij2(0, 1) * e21 * v1 + g221 * this->get_Gij2(0, 1) * e21 * v2 +
-					g122 * this->get_Gij2(1, 0) * e11 * v1 + g222 * this->get_Gij2(1, 0) * e11 * v2 +
-					g122 * this->get_Gij2(1, 1) * e21 * v1 + g222 * this->get_Gij2(1, 1) * e21 * v2;
-
-				//val = g121 * v1 + g122 * v2 - g211 * v1 - g212 * v2;
-				*ptr1 = val;
-				ptr1++;
-				//	return val;
-			}
-		}
+		
 		void guide8_xi(double* ptr, double v1, double v2, bool accurate,int mode)
 		{
 			double val = 0;
 			double length = 0;
 			if (mode == 1)
 			{
-				double mu = 0;
-				double nu = 0;
+				double __mu = 0;
+				double __nu = 0;
 				for (int s = 0; s < _ref->_nNode; s++)
 				{
-					mu += (_ref->d0[s]) * _ref->buf_mu[s];
-					nu += (_ref->d0[s]) * _ref->buf_nu[s];
+					__mu += (_ref->d0[s]) * _ref->buf_mu[s];
+					__nu += (_ref->d0[s]) * _ref->buf_nu[s];
 				}
-				v1 = mu * _ref->get__Gi(0, 0) + nu * _ref->get__Gi(0, 1);
-				v2 = mu * _ref->get__Gi(1, 0) + nu * _ref->get__Gi(1, 1);
+				v1 = __nu;
+				v2 = -__mu;
 			}
 			if (accurate)
 			{
@@ -6326,6 +6138,9 @@ namespace KingOfMonsters {
 					e12 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d1[1][j] * _ref->buf_eta[j]);
 					e22 += (_ref->d1[1][i] * _ref->buf_xi[i]) * (_ref->d1[1][j] * _ref->buf_xi[j]);
 					e22 += (_ref->d1[1][i] * _ref->buf_eta[i]) * (_ref->d1[1][j] * _ref->buf_eta[j]);
+					e11 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d1[0][j] * _ref->buf_mu[j]);
+					e12 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d1[1][j] * _ref->buf_mu[j]);
+					e22 += (_ref->d1[1][i] * _ref->buf_eta[i]) * (_ref->d1[1][j] * _ref->buf_mu[j]);
 				}
 
 			}
@@ -6415,15 +6230,15 @@ namespace KingOfMonsters {
 			double length = 0;
 			if (mode == 1)
 			{
-				double mu = 0;
-				double nu = 0;
+				double __mu = 0;
+				double __nu = 0;
 				for (int s = 0; s < _ref->_nNode; s++)
 				{
-					mu += (_ref->d0[s]) * _ref->buf_mu[s];
-					nu += (_ref->d0[s]) * _ref->buf_nu[s];
+					__mu += (_ref->d0[s]) * _ref->buf_mu[s];
+					__nu += (_ref->d0[s]) * _ref->buf_nu[s];
 				}
-				v1 = mu * _ref->get__Gi(0, 0) + nu * _ref->get__Gi(0, 1);
-				v2 = mu * _ref->get__Gi(1, 0) + nu * _ref->get__Gi(1, 1);
+				v1 = __nu;
+				v2 = -__mu;
 			}
 			if (accurate)
 			{
@@ -6476,6 +6291,9 @@ namespace KingOfMonsters {
 					e12 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d1[1][j] * _ref->buf_eta[j]);
 					e22 += (_ref->d1[1][i] * _ref->buf_xi[i]) * (_ref->d1[1][j] * _ref->buf_xi[j]);
 					e22 += (_ref->d1[1][i] * _ref->buf_eta[i]) * (_ref->d1[1][j] * _ref->buf_eta[j]);
+					e11 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d1[0][j] * _ref->buf_mu[j]);
+					e12 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d1[1][j] * _ref->buf_mu[j]);
+					e22 += (_ref->d1[1][i] * _ref->buf_eta[i]) * (_ref->d1[1][j] * _ref->buf_mu[j]);
 				}
 
 			}
@@ -6559,6 +6377,7 @@ namespace KingOfMonsters {
 			}
 
 		}
+		
 		double guide2(double v1, double v2, bool accurate)
 		{
 			double val = 0;
@@ -6745,7 +6564,7 @@ namespace KingOfMonsters {
 
 		
 
-		double guide_supported(double v1, double v2, bool accurate)
+		double guide_supported(double v1, double v2, bool accurate,int mode)
 		{
 			double val = 0;
 
@@ -6756,6 +6575,18 @@ namespace KingOfMonsters {
 			double S1 = 0, S2 = 0;//down
 			double V1 = 0, V2 = 0;//down
 			double length = 0;
+			if (mode == 1) {
+				double __mu = 0;
+				double __nu = 0;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					__mu += (_ref->d0[s]) * _ref->buf_mu[s];
+					__nu += (_ref->d0[s]) * _ref->buf_nu[s];
+				}
+				v1 = __nu;
+				v2 = -__mu;
+
+			}
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
@@ -6808,7 +6639,7 @@ namespace KingOfMonsters {
 			val = scale * (e11 * v1 * v1+ e12 * v1 * v2 + e12 * v2 * v1 + e22 * v2 * v2);
 			return val;
 		}
-		void guide_supported_xi(double* ptr, double v1, double v2, bool accurate)
+		void guide_supported_xi(double* ptr, double v1, double v2, bool accurate,int mode)
 		{
 			double val = 0;
 
@@ -6819,6 +6650,18 @@ namespace KingOfMonsters {
 			double S1 = 0, S2 = 0;//down
 			double V1 = 0, V2 = 0;//down
 			double length = 0;
+			if (mode == 1) {
+				double __mu = 0;
+				double __nu = 0;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					__mu += (_ref->d0[s]) * _ref->buf_mu[s];
+					__nu += (_ref->d0[s]) * _ref->buf_nu[s];
+				}
+				v1 = __nu;
+				v2 = -__mu;
+
+			}
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
@@ -6891,7 +6734,7 @@ namespace KingOfMonsters {
 
 		}
 
-		void guide_supported_eta(double* ptr, double v1, double v2, bool accurate)
+		void guide_supported_eta(double* ptr, double v1, double v2, bool accurate,int mode)
 		{
 			double val = 0;
 
@@ -6902,6 +6745,18 @@ namespace KingOfMonsters {
 			double S1 = 0, S2 = 0;//down
 			double V1 = 0, V2 = 0;//down
 			double length = 0;
+			if (mode == 1) {
+				double __mu = 0;
+				double __nu = 0;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					__mu += (_ref->d0[s]) * _ref->buf_mu[s];
+					__nu += (_ref->d0[s]) * _ref->buf_nu[s];
+				}
+				v1 = __nu;
+				v2 = -__mu;
+
+			}
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
@@ -6941,6 +6796,7 @@ namespace KingOfMonsters {
 					e12 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
 					e22 += (_ref->d1[1][s]) * _ref->buf_xi[s] * (_ref->d1[1][t]) * _ref->buf_xi[t];
 					e22 += (_ref->d1[1][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
+		
 				}
 			}
 			double tr = e11 * _ref->get__Gij(0, 0) + 2 * e12 * _ref->get__Gij(0, 1) + e22 * _ref->get__Gij(1, 1);
@@ -6974,9 +6830,8 @@ namespace KingOfMonsters {
 
 		}
 
-		
 
-		double guide_free(double v1, double v2, bool accurate)
+		double guide_free(double v1, double v2, bool accurate,int mode)
 		{
 			double val = 0;
 
@@ -6987,6 +6842,18 @@ namespace KingOfMonsters {
 			double S1 = 0, S2 = 0;//down
 			double V1 = 0, V2 = 0;//down
 			double length = 0;
+			if (mode == 1) {
+				double __mu = 0;
+				double __nu = 0;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					__mu += (_ref->d0[s]) * _ref->buf_mu[s];
+					__nu += (_ref->d0[s]) * _ref->buf_nu[s];
+				}
+				v1 = __nu;
+				v2 = -__mu;
+
+			}
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
@@ -7026,6 +6893,7 @@ namespace KingOfMonsters {
 					e12 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
 					e22 += (_ref->d1[1][s]) * _ref->buf_xi[s] * (_ref->d1[1][t]) * _ref->buf_xi[t];
 					e22 += (_ref->d1[1][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
+
 				}
 			}
 			double tr = (e11 + e22) / (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
@@ -7047,7 +6915,7 @@ namespace KingOfMonsters {
 
 			return val;
 		}
-		void guide_free_xi(double* ptr, double v1, double v2, bool accurate)
+		void guide_free_xi(double* ptr, double v1, double v2, bool accurate,int mode)
 		{
 			double val = 0;
 
@@ -7058,6 +6926,18 @@ namespace KingOfMonsters {
 			double S1 = 0, S2 = 0;//down
 			double V1 = 0, V2 = 0;//down
 			double length = 0;
+			if (mode == 1) {
+				double __mu = 0;
+				double __nu = 0;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					__mu += (_ref->d0[s]) * _ref->buf_mu[s];
+					__nu += (_ref->d0[s]) * _ref->buf_nu[s];
+				}
+				v1 = __nu;
+				v2 = -__mu;
+
+			}
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
@@ -7097,6 +6977,7 @@ namespace KingOfMonsters {
 					e12 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
 					e22 += (_ref->d1[1][s]) * _ref->buf_xi[s] * (_ref->d1[1][t]) * _ref->buf_xi[t];
 					e22 += (_ref->d1[1][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
+
 				}
 			}
 			double tr = (e11+e22)/(_ref->get__gij(0,0)+_ref->get__gij(1,1));// e11* _ref->get__Gij(0, 0) + 2 * e12 * _ref->get__Gij(0, 1) + e22 * _ref->get__Gij(1, 1);
@@ -7141,7 +7022,7 @@ namespace KingOfMonsters {
 			}
 
 		}
-		void guide_free_z(double* ptr, double v1, double v2, bool accurate)
+		void guide_free_z(double* ptr, double v1, double v2, bool accurate,int mode)
 		{
 			double val = 0;
 
@@ -7152,6 +7033,17 @@ namespace KingOfMonsters {
 			double S1 = 0, S2 = 0;//down
 			double V1 = 0, V2 = 0;//down
 			double length = 0;
+			if (mode == 1) {
+				double __mu = 0;
+				double __nu = 0;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					__mu += (_ref->d0[s]) * _ref->buf_mu[s];
+					__nu += (_ref->d0[s]) * _ref->buf_nu[s];
+				}
+				v1 = __nu;
+				v2 = -__mu;
+			}
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
@@ -7235,7 +7127,7 @@ namespace KingOfMonsters {
 			}
 
 		}
-		void guide_free_eta(double* ptr, double v1, double v2, bool accurate)
+		void guide_free_eta(double* ptr, double v1, double v2, bool accurate,int mode)
 		{
 			double val = 0;
 
@@ -7246,6 +7138,18 @@ namespace KingOfMonsters {
 			double S1 = 0, S2 = 0;//down
 			double V1 = 0, V2 = 0;//down
 			double length = 0;
+			if (mode == 1) {
+				double __mu = 0;
+				double __nu = 0;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					__mu += (_ref->d0[s]) * _ref->buf_mu[s];
+					__nu += (_ref->d0[s]) * _ref->buf_nu[s];
+				}
+				v1 = __nu;
+				v2 = -__mu;
+
+			}
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
@@ -7285,6 +7189,7 @@ namespace KingOfMonsters {
 					e12 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
 					e22 += (_ref->d1[1][s]) * _ref->buf_xi[s] * (_ref->d1[1][t]) * _ref->buf_xi[t];
 					e22 += (_ref->d1[1][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
+
 				}
 			}
 			double tr = (e11 + e22) / (_ref->get__gij(0, 0) + _ref->get__gij(1, 1)); // e11* _ref->get__Gij(0, 0) + 2 * e12 * _ref->get__Gij(0, 1) + e22 * _ref->get__Gij(1, 1);
@@ -7330,6 +7235,7 @@ namespace KingOfMonsters {
 			}
 
 		}
+		
 		double mix2(double v1, double v2, double w1, double w2, bool accurate)
 		{
 			double val = 0;
@@ -7695,6 +7601,7 @@ namespace KingOfMonsters {
 					e11 += _ref->buf_eta[s] * (_ref->d1[0][s]) * (_ref->d1[0][t]) * _ref->buf_eta[t];
 					e12 += _ref->buf_eta[s] * (_ref->d1[0][s]) * (_ref->d1[1][t]) * _ref->buf_eta[t];
 					e22 += _ref->buf_eta[s] * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_eta[t];
+	
 				}
 			}
 
@@ -7861,6 +7768,7 @@ namespace KingOfMonsters {
 					e11 += _ref->buf_eta[s] * (_ref->d1[0][s]) * (_ref->d1[0][t]) * _ref->buf_eta[t];
 					e12 += _ref->buf_eta[s] * (_ref->d1[0][s]) * (_ref->d1[1][t]) * _ref->buf_eta[t];
 					e22 += _ref->buf_eta[s] * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_eta[t];
+
 				}
 
 
@@ -8017,6 +7925,7 @@ namespace KingOfMonsters {
 					e11 += _ref->buf_eta[s] * (_ref->d1[0][s]) * (_ref->d1[0][t]) * _ref->buf_eta[t];
 					e12 += _ref->buf_eta[s] * (_ref->d1[0][s]) * (_ref->d1[1][t]) * _ref->buf_eta[t];
 					e22 += _ref->buf_eta[s] * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_eta[t];
+
 
 				}
 			}
@@ -8230,6 +8139,7 @@ namespace KingOfMonsters {
 					e11 += _ref->buf_eta[s] * (_ref->d1[0][s]) * (_ref->d1[0][t]) * _ref->buf_eta[t];
 					e12 += _ref->buf_eta[s] * (_ref->d1[0][s]) * (_ref->d1[1][t]) * _ref->buf_eta[t];
 					e22 += _ref->buf_eta[s] * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_eta[t];
+	
 				}
 			}
 			e11 = e1x * e1x + e1y * e1y;
@@ -11267,16 +11177,12 @@ namespace KingOfMonsters {
 			{
 				__mem->set_buf_eta(eta->_arr->__v.data(), nNode);
 			}
-
+			
 		}
-		void update_mu_nu(int nNode, KingOfMonsters::myDoubleArray^ mu, KingOfMonsters::myDoubleArray^ nu) {
+		void update_mu(int nNode, KingOfMonsters::myDoubleArray^ mu) {
 			if (mu != nullptr)
 			{
 				__mem->set_buf_mu(mu->_arr->__v.data(), nNode);
-			}
-			if (nu != nullptr)
-			{
-				__mem->set_buf_nu(nu->_arr->__v.data(), nNode);
 			}
 
 		}
@@ -11558,18 +11464,7 @@ namespace KingOfMonsters {
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
 			memcpy(__mem->__grad_phi_tmp, __mem->__grad, sizeof(double) * __mem->_nNode);
 		}
-		void guide_mu(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate)
-		{
-			__mem->guide_mu(__mem->__grad, v1, v2, accurate);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
-			
-		}
-		void guide_nu(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate)
-		{
-			__mem->guide_nu(__mem->__grad, v1, v2, accurate);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
-			
-		}
+	
 		void guide_Z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate)
 		{
 			__mem->guide_Z(__mem->__grad, v1, v2, accurate);
@@ -11646,19 +11541,38 @@ namespace KingOfMonsters {
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
 
 		}
-		double curl_free()
+		double unit()
 		{
-			return __mem->curl_free();
+			return __mem->unit();
 		}
-		void curl_free_mu(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1)
+		void unit_mu(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1)
 		{
-			__mem->curl_free_mu(__mem->__grad);
+			__mem->unit_mu(__mem->__grad);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
 		}
-		void curl_free_nu(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1)
+		void unit_nu(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1)
 		{
-			__mem->curl_free_nu(__mem->__grad);
+			__mem->unit_nu(__mem->__grad);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
+
+		}
+		double get_v1()
+		{
+			return __mem->get_v1();
+		}
+		double get_v2()
+		{
+			return __mem->get_v2();
+		}
+
+		double fair()
+		{
+			return __mem->fair();
+		}
+		void fair_mu(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1)
+		{
+			__mem->fair_mu(__mem->__grad);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
 		}
 		double vec(double V1,double V2)
 		{
@@ -11678,34 +11592,7 @@ namespace KingOfMonsters {
 		{
 			return __mem->guide8(accurate,v1,v2,mode);
 		}
-		void guide8_mu(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate)
-		{
-			__mem->guide8_mu(__mem->__grad, v1, v2, accurate);
-
-			//if (remove)
-			//	__mem->remove3(__mem->_nNode, __mem->__grad, __mem->__grad_phi_tmp, __mem->__grad_z_tmp);
-			/*for (int i = 0; i < __mem->_nNode; i++)
-			{
-				grad->_arr->__v(index->data()[i]) += __mem->__grad[i] * c1;
-			}*/
-
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
-
-		}
-		void guide8_nu(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate)
-		{
-			__mem->guide8_nu(__mem->__grad, v1, v2, accurate);
-
-			//if (remove)
-			//	__mem->remove3(__mem->_nNode, __mem->__grad, __mem->__grad_phi_tmp, __mem->__grad_z_tmp);
-			/*for (int i = 0; i < __mem->_nNode; i++)
-			{
-				grad->_arr->__v(index->data()[i]) += __mem->__grad[i] * c1;
-			}*/
-
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
-
-		}
+	
 		void guide8_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate,int mode)
 		{
 			__mem->guide8_xi(__mem->__grad, v1, v2, accurate,mode);
@@ -11769,40 +11656,41 @@ namespace KingOfMonsters {
 			__mem->mix_eta(__mem->__grad,v1, v2, w1, w2, accurate);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
 		}
-		
-		double guide_supported(double v1, double v2, bool accurate)
-		{
-			return __mem->guide_supported(v1, v2, accurate);
-		}
-		void guide_xi_supported(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate)
-		{
-			__mem->guide_supported_xi(__mem->__grad, v1, v2, accurate);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
-		}
-		void guide_eta_supported(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate)
-		{
-			__mem->guide_supported_eta(__mem->__grad, v1, v2, accurate);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
-		}
 	
-
-		double guide_free(double v1, double v2, bool accurate)
+		double guide_supported(double v1, double v2, bool accurate,int mode)
 		{
-			return __mem->guide_free(v1, v2, accurate);
+			return __mem->guide_supported(v1, v2, accurate,mode);
 		}
-		void guide_xi_free(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate)
+		void guide_xi_supported(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate, int mode)
 		{
-			__mem->guide_free_xi(__mem->__grad, v1, v2, accurate);
+			__mem->guide_supported_xi(__mem->__grad, v1, v2, accurate, mode);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
 		}
-		void guide_eta_free(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate)
+		void guide_eta_supported(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate, int mode)
 		{
-			__mem->guide_free_eta(__mem->__grad, v1, v2, accurate);
+			__mem->guide_supported_eta(__mem->__grad, v1, v2, accurate, mode);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
 		}
-		void guide_z_free(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate)
+		
+
+		double guide_free(double v1, double v2, bool accurate,int mode)
 		{
-			__mem->guide_free_z(__mem->__grad, v1, v2, accurate);
+			return __mem->guide_free(v1, v2, accurate,mode);
+		}
+		void guide_xi_free(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate,int mode)
+		{
+			__mem->guide_free_xi(__mem->__grad, v1, v2, accurate,mode);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
+		}
+		void guide_eta_free(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate, int mode)
+		{
+			__mem->guide_free_eta(__mem->__grad, v1, v2, accurate, mode);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
+		}
+		
+		void guide_z_free(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate,int mode)
+		{
+			__mem->guide_free_z(__mem->__grad, v1, v2, accurate,mode);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
 		}
 	
@@ -12130,6 +12018,15 @@ namespace KingOfMonsters {
 		double SLOPE_z(double dcdtstar0, double dcdtstar1, double sc) {
 			return __mem->SLOPE_z(dcdtstar0, dcdtstar1, sc);
 		}
+		double SLOPE_mu(double dcdtstar0, double dcdtstar1) {
+			return __mem->SLOPE_mu(dcdtstar0, dcdtstar1);
+		}
+		double SLOPE_xi(double dcdtstar0, double dcdtstar1) {
+			return __mem->SLOPE_xi(dcdtstar0, dcdtstar1);
+		}
+		double SLOPE_eta(double dcdtstar0, double dcdtstar1) {
+			return __mem->SLOPE_eta(dcdtstar0, dcdtstar1);
+		}
 		double SLOPE(int l, int i) {
 			return __mem->SLOPE(l, i);
 		}
@@ -12149,6 +12046,14 @@ namespace KingOfMonsters {
 		{
 			__mem->constant_SLOPE(arr->_arr->__v.data() + shift, dcdt1, dcdt2, sc, accurate);
 
+		}
+		void _SLOPE(myDoubleArray^ arr, double dcdt1, double dcdt2,double sc) {
+			__mem->_SLOPE(arr->_arr->__v.data(), dcdt1, dcdt2,sc);
+			//return __mem->SLOPE(l, i);
+		}
+		void _SLOPE(myDoubleArray^ arr, double dcdt1, double dcdt2, int shift,double sc) {
+			__mem->_SLOPE(arr->_arr->__v.data()+shift, dcdt1, dcdt2,sc);
+			//return __mem->SLOPE(l, i);
 		}
 		void SLOPE(myDoubleArray^ arr, double dcdt1, double dcdt2, double sc) {
 			__mem->SLOPE(arr->_arr->__v.data(), dcdt1, dcdt2, sc);
@@ -12435,7 +12340,7 @@ namespace KingOfMonsters {
 			xi = __mem->xi;
 			eta = __mem->eta;
 			mu = __mem->mu;
-			nu = __mem->nu;
+			//nu = __mem->nu;
 		}
 		void update_lo(array<double>^ lo) {
 			__mem->set_lo(lo[0], lo[1]);
