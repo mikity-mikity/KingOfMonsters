@@ -3624,42 +3624,23 @@ namespace KingOfMonsters {
 
 		double st2(double v1, double v2, bool accurate)
 		{
-			double length = 0, gamma = 0, _t1 = v1, _t2 = v2, t1 = 0, t2 = 0, n1 = 0, n2 = 0, T1 = 0, T2 = 0, N1 = 0, N2 = 0;
+			double length = 0;
 
 			if (accurate)
 			{
-				length = sqrt(_t1 * _t1 * this->get_gij(0, 0) + _t2 * _t1 * this->get_gij(1, 0) + _t1 * _t2 * this->get_gij(0, 1) + _t2 * _t2 * this->get_gij(1, 1));
+				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
 				if (length == 0)length = 1;
-				gamma = length * length;
-				t1 = _t1 / length;
-				t2 = _t2 / length;
-				T1 = this->get_gij(0, 0) * t1 + this->get_gij(0, 1) * t2;
-				T2 = this->get_gij(1, 0) * t1 + this->get_gij(1, 1) * t2;
-				n1 = T2;
-				n2 = -T1;
-				length = sqrt(n1 * n1 * this->get_gij(0, 0) + n2 * n1 * this->get_gij(1, 0) + n1 * n2 * this->get_gij(0, 1) + n2 * n2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				n1 /= length;
-				n2 /= length;				
-				N1 = this->get_gij(0, 0) * n1 + this->get_gij(0, 1) * n2;
-				N2 = this->get_gij(1, 0) * n1 + this->get_gij(1, 1) * n2;
+				
+				v1 = v1 / length;
+				v2 = v2 / length;
+				
 			}
 			else {
-				length = sqrt(_t1 * _t1 * _ref->get__gij(0, 0) + _t2 * _t1 * _ref->get__gij(1, 0) + _t1 * _t2 * _ref->get__gij(0, 1) + _t2 * _t2 * _ref->get__gij(1, 1));
+				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
 				if (length == 0)length = 1;
-				gamma = length * length;
-				t1 = _t1 / length;
-				t2 = _t2 / length;
-				T1 = _ref->get__gij(0, 0) * t1 + _ref->get__gij(0, 1) * t2;
-				T2 = _ref->get__gij(1, 0) * t1 + _ref->get__gij(1, 1) * t2;
-				n1 = T2;
-				n2 = -T1;
-				length = sqrt(n1 * n1 * _ref->get__gij(0, 0) + n2 * n1 * _ref->get__gij(1, 0) + n1 * n2 * _ref->get__gij(0, 1) + n2 * n2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;				
-				n1 /= length;
-				n2 /= length;
-				N1 = _ref->get__gij(0, 0) * n1 + _ref->get__gij(0, 1) * n2;
-				N2 = _ref->get__gij(1, 0) * n1 + _ref->get__gij(1, 1) * n2;
+
+				v1 = v1 / length;
+				v2 = v2 / length;
 			}
 			double S11 = 0;
 			double S12 = 0;
@@ -3673,57 +3654,50 @@ namespace KingOfMonsters {
 			
 			double S21 = S12;
 			double val = 0;
-			val += n1 * S11 * t1;
-			val += n1 * S12 * t2;
-			val += n2 * S21 * t1;
-			val += n2 * S22 * t2;
 
+
+			val =  (S11 * v1 * v1 * this->get_gij(0, 1) + S11 * v1 * v2 * this->get_gij(1, 1) + S12 * v2 * v1 * this->get_gij(0, 1) + S12 * v2 * v2 * this->get_gij(1, 1)) / _ref->_refDv;
+			val += -(S21 * v1 * v1 * this->get_gij(0, 0) + S21 * v1 * v2 * this->get_gij(1, 0) + S22 * v2 * v1 * this->get_gij(0, 0) + S22 * v2 * v2 * this->get_gij(1, 0)) / _ref->_refDv;
 
 			return val;
 		}
+
+
 		void st2_phi(double* ptr, double v1, double v2, bool accurate)
 		{
 			double S11 = 0;
 			double S12 = 0;
 			double S22 = 0;
-			double length = 0, gamma = 0, _t1 = v1, _t2 = v2, t1 = 0, t2 = 0, n1 = 0, n2 = 0, T1 = 0, T2 = 0, N1 = 0, N2 = 0;
+			double length = 0;
+
 			if (accurate)
 			{
-				length = sqrt(_t1 * _t1 * this->get_gij(0, 0) + _t2 * _t1 * this->get_gij(1, 0) + _t1 * _t2 * this->get_gij(0, 1) + _t2 * _t2 * this->get_gij(1, 1));
+				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
 				if (length == 0)length = 1;
-				gamma = length * length;
-				t1 = _t1 / length;
-				t2 = _t2 / length;
-				T1 = this->get_gij(0, 0) * t1 + this->get_gij(0, 1) * t2;
-				T2 = this->get_gij(1, 0) * t1 + this->get_gij(1, 1) * t2;
-				n1 = T2;
-				n2 = -T1;
-				length = sqrt(n1 * n1 * this->get_gij(0, 0) + n2 * n1 * this->get_gij(1, 0) + n1 * n2 * this->get_gij(0, 1) + n2 * n2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				n1 /= length;
-				n2 /= length;
-				
-				N1 = this->get_gij(0, 0) * n1 + this->get_gij(0, 1) * n2;
-				N2 = this->get_gij(1, 0) * n1 + this->get_gij(1, 1) * n2;
+
+				v1 = v1 / length;
+				v2 = v2 / length;
+
 			}
 			else {
-				length = sqrt(_t1 * _t1 * _ref->get__gij(0, 0) + _t2 * _t1 * _ref->get__gij(1, 0) + _t1 * _t2 * _ref->get__gij(0, 1) + _t2 * _t2 * _ref->get__gij(1, 1));
+				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
 				if (length == 0)length = 1;
-				gamma = length * length;
-				t1 = _t1 / length;
-				t2 = _t2 / length;
-				T1 = _ref->get__gij(0, 0) * t1 + _ref->get__gij(0, 1) * t2;
-				T2 = _ref->get__gij(1, 0) * t1 + _ref->get__gij(1, 1) * t2;
-				n1 = T2;
-				n2 = -T1;
-				length = sqrt(n1 * n1 * _ref->get__gij(0, 0) + n2 * n1 * _ref->get__gij(1, 0) + n1 * n2 * _ref->get__gij(0, 1) + n2 * n2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-				
-				n1 /= length;
-				n2 /= length;
-				N1 = _ref->get__gij(0, 0) * n1 + _ref->get__gij(0, 1) * n2;
-				N2 = _ref->get__gij(1, 0) * n1 + _ref->get__gij(1, 1) * n2;
+
+				v1 = v1 / length;
+				v2 = v2 / length;
 			}
+
+			double _S11 = 0;
+			double _S12 = 0;
+			double _S22 = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				_S11 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_z[s];
+				_S12 += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->buf_z[s];
+				_S22 += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_z[s];
+			}
+
+			double _S21 = _S12;
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
@@ -3734,10 +3708,22 @@ namespace KingOfMonsters {
 				S22 = (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
 
 				double S21 = S12;
-				val += n1 * S11 * t1;
-				val += n1 * S12 * t2;
-				val += n2 * S21 * t1;
-				val += n2 * S22 * t2;
+
+				double g11 = 0, g12 = 0, g21 = 0, g22 = 0;
+				for (int t = 0; t < _ref->_nNode; t++)
+				{
+					g11 += 2 * (_ref->d1[0][s]) * (_ref->d1[0][t]) * _ref->buf_z[t];
+					g12 += (_ref->d1[0][s]) * (_ref->d1[1][t]) * _ref->buf_z[t];
+					g12 += (_ref->d1[1][s]) * (_ref->d1[0][t]) * _ref->buf_z[t];
+					g22 += 2 * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_z[t];
+				}
+				g21 = g12;
+
+				val = (S11 * v1 * v1 * this->get_gij(0, 1) + S11 * v1 * v2 * this->get_gij(1, 1) + S12 * v2 * v1 * this->get_gij(0, 1) + S12 * v2 * v2 * this->get_gij(1, 1)) / _ref->_refDv;
+				val += -(S21 * v1 * v1 * this->get_gij(0, 0) + S21 * v1 * v2 * this->get_gij(1, 0) + S22 * v2 * v1 * this->get_gij(0, 0) + S22 * v2 * v2 * this->get_gij(1, 0)) / _ref->_refDv;
+				val += (_S11 * v1 * v1 * g12 + _S11 * v1 * v2 * g22 + _S12 * v2 * v1 * g12 + _S12 * v2 * v2 * g22) / _ref->_refDv;
+				val += -(_S21 * v1 * v1 * g11 + _S21 * v1 * v2 * g21 + _S22 * v2 * v1 * g11 + _S22 * v2 * v2 * g21) / _ref->_refDv;
+
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -5251,10 +5237,10 @@ namespace KingOfMonsters {
 				for (int t = 0; t < _ref->_nNode; t++)
 				{
 					e11 += (_ref->d1[0][s]) * _ref->buf_xi[s] * (_ref->d1[0][t]) * _ref->buf_xi[t];
-					e11 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[0][t]) * _ref->buf_eta[t];
 					e12 += (_ref->d1[0][s]) * _ref->buf_xi[s] * (_ref->d1[1][t]) * _ref->buf_xi[t];
-					e12 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
 					e22 += (_ref->d1[1][s]) * _ref->buf_xi[s] * (_ref->d1[1][t]) * _ref->buf_xi[t];
+					e11 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[0][t]) * _ref->buf_eta[t];
+					e12 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
 					e22 += (_ref->d1[1][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
 				}
 			}
@@ -5332,10 +5318,10 @@ namespace KingOfMonsters {
 				for (int t = 0; t < _ref->_nNode; t++)
 				{
 					e11 += (_ref->d1[0][s]) * _ref->buf_xi[s] * (_ref->d1[0][t]) * _ref->buf_xi[t];
-					e11 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[0][t]) * _ref->buf_eta[t];
 					e12 += (_ref->d1[0][s]) * _ref->buf_xi[s] * (_ref->d1[1][t]) * _ref->buf_xi[t];
-					e12 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
 					e22 += (_ref->d1[1][s]) * _ref->buf_xi[s] * (_ref->d1[1][t]) * _ref->buf_xi[t];
+					e11 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[0][t]) * _ref->buf_eta[t];
+					e12 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
 					e22 += (_ref->d1[1][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
 
 				}
@@ -5435,10 +5421,10 @@ namespace KingOfMonsters {
 				for (int t = 0; t < _ref->_nNode; t++)
 				{
 					e11 += (_ref->d1[0][s]) * _ref->buf_xi[s] * (_ref->d1[0][t]) * _ref->buf_xi[t];
-					e11 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[0][t]) * _ref->buf_eta[t];
 					e12 += (_ref->d1[0][s]) * _ref->buf_xi[s] * (_ref->d1[1][t]) * _ref->buf_xi[t];
-					e12 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
 					e22 += (_ref->d1[1][s]) * _ref->buf_xi[s] * (_ref->d1[1][t]) * _ref->buf_xi[t];
+					e11 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[0][t]) * _ref->buf_eta[t];
+					e12 += (_ref->d1[0][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
 					e22 += (_ref->d1[1][s]) * _ref->buf_eta[s] * (_ref->d1[1][t]) * _ref->buf_eta[t];
 
 				}
@@ -6050,10 +6036,16 @@ namespace KingOfMonsters {
 				}
 
 			}
+			double e21 = e12;
+			g111 += -_ref->get__Gammaijk(0, 0, 0) * e11 - _ref->get__Gammaijk(0, 0, 1) * e12 - _ref->get__Gammaijk(0, 0, 0) * e11 - _ref->get__Gammaijk(0, 0, 1) * e12;
+			g211 += -_ref->get__Gammaijk(1, 0, 0) * e11 - _ref->get__Gammaijk(1, 0, 1) * e12 - _ref->get__Gammaijk(1, 0, 0) * e11 - _ref->get__Gammaijk(1, 0, 1) * e12;
+			g112 += -_ref->get__Gammaijk(0, 0, 0) * e21 - _ref->get__Gammaijk(0, 0, 1) * e22 - _ref->get__Gammaijk(0, 1, 0) * e11 - _ref->get__Gammaijk(0, 1, 1) * e12;
+			g212 += -_ref->get__Gammaijk(1, 0, 0) * e21 - _ref->get__Gammaijk(1, 0, 1) * e22 - _ref->get__Gammaijk(1, 1, 0) * e11 - _ref->get__Gammaijk(1, 1, 1) * e12;
+			g122 += -_ref->get__Gammaijk(0, 1, 0) * e21 - _ref->get__Gammaijk(0, 1, 1) * e22 - _ref->get__Gammaijk(0, 1, 0) * e21 - _ref->get__Gammaijk(0, 1, 1) * e22;
+			g222 += -_ref->get__Gammaijk(1, 1, 0) * e21 - _ref->get__Gammaijk(1, 1, 1) * e22 - _ref->get__Gammaijk(1, 1, 0) * e21 - _ref->get__Gammaijk(1, 1, 1) * e22;
 			g121 = g112;
 			g221 = g212;
 
-			double e21 = e12;
 			val = g111 *  this->get_Gij2(0, 0) * e12 * v1 + g211 *  this->get_Gij2(0, 0) * e12 * v2 +
 				g112 *  this->get_Gij2(1, 1) * e22 * v1 + g212 *  this->get_Gij2(1, 1) * e22 * v2
 				+ g111 *  this->get_Gij2(0, 1) * e22 * v1 + g211 *  this->get_Gij2(0, 1) * e22 * v2 + 
@@ -6138,9 +6130,15 @@ namespace KingOfMonsters {
 				}
 
 			}
+			double e21 = e12;
+			g111 += -_ref->get__Gammaijk(0, 0, 0) * e11 - _ref->get__Gammaijk(0, 0, 1) * e12 - _ref->get__Gammaijk(0, 0, 0) * e11 - _ref->get__Gammaijk(0, 0, 1) * e12;
+			g211 += -_ref->get__Gammaijk(1, 0, 0) * e11 - _ref->get__Gammaijk(1, 0, 1) * e12 - _ref->get__Gammaijk(1, 0, 0) * e11 - _ref->get__Gammaijk(1, 0, 1) * e12;
+			g112 += -_ref->get__Gammaijk(0, 0, 0) * e21 - _ref->get__Gammaijk(0, 0, 1) * e22 - _ref->get__Gammaijk(0, 1, 0) * e11 - _ref->get__Gammaijk(0, 1, 1) * e12;
+			g212 += -_ref->get__Gammaijk(1, 0, 0) * e21 - _ref->get__Gammaijk(1, 0, 1) * e22 - _ref->get__Gammaijk(1, 1, 0) * e11 - _ref->get__Gammaijk(1, 1, 1) * e12;
+			g122 += -_ref->get__Gammaijk(0, 1, 0) * e21 - _ref->get__Gammaijk(0, 1, 1) * e22 - _ref->get__Gammaijk(0, 1, 0) * e21 - _ref->get__Gammaijk(0, 1, 1) * e22;
+			g222 += -_ref->get__Gammaijk(1, 1, 0) * e21 - _ref->get__Gammaijk(1, 1, 1) * e22 - _ref->get__Gammaijk(1, 1, 0) * e21 - _ref->get__Gammaijk(1, 1, 1) * e22;
 			g121 = g112;
 			g221 = g212;
-			double e21 = e12;
 
 			double* ptr1 = ptr;
 			//return (e111 + 2 * e121 + e221) * (g112 + 2 * g122 + g222) - (e112 + 2 * e122 + e222) * (g111 + 2 * g121 + g221);
@@ -6181,6 +6179,7 @@ namespace KingOfMonsters {
 					_g222 += (_ref->d1[1][s] ) * (_ref->d2[3][i] * _ref->buf_xi[i]);
 
 
+
 					_e11 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d1[0][s] );
 					_e12 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d1[1][s]);
 					_e22 += (_ref->d1[1][i] * _ref->buf_xi[i]) * (_ref->d1[1][s]);
@@ -6189,10 +6188,17 @@ namespace KingOfMonsters {
 					_e12 += (_ref->d1[0][s]) * (_ref->d1[1][i] * _ref->buf_xi[i]);
 					_e22 += (_ref->d1[1][s]) * (_ref->d1[1][i] * _ref->buf_xi[i]);
 				}
-				
+				double _e21 = _e12;
+
+				_g111 += -_ref->get__Gammaijk(0, 0, 0) * _e11 - _ref->get__Gammaijk(0, 0, 1) * _e12 - _ref->get__Gammaijk(0, 0, 0) * _e11 - _ref->get__Gammaijk(0, 0, 1) * _e12;
+				_g211 += -_ref->get__Gammaijk(1, 0, 0) * _e11 - _ref->get__Gammaijk(1, 0, 1) * _e12 - _ref->get__Gammaijk(1, 0, 0) * _e11 - _ref->get__Gammaijk(1, 0, 1) * _e12;
+				_g112 += -_ref->get__Gammaijk(0, 0, 0) * _e21 - _ref->get__Gammaijk(0, 0, 1) * _e22 - _ref->get__Gammaijk(0, 1, 0) * _e11 - _ref->get__Gammaijk(0, 1, 1) * _e12;
+				_g212 += -_ref->get__Gammaijk(1, 0, 0) * _e21 - _ref->get__Gammaijk(1, 0, 1) * _e22 - _ref->get__Gammaijk(1, 1, 0) * _e11 - _ref->get__Gammaijk(1, 1, 1) * _e12;
+				_g122 += -_ref->get__Gammaijk(0, 1, 0) * _e21 - _ref->get__Gammaijk(0, 1, 1) * _e22 - _ref->get__Gammaijk(0, 1, 0) * _e21 - _ref->get__Gammaijk(0, 1, 1) * _e22;
+				_g222 += -_ref->get__Gammaijk(1, 1, 0) * _e21 - _ref->get__Gammaijk(1, 1, 1) * _e22 - _ref->get__Gammaijk(1, 1, 0) * _e21 - _ref->get__Gammaijk(1, 1, 1) * _e22;
+
 				_g121 = _g112;
 				_g221 = _g212;
-				double _e21 = _e12;
 				val = _g111 *  this->get_Gij2(0, 0) * e12 * v1 + _g211 *  this->get_Gij2(0, 0) * e12 * v2 +
 					_g112 *  this->get_Gij2(1, 1) * e22 * v1 + _g212 *  this->get_Gij2(1, 1) * e22 * v2
 					+ _g111 *  this->get_Gij2(0, 1) * e22 * v1 + _g211 *  this->get_Gij2(0, 1) * e22 * v2 +
@@ -6288,9 +6294,16 @@ namespace KingOfMonsters {
 				}
 
 			}
+			double e21 = e12;
+			g111 += -_ref->get__Gammaijk(0, 0, 0) * e11 - _ref->get__Gammaijk(0, 0, 1) * e12 - _ref->get__Gammaijk(0, 0, 0) * e11 - _ref->get__Gammaijk(0, 0, 1) * e12;
+			g211 += -_ref->get__Gammaijk(1, 0, 0) * e11 - _ref->get__Gammaijk(1, 0, 1) * e12 - _ref->get__Gammaijk(1, 0, 0) * e11 - _ref->get__Gammaijk(1, 0, 1) * e12;
+			g112 += -_ref->get__Gammaijk(0, 0, 0) * e21 - _ref->get__Gammaijk(0, 0, 1) * e22 - _ref->get__Gammaijk(0, 1, 0) * e11 - _ref->get__Gammaijk(0, 1, 1) * e12;
+			g212 += -_ref->get__Gammaijk(1, 0, 0) * e21 - _ref->get__Gammaijk(1, 0, 1) * e22 - _ref->get__Gammaijk(1, 1, 0) * e11 - _ref->get__Gammaijk(1, 1, 1) * e12;
+			g122 += -_ref->get__Gammaijk(0, 1, 0) * e21 - _ref->get__Gammaijk(0, 1, 1) * e22 - _ref->get__Gammaijk(0, 1, 0) * e21 - _ref->get__Gammaijk(0, 1, 1) * e22;
+			g222 += -_ref->get__Gammaijk(1, 1, 0) * e21 - _ref->get__Gammaijk(1, 1, 1) * e22 - _ref->get__Gammaijk(1, 1, 0) * e21 - _ref->get__Gammaijk(1, 1, 1) * e22;
 			g121 = g112;
 			g221 = g212;
-			double e21 = e12;
+
 
 			double* ptr1 = ptr;
 			//return (e111 + 2 * e121 + e221) * (g112 + 2 * g122 + g222) - (e112 + 2 * e122 + e222) * (g111 + 2 * g121 + g221);
@@ -6340,9 +6353,18 @@ namespace KingOfMonsters {
 					_e22 += (_ref->d1[1][s]) * (_ref->d1[1][i] * _ref->buf_eta[i]);
 				}
 
+				double _e21 = _e12;
+
+				_g111 += -_ref->get__Gammaijk(0, 0, 0) * _e11 - _ref->get__Gammaijk(0, 0, 1) * _e12 - _ref->get__Gammaijk(0, 0, 0) * _e11 - _ref->get__Gammaijk(0, 0, 1) * _e12;
+				_g211 += -_ref->get__Gammaijk(1, 0, 0) * _e11 - _ref->get__Gammaijk(1, 0, 1) * _e12 - _ref->get__Gammaijk(1, 0, 0) * _e11 - _ref->get__Gammaijk(1, 0, 1) * _e12;
+				_g112 += -_ref->get__Gammaijk(0, 0, 0) * _e21 - _ref->get__Gammaijk(0, 0, 1) * _e22 - _ref->get__Gammaijk(0, 1, 0) * _e11 - _ref->get__Gammaijk(0, 1, 1) * _e12;
+				_g212 += -_ref->get__Gammaijk(1, 0, 0) * _e21 - _ref->get__Gammaijk(1, 0, 1) * _e22 - _ref->get__Gammaijk(1, 1, 0) * _e11 - _ref->get__Gammaijk(1, 1, 1) * _e12;
+				_g122 += -_ref->get__Gammaijk(0, 1, 0) * _e21 - _ref->get__Gammaijk(0, 1, 1) * _e22 - _ref->get__Gammaijk(0, 1, 0) * _e21 - _ref->get__Gammaijk(0, 1, 1) * _e22;
+				_g222 += -_ref->get__Gammaijk(1, 1, 0) * _e21 - _ref->get__Gammaijk(1, 1, 1) * _e22 - _ref->get__Gammaijk(1, 1, 0) * _e21 - _ref->get__Gammaijk(1, 1, 1) * _e22;
+
 				_g121 = _g112;
 				_g221 = _g212;
-				double _e21 = _e12;
+
 				val = _g111 * this->get_Gij2(0, 0) * e12 * v1 + _g211 *  this->get_Gij2(0, 0) * e12 * v2 +
 					_g112 *  this->get_Gij2(1, 1) * e22 * v1 + _g212 *  this->get_Gij2(1, 1) * e22 * v2
 					+ _g111 *  this->get_Gij2(0, 1) * e22 * v1 + _g211 *  this->get_Gij2(0, 1) * e22 * v2 +
@@ -6820,18 +6842,14 @@ namespace KingOfMonsters {
 			}
 
 		}
-
+	
 
 		double guide_free(double v1, double v2, bool accurate,int mode)
 		{
 			double val = 0;
 
 			double e11 = 0, e12 = 0, e22 = 0;
-			double E11 = 0, E12 = 0, E22 = 0, E21;
 
-			double s1 = 0, s2 = 0;//up
-			double S1 = 0, S2 = 0;//down
-			double V1 = 0, V2 = 0;//down
 			double length = 0;
 			if (mode == 1) {
 				double __mu = 0;
@@ -6848,31 +6866,18 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
-				v1 /= length;
-				v2 /= length;
-				V1 = this->get_gij(0, 0) * v1 + this->get_gij(0, 1) * v2;
-				V2 = this->get_gij(1, 0) * v1 + this->get_gij(1, 1) * v2;
-				s1 = V2;
-				s2 = -V1;
-				length = sqrt(s1 * s1 * this->get_gij(0, 0) + s2 * s1 * this->get_gij(1, 0) + s1 * s2 * this->get_gij(0, 1) + s2 * s2 * this->get_gij(1, 1));
-				s1 /= length;
-				s2 /= length;
-				S1 = this->get_gij(0, 0) * s1 + this->get_gij(0, 1) * s2;
-				S2 = this->get_gij(1, 0) * s1 + this->get_gij(1, 1) * s2;
+				if (length == 0)length = 1;
+
+				v1 = v1 / length;
+				v2 = v2 / length;
+
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				v1 /= length;
-				v2 /= length;
-				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
-				V2 = _ref->get__gij(1, 0) * v1 + _ref->get__gij(1, 1) * v2;
-				S1 = v2;
-				S2 = -v1;
-				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				s1 /= length;
-				s2 /= length;
-				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
-				S2 = _ref->get__gij(1, 0) * s1 + _ref->get__gij(1, 1) * s2;
+				if (length == 0)length = 1;
+
+				v1 = v1 / length;
+				v2 = v2 / length;
 			}
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
@@ -6887,22 +6892,10 @@ namespace KingOfMonsters {
 
 				}
 			}
-			double tr = (e11 + e22) / (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
-			double tr2 = 1;// _ref->get__gij(0, 0) + _ref->get__gij(1, 1);
-			double scale =  tr2 / tr;
-			if (tr == 0) {
-				scale = 1;
-				tr = 1;
-			}
-			//scale = 1;
-			E11 = e22, E22 = e11, E12 = -e12, E21 = E12;
-			double det = this->get_gij(0, 0) * this->get_gij(1, 1) - this->get_gij(0, 1) * this->get_gij(1, 0);
+			double e21 = e12;
 
-			double k11 = this->get_gij(0, 0) * E11 * this->get_gij(0, 0) + this->get_gij(0, 0) * E12 * this->get_gij(1, 0) + this->get_gij(0, 1) * E21 * this->get_gij(0, 0) + this->get_gij(0, 1) * E22 * this->get_gij(1, 0);
-			double k12 = this->get_gij(0, 0) * E11 * this->get_gij(0, 1) + this->get_gij(0, 0) * E12 * this->get_gij(1,1) + this->get_gij(0, 1) * E21 * this->get_gij(0, 1) + this->get_gij(0, 1) * E22 * this->get_gij(1, 1);
-			double k22 = this->get_gij(1, 0) * E11 * this->get_gij(0, 1) + this->get_gij(1, 0) * E12 * this->get_gij(1, 1) + this->get_gij(1, 1) * E21 * this->get_gij(0, 1) + this->get_gij(1, 1) * E22 * this->get_gij(1,1);
-			val = scale * (e11* v1 * v1 + e12 * v1 * v2 + e12 * v2 * v1 + e22 * v2 * v2);
-			val -= scale * (k11 * v1 * v1 + k12 * v1 * v2  + k12 * v2 * v1 + k22 * v2 * v2)/det;
+			val = (e11 * v1 * v1 * this->get_gij(0, 1) + e11 * v1 * v2 * this->get_gij(1, 1) + e12 * v2 * v1 * this->get_gij(0, 1) + e12 * v2 * v2 * this->get_gij(1, 1)) / _ref->_refDv;
+			val += -(e21 * v1 * v1 * this->get_gij(0, 0) + e21 * v1 * v2 * this->get_gij(1, 0) + e22 * v2 * v1 * this->get_gij(0, 0) + e22 * v2 * v2 * this->get_gij(1, 0)) / _ref->_refDv;
 
 			return val;
 		}
@@ -6911,11 +6904,7 @@ namespace KingOfMonsters {
 			double val = 0;
 
 			double e11 = 0, e12 = 0, e22 = 0;
-			double E11 = 0, E12 = 0, E22 = 0, E21;
 
-			double s1 = 0, s2 = 0;//up
-			double S1 = 0, S2 = 0;//down
-			double V1 = 0, V2 = 0;//down
 			double length = 0;
 			if (mode == 1) {
 				double __mu = 0;
@@ -6932,31 +6921,18 @@ namespace KingOfMonsters {
 			if (accurate)
 			{
 				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
-				v1 /= length;
-				v2 /= length;
-				V1 = this->get_gij(0, 0) * v1 + this->get_gij(0, 1) * v2;
-				V2 = this->get_gij(1, 0) * v1 + this->get_gij(1, 1) * v2;
-				s1 = V2;
-				s2 = -V1;
-				length = sqrt(s1 * s1 * this->get_gij(0, 0) + s2 * s1 * this->get_gij(1, 0) + s1 * s2 * this->get_gij(0, 1) + s2 * s2 * this->get_gij(1, 1));
-				s1 /= length;
-				s2 /= length;
-				S1 = this->get_gij(0, 0) * s1 + this->get_gij(0, 1) * s2;
-				S2 = this->get_gij(1, 0) * s1 + this->get_gij(1, 1) * s2;
+				if (length == 0)length = 1;
+
+				v1 = v1 / length;
+				v2 = v2 / length;
+
 			}
 			else {
 				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				v1 /= length;
-				v2 /= length;
-				V1 = _ref->get__gij(0, 0) * v1 + _ref->get__gij(0, 1) * v2;
-				V2 = _ref->get__gij(1, 0) * v1 + _ref->get__gij(1, 1) * v2;
-				S1 = v2;
-				S2 = -v1;
-				length = sqrt(s1 * s1 * _ref->get__gij(0, 0) + s2 * s1 * _ref->get__gij(1, 0) + s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-				s1 /= length;
-				s2 /= length;
-				S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
-				S2 = _ref->get__gij(1, 0) * s1 + _ref->get__gij(1, 1) * s2;
+				if (length == 0)length = 1;
+
+				v1 = v1 / length;
+				v2 = v2 / length;
 			}
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
@@ -6978,11 +6954,7 @@ namespace KingOfMonsters {
 				scale = 1;
 				tr = 1;
 			}
-			E11 = e22, E22 = e11, E12 = -e12, E21 = E12;
-			double _k11 = this->get_gij(0, 0) * E11 * this->get_gij(0, 0) + this->get_gij(0, 0) * E12 * this->get_gij(1, 0) + this->get_gij(0, 1) * E21 * this->get_gij(0, 0) + this->get_gij(0, 1) * E22 * this->get_gij(1, 0);
-			double _k12 = this->get_gij(0, 0) * E11 * this->get_gij(0, 1) + this->get_gij(0, 0) * E12 * this->get_gij(1, 1) + this->get_gij(0, 1) * E21 * this->get_gij(0, 1) + this->get_gij(0, 1) * E22 * this->get_gij(1, 1);
-			double _k22 = this->get_gij(1, 0) * E11 * this->get_gij(0, 1) + this->get_gij(1, 0) * E12 * this->get_gij(1, 1) + this->get_gij(1, 1) * E21 * this->get_gij(0, 1) + this->get_gij(1, 1) * E22 * this->get_gij(1, 1);
-			double _e11 = e11, _e12 = e12, _e22 = e22;
+			double _e11 = e11, _e12 = e12, _e22 = e22,_e21=_e12;
 			double* ptr1 = ptr;
 			double det = this->get_gij(0, 0) * this->get_gij(1, 1) - this->get_gij(0, 1) * this->get_gij(1, 0);
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -6997,16 +6969,23 @@ namespace KingOfMonsters {
 
 					e22 += 2 * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_xi[t];
 				}
-			//	scale = 1;
-				E11 = e22, E22 = e11, E12 = -e12, E21 = E12;
-				double k11 = this->get_gij(0, 0) * E11 * this->get_gij(0, 0) + this->get_gij(0, 0) * E12 * this->get_gij(1, 0) + this->get_gij(0, 1) * E21 * this->get_gij(0, 0) + this->get_gij(0, 1) * E22 * this->get_gij(1, 0);
-				double k12 = this->get_gij(0, 0) * E11 * this->get_gij(0, 1) + this->get_gij(0, 0) * E12 * this->get_gij(1, 1) + this->get_gij(0, 1) * E21 * this->get_gij(0, 1) + this->get_gij(0, 1) * E22 * this->get_gij(1, 1);
-				double k22 = this->get_gij(1, 0) * E11 * this->get_gij(0, 1) + this->get_gij(1, 0) * E12 * this->get_gij(1, 1) + this->get_gij(1, 1) * E21 * this->get_gij(0, 1) + this->get_gij(1, 1) * E22 * this->get_gij(1, 1);
+				double e21 = e12;
+				double g11 = 0, g12 = 0, g21 = 0, g22 = 0;
+				for (int t = 0; t < _ref->_nNode; t++)
+				{
+					g11 += 2 * (_ref->d1[0][s]) * (_ref->d1[0][t]) * _ref->buf_z[t];
+					g12 += (_ref->d1[0][s]) * (_ref->d1[1][t]) * _ref->buf_z[t];
+					g12 += (_ref->d1[1][s]) * (_ref->d1[0][t]) * _ref->buf_z[t];
+					g22 += 2 * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_z[t];
+				}
+				g21 = g12;
 
-				val = scale * (e11 * v1 * v1 + e12 * v1 * v2 + e12 * v2 * v1 + e22 * v2 * v2);
-				val += -tr2 / tr / tr * (_e11 * v1 * v1 + _e12 * v1 * v2 + _e12 * v2 * v1 + _e22 * v2 * v2) * (e11 + e22) / (_ref->get__gij(0, 0) + _ref->get__gij(1, 1)); 
-				val -= scale * (k11 * v1 * v1 + k12 * v1 * v2 + k12 * v2 * v1 + k22 * v2 * v2)/det;
-				val -= -tr2 / tr / tr * (_k11 * v1 * v1 + _k12 * v1 * v2 + _k12 * v2 * v1 + _k22 * v2 * v2) * (e11 + e22) / (_ref->get__gij(0, 0) + _ref->get__gij(1, 1))/det; 
+
+				val = (e11 * v1 * v1 * this->get_gij(0, 1) + e11 * v1 * v2 * this->get_gij(1, 1) + e12 * v2 * v1 * this->get_gij(0, 1) + e12 * v2 * v2 * this->get_gij(1, 1)) / _ref->_refDv;
+				val += -(e21 * v1 * v1 * this->get_gij(0, 0) + e21 * v1 * v2 * this->get_gij(1, 0) + e22 * v2 * v1 * this->get_gij(0, 0) + e22 * v2 * v2 * this->get_gij(1, 0)) / _ref->_refDv;
+
+				val += (_e11 * v1 * v1 * g12 + _e11 * v1 * v2 * g22 + _e12 * v2 * v1 * g12 + _e12 * v2 * v2 * g22) / _ref->_refDv;
+				val += -(_e21 * v1 * v1 * g11 + _e21 * v1 * v2 * g21 + _e22 * v2 * v1 * g11 + _e22 * v2 * v2 * g21) / _ref->_refDv;
 
 				*ptr1 = val;
 				ptr1++;
