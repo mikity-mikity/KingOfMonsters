@@ -6146,23 +6146,23 @@ namespace KingOfMonsters {
 
 				_g121 = _g112;
 				_g221 = _g212;
-				val = _g111 *  this->get_Gij2(0, 0) * e12 * v1 + _g211 *  this->get_Gij2(0, 0) * e12 * v2 +
-					_g112 *  this->get_Gij2(1, 1) * e22 * v1 + _g212 *  this->get_Gij2(1, 1) * e22 * v2
-					+ _g111 *  this->get_Gij2(0, 1) * e22 * v1 + _g211 *  this->get_Gij2(0, 1) * e22 * v2 +
-					_g112 *  this->get_Gij2(1, 0) * e12 * v1 + _g212 *  this->get_Gij2(1, 0) * e12 * v2;
-				val -= _g121 *  this->get_Gij2(0, 0) * e11 * v1 + _g221 *  this->get_Gij2(0, 0) * e11 * v2 +
-					_g121 *  this->get_Gij2(0, 1) * e21 * v1 + _g221 *  this->get_Gij2(0, 1) * e21 * v2 +
-					_g122 *  this->get_Gij2(1, 0) * e11 * v1 + _g222 *  this->get_Gij2(1, 0) * e11 * v2 +
-					_g122 *  this->get_Gij2(1, 1) * e21 * v1 + _g222 *  this->get_Gij2(1, 1) * e21 * v2;
+				val = _g111 *  _ref->get__Gij(0, 0) * e12 * v1 + _g211 * _ref->get__Gij(0, 0) * e12 * v2 +
+					_g112 * _ref->get__Gij(1, 1) * e22 * v1 + _g212 * _ref->get__Gij(1, 1) * e22 * v2
+					+ _g111 * _ref->get__Gij(0, 1) * e22 * v1 + _g211 * _ref->get__Gij(0, 1) * e22 * v2 +
+					_g112 * _ref->get__Gij(1, 0) * e12 * v1 + _g212 * _ref->get__Gij(1, 0) * e12 * v2;
+				val -= _g121 * _ref->get__Gij(0, 0) * e11 * v1 + _g221 * _ref->get__Gij(0, 0) * e11 * v2 +
+					_g121 * _ref->get__Gij(0, 1) * e21 * v1 + _g221 * _ref->get__Gij(0, 1) * e21 * v2 +
+					_g122 *  _ref->get__Gij(1, 0) * e11 * v1 + _g222 * _ref->get__Gij(1, 0) * e11 * v2 +
+					_g122 * _ref->get__Gij(1, 1) * e21 * v1 + _g222 * _ref->get__Gij(1, 1) * e21 * v2;
 				
-				val += g111 *  this->get_Gij2(0, 0) * _e12 * v1 + g211 *  this->get_Gij2(0, 0) * _e12 * v2 +
-					g112 *  this->get_Gij2(1, 1) * _e22 * v1 + g212 *  this->get_Gij2(1, 1) * _e22 * v2
-					+ g111 *  this->get_Gij2(0, 1) * _e22 * v1 + g211 *  this->get_Gij2(0, 1) * _e22 * v2 +
-					g112 *  this->get_Gij2(1, 0) * _e12 * v1 + g212 *  this->get_Gij2(1, 0) * _e12 * v2;
-				val -= g121 *  this->get_Gij2(0, 0) * _e11 * v1 + g221 *  this->get_Gij2(0, 0) * _e11 * v2 +
-					g121 *  this->get_Gij2(0, 1) * _e21 * v1 + g221 *  this->get_Gij2(0, 1) * _e21 * v2 +
-					g122 *  this->get_Gij2(1, 0) * _e11 * v1 + g222 *  this->get_Gij2(1, 0) * _e11 * v2 +
-					g122 *  this->get_Gij2(1, 1) * _e21 * v1 + g222 *  this->get_Gij2(1, 1) * _e21 * v2;
+				val += g111 * _ref->get__Gij(0, 0) * _e12 * v1 + g211 * _ref->get__Gij(0, 0) * _e12 * v2 +
+					g112 * _ref->get__Gij(1, 1) * _e22 * v1 + g212 * _ref->get__Gij(1, 1) * _e22 * v2
+					+ g111 * _ref->get__Gij(0, 1) * _e22 * v1 + g211 * _ref->get__Gij(0, 1) * _e22 * v2 +
+					g112 * _ref->get__Gij(1, 0) * _e12 * v1 + g212 * _ref->get__Gij(1, 0) * _e12 * v2;
+				val -= g121 * _ref->get__Gij(0, 0) * _e11 * v1 + g221 * _ref->get__Gij(0, 0) * _e11 * v2 +
+					g121 * _ref->get__Gij(0, 1) * _e21 * v1 + g221 * _ref->get__Gij(0, 1) * _e21 * v2 +
+					g122 * _ref->get__Gij(1, 0) * _e11 * v1 + g222 * _ref->get__Gij(1, 0) * _e11 * v2 +
+					g122 * _ref->get__Gij(1, 1) * _e21 * v1 + g222 * _ref->get__Gij(1, 1) * _e21 * v2;
 				//val = _g121 * v1 + _g122 * v2 - _g211 * v1 - _g212 * v2;
 
 
@@ -6312,24 +6312,23 @@ namespace KingOfMonsters {
 				_g121 = _g112;
 				_g221 = _g212;
 
-				val = _g111 * this->get_Gij2(0, 0) * e12 * v1 + _g211 *  this->get_Gij2(0, 0) * e12 * v2 +
-					_g112 *  this->get_Gij2(1, 1) * e22 * v1 + _g212 *  this->get_Gij2(1, 1) * e22 * v2
-					+ _g111 *  this->get_Gij2(0, 1) * e22 * v1 + _g211 *  this->get_Gij2(0, 1) * e22 * v2 +
-					_g112 *  this->get_Gij2(1, 0) * e12 * v1 + _g212 *  this->get_Gij2(1, 0) * e12 * v2;
-				val -= _g121 *  this->get_Gij2(0, 0) * e11 * v1 + _g221 *  this->get_Gij2(0, 0) * e11 * v2 +
-					_g121 *  this->get_Gij2(0, 1) * e21 * v1 + _g221 *  this->get_Gij2(0, 1) * e21 * v2 +
-					_g122 *  this->get_Gij2(1, 0) * e11 * v1 + _g222 *  this->get_Gij2(1, 0) * e11 * v2 +
-					_g122 *  this->get_Gij2(1, 1) * e21 * v1 + _g222 *  this->get_Gij2(1, 1) * e21 * v2;
+				val = _g111 * _ref->get__Gij(0, 0) * e12 * v1 + _g211 * _ref->get__Gij(0, 0) * e12 * v2 +
+					_g112 * _ref->get__Gij(1, 1) * e22 * v1 + _g212 * _ref->get__Gij(1, 1) * e22 * v2
+					+ _g111 * _ref->get__Gij(0, 1) * e22 * v1 + _g211 * _ref->get__Gij(0, 1) * e22 * v2 +
+					_g112 * _ref->get__Gij(1, 0) * e12 * v1 + _g212 * _ref->get__Gij(1, 0) * e12 * v2;
+				val -= _g121 * _ref->get__Gij(0, 0) * e11 * v1 + _g221 * _ref->get__Gij(0, 0) * e11 * v2 +
+					_g121 * _ref->get__Gij(0, 1) * e21 * v1 + _g221 * _ref->get__Gij(0, 1) * e21 * v2 +
+					_g122 * _ref->get__Gij(1, 0) * e11 * v1 + _g222 * _ref->get__Gij(1, 0) * e11 * v2 +
+					_g122 * _ref->get__Gij(1, 1) * e21 * v1 + _g222 * _ref->get__Gij(1, 1) * e21 * v2;
 
-				val += g111 *  this->get_Gij2(0, 0) * _e12 * v1 + g211 *  this->get_Gij2(0, 0) * _e12 * v2 +
-					g112 *  this->get_Gij2(1, 1) * _e22 * v1 + g212 *  this->get_Gij2(1, 1) * _e22 * v2
-					+ g111 *  this->get_Gij2(0, 1) * _e22 * v1 + g211 *  this->get_Gij2(0, 1) * _e22 * v2 +
-					g112 *  this->get_Gij2(1, 0) * _e12 * v1 + g212 *  this->get_Gij2(1, 0) * _e12 * v2;
-				val -= g121 *  this->get_Gij2(0, 0) * _e11 * v1 + g221 *  this->get_Gij2(0, 0) * _e11 * v2 +
-					g121 *  this->get_Gij2(0, 1) * _e21 * v1 + g221 *  this->get_Gij2(0, 1) * _e21 * v2 +
-					g122 *  this->get_Gij2(1, 0) * _e11 * v1 + g222 *  this->get_Gij2(1, 0) * _e11 * v2 +
-					g122 *  this->get_Gij2(1, 1) * _e21 * v1 + g222 *  this->get_Gij2(1, 1) * _e21 * v2;
-				//val = _g121 * v1 + _g122 * v2 - _g211 * v1 - _g212 * v2;
+				val += g111 * _ref->get__Gij(0, 0) * _e12 * v1 + g211 * _ref->get__Gij(0, 0) * _e12 * v2 +
+					g112 * _ref->get__Gij(1, 1) * _e22 * v1 + g212 * _ref->get__Gij(1, 1) * _e22 * v2
+					+ g111 * _ref->get__Gij(0, 1) * _e22 * v1 + g211 * _ref->get__Gij(0, 1) * _e22 * v2 +
+					g112 * _ref->get__Gij(1, 0) * _e12 * v1 + g212 * _ref->get__Gij(1, 0) * _e12 * v2;
+				val -= g121 * _ref->get__Gij(0, 0) * _e11 * v1 + g221 * _ref->get__Gij(0, 0) * _e11 * v2 +
+					g121 * _ref->get__Gij(0, 1) * _e21 * v1 + g221 * _ref->get__Gij(0, 1) * _e21 * v2 +
+					g122 * _ref->get__Gij(1, 0) * _e11 * v1 + g222 * _ref->get__Gij(1, 0) * _e11 * v2 +
+					g122 * _ref->get__Gij(1, 1) * _e21 * v1 + g222 * _ref->get__Gij(1, 1) * _e21 * v2;
 
 
 				*ptr1 = val;
