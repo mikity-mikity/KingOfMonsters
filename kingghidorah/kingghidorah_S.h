@@ -6803,7 +6803,7 @@ namespace KingOfMonsters {
 			double tr=(e11 + e22) / (_ref->get__gij(0, 0) + _ref->get__gij(1, 1));
 			//tr = 1;
 			val = (e11 * v1 * v1 + 2 * e12 * v1 * v2 + e22 * v2 * v2)/tr;
-			//val -= (e11 * s1 * s1 + 2 * e12 * s1 * s2 + e22 * s2 * s2)/tr/det;
+			val -= (e11 * s1 * s1 + 2 * e12 * s1 * s2 + e22 * s2 * s2)/tr/det;
 
 			return val;
 		}
