@@ -7010,7 +7010,7 @@ namespace KingOfMonsters {
 				double _det = this->get_gij(0, 0) *g22 - this->get_gij(0, 1) * g12+g11 * this->get_gij(1, 1) - g12 * this->get_gij(0, 1);
 				
 				//tr = 1;
-				val = -((e11 * _s1 * s1 + 2 * e12 * _s1 * s2 + e22 * _s2 * s2)/tr / det + (e11 * s1 * _s1 + 2 * e12 * s1 * _s2 + e22 * s2 * _s2))/tr / det;// / _ref->_refDv;
+				val = -((e11 * _s1 * s1 + 2 * e12 * _s1 * s2 + e22 * _s2 * s2)/tr / det - (e11 * s1 * _s1 + 2 * e12 * s1 * _s2 + e22 * s2 * _s2))/tr / det;// / _ref->_refDv;
 				
 				val -= -((e11 * s1 * s1 + 2 * e12 * s1 * s2 + e22 * s2 * s2))/tr / det/det*_det;// / _ref->_refDv;
 
