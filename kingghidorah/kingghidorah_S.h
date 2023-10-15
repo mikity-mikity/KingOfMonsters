@@ -7404,6 +7404,51 @@ namespace KingOfMonsters {
 			}
 
 		}
+		double e11()
+		{
+			double e11 = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				for (int t = 0; t < _ref->_nNode; t++)
+				{
+					e11 += _ref->d1[0][s] * _ref->buf_xi[s] * _ref->d1[0][t] * _ref->buf_xi[t];
+					e11 += _ref->d1[0][s] * _ref->buf_eta[s] * _ref->d1[0][t] * _ref->buf_eta[t];
+				}
+			}
+			return e11-_ref->get__gij(0,0);
+		}
+		void e11_xi(double *ptr)
+		{
+			
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double e11 = 0;
+				for (int t = 0; t < _ref->_nNode; t++)
+				{
+					e11 += _ref->d1[0][s] * _ref->d1[0][t] * _ref->buf_xi[t];
+				}
+				*ptr1 = e11;
+				ptr1++;
+			}
+
+		}
+		void e11_eta(double* ptr)
+		{
+
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double e11 = 0;
+				for (int t = 0; t < _ref->_nNode; t++)
+				{
+					e11 += _ref->d1[0][s] * _ref->d1[0][t] * _ref->buf_eta[t];
+				}
+				*ptr1 = e11;
+				ptr1++;
+			}
+		}
+
 		double mix(double v1, double v2, double w1, double w2, bool accurate)
 		{
 			double val = 0;
@@ -11545,6 +11590,20 @@ namespace KingOfMonsters {
 		double mix(double v1, double v2, double w1, double w2, bool accurate)
 		{
 			return __mem->mix(v1, v2, w1, w2, accurate);
+		}
+		double e11()
+		{
+			return __mem->e11();
+		}
+		void e11_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1)
+		{
+			__mem->e11_xi(__mem->__grad);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad,0, sc, __mem->_nNode,true, c1);
+		}
+		void e11_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1)
+		{
+			__mem->e11_xi(__mem->__grad);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
 		}
 
 		void mix_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, double w1, double w2, bool accurate)
