@@ -7921,8 +7921,8 @@ namespace KingOfMonsters {
 					double _g21 = _g12;
 					//__mem->sc * __mem->bodyF-load* __mem->dv/ __mem->_ref->_refDv;
 					
-					//double ddv = 0.5 * (_g11 * this->get_Gij2(0, 0) + _g22 * this->get_Gij2(1, 1) + 2 * _g12 * this->get_Gij2(0, 1)) * this->dv;
-					//val += -load*ddv / _ref->_refDv;
+					double ddv = 0.5 * (_g11 * this->get_Gij2(0, 0) + _g22 * this->get_Gij2(1, 1) + 2 * _g12 * this->get_Gij2(0, 1)) * this->dv;
+					val += -load*ddv / _ref->_refDv;
 					*ptr1 = val; 
 				}
 				else {
