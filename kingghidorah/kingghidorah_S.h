@@ -6828,7 +6828,7 @@ namespace KingOfMonsters {
 			double s1 = this->get_gij(1, 0) * v1 + this->get_gij(1, 1) * v2;
 			double s2 = -this->get_gij(0, 0) * v1 - this->get_gij(0, 1) * v2;
 			double det = this->get_gij(0, 0) * this->get_gij(1, 1) - this->get_gij(0, 1) * this->get_gij(0, 1);
-			double tr=(e11 + e22) / (_ref->get__Gij(0, 0) + _ref->get__Gij(1, 1));
+			double  tr = (e11 * _ref->get__Gij(0, 0) + 2 * e12 * _ref->get__Gij(0, 1) + e22 * _ref->get__Gij(1, 1));
 			tr = 1;
 			val = (e11 * v1 * v1 + 2 * e12 * v1 * v2 + e22 * v2 * v2) / tr;// / _ref->_refDv;
 			val -= (e11 * s1 * s1 + 2 * e12 * s1 * s2 + e22 * s2 * s2)/tr/det;
@@ -7009,10 +7009,10 @@ namespace KingOfMonsters {
 				double _s2 = g11 * v1 -g12 * v2;
 				double _det = this->get_gij(0, 0) *g22 - this->get_gij(0, 1) * g12+g11 * this->get_gij(1, 1) - g12 * this->get_gij(0, 1);
 				
-				//tr = 1;
+				tr = 1;
 				val = -((e11 * _s1 * s1 + 2 * e12 * _s1 * s2 + e22 * _s2 * s2)/tr / det - (e11 * s1 * _s1 + 2 * e12 * s1 * _s2 + e22 * s2 * _s2))/tr / det;// / _ref->_refDv;
 				
-				val -= -((e11 * s1 * s1 + 2 * e12 * s1 * s2 + e22 * s2 * s2))/tr / det/det*_det;// / _ref->_refDv;
+				//val -= -((e11 * s1 * s1 + 2 * e12 * s1 * s2 + e22 * s2 * s2))/tr / det/det*_det;// / _ref->_refDv;
 
 				*ptr1 = val;
 				ptr1++;
