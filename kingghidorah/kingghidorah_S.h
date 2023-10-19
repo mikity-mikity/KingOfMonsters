@@ -3620,7 +3620,8 @@ namespace KingOfMonsters {
 				*s1 = (_ref->get__Gij(0, 0) * v2 - _ref->get__Gij(0, 1) * v1);
 				*s2 = (_ref->get__Gij(1, 0) * v2 - _ref->get__Gij(1, 1) * v1);
 			}
-		}double st(double v1, double v2, bool accurate)
+		}
+		double st(double v1, double v2, bool accurate)
 		{
 			double length = 0;
 
