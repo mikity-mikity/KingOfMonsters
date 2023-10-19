@@ -2278,8 +2278,8 @@ namespace KingOfMonsters {
 				f_u += _ref->d1[0][i] * _ref->buf_mu[i];
 				f_v += _ref->d1[1][i] * _ref->buf_mu[i];
 			}
-			double f_U = f_u * _ref->get__Gij(0, 0) + f_v * _ref->get__Gij(1, 0);
-			double f_V = f_u * _ref->get__Gij(0, 1) + f_v * _ref->get__Gij(1, 1);
+			double f_U = f_u * this->get_Gij(0, 0) + f_v * this->get_Gij(1, 0);
+			double f_V = f_u * this->get_Gij(0, 1) + f_v * this->get_Gij(1, 1);
 
 			return (f_U * dcdtstar0 + f_V * dcdtstar1);// val;
 		}
@@ -7863,7 +7863,7 @@ namespace KingOfMonsters {
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				double _xi = _ref->d0[s] ;
-				double val = 2*(xi - cx) * _xi;
+				double val = 2*(_xi - cx) * _xi;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -7884,7 +7884,7 @@ namespace KingOfMonsters {
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				double _eta = _ref->d0[s] ;
-				double val = 2 * (eta - cy) * _eta;
+				double val = 2 * (_eta - cy) * _eta;
 				*ptr1 = val;
 				ptr1++;
 			}
