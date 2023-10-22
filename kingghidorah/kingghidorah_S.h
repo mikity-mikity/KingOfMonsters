@@ -6088,9 +6088,9 @@ namespace KingOfMonsters {
 			g121 = g112;
 			g221 = g212;
 			double tr = (e11 * _ref->get__Gij(0, 0) + 2 * e12 * _ref->get__Gij(0, 1) + e22 * _ref->get__Gij(1, 1));
-			double det = get_gij(0, 0) * get_gij(1, 1) - get_gij(0, 1) * get_gij(0, 1);
-			double s1 = (v1 * get_gij(0, 1) + v2 * get_gij(1, 1))/sqrt(det);
-			double s2 = ( - v1 * get_gij(0, 0) - v2 * get_gij(1, 0)) / sqrt(det);
+			double det = get_gij2(0, 0) * get_gij2(1, 1) - get_gij2(0, 1) * get_gij2(0, 1);
+			double s1 = (v1 * get_gij2(0, 1) + v2 * get_gij2(1, 1))/sqrt(det);
+			double s2 = ( - v1 * get_gij2(0, 0) - v2 * get_gij2(1, 0)) / sqrt(det);
 			double t1 = s1, t2 = s2;
 			if (mode == 1) {
 				t1 = v1; t2 = v2;
@@ -6220,9 +6220,9 @@ namespace KingOfMonsters {
 			double* ptr1 = ptr;
 			double tr = (e11 * _ref->get__Gij(0, 0) + 2 * e12 * _ref->get__Gij(0, 1) + e22 * _ref->get__Gij(1, 1));
 			
-			double det = this->get_gij2(0, 0) * this->get_gij2(1, 1) + this->get_gij2(0, 1) * this->get_gij2(0, 1);
-			double s1 = (v1 * get_gij(0, 1) + v2 * get_gij(1, 1)) / sqrt(det);
-			double s2 = (-v1 * get_gij(0, 0) - v2 * get_gij(1, 0)) / sqrt(det);
+			double det = get_gij2(0, 0) * get_gij2(1, 1) - get_gij2(0, 1) * get_gij2(0, 1);
+			double s1 = (v1 * get_gij2(0, 1) + v2 * get_gij2(1, 1)) / sqrt(det);
+			double s2 = (-v1 * get_gij2(0, 0) - v2 * get_gij2(1, 0)) / sqrt(det);
 			double t1 = s1, t2 = s2;
 			if (mode == 1) {
 				t1 = v1; t2 = v2;
@@ -6457,10 +6457,9 @@ namespace KingOfMonsters {
 			g222 += -_ref->get__Gammaijk(1, 1, 0) * e21 - _ref->get__Gammaijk(1, 1, 1) * e22 - _ref->get__Gammaijk(1, 1, 0) * e21 - _ref->get__Gammaijk(1, 1, 1) * e22;
 			g121 = g112;
 			g221 = g212;
-			double det = this->get_gij2(0, 0) * this->get_gij2(1, 1) + this->get_gij2(0, 1) * this->get_gij2(0, 1);
-
-			double s1 = (v1 * get_gij(0, 1) + v2 * get_gij(1, 1)) / sqrt(det);
-			double s2 = (-v1 * get_gij(0, 0) - v2 * get_gij(1, 0)) / sqrt(det);
+			double det = get_gij2(0, 0) * get_gij2(1, 1) - get_gij2(0, 1) * get_gij2(0, 1);
+			double s1 = (v1 * get_gij2(0, 1) + v2 * get_gij2(1, 1)) / sqrt(det);
+			double s2 = (-v1 * get_gij2(0, 0) - v2 * get_gij2(1, 0)) / sqrt(det);
 			double t1 = s1, t2 = s2;
 			if (mode == 1) {
 				t1 = v1; t2 = v2;
