@@ -19,15 +19,15 @@
 */
 #ifndef _CPU
 #include <cuda_runtime.h>
-//#include <device_launch_paraMeters.h>
+#include <device_launch_paraMeters.h>
 #include<cuda.h>
-//#include <cuda_runtime_api.h>
+#include <cuda_runtime_api.h>
 #endif
 #include <stdlib.h>
 #include <stdio.h>
 #include <cusolverDn.h>
 #include <cusolverMg.h>
-//#include <cublas_v2.h>
+#include <cublas_v2.h>
 #include <chrono>
 #include <vector>
 #include <map>

@@ -793,10 +793,12 @@ KingOfMonsters::cuda::cuda(int64_t N) {
 	for (int ii = 0; ii < count(); ii++)
 	{
 		cudaSetDevice(ii);		
-		cudaMalloc(&__mgM[ii], sizeof(double) * _N * _N);
-		cudaMalloc(&__mgrhs[ii], sizeof(double) * _N * (5));
+		auto err = cudaMalloc(&__mgM[ii], sizeof(double) * _N * _N);
+		err = cudaMalloc(&__mgrhs[ii], sizeof(double) * _N * (5));
 		//cudaMalloc(&__mgC[ii], sizeof(double) * _N * (10 + (_N / count())));
+		cudaMalloc(&__info[ii], sizeof(int64_t) * 10);
 	}
+
 	//cudaMallocHost(&__mgM2, sizeof(double) * _N * _N);
 	//cudaMallocHost(&__mgrhs2, sizeof(double) * _N * _N);
 
@@ -830,7 +832,7 @@ KingOfMonsters::cuda::cuda(int64_t N) {
 			m.clearcoeff();
 			m._ofAtA(&m);
 			Eigen::VectorXd ret(_N);
-			m._solve0_gpu(this, &rhs, &ret, ii);
+			m._solveLU_gpu(this, &rhs, &ret, ii);
 			auto stop = high_resolution_clock::now();
 			auto duration = duration_cast<microseconds>(stop - start);
 			speed[ii] = duration.count();
@@ -843,6 +845,7 @@ KingOfMonsters::cuda::cuda(int64_t N) {
 		cudaSetDevice(ii);
 		cudaFree(__mgM[ii]);
 		cudaFree(__mgrhs[ii]);
+		cudaFree(__info[ii]);
 		//cudaFree(__mgC[ii]);
 	}
 	//cudaFreeHost(__mgM2);
@@ -3137,13 +3140,20 @@ std::string KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, E
 		err = cudaMemcpy(gpu_rhs, rhs->data(), N * sizeof(double), cudaMemcpyHostToDevice);
 		ss << "," << err;
 
-		int work_size = 0;
+		size_t work_size = 0;
+		size_t work_size_host = 0;
+
 		int* devInfo_on_gpu = cuda->info(device);
 		//cudaMalloc(&devInfo_on_gpu, sizeof(int64_t));
 
 		// --- CUDA CHOLESKY initialization
-		auto err2 = cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, &work_size);
+		cusolverDnParams_t params;
+		cusolverDnCreateParams(&params);
+		double* work_host;
+		cusolverDnSetAdvOptions(params, cusolverDnFunction_t::CUSOLVERDN_POTRF, cusolverAlgMode_t::CUSOLVER_ALG_0);
+		auto err2 = cusolverDnXpotrf_bufferSize(solver,params, CUBLAS_FILL_MODE_LOWER, N, cudaDataType::CUDA_R_64F, gpu_matrix, N, cudaDataType::CUDA_R_64F ,&work_size, &work_size_host);
 		ss << "," << err2;
+		work_host = (double*)malloc(sizeof(double) * work_size_host);
 
 		// --- CUDA POTRF execution
 		double* work = 0;
@@ -3155,7 +3165,8 @@ std::string KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, E
 		err = cudaGetLastError();
 		ss << "," << err;
 		//auto now = std::chrono::high_resolution_clock::now();
-		err2 = cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, work, work_size, devInfo_on_gpu);
+		err2 = cusolverDnXpotrf (solver,params, CUBLAS_FILL_MODE_LOWER, N,cudaDataType::CUDA_R_64F, gpu_matrix, N, cudaDataType::CUDA_R_64F, work, work_size, work_host,work_size_host,devInfo_on_gpu);
+
 		ss << "," << err2;
 		int devInfo_on_cpu;
 		cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
@@ -3171,7 +3182,7 @@ std::string KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, E
 		//}
 
 
-		err2 = cusolverDnDpotrs(solver, CUBLAS_FILL_MODE_LOWER, N, 1, gpu_matrix, N, gpu_rhs, N, devInfo_on_gpu);
+		err2 = cusolverDnXpotrs(solver,params, CUBLAS_FILL_MODE_LOWER, N, 1, cudaDataType::CUDA_R_64F, gpu_matrix, N, cudaDataType::CUDA_R_64F, gpu_rhs, N, devInfo_on_gpu);
 		ss << "," << err2;
 
 		// auto end = std::chrono::high_resolution_clock::now();
@@ -3190,6 +3201,8 @@ std::string KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, E
 		//cudaFree(work);
 
 		//cudaFree(devInfo_on_gpu);
+		cusolverDnDestroyParams(params);
+		free(work_host);
 
 		cudaDeviceSynchronize();
 		ss << "size()" << ret->size();
@@ -3443,8 +3456,9 @@ std::string KingOfMonsters::_mySparse::_solveLU_gpu(KingOfMonsters::cuda* cuda, 
 		//Eigen::Map<Eigen::VectorXd> b(rhs, N);
 		x.resize(N);
 		//x.setZero();
-
-
+		cusolverDnParams_t params;
+		cusolverDnCreateParams(&params);
+		cusolverDnSetAdvOptions(params, cusolverDnFunction_t::CUSOLVERDN_GETRF, cusolverAlgMode_t::CUSOLVER_ALG_0);
 		double* gpu_rhs = cuda->work_rhs(device);
 		double* gpu_matrix = cuda->work_M(device);
 		auto err = cudaMemcpy(gpu_matrix, _dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
@@ -3452,13 +3466,16 @@ std::string KingOfMonsters::_mySparse::_solveLU_gpu(KingOfMonsters::cuda* cuda, 
 		err = cudaMemcpy(gpu_rhs, rhs->data(), N * sizeof(double), cudaMemcpyHostToDevice);
 		ss << "," << err;
 
-		int work_size = 0;
+		size_t work_size = 0;
+		size_t work_size_host = 0;
 		int* devInfo_on_gpu = cuda->info(device);
 		//cudaMalloc(&devInfo_on_gpu, sizeof(int64_t));
-
+		double* work_host;
 		// --- CUDA CHOLESKY initialization
-		auto err2 = cusolverDnDgetrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, &work_size);
+		auto err2 = cusolverDnXgetrf_bufferSize(solver, params, N, N ,cudaDataType::CUDA_R_64F, gpu_matrix, N, cudaDataType::CUDA_R_64F, &work_size,&work_size_host);
 		ss << "," << err2;
+		
+			work_host = (double*)malloc(sizeof(double) * work_size_host);
 
 		// --- CUDA POTRF execution
 		double* work = 0;
@@ -3470,7 +3487,9 @@ std::string KingOfMonsters::_mySparse::_solveLU_gpu(KingOfMonsters::cuda* cuda, 
 		err = cudaGetLastError();
 		ss << "," << err;
 		//auto now = std::chrono::high_resolution_clock::now();
-		err2 = cusolverDnDgetrf(solver, N, N, gpu_matrix, N, work, NULL, devInfo_on_gpu);
+		int64_t *ipiv;
+		cudaMalloc(&ipiv, sizeof(int64_t)*N);
+		err2 = cusolverDnXgetrf(solver, params,N, N, cudaDataType::CUDA_R_64F, gpu_matrix ,N,ipiv,  cudaDataType::CUDA_R_64F, work, work_size,work_host,work_size_host, devInfo_on_gpu);
 		ss << "," << err2;
 		int devInfo_on_cpu;
 		cudaMemcpy(&devInfo_on_cpu, devInfo_on_gpu, sizeof(int), cudaMemcpyDeviceToHost);
@@ -3486,7 +3505,7 @@ std::string KingOfMonsters::_mySparse::_solveLU_gpu(KingOfMonsters::cuda* cuda, 
 		//}
 
 
-		err2 = cusolverDnDgetrs(solver, cublasOperation_t::CUBLAS_OP_N, N, 1, gpu_matrix, N, NULL, gpu_rhs, N, devInfo_on_gpu);
+		err2 = cusolverDnXgetrs(solver, params,cublasOperation_t::CUBLAS_OP_N, N, 1, cudaDataType::CUDA_R_64F, gpu_matrix, N,ipiv, cudaDataType::CUDA_R_64F, gpu_rhs, N, devInfo_on_gpu);
 		ss << "," << err2;
 
 		// auto end = std::chrono::high_resolution_clock::now();
@@ -3504,7 +3523,10 @@ std::string KingOfMonsters::_mySparse::_solveLU_gpu(KingOfMonsters::cuda* cuda, 
 		//cudaFree(work);
 
 		//cudaFree(devInfo_on_gpu);
-
+		
+			free(work_host);
+		cudaFree(ipiv);
+		cusolverDnDestroyParams(params);
 		cudaDeviceSynchronize();
 		ss << "size()" << ret->size();
 		ss << "norm" << ret->norm();
@@ -3629,31 +3651,40 @@ ret->_dmat = this->_dmat.inverse();
 	cudaMemcpy(gpu_matrix, _dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
 	int* devInfo_on_gpu = cuda->info(cuda->fastest());
 
-	int work_size = 0;
-
+	size_t work_size = 0;
+	size_t work_size_host = 0;
+	cusolverDnParams_t params;
+	cusolverDnCreateParams(&params);
+	cusolverDnSetAdvOptions(params, cusolverDnFunction_t::CUSOLVERDN_GETRF, cusolverAlgMode_t::CUSOLVER_ALG_0);
 	// --- CUDA CHOLESKY initialization
-	cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, &work_size);
-	// --- CUDA POTRF execution	
+	auto err2 = cusolverDnXgetrf_bufferSize(solver, params ,N, N, cudaDataType::CUDA_R_64F, gpu_matrix, N, cudaDataType::CUDA_R_64F, &work_size, &work_size_host);
+	//ss << "," << err2;
+	// --- CUDA POTRF execution
 	double* work = cuda->work(work_size, cuda->fastest());
-
+	double* work_host;
+	work_host = (double*)malloc(sizeof(double) * work_size_host);
+	
 	cudaMemset(work, 0, work_size * sizeof(double));
 	//cusolverDnSetStream(solver, stream);
-	cusolverDnDpotrf(solver, CUBLAS_FILL_MODE_LOWER, N, gpu_matrix, N, work, work_size, devInfo_on_gpu);
-	cudaDeviceSynchronize();
-
-
-
-
-	double* gpu_rhs = cuda->work_C(cuda->fastest());
+	int64_t* ipiv;
+	cudaMalloc(&ipiv, sizeof(int64_t) * N);
+	auto err=cusolverDnXgetrf(solver, params, N, N, cudaDataType::CUDA_R_64F, gpu_matrix, N,ipiv, cudaDataType::CUDA_R_64F, work, work_size, work_host, work_size_host, devInfo_on_gpu);
 
 
 	int devInfo_on_cpu = 0;
+
+	double* gpu_rhs = cuda->work_C(cuda->fastest());
+	err2 = cusolverDnXgetrs(solver, params, cublasOperation_t::CUBLAS_OP_N, N, N, cudaDataType::CUDA_R_64F, gpu_matrix, N, ipiv, cudaDataType::CUDA_R_64F, gpu_rhs, N, devInfo_on_gpu);
+	cudaMemcpyAsync(ret->_dmat.data() , gpu_rhs, N * N * sizeof(double), cudaMemcpyDeviceToHost);
+	
+
+	
 	//int64_t _S = 0;
 	//int64_t _E = 0;
 
 
 	bool exit = false;
-#pragma omp parallel for
+/*#pragma omp parallel for
 	for (int64_t kk = 0; kk < STREAMCOUNT; kk++)
 	{
 		int64_t S = kk * N / STREAMCOUNT;
@@ -3662,10 +3693,13 @@ ret->_dmat = this->_dmat.inverse();
 		cusolverDnHandle_t _solver = cuda->solver(cuda->fastest(), kk);
 		cusolverDnSetStream(_solver, _stream);
 
-		cusolverDnDpotrs(_solver, CUBLAS_FILL_MODE_LOWER, N, E - S, gpu_matrix, N, gpu_rhs + S * N, N, devInfo_on_gpu);
+		auto err2=cusolverDnXgetrs(_solver,params,cublasOperation_t::CUBLAS_OP_N, N, E - S, cudaDataType::CUDA_R_64F, gpu_matrix, N,ipiv,cudaDataType::CUDA_R_64F, gpu_rhs + S * N, N, devInfo_on_gpu);
 		cudaMemcpyAsync(ret->_dmat.data() + S * N, gpu_rhs + S * N, (E - S) * N * sizeof(double), cudaMemcpyDeviceToHost, _stream);
-	}
-
+	}*/
+	
+	cudaFree(ipiv);
+	free(work_host);
+	cusolverDnDestroyParams(params);
 	cudaDeviceSynchronize();
 	return sss.str();
 #endif
@@ -3856,7 +3890,7 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu_sparse(KingOfMonsters::cuda* 
 	return "";
 
 }
-
+/*
 std::string KingOfMonsters::_mySparse::_solveI_gpu(KingOfMonsters::cuda* cuda, _mySparse* ret)
 {
 	std::stringstream ss;
@@ -3894,18 +3928,24 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu(KingOfMonsters::cuda* cuda, _
 	cusolverDnSetStream(solver, cuda->__streams(cuda->fastest(), 0));
 	cudaSetDevice(ii);
 	double* m_gpu = cuda->work_M(ii);
-
+	cusolverDnParams_t params;
+	cusolverDnCreateParams(&params);
 	auto err=cudaMemcpyAsync(m_gpu, _dmat.data(), sizeof(double) * N * N, cudaMemcpyHostToDevice, cuda->__streams(cuda->fastest(), 0));
 	ss << "," << err;
 	double* work;
-	int work_size;
-	int work_size1 = 0;
-	int work_size2 = 0;
-	auto err2=cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, &work_size1);
+	//int work_size;
+	size_t work_size = 0;
+	size_t work_size_host = 0;
+
+	//auto err2=cusolverDnDpotrf_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, &work_size1);
+	auto err2 = cusolverDnXpotrf_bufferSize(solver, params, CUBLAS_FILL_MODE_LOWER, N, cudaDataType::CUDA_R_64F, gpu_matrix, N, cudaDataType::CUDA_R_64F, &work_size, &work_size_host);
 	ss << "," << err2;
-	err2=cusolverDnDpotri_bufferSize(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, &work_size2);
-	ss << "," << err2;
-	work_size = std::max(work_size1, work_size2);
+
+	double* work_host;
+	work_host = (double*)malloc(sizeof(double) * work_size_host);
+	cusolverDnSetAdvOptions(params, cusolverDnFunction_t::CUSOLVERDN_POTRF, cusolverAlgMode_t::CUSOLVER_ALG_0);
+
+	//work_size = std::max(work_size1, work_size2);
 	work = cuda->work(work_size, ii, cuda->__streams(cuda->fastest(), 0));
 	//cudaMalloc(&work, work_size1 * sizeof(double));
 	//cudaMallocAsync(&work, sizeof(double) * work_size, stream);
@@ -3927,7 +3967,7 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu(KingOfMonsters::cuda* cuda, _
 	err2=cusolverDnDpotri(solver, CUBLAS_FILL_MODE_LOWER, N, m_gpu, N, work2, work_size2, devInfo);
 	ss << "," << err2;
 	//cudaFree(work2);
-
+	cusolverDnDestroyParams(params);
 	err=cudaMemcpy(ret->_dmat.data(), m_gpu, sizeof(double) * N * N, cudaMemcpyDeviceToHost);
 	ss << "," << err2;
 	cudaDeviceSynchronize();
@@ -3938,7 +3978,7 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu(KingOfMonsters::cuda* cuda, _
 	return ss.str();
 #endif
 }
-
+*/
 
 void KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, _mySparse* mat, _mySparse* ret)
 {

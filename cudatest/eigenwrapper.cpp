@@ -126,7 +126,7 @@ kingghidorah::cuda::cuda(int N) {
 			m.ofDat();
 			m.clearcoeff();
 			m._ofAtA(&m);
-			m._solve0_gpu(this, rhs, _N, ii);
+			m._solveLU_gpu(this, rhs, _N, ii);
 			delete[] rhs;
 			auto stop = high_resolution_clock::now();
 			auto duration = duration_cast<microseconds>(stop - start);

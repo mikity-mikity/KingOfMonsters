@@ -1641,10 +1641,10 @@ namespace KingOfMonsters {
 			//return ret;
 		}
 
-		System::String^ _solve0_gpu(myCuda^ gpu, myDoubleArray^ rhs, myDoubleArray^ ret, Int64 device) {
+		System::String^ _solve_gpu(myCuda^ gpu, myDoubleArray^ rhs, myDoubleArray^ ret, Int64 device) {
 			//pin_ptr<double> ptr = &rhs[0];
 
-			auto ss = dat->_solve0_gpu(gpu->cuda(), &rhs->_arr->__v, &ret->_arr->__v, device);
+			auto ss = dat->_solveLU_gpu(gpu->cuda(), &rhs->_arr->__v, &ret->_arr->__v, device);
 			System::String^ ee = gcnew System::String(ss.c_str());
 			//array<double>^ ret = gcnew array<double>(_ret.rows());
 			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
@@ -1712,7 +1712,7 @@ namespace KingOfMonsters {
 			return this->dat->_solveI_dense(ret->dat);
 		}
 		System::String^ solveI_gpu(myCuda^ gpu, mySparse^ ret) {
-			auto _ss = this->dat->_solveI_gpu(gpu->cuda(), ret->dat);
+			auto _ss = this->dat->_solveI_gpu_single(gpu->cuda(), ret->dat);
 			auto ss = gcnew System::String(_ss.c_str());
 
 			return ss;
