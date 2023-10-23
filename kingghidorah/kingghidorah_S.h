@@ -671,7 +671,7 @@ namespace KingOfMonsters {
 			return Gammaijk2[(((i << 1) + j) << 1) + k];
 		}
 		inline double& get_gkij(const int& k, const int& i, const int& j) {
-			return gkij[(((k << 1) + i) << 1) + j];
+			return gkij[(((i << 1) + j) << 1) + k];
 		}
 
 		inline double& get_tt0(const int& i, const int& s) {
@@ -993,15 +993,15 @@ namespace KingOfMonsters {
 					gkij[6] += *b12i * *xii * *g2j * *xij + *g2i * *xii * *b12j * *xij;
 					gkij[7] += *b22i * *xii * *g2j * *xij + *g2i * *xii * *b22j * *xij;
 
-					gkij[0] += *b11i * *etai * *g1j * *xij + *g1i * *xii * *b11j * *etaj;
-					gkij[1] += *b21i * *etai * *g1j * *xij + *g1i * *xii * *b21j * *etaj;
+					gkij[0] += *b11i * *etai * *g1j * *etaj + *g1i * *xii * *b11j * *etaj;
+					gkij[1] += *b21i * *etai * *g1j * *etaj + *g1i * *xii * *b21j * *etaj;
 
-					gkij[2] += *b11i * *etai * *g2j * *xij + *g1i * *xii * *b12j * *etaj;
-					gkij[3] += *b21i * *etai * *g2j * *xij + *g1i * *xii * *b22j * *etaj;
+					gkij[2] += *b11i * *etai * *g2j * *etaj + *g1i * *xii * *b12j * *etaj;
+					gkij[3] += *b21i * *etai * *g2j * *etaj + *g1i * *xii * *b22j * *etaj;
 
 
-					gkij[6] += *b12i * *etai * *g2j * *xij + *g2i * *xii * *b12j * *etaj;
-					gkij[7] += *b22i * *etai * *g2j * *xij + *g2i * *xii * *b22j * *etaj;
+					gkij[6] += *b12i * *etai * *g2j * *etaj + *g2i * *xii * *b12j * *etaj;
+					gkij[7] += *b22i * *etai * *g2j * *etaj + *g2i * *xii * *b22j * *etaj;
 
 					g1j++;
 					g2j++;
