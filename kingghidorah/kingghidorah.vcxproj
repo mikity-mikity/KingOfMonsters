@@ -102,7 +102,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.8.props" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 12.3.props" />
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
@@ -140,6 +140,7 @@
     <interface-MKL-static-win-x64>lp64-cluster</interface-MKL-static-win-x64>
     <linkage-MKL-static-win-x64>static-cluster</linkage-MKL-static-win-x64>
     <linkage-MPI-devel-win-x64>dynamic</linkage-MPI-devel-win-x64>
+    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_CPU|x64'">
     <IncludePath>$(CUDA_PATH_V11_8)\include;$(IncludePath);$(SolutionDir)packages\intelmkl.static.win-x64.2022.2.1.19754\lib\native\include</IncludePath>
@@ -160,6 +161,7 @@
     <linkage-MPI-devel-win-x64>dynamic</linkage-MPI-devel-win-x64>
     <TargetName>KingOfMonsters</TargetName>
     <EnableManagedIncrementalBuild>false</EnableManagedIncrementalBuild>
+    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Releast_CPU|x64'">
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(CUDA_PATH_V11_8)\include;$(IncludePath);$(SolutionDir)packages\intelmkl.static.win-x64.2022.2.1.19754\lib\native\include</IncludePath>
@@ -302,7 +304,7 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.8.targets" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 12.3.targets" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

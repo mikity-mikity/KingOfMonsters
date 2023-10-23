@@ -1453,7 +1453,7 @@ namespace KingOfMonsters {
 			this->dat->_mat[0] = this->dat->_mat[0].topRows(L2);
 		}
 
-		System::String ^ _solve0_lu(myDoubleArray^ rhs, myDoubleArray^ ret, int ordering, bool meh) {
+		/*System::String^ _solve0_lu(myDoubleArray^ rhs, myDoubleArray^ ret, int ordering, bool meh) {
 			//pin_ptr<double> ptr = &rhs[0];
 			//dat->_mat[0].setIdentity();
 			if (meh) {
@@ -1500,7 +1500,7 @@ namespace KingOfMonsters {
 			if (_str == "")_str = "success";
 			System::Console::WriteLine(gcnew System::String(_str.c_str()));
 			return gcnew System::String(_str.c_str());
-		}
+		}*/
 		void _solve0_lu_cpu(myDoubleArray^ rhs, myDoubleArray^ ret, int ordering, bool meh,double nnn) {
 			mySparse^ m = nullptr;
 			myDoubleArray^ v = nullptr;
@@ -1618,7 +1618,7 @@ namespace KingOfMonsters {
 			//ptr = nullptr;
 			//return ret;
 		}
-		void _solve0(myDoubleArray^ rhs, myDoubleArray^ ret) {
+		/*void _solve0(myDoubleArray^ rhs, myDoubleArray^ ret) {
 			//pin_ptr<double> ptr = &rhs[0];
 
 			dat->_solve0(&rhs->_arr->__v, &ret->_arr->__v);
@@ -1628,7 +1628,7 @@ namespace KingOfMonsters {
 
 			//ptr = nullptr;
 			//return ret;
-		}
+		}*/
 		void __solve0(myDoubleArray^ rhs, myDoubleArray^ ret) {
 			//pin_ptr<double> ptr = &rhs[0];
 
@@ -1690,7 +1690,7 @@ namespace KingOfMonsters {
 		{
 			this->dat->turnDense();
 		}
-		mySparse^ solve0(mySparse^ rhs) {
+		/*mySparse^ solve0(mySparse^ rhs) {
 			Eigen::LLT<Eigen::MatrixXd>* _LLT = new Eigen::LLT<Eigen::MatrixXd>();
 			dat->computeLLT(_LLT);
 			myLLT^ LLT = gcnew myLLT();
@@ -1700,7 +1700,7 @@ namespace KingOfMonsters {
 			mySparse^ ret = gcnew mySparse(rhs->rows(), rhs->cols());
 
 			return ret;
-		}
+		}*/
 
 		void solve0_gpu(myCuda^ gpu, mySparse^ rhs, mySparse^ ret) {
 			this->dat->_solve0_gpu(gpu->cuda(), rhs->dat, ret->dat);

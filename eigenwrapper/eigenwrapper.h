@@ -19,17 +19,15 @@
 */
 #ifndef _CPU
 #include <cuda_runtime.h>
-#include <device_launch_paraMeters.h>
+//#include <device_launch_paraMeters.h>
 #include<cuda.h>
-#include <cuda_runtime_api.h>
+//#include <cuda_runtime_api.h>
 #endif
 #include <stdlib.h>
 #include <stdio.h>
 #include <cusolverDn.h>
 #include <cusolverMg.h>
-#include <cusolverSp.h>
-#include <cusparse_v2.h>
-#include <cublas_v2.h>
+//#include <cublas_v2.h>
 #include <chrono>
 #include <vector>
 #include <map>
@@ -44,7 +42,7 @@ using std::vector;
 using std::string;
 #define EIGEN_DEFAULT_DENSE_INDEX_TYPE int64_t;
 //void kernel(double* A, double* work, int64_t N, cudaStream_t stream);
-void kernel(double* value, int64_t* row, int64_t* col, int64_t N, int64_t M, double* value2, int64_t* index, cudaStream_t stream);
+//void kernel(double* value, int64_t* row, int64_t* col, int64_t N, int64_t M, double* value2, int64_t* index, cudaStream_t stream);
 namespace KingOfMonsters {
 	class cuda {
 	public:
@@ -57,8 +55,8 @@ namespace KingOfMonsters {
 		int _count = 0;
 		int _fastest = 0;
 		std::vector<std::vector<cusolverDnHandle_t>> solver_handle;
-		std::vector<std::vector<cusolverSpHandle_t>> solver_handleSp;
-		std::vector<std::vector<cusparseHandle_t>> cusparse_handle;
+		//std::vector<std::vector<cusolverSpHandle_t>> solver_handleSp;
+		//std::vector<std::vector<cusparseHandle_t>> cusparse_handle;
 
 		cublasHandle_t cublas_handle[MAXDEVICE];
 		double* __mgM[MAXDEVICE];
@@ -95,7 +93,7 @@ namespace KingOfMonsters {
 		cuda(int64_t N);
 		~cuda();
 		cusolverDnHandle_t& solver(int64_t ii, int64_t kk);
-		cusolverSpHandle_t& solverSp(int64_t ii, int64_t kk);
+		//cusolverSpHandle_t& solverSp(int64_t ii, int64_t kk);
 		cublasHandle_t& blas(int64_t ii);
 		//cusolverMgHandle_t mgsolver();
 		//double* L();
@@ -303,8 +301,8 @@ namespace KingOfMonsters {
 		void solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void LSsolve(Eigen::VectorXd* rhs, Eigen::VectorXd* ret,double,int mode);
 		void Project(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, double);
-		void _solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
-		std::string _solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering);
+		//void _solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
+		//Eigen::MatrixXd _solve0(_myLLT* LLT, _mySparse* mat);
 		std::string _solve0_lu_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering);
 		std::string _solve0_chol_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering);
 		void solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
@@ -316,7 +314,6 @@ namespace KingOfMonsters {
 		std::string _solveCG_sparse_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		std::string _solveLU_dense_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void turnDense();
-		Eigen::MatrixXd _solve0(_myLLT* LLT, _mySparse* rhs);
 		void _solve0_gpu(KingOfMonsters::cuda* cuda, _mySparse* rhs, _mySparse* ret);
 		int64_t _solveI(_mySparse* ret);
 		int64_t _solveI_dense(_mySparse* ret);
@@ -329,6 +326,7 @@ namespace KingOfMonsters {
 		void plus(Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>* m);
 		//void _solveI_gpu_mg(KingOfMonsters::cuda* cuda, _mySparse* ret);
 		void __solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
+		
 		Eigen::MatrixXd inv();
 		Eigen::MatrixXd solve0(_mySparse* rhs);
 		void minus(_mySparse* m);

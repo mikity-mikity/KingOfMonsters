@@ -98,7 +98,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.8.props" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 12.3.props" />
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
@@ -385,9 +385,6 @@
     </CudaLink>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="cusparse_cholesky_solver.h" />
-    <ClInclude Include="cusparse_wrapper.h" />
-    <ClInclude Include="device_buffer.h" />
     <ClInclude Include="eigenwrapper.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="macro.h" />
@@ -395,9 +392,6 @@
     <ClInclude Include="utill.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="cudatest.cpp" />
-    <ClCompile Include="cusparse_cholesky_solver.cpp" />
-    <ClCompile Include="cusparse_wrapper.cpp" />
     <ClCompile Include="eigenwrapper.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -415,7 +409,7 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.8.targets" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 12.3.targets" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

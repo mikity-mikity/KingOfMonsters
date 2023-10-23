@@ -532,13 +532,9 @@ namespace KingOfMonsters {
 		double* __grad_phi = 0;
 		double* __grad = 0;
 		double* __grad2 = 0;
-		double* __grad_z_tmp = 0;
-		double* __grad_phi_tmp = 0;
 		double* __mix_phi = 0;
 		double* __mix_z = 0;
 
-		double* __grad_xi = 0;
-		double* __grad_eta = 0;
 
 		int _nNode;
 	private:
@@ -806,14 +802,11 @@ namespace KingOfMonsters {
 		_memS(string ultimate, _RAM RAM) {
 			this->mode = ultimate;
 			this->RAM = RAM;
-			if (mode == "U") {
+			if (mode == "U") 
+			{
 				__grad = 0;
 				__grad_z = 0;
 				__grad_phi = 0;
-				__grad_z_tmp = 0;
-				__grad_phi_tmp = 0;
-				__grad_xi = 0;
-				__grad_eta = 0;
 				__mix_phi = 0;
 				__mix_z = 0;
 				__grad_C_z = 0;
@@ -1630,10 +1623,6 @@ namespace KingOfMonsters {
 			if (mode == "U") {
 				if (__grad_z != 0)delete[] __grad_z;
 				if (__grad_phi != 0)delete[] __grad_phi;
-				if (__grad_z_tmp != 0)delete[] __grad_z_tmp;
-				if (__grad_phi_tmp != 0)delete[] __grad_phi_tmp;
-				if (__grad_xi != 0)delete[] __grad_xi;
-				if (__grad_eta != 0)delete[] __grad_eta;
 				if (__mix_phi != 0)delete[] __mix_phi;
 				if (__mix_z != 0)delete[] __mix_z;
 
@@ -1650,10 +1639,6 @@ namespace KingOfMonsters {
 				__grad2 = 0;
 				__grad_z = 0;
 				__grad_phi = 0;
-				__grad_z_tmp = 0;
-				__grad_phi_tmp = 0;
-				__grad_xi = 0;
-				__grad_eta = 0;
 				__mix_phi = 0;
 				__mix_z = 0;
 				//__mat = 0;
@@ -1846,10 +1831,6 @@ namespace KingOfMonsters {
 					__grad = new double[nNode];
 					__grad2 = new double[nNode];
 					__grad_z = new double[nNode];
-					__grad_z_tmp = new double[nNode];
-					__grad_phi_tmp = new double[nNode];
-					__grad_xi = new double[nNode];
-					__grad_eta = new double[nNode];
 					__mix_z = new double [nNode];
 					__mix_phi = new double[ nNode];
 
@@ -11378,13 +11359,11 @@ namespace KingOfMonsters {
 		{
 			__mem->guide_xi(__mem->__grad,v1, v2, accurate,mode);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
-			memcpy(__mem->__grad_z_tmp, __mem->__grad, sizeof(double) * __mem->_nNode);
 		}
 		void guide_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate,int mode)
 		{
 			__mem->guide_eta(__mem->__grad,v1, v2, accurate,mode);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
-			memcpy(__mem->__grad_phi_tmp, __mem->__grad, sizeof(double) * __mem->_nNode);
 		}
 	
 		void guide_Z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate)
@@ -11392,77 +11371,9 @@ namespace KingOfMonsters {
 			__mem->guide_Z(__mem->__grad, v1, v2, accurate);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
 		}
-		double guide4(double v1, double v2, bool accurate)
-		{
-			return __mem->guide4(v1, v2, accurate);
-		}
-		void guide4_Z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool accurate)
-		{
-			__mem->guide4_Z(__mem->__grad, v1, v2, accurate);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
-		}
-		double guide5(double v1, double v2, bool accurate)
-		{
-			return __mem->guide5(v1, v2, accurate);
-		}
-		void guide5_Z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1,  bool accurate,bool remove, [Runtime::InteropServices::Out] double% lambda )
-		{
-			__mem->guide5_Z(__mem->__grad,  accurate);
-			if (remove)
-			{
-				__mem->remove3(__mem->_nNode, __mem->__grad, __mem->__grad_phi_tmp, __mem->__grad_z_tmp);
-			}
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
-		}
-		void guide5_Z(myDoubleArray^ grad,myIntArray^ index, double c1, bool accurate,bool remove)
-		{
-			__mem->guide5_Z(__mem->__grad, accurate);
-			double lambda = 1;
-			if(remove)
-			 __mem->remove3(__mem->_nNode, __mem->__grad, __mem->__grad_phi_tmp, __mem->__grad_z_tmp);
-			for (int i = 0; i < __mem->_nNode; i++)
-			{
-				grad->_arr->__v(index->data()[i]) += __mem->__grad[i]*c1;
-			}
-
-			//mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
-		}
-		double guide6( bool accurate)
-		{
-			return __mem->guide6( accurate);
-		}
-		void guide6_Z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1,  bool accurate, bool remove)
-		{
-			__mem->guide6_Z(__mem->__grad, accurate);
-			
-			if (remove)
-				__mem->remove3(__mem->_nNode, __mem->__grad, __mem->__grad_phi_tmp, __mem->__grad_z_tmp);
-			/*for (int i = 0; i < __mem->_nNode; i++)
-			{
-				grad->_arr->__v(index->data()[i]) += __mem->__grad[i] * c1;
-			}*/
-
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
+	
 		
-		}
-		double guide7(bool accurate)
-		{
-			return __mem->guide7(accurate);
-		}
-		void guide7_Z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate, bool remove)
-		{
-			__mem->guide7_Z(__mem->__grad, accurate);
-
-			if (remove)
-				__mem->remove3(__mem->_nNode, __mem->__grad, __mem->__grad_phi_tmp, __mem->__grad_z_tmp);
-			/*for (int i = 0; i < __mem->_nNode; i++)
-			{
-				grad->_arr->__v(index->data()[i]) += __mem->__grad[i] * c1;
-			}*/
-
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
-
-		}
+		
 		double unit()
 		{
 			return __mem->unit();
@@ -11574,15 +11485,6 @@ namespace KingOfMonsters {
 			mat->dat->addrow(ii, index->_arr, __mem->__guide2_xieta, 0, sc, __mem->_nNode * 2, true, c1);
 		}*/
 		
-		void mix_write(mySparse^ mat,  int ii, myIntArray^ index, myIntArray^ index2,double v1,double v2,double w1,double w2, double sc, double c1, bool accurate, bool remove)
-		{
-			__mem->mix_xi(__mem->__grad_xi , v1, v2, w1, w2, accurate);
-			__mem->mix_eta(__mem->__grad_eta, v1, v2, w1, w2, accurate);
-			//if(remove)
-			//__mem->remove2(__mem->_nNode,__mem->__grad_xi, __mem->__grad_z_tmp, __mem->__grad_eta, __mem->__grad_phi_tmp, sc);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad_xi, 0, sc, __mem->_nNode, true, c1);
-			mat->dat->addrow(ii, index2->_arr, __mem->__grad_eta, 0, sc, __mem->_nNode, false, c1);
-		}
 		void mix_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, double w1, double w2, bool accurate)
 		{
 			__mem->mix_xi(__mem->__grad,v1, v2, w1, w2, accurate);
@@ -11731,11 +11633,6 @@ namespace KingOfMonsters {
 		{
 			__mem->mix_phi(__mem->__grad, v1, v2, w1, w2, accurate);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, sc, __mem->_nNode, c1);
-			//memcpy(__mem->__grad_z_tmp , __mem->__grad, sizeof(double) * __mem->_nNode);
-			for (int i = 0; i < __mem->_nNode;i++)
-			{
-				__mem->__grad_z_tmp[i] = __mem->__grad[i] * c1;
-			}
 		}
 		void mix_Z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, double w1, double w2, bool accurate)
 		{
@@ -11911,24 +11808,19 @@ namespace KingOfMonsters {
 		{
 			__mem->__U_phi(__mem->__grad_phi, load,accurate);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad_phi, sc, __mem->_nNode, coeff);
-			memcpy(__mem->__grad_phi_tmp, __mem->__grad_phi, sizeof(double) * __mem->_nNode);
 
 		}
 		void U_z(array<double>^ X) {
 			System::Runtime::InteropServices::Marshal::Copy((IntPtr)__mem->__grad_z, X, 0, __mem->_nNode);
-			memcpy(__mem->__grad_z_tmp, __mem->__grad_z, sizeof(double) * __mem->_nNode);
 		}
 		void U_phi(array<double>^ x) {
 			System::Runtime::InteropServices::Marshal::Copy((IntPtr)__mem->__grad_phi, x, 0, __mem->_nNode);
-			memcpy(__mem->__grad_phi_tmp, __mem->__grad_phi, sizeof(double) * __mem->_nNode);
 		}
 		void U_z(myDoubleArray^ X) {
 			memcpy(X->_arr->__v.data(), __mem->__grad_z, sizeof(double) * __mem->_nNode);
-			memcpy(__mem->__grad_z_tmp, __mem->__grad_z, sizeof(double) * __mem->_nNode);
 		}
 		void U_phi(myDoubleArray^ x) {
 			memcpy(x->_arr->__v.data(), __mem->__grad_phi, sizeof(double) * __mem->_nNode);
-			memcpy(__mem->__grad_phi_tmp, __mem->__grad_phi, sizeof(double) * __mem->_nNode);
 		}
 		array<double>^ fM(double _la, double _mu)
 		{
