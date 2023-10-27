@@ -5180,12 +5180,12 @@ namespace KingOfMonsters {
 				double _S21 = _S12;
 
 
-				double _h111 = (_ref->d3[0][s]);
-				double _h211 = (_ref->d3[1][s] );
-				double _h112 = (_ref->d3[2][s] );
-				double _h212 = (_ref->d3[3][s] );
-				double _h122 = (_ref->d3[6][s] );
-				double _h222 = (_ref->d3[7][s] );
+				double _h111 = (_ref->d3[0][s] - _ref->_Gammaijk[0] * _ref->d2[0][s] - _ref->_Gammaijk[1] * _ref->d2[1][s]);
+				double _h211 = (_ref->d3[1][s] - _ref->_Gammaijk[0] * _ref->d2[1][s] - _ref->_Gammaijk[1] * _ref->d2[3][s]);
+				double _h112 = (_ref->d3[2][s] - _ref->_Gammaijk[2] * _ref->d2[0][s] - _ref->_Gammaijk[3] * _ref->d2[1][s]);
+				double _h212 = (_ref->d3[3][s] - _ref->_Gammaijk[2] * _ref->d2[1][s] - _ref->_Gammaijk[3] * _ref->d2[3][s]);
+				double _h122 = (_ref->d3[6][s] - _ref->_Gammaijk[6] * _ref->d2[0][s] - _ref->_Gammaijk[7] * _ref->d2[1][s]);
+				double _h222 = (_ref->d3[7][s] - _ref->_Gammaijk[6] * _ref->d2[1][s] - _ref->_Gammaijk[7] * _ref->d2[3][s]);
 
 				_h111 += -_ref->get__Gammaijk(0, 0, 0) * _S11 - _ref->get__Gammaijk(0, 0, 1) * _S21 - _ref->get__Gammaijk(0, 0, 0) * _S11 - _ref->get__Gammaijk(0, 0, 1) * _S21;
 				_h211 += -_ref->get__Gammaijk(1, 0, 0) * _S11 - _ref->get__Gammaijk(1, 0, 1) * _S21 - _ref->get__Gammaijk(1, 0, 0) * _S11 - _ref->get__Gammaijk(1, 0, 1) * _S21;
