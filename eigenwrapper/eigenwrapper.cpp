@@ -3568,9 +3568,9 @@ ret->_dmat = this->_dmat.inverse();
 	size_t work_size_host = 0;
 	cusolverDnParams_t params;
 	cusolverDnCreateParams(&params);
-	cusolverDnSetAdvOptions(params, cusolverDnFunction_t::CUSOLVERDN_POTRF, cusolverAlgMode_t::CUSOLVER_ALG_0);
+	cusolverDnSetAdvOptions(params, cusolverDnFunction_t::CUSOLVERDN_GETRF, cusolverAlgMode_t::CUSOLVER_ALG_1);
 	// --- CUDA CHOLESKY initialization
-	auto err2 = cusolverDnXpotrf_bufferSize(solver, params,cublasFillMode_t::CUBLAS_FILL_MODE_LOWER, N, cudaDataType::CUDA_R_64F, gpu_matrix, N, cudaDataType::CUDA_R_64F, &work_size, &work_size_host);
+	auto err2 = cusolverDnXgetrf_bufferSize(solver, params,N, N, cudaDataType::CUDA_R_64F, gpu_matrix, N, cudaDataType::CUDA_R_64F, &work_size, &work_size_host);
 	//ss << "," << err2;
 	// --- CUDA POTRF execution
 	double* work = cuda->work(work_size, cuda->fastest());
@@ -3585,9 +3585,9 @@ ret->_dmat = this->_dmat.inverse();
 	
 	cudaMemset(work, 0, work_size * sizeof(double));
 	//cusolverDnSetStream(solver, stream);
-	//int64_t* ipiv;
-	//cudaMalloc(&ipiv, sizeof(int64_t) * N);
-	auto err=cusolverDnXpotrf(solver, params, cublasFillMode_t::CUBLAS_FILL_MODE_LOWER , N, cudaDataType::CUDA_R_64F, gpu_matrix, N, cudaDataType::CUDA_R_64F, work, work_size, work_host, work_size_host, devInfo_on_gpu);
+	int64_t* ipiv;
+	cudaMalloc(&ipiv, sizeof(int64_t) * N);
+	auto err=cusolverDnXgetrf(solver, params,N , N, cudaDataType::CUDA_R_64F, gpu_matrix, N,ipiv, cudaDataType::CUDA_R_64F, work, work_size, work_host, work_size_host, devInfo_on_gpu);
 
 
 	int devInfo_on_cpu = 0;
@@ -3601,12 +3601,12 @@ ret->_dmat = this->_dmat.inverse();
 	nn = 100;
 
 	
-		err2 = cusolverDnXpotrs(solver, params, cublasFillMode_t::CUBLAS_FILL_MODE_LOWER, N, N, cudaDataType::CUDA_R_64F, gpu_matrix, N, cudaDataType::CUDA_R_64F, gpu_rhs, N, devInfo_on_gpu);
+		err2 = cusolverDnXgetrs(solver, params,cublasOperation_t::CUBLAS_OP_N, N, N, cudaDataType::CUDA_R_64F, gpu_matrix, N,ipiv, cudaDataType::CUDA_R_64F, gpu_rhs, N, devInfo_on_gpu);
 
 
 		cudaMemcpy(ret->_dmat.data(), gpu_rhs, N * N * sizeof(double), cudaMemcpyDeviceToHost);
 
-	//cudaFree(ipiv);
+	cudaFree(ipiv);
 	if (work_size_host == 0)
 	{	
 	}
