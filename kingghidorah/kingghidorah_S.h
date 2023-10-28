@@ -1244,13 +1244,13 @@ namespace KingOfMonsters {
 				b21j = _ref->d2[2];
 				b22j = _ref->d2[3];
 
-
-				hkij[0] += (*h111i) * _ref->buf_z[i];
-				hkij[1] += (*h112i) * _ref->buf_z[i];
-				hkij[2] += (*h121i) * _ref->buf_z[i];
-				hkij[3] += (*h122i) * _ref->buf_z[i];
-				hkij[6] += (*h221i) * _ref->buf_z[i];
-				hkij[7] += (*h222i) * _ref->buf_z[i];
+	
+				hkij[0] += (*h111i - _ref->_Gammaijk[0] * _ref->d2[0][i] - _ref->_Gammaijk[1] * _ref->d2[2][i]) * _ref->buf_z[i];
+				hkij[1] += (*h112i - _ref->_Gammaijk[0] * _ref->d2[1][i] - _ref->_Gammaijk[1] * _ref->d2[3][i]) * _ref->buf_z[i];
+				hkij[2] += (*h121i - _ref->_Gammaijk[2] * _ref->d2[0][i] - _ref->_Gammaijk[3] * _ref->d2[2][i]) * _ref->buf_z[i];
+				hkij[3] += (*h122i - _ref->_Gammaijk[2] * _ref->d2[1][i] - _ref->_Gammaijk[3] * _ref->d2[3][i]) * _ref->buf_z[i];
+				hkij[6] += (*h221i - _ref->_Gammaijk[6] * _ref->d2[0][i] - _ref->_Gammaijk[7] * _ref->d2[2][i]) * _ref->buf_z[i];
+				hkij[7] += (*h222i - _ref->_Gammaijk[6] * _ref->d2[1][i] - _ref->_Gammaijk[7] * _ref->d2[3][i]) * _ref->buf_z[i];
 				for (int j = 0; j < _nNode; j++)
 				{
 					gkij[0] += *b11i * *xii * *g1j * *xij + *g1i * *xii * *b11j * *xij;
