@@ -1332,10 +1332,10 @@ namespace KingOfMonsters {
 
 
 			eij[2] = eij[1];
-			Eij[0] = eij[3];
-			Eij[3] = eij[0];
-			Eij[1] = -eij[1];
-			Eij[2] = -eij[1];
+			Eij[0] = eij[3]*sc;
+			Eij[3] = eij[0]*sc;
+			Eij[1] = -eij[1]*sc;
+			Eij[2] = -eij[1]*sc;
 			double tr = Eij[0] * _ref->get__gij(0, 0) + 2 * Eij[1] * _ref->get__gij(0, 1) + Eij[3] * _ref->get__gij(1, 1);
 			trEij =  tr;
 			//Eij[0] /= tr; Eij[1] /= tr; Eij[2] /= tr; Eij[3] /= tr;
@@ -5550,7 +5550,7 @@ namespace KingOfMonsters {
 				(get_hkij(1, 0, 0) * get_Eij(0, 0) * get__Sij(0, 1) + get_hkij(1, 0, 0) * get_Eij(0, 1) * get__Sij(1, 1) + get_hkij(1, 0, 1) * get_Eij(1, 0) * get__Sij(0, 1) + get_hkij(1, 0, 1) * get_Eij(1, 1) * get__Sij(1, 1)) * t2 -
 				(get_hkij(0, 1, 0) * get_Eij(0, 0) * get__Sij(0, 0) + get_hkij(0, 1, 0) * get_Eij(0, 1) * get__Sij(1, 0) + get_hkij(0, 1, 1) * get_Eij(1, 0) * get__Sij(0, 0) + get_hkij(0, 1, 1) * get_Eij(1, 1) * get__Sij(1, 0)) * t1 -
 				(get_hkij(1, 1, 0) * get_Eij(0, 0) * get__Sij(0, 0) + get_hkij(1, 1, 0) * get_Eij(0, 1) * get__Sij(1, 0) + get_hkij(1, 1, 1) * get_Eij(1, 0) * get__Sij(0, 0) + get_hkij(1, 1, 1) * get_Eij(1, 1) * get__Sij(1, 0)) * t2)
-				/ trEij/_ref->_refDv;
+				/ /*trEij /*/ _ref->_refDv;
 
 			return val;
 		}
@@ -5592,12 +5592,12 @@ namespace KingOfMonsters {
 					(get_hkij(1, 0, 0) * get_Eij(0, 0) * _S12 + get_hkij(1, 0, 0) * get_Eij(0, 1) * _S22 + get_hkij(1, 0, 1) * get_Eij(1, 0) * _S12 + get_hkij(1, 0, 1) * get_Eij(1, 1) * _S22) * t2 -
 					(get_hkij(0, 1, 0) * get_Eij(0, 0) * _S11 + get_hkij(0, 1, 0) * get_Eij(0, 1) * _S21 + get_hkij(0, 1, 1) * get_Eij(1, 0) * _S11 + get_hkij(0, 1, 1) * get_Eij(1, 1) * _S21) * t1 -
 					(get_hkij(1, 1, 0) * get_Eij(0, 0) * _S11 + get_hkij(1, 1, 0) * get_Eij(0, 1) * _S21 + get_hkij(1, 1, 1) * get_Eij(1, 0) * _S11 + get_hkij(1, 1, 1) * get_Eij(1, 1) * _S21) * t2)
-					/ trEij/_ref->_refDv; 
+					/*/ trEij*//_ref->_refDv; 
 				val += ((_h111 * get_Eij(0, 0) * get__Sij(0, 1) + _h111 * get_Eij(0, 1) * get__Sij(1, 1) + _h112 * get_Eij(1, 0) * get__Sij(0, 1) + _h112 * get_Eij(1, 1) * get__Sij(1, 1)) * t1 +
 					(_h211 * get_Eij(0, 0) * get__Sij(0, 1) + _h211 * get_Eij(0, 1) * get__Sij(1, 1) + _h212 * get_Eij(1, 0) * get__Sij(0, 1) + _h212 * get_Eij(1, 1) * get__Sij(1, 1)) * t2 -
 					(_h121 * get_Eij(0, 0) * get__Sij(0, 0) + _h121 * get_Eij(0, 1) * get__Sij(1, 0) + _h122 * get_Eij(1, 0) * get__Sij(0, 0) + _h122 * get_Eij(1, 1) * get__Sij(1, 0)) * t1 -
 					(_h221 * get_Eij(0, 0) * get__Sij(0, 0) + _h221 * get_Eij(0, 1) * get__Sij(1, 0) + _h222 * get_Eij(1, 0) * get__Sij(0, 0) + _h222 * get_Eij(1, 1) * get__Sij(1, 0)) * t2)
-					/trEij/ _ref->_refDv;
+					/*/trEij*// _ref->_refDv;
 					
 				*ptr1 = val;
 				ptr1++;
@@ -5627,17 +5627,17 @@ namespace KingOfMonsters {
 					_e22 += (_ref->d1[1][s]) * (_ref->d1[1][i] * _ref->buf_xi[i]);
 				}
 				double _e21 = _e12;
-				double _E11 = _e22 ;
-				double _E12 = -_e12;
-				double _E21 = -_e12 ;
-				double _E22 = _e11;
+				double _E11 = _e22*sc ;
+				double _E12 = -_e12*sc;
+				double _E21 = -_e12 *sc;
+				double _E22 = _e11*sc;
 
-				double dtr = _E11 * _ref->get__gij(0, 0) + 2 * _E12 * _ref->get__gij(0, 1) +_E22 * _ref->get__gij(1, 1);
+				//double dtr = _E11 * _ref->get__gij(0, 0) + 2 * _E12 * _ref->get__gij(0, 1) +_E22 * _ref->get__gij(1, 1);
 				val = ((get_hkij(0, 0, 0) * _E11 * get__Sij(0, 1) + get_hkij(0, 0, 0) * _E12 * get__Sij(1, 1) + get_hkij(0, 0, 1) * _E21 * get__Sij(0, 1) + get_hkij(0, 0, 1) * _E22 * get__Sij(1, 1)) * t1 +
 					(get_hkij(1, 0, 0) * _E11 * get__Sij(0, 1) + get_hkij(1, 0, 0) * _E12 * get__Sij(1, 1) + get_hkij(1, 0, 1) * _E21 * get__Sij(0, 1) + get_hkij(1, 0, 1) * _E22 * get__Sij(1, 1)) * t2 -
 					(get_hkij(0, 1, 0) * _E11 * get__Sij(0, 0) + get_hkij(0, 1, 0) * _E12 * get__Sij(1, 0) + get_hkij(0, 1, 1) * _E21 * get__Sij(0, 0) + get_hkij(0, 1, 1) * _E22 * get__Sij(1, 0)) * t1 -
 					(get_hkij(1, 1, 0) * _E11 * get__Sij(0, 0) + get_hkij(1, 1, 0) * _E12 * get__Sij(1, 0) + get_hkij(1, 1, 1) * _E21 * get__Sij(0, 0) + get_hkij(1, 1, 1) * _E22 * get__Sij(1, 0)) * t2)
-					/ trEij/_ref->_refDv;
+					/*/ trEij*//_ref->_refDv;
 				/*val += -((get_hkij(0, 0, 0) * get_Eij(0, 0) * get__Sij(0, 1) + get_hkij(0, 0, 0) * get_Eij(0, 1) * get__Sij(1, 1) + get_hkij(0, 0, 1) * get_Eij(1, 0) * get__Sij(0, 1) + get_hkij(0, 0, 1) * get_Eij(1, 1) * get__Sij(1, 1)) * t1 +
 					(get_hkij(1, 0, 0) * get_Eij(0, 0) * get__Sij(0, 1) + get_hkij(1, 0, 0) * get_Eij(0, 1) * get__Sij(1, 1) + get_hkij(1, 0, 1) * get_Eij(1, 0) * get__Sij(0, 1) + get_hkij(1, 0, 1) * get_Eij(1, 1) * get__Sij(1, 1)) * t2 -
 					(get_hkij(0, 1, 0) * get_Eij(0, 0) * get__Sij(0, 0) + get_hkij(0, 1, 0) * get_Eij(0, 1) * get__Sij(1, 0) + get_hkij(0, 1, 1) * get_Eij(1, 0) * get__Sij(0, 0) + get_hkij(0, 1, 1) * get_Eij(1, 1) * get__Sij(1, 0)) * t1 -
@@ -5675,11 +5675,11 @@ namespace KingOfMonsters {
 				}
 
 				double _e21 = _e12;
-				double _E11 = _e22 ;
-				double _E12 = -_e12;
-				double _E21 = -_e12;
-				double _E22 = _e11;
-				double dtr = _E11 * _ref->get__gij(0, 0) + 2 * _E12 * _ref->get__gij(0, 1) + _E22 * _ref->get__gij(1, 1);
+				double _E11 = _e22*sc ;
+				double _E12 = -_e12*sc;
+				double _E21 = -_e12*sc;
+				double _E22 = _e11*sc;
+				//double dtr = _E11 * _ref->get__gij(0, 0) + 2 * _E12 * _ref->get__gij(0, 1) + _E22 * _ref->get__gij(1, 1);
 
 				double
 					val = ((get_hkij(0, 0, 0) * _E11 * get__Sij(0, 1) + get_hkij(0, 0, 0) * _E12 * get__Sij(1, 1) + get_hkij(0, 0, 1) * _E21 * get__Sij(0, 1) + get_hkij(0, 0, 1) * _E22 * get__Sij(1, 1)) * t1 +
@@ -5725,18 +5725,18 @@ namespace KingOfMonsters {
 				}
 
 				double _e21 = _e12;
-				double _E11 = _e22;
-				double _E12 = -_e12;
-				double _E21 = -_e12;
-				double _E22 = _e11;
-				double dtr = _E11 * _ref->get__gij(0, 0) + 2 * _E12 * _ref->get__gij(0, 1) + _E22 * _ref->get__gij(1, 1);
+				double _E11 = _e22*sc;
+				double _E12 = -_e12*sc;
+				double _E21 = -_e12*sc;
+				double _E22 = _e11*sc;
+				//double dtr = _E11 * _ref->get__gij(0, 0) + 2 * _E12 * _ref->get__gij(0, 1) + _E22 * _ref->get__gij(1, 1);
 
 				double
 					val = ((get_hkij(0, 0, 0) * _E11 * get__Sij(0, 1) + get_hkij(0, 0, 0) * _E12 * get__Sij(1, 1) + get_hkij(0, 0, 1) * _E21 * get__Sij(0, 1) + get_hkij(0, 0, 1) * _E22 * get__Sij(1, 1)) * t1 +
 						(get_hkij(1, 0, 0) * _E11 * get__Sij(0, 1) + get_hkij(1, 0, 0) * _E12 * get__Sij(1, 1) + get_hkij(1, 0, 1) * _E21 * get__Sij(0, 1) + get_hkij(1, 0, 1) * _E22 * get__Sij(1, 1)) * t2 -
 						(get_hkij(0, 1, 0) * _E11 * get__Sij(0, 0) + get_hkij(0, 1, 0) * _E12 * get__Sij(1, 0) + get_hkij(0, 1, 1) * _E21 * get__Sij(0, 0) + get_hkij(0, 1, 1) * _E22 * get__Sij(1, 0)) * t1 -
 						(get_hkij(1, 1, 0) * _E11 * get__Sij(0, 0) + get_hkij(1, 1, 0) * _E12 * get__Sij(1, 0) + get_hkij(1, 1, 1) * _E21 * get__Sij(0, 0) + get_hkij(1, 1, 1) * _E22 * get__Sij(1, 0)) * t2)
-					/ trEij / _ref->_refDv;
+					/*/ trEij*/ / _ref->_refDv;
 				/*val += -((get_hkij(0, 0, 0) * get_Eij(0, 0) * get__Sij(0, 1) + get_hkij(0, 0, 0) * get_Eij(0, 1) * get__Sij(1, 1) + get_hkij(0, 0, 1) * get_Eij(1, 0) * get__Sij(0, 1) + get_hkij(0, 0, 1) * get_Eij(1, 1) * get__Sij(1, 1)) * t1 +
 					(get_hkij(1, 0, 0) * get_Eij(0, 0) * get__Sij(0, 1) + get_hkij(1, 0, 0) * get_Eij(0, 1) * get__Sij(1, 1) + get_hkij(1, 0, 1) * get_Eij(1, 0) * get__Sij(0, 1) + get_hkij(1, 0, 1) * get_Eij(1, 1) * get__Sij(1, 1)) * t2 -
 					(get_hkij(0, 1, 0) * get_Eij(0, 0) * get__Sij(0, 0) + get_hkij(0, 1, 0) * get_Eij(0, 1) * get__Sij(1, 0) + get_hkij(0, 1, 1) * get_Eij(1, 0) * get__Sij(0, 0) + get_hkij(0, 1, 1) * get_Eij(1, 1) * get__Sij(1, 0)) * t1 -
@@ -7289,7 +7289,7 @@ namespace KingOfMonsters {
 
 			double S11 = 0;
 		
-			double scale = 1  / trEij/_ref->_refDv;
+			double scale = 1  /*/ trEij*//_ref->_refDv;
 			val = (get__sij(0,0) * get_Eij(0,0) * get__Sij(0, 1) + get__sij(0, 0) * get_Eij(0, 1) * get__Sij(1, 1) + get__sij(0, 1) * get_Eij(1, 0) * get__Sij(0, 1) + get__sij(0, 1) * get_Eij(1, 1) * get__Sij(1, 1)) * scale;
 			val -= (get__sij(1, 0) * get_Eij(0, 0) * get__Sij(0,0) + get__sij(1, 0) * get_Eij(0, 1) * get__Sij(1, 0) + get__sij(1, 1) * get_Eij(1, 0) * get__Sij(0, 0) + get__sij(1, 1) * get_Eij(1, 1) * get__Sij(1, 0)) * scale;
 			
@@ -7302,7 +7302,7 @@ namespace KingOfMonsters {
 			double* ptr1 = ptr;
 			
 
-			double scale = 1 / trEij/_ref->_refDv;
+			double scale = 1 /*/ trEij*//_ref->_refDv;
 
 
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -7319,9 +7319,9 @@ namespace KingOfMonsters {
 					_e22 += 2 * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_xi[t];
 				}
 				double _e21 = _e12;
-				double _E11 = _e22, _E22 = _e11 , _E12 = -_e12 , _E21 = _E12;
-				double _dtr = _E11 * _ref->get__gij(0, 0) + 2 * _E12 * _ref->get__gij(0, 1) + _E22 * _ref->get__gij(1, 1);
-				double dscale = -1 / trEij / trEij * _dtr / _ref->_refDv;
+				double _E11 = _e22*sc, _E22 = _e11 * sc, _E12 = -_e12 * sc, _E21 = _E12 ;
+				//double _dtr = _E11 * _ref->get__gij(0, 0) + 2 * _E12 * _ref->get__gij(0, 1) + _E22 * _ref->get__gij(1, 1);
+				//double dscale = -1 / trEij / trEij * _dtr / _ref->_refDv;
 				val = (get__sij(0, 0) * _E11 * get__Sij(0, 1) + get__sij(0, 0) * _E12 * get__Sij(1, 1) + get__sij(0, 1) * _E21 * get__Sij(0, 1) + get__sij(0, 1) * _E22 * get__Sij(1, 1)) * scale;
 				val -= (get__sij(1, 0) * _E11 * get__Sij(0, 0) + get__sij(1, 0) * _E12 * get__Sij(1, 0) + get__sij(1, 1) * _E21 * get__Sij(0, 0) + get__sij(1, 1) * _E22 * get__Sij(1, 0)) * scale;
 				//val += (get__sij(0, 0) * get_Eij(0, 0) * get__Sij(0, 1) + get__sij(0, 0) * get_Eij(0, 1) * get__Sij(1, 1) + get__sij(0, 1) * get_Eij(1, 0) * get__Sij(0, 1) + get__sij(0, 1) * get_Eij(1, 1) * get__Sij(1, 1)) * dscale;
@@ -7341,7 +7341,7 @@ namespace KingOfMonsters {
 			double* ptr1 = ptr;
 
 
-			double scale = 1 / trEij / _ref->_refDv;
+			double scale = 1 /*/ trEij*/ / _ref->_refDv;
 
 
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -7358,9 +7358,9 @@ namespace KingOfMonsters {
 					_e22 += 2 * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_eta[t];
 				}
 				double _e21 = _e12;
-				double _E11 = _e22, _E22 = _e11, _E12 = -_e12, _E21 = _E12;
-				double _dtr = _E11 * _ref->get__gij(0, 0) + 2 * _E12 * _ref->get__gij(0, 1) + _E22 * _ref->get__gij(1, 1);
-				double dscale = -1 / trEij / trEij * _dtr / _ref->_refDv;
+				double _E11 = _e22 * sc, _E22 = _e11 * sc, _E12 = -_e12 * sc, _E21 = _E12;
+				//double _dtr = _E11 * _ref->get__gij(0, 0) + 2 * _E12 * _ref->get__gij(0, 1) + _E22 * _ref->get__gij(1, 1);
+				//double dscale = -1 / trEij / trEij * _dtr / _ref->_refDv;
 				val = (get__sij(0, 0) * _E11 * get__Sij(0, 1) + get__sij(0, 0) * _E12 * get__Sij(1, 1) + get__sij(0, 1) * _E21 * get__Sij(0, 1) + get__sij(0, 1) * _E22 * get__Sij(1, 1)) * scale;
 				val -= (get__sij(1, 0) * _E11 * get__Sij(0, 0) + get__sij(1, 0) * _E12 * get__Sij(1, 0) + get__sij(1, 1) * _E21 * get__Sij(0, 0) + get__sij(1, 1) * _E22 * get__Sij(1, 0)) * scale;
 				//val += (get__sij(0, 0) * get_Eij(0, 0) * get__Sij(0, 1) + get__sij(0, 0) * get_Eij(0, 1) * get__Sij(1, 1) + get__sij(0, 1) * get_Eij(1, 0) * get__Sij(0, 1) + get__sij(0, 1) * get_Eij(1, 1) * get__Sij(1, 1)) * dscale;
@@ -7379,7 +7379,7 @@ namespace KingOfMonsters {
 			double* ptr1 = ptr;
 
 
-			double scale = 1 / trEij / _ref->_refDv;
+			double scale = 1 /*/ trEij*/ / _ref->_refDv;
 
 
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -7396,9 +7396,9 @@ namespace KingOfMonsters {
 					_e22 += 2 * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_nu[t];
 				}
 				double _e21 = _e12;
-				double _E11 = _e22, _E22 = _e11, _E12 = -_e12, _E21 = _E12;
-				double _dtr = _E11 * _ref->get__gij(0, 0) + 2 * _E12 * _ref->get__gij(0, 1) + _E22 * _ref->get__gij(1, 1);
-				double dscale = -1 / trEij / trEij * _dtr / _ref->_refDv;
+				double _E11 = _e22 * sc, _E22 = _e11 * sc, _E12 = -_e12 * sc, _E21 = _E12;
+				//double _dtr = _E11 * _ref->get__gij(0, 0) + 2 * _E12 * _ref->get__gij(0, 1) + _E22 * _ref->get__gij(1, 1);
+				//double dscale = -1 / trEij / trEij * _dtr / _ref->_refDv;
 				val = (get__sij(0, 0) * _E11 * get__Sij(0, 1) + get__sij(0, 0) * _E12 * get__Sij(1, 1) + get__sij(0, 1) * _E21 * get__Sij(0, 1) + get__sij(0, 1) * _E22 * get__Sij(1, 1)) * scale;
 				val -= (get__sij(1, 0) * _E11 * get__Sij(0, 0) + get__sij(1, 0) * _E12 * get__Sij(1, 0) + get__sij(1, 1) * _E21 * get__Sij(0, 0) + get__sij(1, 1) * _E22 * get__Sij(1, 0)) * scale;
 				//val += (get__sij(0, 0) * get_Eij(0, 0) * get__Sij(0, 1) + get__sij(0, 0) * get_Eij(0, 1) * get__Sij(1, 1) + get__sij(0, 1) * get_Eij(1, 0) * get__Sij(0, 1) + get__sij(0, 1) * get_Eij(1, 1) * get__Sij(1, 1)) * dscale;
@@ -7416,7 +7416,7 @@ namespace KingOfMonsters {
 			
 			double* ptr1 = ptr;
 			
-			double scale = 1  /trEij/ _ref->_refDv;
+			double scale = 1 /* / trEij*/ / _ref->_refDv;
 
 			
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -7443,7 +7443,7 @@ namespace KingOfMonsters {
 		
 
 
-			double scale = 1  * sc/trEij / _ref->_refDv;
+			double scale = 1  * sc/*/trEij *// _ref->_refDv;
 			//double S21 = S12;
 
 			
