@@ -615,7 +615,7 @@ namespace KingOfMonsters {
 		double gkij[8];
 		double hkij[8];
 		double __Sij[4];
-		double __sij[4];
+		double __sij[4],___sij[4];
 		double v1, v2, s1, s2;
 	public:
 		double sc;
@@ -699,6 +699,9 @@ namespace KingOfMonsters {
 		}
 		inline double& get__sij(const int& i, const int& j) {
 			return __sij[((i << 1) + j)];
+		}
+		inline double& get___sij(const int& i, const int& j) {
+			return ___sij[((i << 1) + j)];
 		}
 		inline double& get_gij2(const int& i, const int& j) {
 			return gij2[(i << 1) + j];
@@ -1126,6 +1129,7 @@ namespace KingOfMonsters {
 			memset(hkij, 0, sizeof(double) * 8);
 			memset(__Sij, 0, sizeof(double) * 4);
 			memset(__sij, 0, sizeof(double) * 4);
+			memset(___sij, 0, sizeof(double) * 4);
 
 			double* xii = &_ref->buf_xi[0];
 			double* etai = &_ref->buf_eta[0];
@@ -1217,6 +1221,11 @@ namespace KingOfMonsters {
 			__s12 *= sc;
 			__s21 *= sc;
 			__s22 *= sc;
+			___sij[0] = __s11;
+			___sij[1] = __s12;
+			___sij[2] = __s21;
+			___sij[3] = __s22;
+
 			if (mode == "U")
 			{
 				__sij[0] = this->get_gij2(0, 0) * __s11 * this->get_gij2(0, 0) + this->get_gij2(0, 0) * __s12 * this->get_gij2(1, 0) + this->get_gij2(0, 1) * __s21 * this->get_gij2(0, 0) + this->get_gij2(0, 1) * __s22 * this->get_gij2(1, 0);
@@ -5686,7 +5695,7 @@ namespace KingOfMonsters {
 						(get_hkij(1, 0, 0) * _E11 * get__Sij(0, 1) + get_hkij(1, 0, 0) * _E12 * get__Sij(1, 1) + get_hkij(1, 0, 1) * _E21 * get__Sij(0, 1) + get_hkij(1, 0, 1) * _E22 * get__Sij(1, 1)) * t2 -
 						(get_hkij(0, 1, 0) * _E11 * get__Sij(0, 0) + get_hkij(0, 1, 0) * _E12 * get__Sij(1, 0) + get_hkij(0, 1, 1) * _E21 * get__Sij(0, 0) + get_hkij(0, 1, 1) * _E22 * get__Sij(1, 0)) * t1 -
 						(get_hkij(1, 1, 0) * _E11 * get__Sij(0, 0) + get_hkij(1, 1, 0) * _E12 * get__Sij(1, 0) + get_hkij(1, 1, 1) * _E21 * get__Sij(0, 0) + get_hkij(1, 1, 1) * _E22 * get__Sij(1, 0)) * t2)
-					/ trEij/_ref->_refDv;
+					/ /*trEij / */_ref->_refDv;
 				/*val += -((get_hkij(0, 0, 0) * get_Eij(0, 0) * get__Sij(0, 1) + get_hkij(0, 0, 0) * get_Eij(0, 1) * get__Sij(1, 1) + get_hkij(0, 0, 1) * get_Eij(1, 0) * get__Sij(0, 1) + get_hkij(0, 0, 1) * get_Eij(1, 1) * get__Sij(1, 1)) * t1 +
 					(get_hkij(1, 0, 0) * get_Eij(0, 0) * get__Sij(0, 1) + get_hkij(1, 0, 0) * get_Eij(0, 1) * get__Sij(1, 1) + get_hkij(1, 0, 1) * get_Eij(1, 0) * get__Sij(0, 1) + get_hkij(1, 0, 1) * get_Eij(1, 1) * get__Sij(1, 1)) * t2 -
 					(get_hkij(0, 1, 0) * get_Eij(0, 0) * get__Sij(0, 0) + get_hkij(0, 1, 0) * get_Eij(0, 1) * get__Sij(1, 0) + get_hkij(0, 1, 1) * get_Eij(1, 0) * get__Sij(0, 0) + get_hkij(0, 1, 1) * get_Eij(1, 1) * get__Sij(1, 0)) * t1 -
@@ -6022,7 +6031,7 @@ namespace KingOfMonsters {
 
 					_e22 += 2 * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_xi[t];
 				}
-				double _E11 = _e22/trEij, _E22 = _e11 / trEij, _E12 = -_e12 / trEij, _E21 = -_e12 / trEij;
+				double _E11 = _e22*sc, _E22 = _e11 * sc, _E12 = -_e12 * sc, _E21 = -_e12 * sc;
 				double dtr= (_E11 * get__Sij(0, 0) + 2 * _E12 * get__Sij(0, 1) + _E22 * get__Sij(1, 1));
 				double ddet = (_E11 * get_Eij(1, 1) + get_Eij(0, 0) * _E22 - 2 * get_Eij(0, 1) * _E12)*(get__Sij(0, 0) * get__Sij(1, 1) - get__Sij(0, 1) * get__Sij(0, 1));
 				double val = 2 * tr * dtr - 4 * ddet;
@@ -6050,7 +6059,35 @@ namespace KingOfMonsters {
 
 					_e22 += 2 * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_eta[t];
 				}
-				double _E11 = _e22 / trEij, _E22 = _e11 / trEij, _E12 = -_e12 / trEij, _E21 = -_e12 / trEij;
+				double _E11 = _e22 * sc, _E22 = _e11 * sc, _E12 = -_e12 * sc, _E21 = -_e12 * sc;
+				double dtr = (_E11 * get__Sij(0, 0) + 2 * _E12 * get__Sij(0, 1) + _E22 * get__Sij(1, 1));
+				double ddet = (_E11 * get_Eij(1, 1) + get_Eij(0, 0) * _E22 - 2 * get_Eij(0, 1) * _E12) * (get__Sij(0, 0) * get__Sij(1, 1) - get__Sij(0, 1) * get__Sij(0, 1));
+				double val = 2 * tr * dtr - 4 * ddet;
+				*ptr1 = val;
+
+				ptr1++;
+
+			}
+		}
+		void singularity_nu(double* ptr)
+		{
+			double* ptr1 = ptr;
+			double tr = (get_Eij(0, 0) * get__Sij(0, 0) + 2 * get_Eij(0, 1) * get__Sij(0, 1) + get_Eij(1, 1) * get__Sij(1, 1));
+			double det = (get_Eij(0, 0) * get_Eij(1, 1) - get_Eij(0, 1) * get_Eij(0, 1)) * (get__Sij(0, 0) * get__Sij(1, 1) - get__Sij(0, 1) * get__Sij(0, 1));
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _e11 = 0, _e12 = 0, _e22 = 0;
+				for (int t = 0; t < _ref->_nNode; t++)
+				{
+					_e11 += 2 * (_ref->d1[0][s]) * (_ref->d1[0][t]) * _ref->buf_nu[t];
+
+					_e12 += (_ref->d1[0][s]) * (_ref->d1[1][t]) * _ref->buf_nu[t];
+					_e12 += (_ref->d1[1][s]) * (_ref->d1[0][t]) * _ref->buf_nu[t];
+
+					_e22 += 2 * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_nu[t];
+				}
+				double _E11 = _e22 * sc, _E22 = _e11 * sc, _E12 = -_e12 * sc, _E21 = -_e12 * sc;
 				double dtr = (_E11 * get__Sij(0, 0) + 2 * _E12 * get__Sij(0, 1) + _E22 * get__Sij(1, 1));
 				double ddet = (_E11 * get_Eij(1, 1) + get_Eij(0, 0) * _E22 - 2 * get_Eij(0, 1) * _E12) * (get__Sij(0, 0) * get__Sij(1, 1) - get__Sij(0, 1) * get__Sij(0, 1));
 				double val = 2 * tr * dtr - 4 * ddet;
@@ -6086,7 +6123,7 @@ namespace KingOfMonsters {
 
 					_e22 += 2 * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_xi[t];
 				}
-				double _E11 = _e22 / trEij, _E22 = _e11 / trEij, _E12 = -_e12 / trEij, _E21 = -_e12 / trEij;
+				double _E11 = _e22 * sc, _E22 = _e11 * sc, _E12 = -_e12 * sc, _E21 = -_e12 * sc;
 				double dtr = (_E11 * get__sij(0, 0) + 2 * _E12 * get__sij(0, 1) + _E22 * get__sij(1, 1));
 				double ddet = (_E11 * get_eij(1, 1) + get_eij(0, 0) * _E22 - 2 * get_eij(0, 1) * _E12) * (get__sij(0, 0) * get__sij(1, 1) - get__sij(0, 1) * get__sij(0, 1)) ;
 				double val = 2 * tr * dtr - 4 * ddet;
@@ -6114,9 +6151,37 @@ namespace KingOfMonsters {
 
 					_e22 += 2 * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_eta[t];
 				}
-				double _E11 = _e22 / trEij, _E22 = _e11 / trEij, _E12 = -_e12 / trEij, _E21 = -_e12 / trEij;
+				double _E11 = _e22 * sc, _E22 = _e11 * sc, _E12 = -_e12 * sc, _E21 = -_e12 * sc;
 				double dtr = (_E11 * get__sij(0, 0) + 2 * _E12 * get__sij(0, 1) + _E22 * get__sij(1, 1)) ;
 				double ddet = (_E11 * get_eij(1, 1) + get_eij(0, 0) * _E22 - 2 * get_eij(0, 1) * _E12) * (get__sij(0, 0) * get__sij(1, 1) - get__sij(0, 1) * get__sij(0, 1)) ;
+				double val = 2 * tr * dtr - 4 * ddet;
+				*ptr1 = val;
+
+				ptr1++;
+
+			}
+		}
+		void singularity2_nu(double* ptr)
+		{
+			double* ptr1 = ptr;
+			double tr = (get_Eij(0, 0) * get__sij(0, 0) + 2 * get_Eij(0, 1) * get__sij(0, 1) + get_Eij(1, 1) * get__sij(1, 1));
+			double det = (get_Eij(0, 0) * get_Eij(1, 1) - get_Eij(0, 1) * get_Eij(0, 1)) * (get__sij(0, 0) * get__sij(1, 1) - get__sij(0, 1) * get__sij(0, 1));
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _e11 = 0, _e12 = 0, _e22 = 0;
+				for (int t = 0; t < _ref->_nNode; t++)
+				{
+					_e11 += 2 * (_ref->d1[0][s]) * (_ref->d1[0][t]) * _ref->buf_nu[t];
+
+					_e12 += (_ref->d1[0][s]) * (_ref->d1[1][t]) * _ref->buf_nu[t];
+					_e12 += (_ref->d1[1][s]) * (_ref->d1[0][t]) * _ref->buf_nu[t];
+
+					_e22 += 2 * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_nu[t];
+				}
+				double _E11 = _e22 * sc, _E22 = _e11 * sc, _E12 = -_e12 * sc, _E21 = -_e12 * sc;
+				double dtr = (_E11 * get__sij(0, 0) + 2 * _E12 * get__sij(0, 1) + _E22 * get__sij(1, 1));
+				double ddet = (_E11 * get_eij(1, 1) + get_eij(0, 0) * _E22 - 2 * get_eij(0, 1) * _E12) * (get__sij(0, 0) * get__sij(1, 1) - get__sij(0, 1) * get__sij(0, 1));
 				double val = 2 * tr * dtr - 4 * ddet;
 				*ptr1 = val;
 
@@ -7429,7 +7494,35 @@ namespace KingOfMonsters {
 				
 				val = (get__sij(0,0) * get_Eij(0, 0) * S12_z + get__sij(0, 0) * get_Eij(0, 1) * S22_z + get__sij(0, 1) * get_Eij(1, 0) * S12_z + get__sij(0, 1) *  get_Eij(1, 1) * S22_z) * scale;
 				val -= (get__sij(1, 0) * get_Eij(0, 0) * S11_z + get__sij(1, 0) * get_Eij(0, 1) * S21_z + get__sij(1, 1) * get_Eij(1, 0) * S11_z + get__sij(1, 1) * get_Eij(1, 1) * S21_z) * scale;
-	
+				
+				
+				if (accurate)
+				{
+					double _g11 = 0, _g12 = 0, _g22 = 0;
+					for (int t = 0; t < _ref->_nNode; t++)
+					{
+						_g11 += 2 * (_ref->d1[0][s]) * (_ref->d1[0][t]) * _ref->buf_z[t];
+
+						_g12 += (_ref->d1[0][s]) * (_ref->d1[1][t]) * _ref->buf_z[t];
+						_g12 += (_ref->d1[1][s]) * (_ref->d1[0][t]) * _ref->buf_z[t];
+
+						_g22 += 2 * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_z[t];
+					}
+					double _g21 = _g12;
+
+					double s11_z = 0, s12_z = 0, s22_z = 0;
+
+					s11_z = _g11 * get___sij(0, 0) * this->get_gij2(0, 0) + _g11 * get___sij(0, 1) * this->get_gij2(1, 0) + _g12 * get___sij(1, 0) * this->get_gij2(0, 0) + _g12 * get___sij(1, 1) * this->get_gij2(1, 0);
+					s11_z += this->get_gij2(0, 0) * get___sij(0, 0) * _g11 + this->get_gij2(0, 0) * get___sij(0, 1) * _g21 + this->get_gij2(0, 1) * get___sij(1, 0) * _g11 + this->get_gij2(0, 1) * get___sij(1, 1) * _g21;
+					s12_z = _g11 * get___sij(0, 0) * this->get_gij2(0, 1) + _g11 * get___sij(0, 1) * this->get_gij2(1, 1) + _g12 * get___sij(1, 0) * this->get_gij2(0, 1) + _g12 * get___sij(1, 1) * this->get_gij2(1, 1);
+					s12_z += this->get_gij2(0, 0) * get___sij(0, 0) * _g12 + this->get_gij2(0, 0) * get___sij(0, 1) * _g22 + this->get_gij2(0, 1) * get___sij(1, 0) * _g12 + this->get_gij2(0, 1) * get___sij(1, 1) * _g22;
+					s22_z = _g21 * get___sij(0, 0) * this->get_gij2(0, 1) + _g21 * get___sij(0, 1) * this->get_gij2(1, 1) + _g22 * get___sij(1, 0) * this->get_gij2(0, 1) + _g22 * get___sij(1, 1) * this->get_gij2(1, 1);
+					s22_z += this->get_gij2(1, 0) * get___sij(0, 0) * _g12 + this->get_gij2(1, 0) * get___sij(0, 1) * _g22 + this->get_gij2(1, 1) * get___sij(1, 0) * _g12 + this->get_gij2(1, 1) * get___sij(1, 1) * _g22;
+					double s21_z = s12_z;
+					val += (s11_z * get_Eij(0, 0) * get__Sij(0, 1) + s11_z * get_Eij(0, 1) * get__Sij(1, 1) + s12_z * get_Eij(1, 0) * get__Sij(0, 1) + s12_z * get_Eij(1, 1) * get__Sij(1, 1)) * scale;
+					val -= (s21_z * get_Eij(0, 0) * get__Sij(0, 0) + s21_z * get_Eij(0, 1) * get__Sij(1, 0) + s22_z * get_Eij(1, 0) * get__Sij(0, 0) + s22_z * get_Eij(1, 1) * get__Sij(1, 0)) * scale;
+
+				}
 
 				*ptr1 = val;
 				ptr1++;
@@ -7473,7 +7566,7 @@ namespace KingOfMonsters {
 
 				val = (s11_phi * get_Eij(0, 0) * get__Sij(0,1) + s11_phi * get_Eij(0, 1) * get__Sij(1,1) + s12_phi * get_Eij(1, 0) * get__Sij(0, 1) + s12_phi * get_Eij(1, 1) * get__Sij(1, 1)) * scale;
 				val -= (s21_phi * get_Eij(0, 0) * get__Sij(0, 0) + s21_phi * get_Eij(0, 1) * get__Sij(1, 0) + s22_phi * get_Eij(1, 0) * get__Sij(0, 0) + s22_phi * get_Eij(1, 1) * get__Sij(1, 0)) * scale;
-
+				
 				*ptr1 =val;
 				ptr1++;
 			}
@@ -7561,8 +7654,8 @@ namespace KingOfMonsters {
 					double _g21 = _g12;
 					//__mem->sc * __mem->bodyF-load* __mem->dv/ __mem->_ref->_refDv;
 					
-					//double ddv = 0.5 * (_g11 * this->get_Gij2(0, 0) + _g22 * this->get_Gij2(1, 1) + 2 * _g12 * this->get_Gij2(0, 1)) * this->dv;
-					//val += -load*ddv / _ref->_refDv;
+					double ddv = 0.5 * (_g11 * this->get_Gij2(0, 0) + _g22 * this->get_Gij2(1, 1) + 2 * _g12 * this->get_Gij2(0, 1)) * this->dv;
+					val += -load*ddv / _ref->_refDv;
 					*ptr1 = val; 
 				}
 				else {
@@ -9359,6 +9452,11 @@ namespace KingOfMonsters {
 			__mem->singularity_eta(__mem->__grad);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
 		}
+		void singularity_nu(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1)
+		{
+			__mem->singularity_nu(__mem->__grad);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
+		}
 		double singularity2()
 		{
 			return __mem->singularity2();
@@ -9376,6 +9474,11 @@ namespace KingOfMonsters {
 		void singularity2_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1)
 		{
 			__mem->singularity2_eta(__mem->__grad);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
+		}
+		void singularity2_nu(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1)
+		{
+			__mem->singularity2_nu(__mem->__grad);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
 		}
 	double smoothing(double w1,bool accurate)
