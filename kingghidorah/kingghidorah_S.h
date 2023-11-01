@@ -93,7 +93,7 @@ namespace KingOfMonsters {
 		bool initialized = false;
 		double refDv = 0, _refDv = 0;
 		double _x = 0, _y = 0, _z = 0, __z = 0, Z = 0, _Z = 0;
-		double xi = 0, eta = 0,mu=0;
+		double _xi = 0, _eta = 0,_mu=0,_nu=0;
 		//double w = 0;
 		inline void set_z(double& z) {
 			this->_z = z;
@@ -4501,8 +4501,128 @@ namespace KingOfMonsters {
 			}
 		}
 
-		
+		double symm(double v1, double v2)
+		{
+			double _x = xi - _ref->_xi;
+			double _y = eta - _ref->_eta;
+			double sx = v1 * _ref->get__gi(0, 0) + v2 * _ref->get__gi(1, 0);
+			double sy = v1 * _ref->get__gi(0, 1) + v2 * _ref->get__gi(1, 1);
 
+			return _x* sy - _y * sx;
+
+		}
+		void symm_xi(double* ptr, double v1, double v2)
+		{
+			double _x = xi - _ref->_xi;
+			double _y = eta - _ref->_eta;
+			double sx = v1 * _ref->get__gi(0, 0) + v2 * _ref->get__gi(1, 0);
+			double sy = v1 * _ref->get__gi(0, 1) + v2 * _ref->get__gi(1, 1);
+			double val = 0;
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _xi = _ref->d0[s];
+				val = _xi * sy;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		void symm_eta(double* ptr, double v1, double v2)
+		{
+			double _x = xi - _ref->_xi;
+			double _y = eta - _ref->_eta;
+			double sx = v1 * _ref->get__gi(0, 0) + v2 * _ref->get__gi(1, 0);
+			double sy = v1 * _ref->get__gi(0, 1) + v2 * _ref->get__gi(1, 1);
+			double val = 0;
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _eta = _ref->d0[s];
+				val = -_eta * sx;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		double symm2(double v1, double v2)
+		{
+			double V1 = v1 * _ref->get__Gij(0, 0) + v2 * _ref->get__Gij(1, 0);
+			double V2 = v1 * _ref->get__Gij(0, 1) + v2 * _ref->get__Gij(1, 1);
+
+			double ex=0;// = v1 * _ref->get__Gi(0, 0) + v2 * _ref->get__Gi(1, 0);
+			double ey = 0;// = v1 * _ref->get__Gi(0, 1) + v2 * _ref->get__Gi(1, 1);
+			for (int i = 0; i < _ref->_nNode; i++)
+			{
+				ex += V1 * _ref->d1[0][i] * _ref->buf_xi[i] + V2 * _ref->d1[1][i] * _ref->buf_xi[i];
+				ey += V1 * _ref->d1[0][i] * _ref->buf_eta[i] + V2 * _ref->d1[1][i] * _ref->buf_eta[i];
+			}
+			double sx = V1 * _ref->get__gi(0, 0) + V2 * _ref->get__gi(1, 0);
+			double sy = V1 * _ref->get__gi(0, 1) + V2 * _ref->get__gi(1, 1);
+
+			return ex * sy - ey * sx;
+
+		}
+		void symm2_xi(double* ptr, double v1, double v2)
+		{
+			double V1 = v1 * _ref->get__Gij(0, 0) + v2 * _ref->get__Gij(1, 0);
+			double V2 = v1 * _ref->get__Gij(0, 1) + v2 * _ref->get__Gij(1, 1);
+			double sx = v1 * _ref->get__gi(0, 0) + v2 * _ref->get__gi(1, 0);
+			double sy = v1 * _ref->get__gi(0, 1) + v2 * _ref->get__gi(1, 1);
+			double val = 0;
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _ex = V1 * _ref->d1[0][s]  + V2 * _ref->d1[1][s] ;
+				val = _ex * sy;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		void symm2_eta(double* ptr, double v1, double v2)
+		{
+			double V1 = v1 * _ref->get__Gij(0, 0) + v2 * _ref->get__Gij(1, 0);
+			double V2 = v1 * _ref->get__Gij(0, 1) + v2 * _ref->get__Gij(1, 1);
+			double sx = v1 * _ref->get__gi(0, 0) + v2 * _ref->get__gi(1, 0);
+			double sy = v1 * _ref->get__gi(0, 1) + v2 * _ref->get__gi(1, 1);
+			double val = 0;
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _ey = V1 * _ref->d1[0][s]  + V2 * _ref->d1[1][s];
+				val = -_ey * sx;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+
+		double symm3(double v1, double v2)
+		{
+			double V1 = v1 * _ref->get__Gij(0, 0) + v2 * _ref->get__Gij(1, 0);
+			double V2 = v1 * _ref->get__Gij(0, 1) + v2 * _ref->get__Gij(1, 1);
+
+			double ez = 0;// = v1 * _ref->get__Gi(0, 0) + v2 * _ref->get__Gi(1, 0);
+			for (int i = 0; i < _ref->_nNode; i++)
+			{
+				ez += V1 * _ref->d1[0][i] * _ref->buf_nu[i] + V2 * _ref->d1[1][i] * _ref->buf_nu[i];
+			
+			}
+
+			return ez;
+
+		}
+		void symm3_nu(double* ptr, double v1, double v2)
+		{
+			double V1 = v1 * _ref->get__Gij(0, 0) + v2 * _ref->get__Gij(1, 0);
+			double V2 = v1 * _ref->get__Gij(0, 1) + v2 * _ref->get__Gij(1, 1);
+			double val = 0;
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _ez = V1 * _ref->d1[0][s] + V2 * _ref->d1[1][s];
+				val = _ez;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
 		double tt_2(double v1, double v2, bool accurate)
 		{
 			double S11 = 0;
@@ -5486,7 +5606,7 @@ namespace KingOfMonsters {
 					(_h121 * get_Eij(0, 0) * get__sij(0, 0) + _h121 * get_Eij(0, 1) * get__sij(1, 0) + _h122 * get_Eij(1, 0) * get__sij(0, 0) + _h122 * get_Eij(1, 1) * get__sij(1, 0)) * t1 -
 					(_h221 * get_Eij(0, 0) * get__sij(0, 0) + _h221 * get_Eij(0, 1) * get__sij(1, 0) + _h222 * get_Eij(1, 0) * get__sij(0, 0) + _h222 * get_Eij(1, 1) * get__sij(1, 0)) * t2)
 					/ _ref->_refDv;
-				if (accurate)
+				/*if (accurate)
 				{
 					double _g11 = 0, _g12 = 0, _g22 = 0;
 					for (int i = 0; i < _ref->_nNode; i++)
@@ -5513,7 +5633,7 @@ namespace KingOfMonsters {
 					(get_hkij(0, 1, 0) * get_Eij(0, 0) * _s11 + get_hkij(0, 1, 0) * get_Eij(0, 1) * _s21 + get_hkij(0, 1, 1) * get_Eij(1, 0) * _s11 + get_hkij(0, 1, 1) * get_Eij(1, 1) * _s21) * t1 -
 					(get_hkij(1, 1, 0)* get_Eij(0, 0) * _s11 + get_hkij(1, 1, 0) * get_Eij(0, 1) * _s21 + get_hkij(1, 1, 1) * get_Eij(1, 0) * _s11 + get_hkij(1, 1, 1) * get_Eij(1, 1) * _s21) * t2)
 					/ _ref->_refDv;
-				}
+				}*/
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -5751,7 +5871,7 @@ namespace KingOfMonsters {
 					(_h121 * get_Eij(0, 0) * get__sij(0, 0) + _h121 * get_Eij(0, 1) * get__sij(1, 0) + _h122 * get_Eij(1, 0) * get__sij(0, 0) + _h122 * get_Eij(1, 1) * get__sij(1, 0)) * t1 -
 					(_h221 * get_Eij(0, 0) * get__sij(0, 0) + _h221 * get_Eij(0, 1) * get__sij(1, 0) + _h222 * get_Eij(1, 0) * get__sij(0, 0) + _h222 * get_Eij(1, 1) * get__sij(1, 0)) * t2)
 					/ _ref->_refDv;
-				if (accurate)
+				/*if (accurate)
 				{
 					double _g11 = 0, _g12 = 0, _g22 = 0;
 					for (int i = 0; i < _ref->_nNode; i++)
@@ -5778,7 +5898,7 @@ namespace KingOfMonsters {
 						(get_hkij(0, 1, 0) * get_Eij(0, 0) * _s11 + get_hkij(0, 1, 0) * get_Eij(0, 1) * _s21 + get_hkij(0, 1, 1) * get_Eij(1, 0) * _s11 + get_hkij(0, 1, 1) * get_Eij(1, 1) * _s21) * t1 -
 						(get_hkij(1, 1, 0) * get_Eij(0, 0) * _s11 + get_hkij(1, 1, 0) * get_Eij(0, 1) * _s21 + get_hkij(1, 1, 1) * get_Eij(1, 0) * _s11 + get_hkij(1, 1, 1) * get_Eij(1, 1) * _s21) * t2)
 						/ _ref->_refDv;
-				}
+				}*/
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -6847,7 +6967,7 @@ namespace KingOfMonsters {
 				val -= (get__sij(1, 0) * get_Eij(0, 0) * S11_z + get__sij(1, 0) * get_Eij(0, 1) * S21_z + get__sij(1, 1) * get_Eij(1, 0) * S11_z + get__sij(1, 1) * get_Eij(1, 1) * S21_z) * scale;
 				
 				
-				if (accurate)
+				/*if (accurate)
 				{
 					double _g11 = 0, _g12 = 0, _g22 = 0;
 					for (int t = 0; t < _ref->_nNode; t++)
@@ -6873,8 +6993,8 @@ namespace KingOfMonsters {
 					val += (s11_z * get_Eij(0, 0) * get__Sij(0, 1) + s11_z * get_Eij(0, 1) * get__Sij(1, 1) + s12_z * get_Eij(1, 0) * get__Sij(0, 1) + s12_z * get_Eij(1, 1) * get__Sij(1, 1)) * scale;
 					val -= (s21_z * get_Eij(0, 0) * get__Sij(0, 0) + s21_z * get_Eij(0, 1) * get__Sij(1, 0) + s22_z * get_Eij(1, 0) * get__Sij(0, 0) + s22_z * get_Eij(1, 1) * get__Sij(1, 0)) * scale;
 
-				}
-
+				}*/
+				
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -8179,6 +8299,11 @@ namespace KingOfMonsters {
 			__mem->_Z = Z;
 			__mem->refDv = dv;
 			__mem->_refDv = _dv;
+			__mem->_xi = xi;
+			__mem->_eta = eta;
+			__mem->_nu = nu;
+			__mem->_mu = mu;
+
 			std::memcpy(__mem->_Sij, _Sij, sizeof(double) * 4);
 			std::memcpy(__mem->_gi, gi, sizeof(double) * 6);
 			if (mode == "SLOPE")
@@ -8528,7 +8653,44 @@ namespace KingOfMonsters {
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
 		}
 		
-		
+		double symm(double v1,double v2)
+		{
+			return __mem->symm(v1,v2);
+		}
+		void symm_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1,double v1, double v2)
+		{
+			__mem->symm_xi(__mem->__grad,v1,v2);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
+		}
+		void symm_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2)
+		{
+			__mem->symm_eta(__mem->__grad, v1, v2);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
+
+		}
+		double symm2(double v1, double v2)
+		{
+			return __mem->symm2(v1, v2);
+		}
+		void symm2_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2)
+		{
+			__mem->symm2_xi(__mem->__grad, v1, v2);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
+		}
+		void symm2_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2)
+		{
+			__mem->symm2_eta(__mem->__grad, v1, v2);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
+		}
+		double symm3(double v1, double v2)
+		{
+			return __mem->symm3(v1, v2);
+		}
+		void symm3_nu(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2)
+		{
+			__mem->symm3_nu(__mem->__grad, v1, v2);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
+		}
 		double parallel_transportation(bool accurate,int mode)
 		{
 			return __mem->parallel_transportation(accurate,mode);
