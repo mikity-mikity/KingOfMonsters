@@ -5541,7 +5541,204 @@ namespace KingOfMonsters {
 		}
 		
 		
+		double parallel_transportation3(bool accurate, double t1,double t2)
+		{
+			double val = 0;
 
+
+
+
+			
+			val = ((get_hkij(0, 0, 0) * get_Eij(0, 0) * get__Sij(0, 1) + get_hkij(0, 0, 0) * get_Eij(0, 1) * get__Sij(1, 1) + get_hkij(0, 0, 1) * get_Eij(1, 0) * get__Sij(0, 1) + get_hkij(0, 0, 1) * get_Eij(1, 1) * get__Sij(1, 1)) * t1 +
+				(get_hkij(1, 0, 0) * get_Eij(0, 0) * get__Sij(0, 1) + get_hkij(1, 0, 0) * get_Eij(0, 1) * get__Sij(1, 1) + get_hkij(1, 0, 1) * get_Eij(1, 0) * get__Sij(0, 1) + get_hkij(1, 0, 1) * get_Eij(1, 1) * get__Sij(1, 1)) * t2 -
+				(get_hkij(0, 1, 0) * get_Eij(0, 0) * get__Sij(0, 0) + get_hkij(0, 1, 0) * get_Eij(0, 1) * get__Sij(1, 0) + get_hkij(0, 1, 1) * get_Eij(1, 0) * get__Sij(0, 0) + get_hkij(0, 1, 1) * get_Eij(1, 1) * get__Sij(1, 0)) * t1 -
+				(get_hkij(1, 1, 0) * get_Eij(0, 0) * get__Sij(0, 0) + get_hkij(1, 1, 0) * get_Eij(0, 1) * get__Sij(1, 0) + get_hkij(1, 1, 1) * get_Eij(1, 0) * get__Sij(0, 0) + get_hkij(1, 1, 1) * get_Eij(1, 1) * get__Sij(1, 0)) * t2)
+				/ /*trEij /*/ _ref->_refDv;
+
+			return val;
+		}
+		void parallel_transportation3_z(double* ptr, bool accurate, double t1,double t2)
+		{
+			double val = 0;
+
+			double* ptr1 = ptr;
+		
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _S11 = (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+				double _S12 = (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+				double _S22 = (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+				double _S21 = _S12;
+
+
+				double _h111 = (_ref->d3[0][s] - _ref->_Gammaijk[0] * _ref->d2[0][s] - _ref->_Gammaijk[1] * _ref->d2[1][s]);
+				double _h211 = (_ref->d3[1][s] - _ref->_Gammaijk[0] * _ref->d2[1][s] - _ref->_Gammaijk[1] * _ref->d2[3][s]);
+				double _h112 = (_ref->d3[2][s] - _ref->_Gammaijk[2] * _ref->d2[0][s] - _ref->_Gammaijk[3] * _ref->d2[1][s]);
+				double _h212 = (_ref->d3[3][s] - _ref->_Gammaijk[2] * _ref->d2[1][s] - _ref->_Gammaijk[3] * _ref->d2[3][s]);
+				double _h122 = (_ref->d3[6][s] - _ref->_Gammaijk[6] * _ref->d2[0][s] - _ref->_Gammaijk[7] * _ref->d2[1][s]);
+				double _h222 = (_ref->d3[7][s] - _ref->_Gammaijk[6] * _ref->d2[1][s] - _ref->_Gammaijk[7] * _ref->d2[3][s]);
+
+				_h111 += -_ref->get__Gammaijk(0, 0, 0) * _S11 - _ref->get__Gammaijk(0, 0, 1) * _S21 - _ref->get__Gammaijk(0, 0, 0) * _S11 - _ref->get__Gammaijk(0, 0, 1) * _S21;
+				_h211 += -_ref->get__Gammaijk(1, 0, 0) * _S11 - _ref->get__Gammaijk(1, 0, 1) * _S21 - _ref->get__Gammaijk(1, 0, 0) * _S11 - _ref->get__Gammaijk(1, 0, 1) * _S21;
+				_h112 += -_ref->get__Gammaijk(0, 0, 0) * _S12 - _ref->get__Gammaijk(0, 0, 1) * _S22 - _ref->get__Gammaijk(0, 1, 0) * _S11 - _ref->get__Gammaijk(0, 1, 1) * _S21;
+				_h212 += -_ref->get__Gammaijk(1, 0, 0) * _S12 - _ref->get__Gammaijk(1, 0, 1) * _S22 - _ref->get__Gammaijk(1, 1, 0) * _S11 - _ref->get__Gammaijk(1, 1, 1) * _S21;
+				_h122 += -_ref->get__Gammaijk(0, 1, 0) * _S12 - _ref->get__Gammaijk(0, 1, 1) * _S22 - _ref->get__Gammaijk(0, 1, 0) * _S12 - _ref->get__Gammaijk(0, 1, 1) * _S22;
+				_h222 += -_ref->get__Gammaijk(1, 1, 0) * _S12 - _ref->get__Gammaijk(1, 1, 1) * _S22 - _ref->get__Gammaijk(1, 1, 0) * _S12 - _ref->get__Gammaijk(1, 1, 1) * _S22;
+				double _h121 = _h112, _h221 = _h212;
+
+
+
+				val = ((get_hkij(0, 0, 0) * get_Eij(0, 0) * _S12 + get_hkij(0, 0, 0) * get_Eij(0, 1) * _S22 + get_hkij(0, 0, 1) * get_Eij(1, 0) * _S12 + get_hkij(0, 0, 1) * get_Eij(1, 1) * _S22) * t1 +
+					(get_hkij(1, 0, 0) * get_Eij(0, 0) * _S12 + get_hkij(1, 0, 0) * get_Eij(0, 1) * _S22 + get_hkij(1, 0, 1) * get_Eij(1, 0) * _S12 + get_hkij(1, 0, 1) * get_Eij(1, 1) * _S22) * t2 -
+					(get_hkij(0, 1, 0) * get_Eij(0, 0) * _S11 + get_hkij(0, 1, 0) * get_Eij(0, 1) * _S21 + get_hkij(0, 1, 1) * get_Eij(1, 0) * _S11 + get_hkij(0, 1, 1) * get_Eij(1, 1) * _S21) * t1 -
+					(get_hkij(1, 1, 0) * get_Eij(0, 0) * _S11 + get_hkij(1, 1, 0) * get_Eij(0, 1) * _S21 + get_hkij(1, 1, 1) * get_Eij(1, 0) * _S11 + get_hkij(1, 1, 1) * get_Eij(1, 1) * _S21) * t2)
+					/ _ref->_refDv;
+				val += ((_h111 * get_Eij(0, 0) * get__Sij(0, 1) + _h111 * get_Eij(0, 1) * get__Sij(1, 1) + _h112 * get_Eij(1, 0) * get__Sij(0, 1) + _h112 * get_Eij(1, 1) * get__Sij(1, 1)) * t1 +
+					(_h211 * get_Eij(0, 0) * get__Sij(0, 1) + _h211 * get_Eij(0, 1) * get__Sij(1, 1) + _h212 * get_Eij(1, 0) * get__Sij(0, 1) + _h212 * get_Eij(1, 1) * get__Sij(1, 1)) * t2 -
+					(_h121 * get_Eij(0, 0) * get__Sij(0, 0) + _h121 * get_Eij(0, 1) * get__Sij(1, 0) + _h122 * get_Eij(1, 0) * get__Sij(0, 0) + _h122 * get_Eij(1, 1) * get__Sij(1, 0)) * t1 -
+					(_h221 * get_Eij(0, 0) * get__Sij(0, 0) + _h221 * get_Eij(0, 1) * get__Sij(1, 0) + _h222 * get_Eij(1, 0) * get__Sij(0, 0) + _h222 * get_Eij(1, 1) * get__Sij(1, 0)) * t2)
+					/*/trEij*/ / _ref->_refDv;
+
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
+		void parallel_transportation3_xi(double* ptr, bool accurate, double t1,double t2)
+		{
+			double val = 0;
+
+			double* ptr1 = ptr;
+			
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _e11 = 0, _e12 = 0, _e22 = 0;
+				for (int i = 0; i < _ref->_nNode; i++)
+				{
+					_e11 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d1[0][s]);
+					_e12 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d1[1][s]);
+					_e22 += (_ref->d1[1][i] * _ref->buf_xi[i]) * (_ref->d1[1][s]);
+
+					_e11 += (_ref->d1[0][s]) * (_ref->d1[0][i] * _ref->buf_xi[i]);
+					_e12 += (_ref->d1[0][s]) * (_ref->d1[1][i] * _ref->buf_xi[i]);
+					_e22 += (_ref->d1[1][s]) * (_ref->d1[1][i] * _ref->buf_xi[i]);
+				}
+				double _e21 = _e12;
+				double _E11 = _e22 * sc;
+				double _E12 = -_e12 * sc;
+				double _E21 = -_e12 * sc;
+				double _E22 = _e11 * sc;
+
+				//double dtr = _E11 * _ref->get__gij(0, 0) + 2 * _E12 * _ref->get__gij(0, 1) +_E22 * _ref->get__gij(1, 1);
+				val = ((get_hkij(0, 0, 0) * _E11 * get__Sij(0, 1) + get_hkij(0, 0, 0) * _E12 * get__Sij(1, 1) + get_hkij(0, 0, 1) * _E21 * get__Sij(0, 1) + get_hkij(0, 0, 1) * _E22 * get__Sij(1, 1)) * t1 +
+					(get_hkij(1, 0, 0) * _E11 * get__Sij(0, 1) + get_hkij(1, 0, 0) * _E12 * get__Sij(1, 1) + get_hkij(1, 0, 1) * _E21 * get__Sij(0, 1) + get_hkij(1, 0, 1) * _E22 * get__Sij(1, 1)) * t2 -
+					(get_hkij(0, 1, 0) * _E11 * get__Sij(0, 0) + get_hkij(0, 1, 0) * _E12 * get__Sij(1, 0) + get_hkij(0, 1, 1) * _E21 * get__Sij(0, 0) + get_hkij(0, 1, 1) * _E22 * get__Sij(1, 0)) * t1 -
+					(get_hkij(1, 1, 0) * _E11 * get__Sij(0, 0) + get_hkij(1, 1, 0) * _E12 * get__Sij(1, 0) + get_hkij(1, 1, 1) * _E21 * get__Sij(0, 0) + get_hkij(1, 1, 1) * _E22 * get__Sij(1, 0)) * t2)
+					/*/ trEij*/ / _ref->_refDv;
+				/*val += -((get_hkij(0, 0, 0) * get_Eij(0, 0) * get__Sij(0, 1) + get_hkij(0, 0, 0) * get_Eij(0, 1) * get__Sij(1, 1) + get_hkij(0, 0, 1) * get_Eij(1, 0) * get__Sij(0, 1) + get_hkij(0, 0, 1) * get_Eij(1, 1) * get__Sij(1, 1)) * t1 +
+					(get_hkij(1, 0, 0) * get_Eij(0, 0) * get__Sij(0, 1) + get_hkij(1, 0, 0) * get_Eij(0, 1) * get__Sij(1, 1) + get_hkij(1, 0, 1) * get_Eij(1, 0) * get__Sij(0, 1) + get_hkij(1, 0, 1) * get_Eij(1, 1) * get__Sij(1, 1)) * t2 -
+					(get_hkij(0, 1, 0) * get_Eij(0, 0) * get__Sij(0, 0) + get_hkij(0, 1, 0) * get_Eij(0, 1) * get__Sij(1, 0) + get_hkij(0, 1, 1) * get_Eij(1, 0) * get__Sij(0, 0) + get_hkij(0, 1, 1) * get_Eij(1, 1) * get__Sij(1, 0)) * t1 -
+					(get_hkij(1, 1, 0) * get_Eij(0, 0) * get__Sij(0, 0) + get_hkij(1, 1, 0) * get_Eij(0, 1) * get__Sij(1, 0) + get_hkij(1, 1, 1) * get_Eij(1, 0) * get__Sij(0, 0) + get_hkij(1, 1, 1) * get_Eij(1, 1) * get__Sij(1, 0)) * t2)
+					/trEij/trEij*dtr / _ref->_refDv;*/
+
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
+		void parallel_transportation3_eta(double* ptr, bool accurate, double t1,double t2)
+		{
+			double val = 0;
+
+			
+
+			double* ptr1 = ptr;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _e11 = 0, _e12 = 0, _e22 = 0;
+				for (int i = 0; i < _ref->_nNode; i++)
+				{
+					_e11 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d1[0][s]);
+					_e12 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d1[1][s]);
+					_e22 += (_ref->d1[1][i] * _ref->buf_eta[i]) * (_ref->d1[1][s]);
+
+					_e11 += (_ref->d1[0][s]) * (_ref->d1[0][i] * _ref->buf_eta[i]);
+					_e12 += (_ref->d1[0][s]) * (_ref->d1[1][i] * _ref->buf_eta[i]);
+					_e22 += (_ref->d1[1][s]) * (_ref->d1[1][i] * _ref->buf_eta[i]);
+				}
+
+				double _e21 = _e12;
+				double _E11 = _e22 * sc;
+				double _E12 = -_e12 * sc;
+				double _E21 = -_e12 * sc;
+				double _E22 = _e11 * sc;
+				//double dtr = _E11 * _ref->get__gij(0, 0) + 2 * _E12 * _ref->get__gij(0, 1) + _E22 * _ref->get__gij(1, 1);
+
+				double
+					val = ((get_hkij(0, 0, 0) * _E11 * get__Sij(0, 1) + get_hkij(0, 0, 0) * _E12 * get__Sij(1, 1) + get_hkij(0, 0, 1) * _E21 * get__Sij(0, 1) + get_hkij(0, 0, 1) * _E22 * get__Sij(1, 1)) * t1 +
+						(get_hkij(1, 0, 0) * _E11 * get__Sij(0, 1) + get_hkij(1, 0, 0) * _E12 * get__Sij(1, 1) + get_hkij(1, 0, 1) * _E21 * get__Sij(0, 1) + get_hkij(1, 0, 1) * _E22 * get__Sij(1, 1)) * t2 -
+						(get_hkij(0, 1, 0) * _E11 * get__Sij(0, 0) + get_hkij(0, 1, 0) * _E12 * get__Sij(1, 0) + get_hkij(0, 1, 1) * _E21 * get__Sij(0, 0) + get_hkij(0, 1, 1) * _E22 * get__Sij(1, 0)) * t1 -
+						(get_hkij(1, 1, 0) * _E11 * get__Sij(0, 0) + get_hkij(1, 1, 0) * _E12 * get__Sij(1, 0) + get_hkij(1, 1, 1) * _E21 * get__Sij(0, 0) + get_hkij(1, 1, 1) * _E22 * get__Sij(1, 0)) * t2)
+					/ /*trEij / */_ref->_refDv;
+				/*val += -((get_hkij(0, 0, 0) * get_Eij(0, 0) * get__Sij(0, 1) + get_hkij(0, 0, 0) * get_Eij(0, 1) * get__Sij(1, 1) + get_hkij(0, 0, 1) * get_Eij(1, 0) * get__Sij(0, 1) + get_hkij(0, 0, 1) * get_Eij(1, 1) * get__Sij(1, 1)) * t1 +
+					(get_hkij(1, 0, 0) * get_Eij(0, 0) * get__Sij(0, 1) + get_hkij(1, 0, 0) * get_Eij(0, 1) * get__Sij(1, 1) + get_hkij(1, 0, 1) * get_Eij(1, 0) * get__Sij(0, 1) + get_hkij(1, 0, 1) * get_Eij(1, 1) * get__Sij(1, 1)) * t2 -
+					(get_hkij(0, 1, 0) * get_Eij(0, 0) * get__Sij(0, 0) + get_hkij(0, 1, 0) * get_Eij(0, 1) * get__Sij(1, 0) + get_hkij(0, 1, 1) * get_Eij(1, 0) * get__Sij(0, 0) + get_hkij(0, 1, 1) * get_Eij(1, 1) * get__Sij(1, 0)) * t1 -
+					(get_hkij(1, 1, 0) * get_Eij(0, 0) * get__Sij(0, 0) + get_hkij(1, 1, 0) * get_Eij(0, 1) * get__Sij(1, 0) + get_hkij(1, 1, 1) * get_Eij(1, 0) * get__Sij(0, 0) + get_hkij(1, 1, 1) * get_Eij(1, 1) * get__Sij(1, 0)) * t2)
+					/ trEij / trEij * dtr / _ref->_refDv;*/
+
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
+
+		void parallel_transportation3_nu(double* ptr, bool accurate, double t1,double t2)
+		{
+			double val = 0;
+
+		
+
+			double* ptr1 = ptr;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _e11 = 0, _e12 = 0, _e22 = 0;
+				for (int i = 0; i < _ref->_nNode; i++)
+				{
+					_e11 += (_ref->d1[0][i] * _ref->buf_nu[i]) * (_ref->d1[0][s]);
+					_e12 += (_ref->d1[0][i] * _ref->buf_nu[i]) * (_ref->d1[1][s]);
+					_e22 += (_ref->d1[1][i] * _ref->buf_nu[i]) * (_ref->d1[1][s]);
+
+					_e11 += (_ref->d1[0][s]) * (_ref->d1[0][i] * _ref->buf_nu[i]);
+					_e12 += (_ref->d1[0][s]) * (_ref->d1[1][i] * _ref->buf_nu[i]);
+					_e22 += (_ref->d1[1][s]) * (_ref->d1[1][i] * _ref->buf_nu[i]);
+				}
+
+				double _e21 = _e12;
+				double _E11 = _e22 * sc;
+				double _E12 = -_e12 * sc;
+				double _E21 = -_e12 * sc;
+				double _E22 = _e11 * sc;
+				//double dtr = _E11 * _ref->get__gij(0, 0) + 2 * _E12 * _ref->get__gij(0, 1) + _E22 * _ref->get__gij(1, 1);
+
+				double
+					val = ((get_hkij(0, 0, 0) * _E11 * get__Sij(0, 1) + get_hkij(0, 0, 0) * _E12 * get__Sij(1, 1) + get_hkij(0, 0, 1) * _E21 * get__Sij(0, 1) + get_hkij(0, 0, 1) * _E22 * get__Sij(1, 1)) * t1 +
+						(get_hkij(1, 0, 0) * _E11 * get__Sij(0, 1) + get_hkij(1, 0, 0) * _E12 * get__Sij(1, 1) + get_hkij(1, 0, 1) * _E21 * get__Sij(0, 1) + get_hkij(1, 0, 1) * _E22 * get__Sij(1, 1)) * t2 -
+						(get_hkij(0, 1, 0) * _E11 * get__Sij(0, 0) + get_hkij(0, 1, 0) * _E12 * get__Sij(1, 0) + get_hkij(0, 1, 1) * _E21 * get__Sij(0, 0) + get_hkij(0, 1, 1) * _E22 * get__Sij(1, 0)) * t1 -
+						(get_hkij(1, 1, 0) * _E11 * get__Sij(0, 0) + get_hkij(1, 1, 0) * _E12 * get__Sij(1, 0) + get_hkij(1, 1, 1) * _E21 * get__Sij(0, 0) + get_hkij(1, 1, 1) * _E22 * get__Sij(1, 0)) * t2)
+					/*/ trEij*/ / _ref->_refDv;
+				/*val += -((get_hkij(0, 0, 0) * get_Eij(0, 0) * get__Sij(0, 1) + get_hkij(0, 0, 0) * get_Eij(0, 1) * get__Sij(1, 1) + get_hkij(0, 0, 1) * get_Eij(1, 0) * get__Sij(0, 1) + get_hkij(0, 0, 1) * get_Eij(1, 1) * get__Sij(1, 1)) * t1 +
+					(get_hkij(1, 0, 0) * get_Eij(0, 0) * get__Sij(0, 1) + get_hkij(1, 0, 0) * get_Eij(0, 1) * get__Sij(1, 1) + get_hkij(1, 0, 1) * get_Eij(1, 0) * get__Sij(0, 1) + get_hkij(1, 0, 1) * get_Eij(1, 1) * get__Sij(1, 1)) * t2 -
+					(get_hkij(0, 1, 0) * get_Eij(0, 0) * get__Sij(0, 0) + get_hkij(0, 1, 0) * get_Eij(0, 1) * get__Sij(1, 0) + get_hkij(0, 1, 1) * get_Eij(1, 0) * get__Sij(0, 0) + get_hkij(0, 1, 1) * get_Eij(1, 1) * get__Sij(1, 0)) * t1 -
+					(get_hkij(1, 1, 0) * get_Eij(0, 0) * get__Sij(0, 0) + get_hkij(1, 1, 0) * get_Eij(0, 1) * get__Sij(1, 0) + get_hkij(1, 1, 1) * get_Eij(1, 0) * get__Sij(0, 0) + get_hkij(1, 1, 1) * get_Eij(1, 1) * get__Sij(1, 0)) * t2)
+					/ trEij / trEij * dtr / _ref->_refDv;*/
+
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
 
 		double parallel_transportation4(bool accurate, int mode)
 		{
@@ -7125,8 +7322,8 @@ namespace KingOfMonsters {
 					double _g21 = _g12;
 					//__mem->sc * __mem->bodyF-load* __mem->dv/ __mem->_ref->_refDv;
 					
-					double ddv = 0.5 * (_g11 * this->get_Gij2(0, 0) + _g22 * this->get_Gij2(1, 1) + 2 * _g12 * this->get_Gij2(0, 1)) * this->dv;
-					val += -load*ddv / _ref->_refDv;
+					//double ddv = 0.5 * (_g11 * this->get_Gij2(0, 0) + _g22 * this->get_Gij2(1, 1) + 2 * _g12 * this->get_Gij2(0, 1)) * this->dv;
+					//val += -load*ddv / _ref->_refDv;
 					*ptr1 = val; 
 				}
 				else {
@@ -8784,6 +8981,49 @@ namespace KingOfMonsters {
 		void parallel_transportation3_nu(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate, int mode)
 		{
 			__mem->parallel_transportation3_nu(__mem->__grad, accurate, mode);
+
+
+
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
+
+		}
+		double parallel_transportation3(bool accurate, double v1, double v2)
+		{
+			return __mem->parallel_transportation3(accurate, v1,v2);
+		}
+		void parallel_transportation3_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate, double v1, double v2)
+		{
+			__mem->parallel_transportation3_z(__mem->__grad, accurate,v1,v2);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
+
+		}
+		/*void parallel_transportation3_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate, int mode)
+		{
+			__mem->parallel_transportation3_phi(__mem->__grad, accurate, mode);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
+
+		}*/
+		void parallel_transportation3_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate, double v1, double v2)
+		{
+			__mem->parallel_transportation3_xi(__mem->__grad, accurate, v1, v2);
+
+
+
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
+
+		}
+		void parallel_transportation3_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate, double v1, double v2)
+		{
+			__mem->parallel_transportation3_eta(__mem->__grad, accurate, v1, v2);
+
+
+
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
+
+		}
+		void parallel_transportation3_nu(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate, double v1,double v2)
+		{
+			__mem->parallel_transportation3_nu(__mem->__grad, accurate, v1, v2);
 
 
 
