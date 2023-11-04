@@ -91,7 +91,7 @@ namespace KingOfMonsters {
 
 	public:
 		bool initialized = false;
-		double refDv = 0, _refDv = 0;
+		double refDv = 0, _refDv = 0,load_dv=0;
 		double _x = 0, _y = 0, _z = 0, __z = 0, Z = 0, _Z = 0;
 		double _xi = 0, _eta = 0,_mu=0,_nu=0;
 		//double w = 0;
@@ -4314,107 +4314,39 @@ namespace KingOfMonsters {
 			}
 		}
 
-		double st2(double v1, double v2, bool accurate)
+		double st2(double w, bool accurate)
 		{
 			double length = 0;
 
-			if (accurate)
-			{
-				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-				
-				v1 = v1 / length;
-				v2 = v2 / length;
-				
-			}
-			else {
-				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-
-				v1 = v1 / length;
-				v2 = v2 / length;
-			}
-			double S11 = 0;
-			double S12 = 0;
-			double S22 = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				S11 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_z[s];
-				S12 += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->buf_z[s];
-				S22 += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_z[s];
-			}
-			
-			double S21 = S12;
 			double val = 0;
 
 
-			val =  (S11 * v1 * v1 * this->get_gij(0, 1) + S11 * v1 * v2 * this->get_gij(1, 1) + S12 * v2 * v1 * this->get_gij(0, 1) + S12 * v2 * v2 * this->get_gij(1, 1)) / _ref->_refDv;
-			val += -(S21 * v1 * v1 * this->get_gij(0, 0) + S21 * v1 * v2 * this->get_gij(1, 0) + S22 * v2 * v1 * this->get_gij(0, 0) + S22 * v2 * v2 * this->get_gij(1, 0)) / _ref->_refDv;
+			val = get__Sij(0,0) * v1 * v1 + 2 * get__Sij(0, 1) * v1 * v2 + get__Sij(1, 1) * v2 * v2;
+			val -= w*(get__Sij(0, 0) * s1 * s1 + 2 * get__Sij(0, 1) * s1 * s2 + get__Sij(1, 1) * s2 * s2);
 
 			return val;
 		}
 
 
-		void st2_phi(double* ptr, double v1, double v2, bool accurate)
+		void st2_z(double* ptr,double w, bool accurate)
 		{
-			double S11 = 0;
-			double S12 = 0;
-			double S22 = 0;
-			double length = 0;
 
-			if (accurate)
-			{
-				length = sqrt(v1 * v1 * this->get_gij(0, 0) + v2 * v1 * this->get_gij(1, 0) + v1 * v2 * this->get_gij(0, 1) + v2 * v2 * this->get_gij(1, 1));
-				if (length == 0)length = 1;
-
-				v1 = v1 / length;
-				v2 = v2 / length;
-
-			}
-			else {
-				length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + v2 * v1 * _ref->get__gij(1, 0) + v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
-				if (length == 0)length = 1;
-
-				v1 = v1 / length;
-				v2 = v2 / length;
-			}
-
-			double _S11 = 0;
-			double _S12 = 0;
-			double _S22 = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				_S11 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_z[s];
-				_S12 += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->buf_z[s];
-				_S22 += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_z[s];
-			}
-
-			double _S21 = _S12;
+			
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				double val = 0;
 
-				S11 = (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
-				S12 = (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
-				S22 = (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+				double _S11 = (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+				double _S12 = (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+				double _S22 = (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
 
-				double S21 = S12;
+				double _S21 = _S12;
 
-				double g11 = 0, g12 = 0, g21 = 0, g22 = 0;
-				for (int t = 0; t < _ref->_nNode; t++)
-				{
-					g11 += 2 * (_ref->d1[0][s]) * (_ref->d1[0][t]) * _ref->buf_z[t];
-					g12 += (_ref->d1[0][s]) * (_ref->d1[1][t]) * _ref->buf_z[t];
-					g12 += (_ref->d1[1][s]) * (_ref->d1[0][t]) * _ref->buf_z[t];
-					g22 += 2 * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_z[t];
-				}
-				g21 = g12;
+		
 
-				val = (S11 * v1 * v1 * this->get_gij(0, 1) + S11 * v1 * v2 * this->get_gij(1, 1) + S12 * v2 * v1 * this->get_gij(0, 1) + S12 * v2 * v2 * this->get_gij(1, 1)) / _ref->_refDv;
-				val += -(S21 * v1 * v1 * this->get_gij(0, 0) + S21 * v1 * v2 * this->get_gij(1, 0) + S22 * v2 * v1 * this->get_gij(0, 0) + S22 * v2 * v2 * this->get_gij(1, 0)) / _ref->_refDv;
-				//val += (_S11 * v1 * v1 * g12 + _S11 * v1 * v2 * g22 + _S12 * v2 * v1 * g12 + _S12 * v2 * v2 * g22) / _ref->_refDv;
-				//val += -(_S21 * v1 * v1 * g11 + _S21 * v1 * v2 * g21 + _S22 * v2 * v1 * g11 + _S22 * v2 * v2 * g21) / _ref->_refDv;
+				val = _S11 * v1 * v1 + 2 * _S12 * v1 * v2 + _S22 * v2 * v2;
+				val -= w * (_S11 * s1 * s1 + 2 * _S12 * s1 * s2 + _S22 * s2 * s2);
 
 				*ptr1 = val;
 				ptr1++;
@@ -4916,10 +4848,10 @@ namespace KingOfMonsters {
 				t1 = v1; t2 = v2;
 			}
 			
-			val = ((get_gkij(0, 0, 0) * get_Gij2(0, 0) * get_eij(0, 1) + get_gkij(0, 0, 0) * get_Gij2(0, 1) * get_eij(1, 1) + get_gkij(0, 0, 1) * get_Gij2(1, 0) * get_eij(0, 1) + get_gkij(0, 0, 1) * get_Gij2(1, 1) * get_eij(1, 1)) * t1 +
-				(get_gkij(1, 0, 0) * get_Gij2(0, 0) * get_eij(0, 1) + get_gkij(1, 0, 0) * get_Gij2(0, 1) * get_eij(1, 1) + get_gkij(1, 0, 1) * get_Gij2(1, 0) * get_eij(0, 1) + get_gkij(1, 0, 1) * get_Gij2(1, 1) * get_eij(1, 1)) * t2 -
-				(get_gkij(0, 1, 0) * get_Gij2(0, 0) * get_eij(0, 0) + get_gkij(0, 1, 0) * get_Gij2(0, 1) * get_eij(1, 0) + get_gkij(0, 1, 1) * get_Gij2(1, 0) * get_eij(0, 0) + get_gkij(0, 1, 1) * get_Gij2(1, 1) * get_eij(1, 0)) * t1 -
-				(get_gkij(1, 1, 0) * get_Gij2(0, 0) * get_eij(0, 0) + get_gkij(1, 1, 0) * get_Gij2(0, 1) * get_eij(1, 0) + get_gkij(1, 1, 1) * get_Gij2(1, 0) * get_eij(0, 0) + get_gkij(1, 1, 1) * get_Gij2(1, 1) * get_eij(1, 0)) * t2)
+			val = ((get_gkij(0, 0, 0) * _ref->get__Gij(0, 0) * get_eij(0, 1) + get_gkij(0, 0, 0) * _ref->get__Gij(0, 1) * get_eij(1, 1) + get_gkij(0, 0, 1) * _ref->get__Gij(1, 0) * get_eij(0, 1) + get_gkij(0, 0, 1) * _ref->get__Gij(1, 1) * get_eij(1, 1)) * t1 +
+				(get_gkij(1, 0, 0) * _ref->get__Gij(0, 0) * get_eij(0, 1) + get_gkij(1, 0, 0) * _ref->get__Gij(0, 1) * get_eij(1, 1) + get_gkij(1, 0, 1) * _ref->get__Gij(1, 0) * get_eij(0, 1) + get_gkij(1, 0, 1) * _ref->get__Gij(1, 1) * get_eij(1, 1)) * t2 -
+				(get_gkij(0, 1, 0) * _ref->get__Gij(0, 0) * get_eij(0, 0) + get_gkij(0, 1, 0) * _ref->get__Gij(0, 1) * get_eij(1, 0) + get_gkij(0, 1, 1) * _ref->get__Gij(1, 0) * get_eij(0, 0) + get_gkij(0, 1, 1) * _ref->get__Gij(1, 1) * get_eij(1, 0)) * t1 -
+				(get_gkij(1, 1, 0) * _ref->get__Gij(0, 0) * get_eij(0, 0) + get_gkij(1, 1, 0) * _ref->get__Gij(0, 1) * get_eij(1, 0) + get_gkij(1, 1, 1) * _ref->get__Gij(1, 0) * get_eij(0, 0) + get_gkij(1, 1, 1) * _ref->get__Gij(1, 1) * get_eij(1, 0)) * t2)
 				/ _ref->_refDv;
 			
 			
@@ -4996,15 +4928,15 @@ namespace KingOfMonsters {
 
 				//val = (_g111 * t1 * v1 * s1 + _g112 * t1 * v1 * s2 + _g121 * t1 * v2 * s1 + _g122 * t1 * v2 * s2 +
 				//	_g211 * t2 * v1 * s1 + _g212 * t2 * v1 * s2 + _g221 * t2 * v2 * s1 + _g222 * t2 * v2 * s2);
-				val = ((_g111 * get_Gij2(0, 0) * get_eij(0,1) + _g111 * get_Gij2(0, 1) * get_eij(1, 1) + _g112 * get_Gij2(1, 0) * get_eij(0, 1) + _g112 * get_Gij2(1, 1) * get_eij(1, 1)) * t1 +
-					(_g211 * get_Gij2(0, 0) * get_eij(0, 1) + _g211 * get_Gij2(0, 1) * get_eij(1, 1) + _g212 * get_Gij2(1, 0) * get_eij(0, 1) + _g212 * get_Gij2(1, 1) * get_eij(1, 1)) * t2 -
-					(_g121 * get_Gij2(0, 0) * get_eij(0, 0)  + _g121 * get_Gij2(0, 1) * get_eij(1, 0) + _g122 * get_Gij2(1, 0) * get_eij(0, 0) + _g122 * get_Gij2(1, 1) * get_eij(1, 0)) * t1 -
-					(_g221 * get_Gij2(0, 0) * get_eij(0, 0) + _g221 * get_Gij2(0, 1) * get_eij(1, 0) + _g222 * get_Gij2(1, 0) * get_eij(0, 0) + _g222 * get_Gij2(1, 1) * get_eij(1, 0)) * t2) / _ref->_refDv;
+				val = ((_g111 * _ref->get__Gij(0, 0) * get_eij(0,1) + _g111 * _ref->get__Gij(0, 1) * get_eij(1, 1) + _g112 * _ref->get__Gij(1, 0) * get_eij(0, 1) + _g112 * _ref->get__Gij(1, 1) * get_eij(1, 1)) * t1 +
+					(_g211 * _ref->get__Gij(0, 0) * get_eij(0, 1) + _g211 * _ref->get__Gij(0, 1) * get_eij(1, 1) + _g212 * _ref->get__Gij(1, 0) * get_eij(0, 1) + _g212 * _ref->get__Gij(1, 1) * get_eij(1, 1)) * t2 -
+					(_g121 * _ref->get__Gij(0, 0) * get_eij(0, 0)  + _g121 * _ref->get__Gij(0, 1) * get_eij(1, 0) + _g122 * _ref->get__Gij(1, 0) * get_eij(0, 0) + _g122 * _ref->get__Gij(1, 1) * get_eij(1, 0)) * t1 -
+					(_g221 * _ref->get__Gij(0, 0) * get_eij(0, 0) + _g221 * _ref->get__Gij(0, 1) * get_eij(1, 0) + _g222 * _ref->get__Gij(1, 0) * get_eij(0, 0) + _g222 * _ref->get__Gij(1, 1) * get_eij(1, 0)) * t2) / _ref->_refDv;
 
-				val+= ((get_gkij(0,0,0) * get_Gij2(0, 0) * _e12 + get_gkij(0, 0, 0) * get_Gij2(0, 1) * _e22 + get_gkij(0, 0, 1) * get_Gij2(1, 0) * _e12 + get_gkij(0, 0, 1) * get_Gij2(1, 1) * _e22) * t1 +
-					(get_gkij(1, 0, 0) * get_Gij2(0, 0) * _e12 + get_gkij(1, 0, 0) * get_Gij2(0, 1) * _e22 + get_gkij(1, 0, 1) * get_Gij2(1, 0) * _e21 + get_gkij(1, 0, 1) * get_Gij2(1, 1) * _e22) * t2 -
-					(get_gkij(0, 1, 0) * get_Gij2(0, 0) * _e11 + get_gkij(0, 1, 0) * get_Gij2(0, 1) * _e21 + get_gkij(0, 1, 1) * get_Gij2(1, 0) * _e11 + get_gkij(0, 1, 1) * get_Gij2(1, 1) * _e21) * t1 -
-					(get_gkij(1, 1, 0) * get_Gij2(0, 0) * _e11 + get_gkij(1, 1, 0) * get_Gij2(0, 1) * _e21 + get_gkij(1,1, 1) * get_Gij2(1, 0) * _e11 + get_gkij(1, 1, 1) * get_Gij2(1, 1) * _e21) * t2) / _ref->_refDv;
+				val+= ((get_gkij(0,0,0) * _ref->get__Gij(0, 0) * _e12 + get_gkij(0, 0, 0) * _ref->get__Gij(0, 1) * _e22 + get_gkij(0, 0, 1) * _ref->get__Gij(1, 0) * _e12 + get_gkij(0, 0, 1) * _ref->get__Gij(1, 1) * _e22) * t1 +
+					(get_gkij(1, 0, 0) * _ref->get__Gij(0, 0) * _e12 + get_gkij(1, 0, 0) * _ref->get__Gij(0, 1) * _e22 + get_gkij(1, 0, 1) * _ref->get__Gij(1, 0) * _e21 + get_gkij(1, 0, 1) * _ref->get__Gij(1, 1) * _e22) * t2 -
+					(get_gkij(0, 1, 0) * _ref->get__Gij(0, 0) * _e11 + get_gkij(0, 1, 0) * _ref->get__Gij(0, 1) * _e21 + get_gkij(0, 1, 1) * _ref->get__Gij(1, 0) * _e11 + get_gkij(0, 1, 1) * _ref->get__Gij(1, 1) * _e21) * t1 -
+					(get_gkij(1, 1, 0) * _ref->get__Gij(0, 0) * _e11 + get_gkij(1, 1, 0) * _ref->get__Gij(0, 1) * _e21 + get_gkij(1,1, 1) * _ref->get__Gij(1, 0) * _e11 + get_gkij(1, 1, 1) * _ref->get__Gij(1, 1) * _e21) * t2) / _ref->_refDv;
 				
 				*ptr1 = val;
 				ptr1++;
@@ -5080,15 +5012,15 @@ namespace KingOfMonsters {
 				//val = (_g111 * t1 * v1 * s1 + _g112 * t1 * v1 * s2 + _g121 * t1 * v2 * s1 + _g122 * t1 * v2 * s2 +
 				//	_g211 * t2 * v1 * s1 + _g212 * t2 * v1 * s2 + _g221 * t2 * v2 * s1 + _g222 * t2 * v2 * s2);
 
-				val = ((_g111 * get_Gij2(0, 0) * get_eij(0, 1) + _g111 * get_Gij2(0, 1) * get_eij(1, 1) + _g112 * get_Gij2(1, 0) * get_eij(0, 1) + _g112 * get_Gij2(1, 1) * get_eij(1, 1)) * t1 +
-					(_g211 * get_Gij2(0, 0) * get_eij(0, 1) + _g211 * get_Gij2(0, 1) * get_eij(1, 1) + _g212 * get_Gij2(1, 0) * get_eij(0, 1) + _g212 * get_Gij2(1, 1) * get_eij(1, 1)) * t2 -
-					(_g121 * get_Gij2(0, 0) * get_eij(0, 0) + _g121 * get_Gij2(0, 1) * get_eij(1, 0) + _g122 * get_Gij2(1, 0) * get_eij(0, 0) + _g122 * get_Gij2(1, 1) * get_eij(1, 0)) * t1 -
-					(_g221 * get_Gij2(0, 0) * get_eij(0, 0) + _g221 * get_Gij2(0, 1) * get_eij(1, 0) + _g222 * get_Gij2(1, 0) * get_eij(0, 0) + _g222 * get_Gij2(1, 1) * get_eij(1, 0)) * t2) / _ref->_refDv;
+				val = ((_g111 * _ref->get__Gij(0, 0) * get_eij(0, 1) + _g111 * _ref->get__Gij(0, 1) * get_eij(1, 1) + _g112 * _ref->get__Gij(1, 0) * get_eij(0, 1) + _g112 * _ref->get__Gij(1, 1) * get_eij(1, 1)) * t1 +
+					(_g211 * _ref->get__Gij(0, 0) * get_eij(0, 1) + _g211 * _ref->get__Gij(0, 1) * get_eij(1, 1) + _g212 * _ref->get__Gij(1, 0) * get_eij(0, 1) + _g212 * _ref->get__Gij(1, 1) * get_eij(1, 1)) * t2 -
+					(_g121 * _ref->get__Gij(0, 0) * get_eij(0, 0) + _g121 * _ref->get__Gij(0, 1) * get_eij(1, 0) + _g122 * _ref->get__Gij(1, 0) * get_eij(0, 0) + _g122 * _ref->get__Gij(1, 1) * get_eij(1, 0)) * t1 -
+					(_g221 * _ref->get__Gij(0, 0) * get_eij(0, 0) + _g221 * _ref->get__Gij(0, 1) * get_eij(1, 0) + _g222 * _ref->get__Gij(1, 0) * get_eij(0, 0) + _g222 * _ref->get__Gij(1, 1) * get_eij(1, 0)) * t2) / _ref->_refDv;
 
-				val += ((get_gkij(0, 0, 0) * get_Gij2(0, 0) * _e12 + get_gkij(0, 0, 0) * get_Gij2(0, 1) * _e22 + get_gkij(0, 0, 1) * get_Gij2(1, 0) * _e12 + get_gkij(0, 0, 1) * get_Gij2(1, 1) * _e22) * t1 +
-					(get_gkij(1, 0, 0) * get_Gij2(0, 0) * _e12 + get_gkij(1, 0, 0) * get_Gij2(0, 1) * _e22 + get_gkij(1, 0, 1) * get_Gij2(1, 0) * _e21 + get_gkij(1, 0, 1) * get_Gij2(1, 1) * _e22) * t2 -
-					(get_gkij(0, 1, 0) * get_Gij2(0, 0) * _e11 + get_gkij(0, 1, 0) * get_Gij2(0, 1) * _e21 + get_gkij(0, 1, 1) * get_Gij2(1, 0) * _e11 + get_gkij(0, 1, 1) * get_Gij2(1, 1) * _e21) * t1 -
-						(get_gkij(1, 1, 0) * get_Gij2(0, 0) * _e11 + get_gkij(1, 1, 0) * get_Gij2(0, 1) * _e21 + get_gkij(1, 1, 1) * get_Gij2(1, 0) * _e11 + get_gkij(1, 1, 1) * get_Gij2(1, 1) * _e21) * t2) / _ref->_refDv;
+				val += ((get_gkij(0, 0, 0) * _ref->get__Gij(0, 0) * _e12 + get_gkij(0, 0, 0) * _ref->get__Gij(0, 1) * _e22 + get_gkij(0, 0, 1) * _ref->get__Gij(1, 0) * _e12 + get_gkij(0, 0, 1) * _ref->get__Gij(1, 1) * _e22) * t1 +
+					(get_gkij(1, 0, 0) * _ref->get__Gij(0, 0) * _e12 + get_gkij(1, 0, 0) * _ref->get__Gij(0, 1) * _e22 + get_gkij(1, 0, 1) * _ref->get__Gij(1, 0) * _e21 + get_gkij(1, 0, 1) * _ref->get__Gij(1, 1) * _e22) * t2 -
+					(get_gkij(0, 1, 0) * _ref->get__Gij(0, 0) * _e11 + get_gkij(0, 1, 0) * _ref->get__Gij(0, 1) * _e21 + get_gkij(0, 1, 1) * _ref->get__Gij(1, 0) * _e11 + get_gkij(0, 1, 1) * _ref->get__Gij(1, 1) * _e21) * t1 -
+						(get_gkij(1, 1, 0) * _ref->get__Gij(0, 0) * _e11 + get_gkij(1, 1, 0) * _ref->get__Gij(0, 1) * _e21 + get_gkij(1, 1, 1) * _ref->get__Gij(1, 0) * _e11 + get_gkij(1, 1, 1) * _ref->get__Gij(1, 1) * _e21) * t2) / _ref->_refDv;
 				
 				*ptr1 = val;
 				ptr1++;
@@ -5164,162 +5096,530 @@ namespace KingOfMonsters {
 				//val = (_g111 * t1 * v1 * s1 + _g112 * t1 * v1 * s2 + _g121 * t1 * v2 * s1 + _g122 * t1 * v2 * s2 +
 				//	_g211 * t2 * v1 * s1 + _g212 * t2 * v1 * s2 + _g221 * t2 * v2 * s1 + _g222 * t2 * v2 * s2);
 
-				val = ((_g111 * get_Gij2(0, 0) * get_eij(0, 1) + _g111 * get_Gij2(0, 1) * get_eij(1, 1) + _g112 * get_Gij2(1, 0) * get_eij(0, 1) + _g112 * get_Gij2(1, 1) * get_eij(1, 1)) * t1 +
-					(_g211 * get_Gij2(0, 0) * get_eij(0, 1) + _g211 * get_Gij2(0, 1) * get_eij(1, 1) + _g212 * get_Gij2(1, 0) * get_eij(0, 1) + _g212 * get_Gij2(1, 1) * get_eij(1, 1)) * t2 -
-					(_g121 * get_Gij2(0, 0) * get_eij(0, 0) + _g121 * get_Gij2(0, 1) * get_eij(1, 0) + _g122 * get_Gij2(1, 0) * get_eij(0, 0) + _g122 * get_Gij2(1, 1) * get_eij(1, 0)) * t1 -
-					(_g221 * get_Gij2(0, 0) * get_eij(0, 0) + _g221 * get_Gij2(0, 1) * get_eij(1, 0) + _g222 * get_Gij2(1, 0) * get_eij(0, 0) + _g222 * get_Gij2(1, 1) * get_eij(1, 0)) * t2) / _ref->_refDv;
+				val = ((_g111 * _ref->get__Gij(0, 0) * get_eij(0, 1) + _g111 * _ref->get__Gij(0, 1) * get_eij(1, 1) + _g112 * _ref->get__Gij(1, 0) * get_eij(0, 1) + _g112 * _ref->get__Gij(1, 1) * get_eij(1, 1)) * t1 +
+					(_g211 * _ref->get__Gij(0, 0) * get_eij(0, 1) + _g211 * _ref->get__Gij(0, 1) * get_eij(1, 1) + _g212 * _ref->get__Gij(1, 0) * get_eij(0, 1) + _g212 * _ref->get__Gij(1, 1) * get_eij(1, 1)) * t2 -
+					(_g121 * _ref->get__Gij(0, 0) * get_eij(0, 0) + _g121 * _ref->get__Gij(0, 1) * get_eij(1, 0) + _g122 * _ref->get__Gij(1, 0) * get_eij(0, 0) + _g122 * _ref->get__Gij(1, 1) * get_eij(1, 0)) * t1 -
+					(_g221 * _ref->get__Gij(0, 0) * get_eij(0, 0) + _g221 * _ref->get__Gij(0, 1) * get_eij(1, 0) + _g222 * _ref->get__Gij(1, 0) * get_eij(0, 0) + _g222 * _ref->get__Gij(1, 1) * get_eij(1, 0)) * t2) / _ref->_refDv;
 
-				val += ((get_gkij(0, 0, 0) * get_Gij2(0, 0) * _e12 + get_gkij(0, 0, 0) * get_Gij2(0, 1) * _e22 + get_gkij(0, 0, 1) * get_Gij2(1, 0) * _e12 + get_gkij(0, 0, 1) * get_Gij2(1, 1) * _e22) * t1 +
-					(get_gkij(1, 0, 0) * get_Gij2(0, 0) * _e12 + get_gkij(1, 0, 0) * get_Gij2(0, 1) * _e22 + get_gkij(1, 0, 1) * get_Gij2(1, 0) * _e21 + get_gkij(1, 0, 1) * get_Gij2(1, 1) * _e22) * t2 -
-					(get_gkij(0, 1, 0) * get_Gij2(0, 0) * _e11 + get_gkij(0, 1, 0) * get_Gij2(0, 1) * _e21 + get_gkij(0, 1, 1) * get_Gij2(1, 0) * _e11 + get_gkij(0, 1, 1) * get_Gij2(1, 1) * _e21) * t1 -
-					(get_gkij(1, 1, 0) * get_Gij2(0, 0) * _e11 + get_gkij(1, 1, 0) * get_Gij2(0, 1) * _e21 + get_gkij(1, 1, 1) * get_Gij2(1, 0) * _e11 + get_gkij(1, 1, 1) * get_Gij2(1, 1) * _e21) * t2) / _ref->_refDv;
+				val += ((get_gkij(0, 0, 0) * _ref->get__Gij(0, 0) * _e12 + get_gkij(0, 0, 0) * _ref->get__Gij(0, 1) * _e22 + get_gkij(0, 0, 1) * _ref->get__Gij(1, 0) * _e12 + get_gkij(0, 0, 1) * _ref->get__Gij(1, 1) * _e22) * t1 +
+					(get_gkij(1, 0, 0) * _ref->get__Gij(0, 0) * _e12 + get_gkij(1, 0, 0) * _ref->get__Gij(0, 1) * _e22 + get_gkij(1, 0, 1) * _ref->get__Gij(1, 0) * _e21 + get_gkij(1, 0, 1) * _ref->get__Gij(1, 1) * _e22) * t2 -
+					(get_gkij(0, 1, 0) * _ref->get__Gij(0, 0) * _e11 + get_gkij(0, 1, 0) * _ref->get__Gij(0, 1) * _e21 + get_gkij(0, 1, 1) * _ref->get__Gij(1, 0) * _e11 + get_gkij(0, 1, 1) * _ref->get__Gij(1, 1) * _e21) * t1 -
+					(get_gkij(1, 1, 0) * _ref->get__Gij(0, 0) * _e11 + get_gkij(1, 1, 0) * _ref->get__Gij(0, 1) * _e21 + get_gkij(1, 1, 1) * _ref->get__Gij(1, 0) * _e11 + get_gkij(1, 1, 1) * _ref->get__Gij(1, 1) * _e21) * t2) / _ref->_refDv;
 
 				*ptr1 = val;
 				ptr1++;
 			}
 
 		}
-		double parallel_transportation2(bool accurate, int mode)
+		double parallel_transportation(bool accurate, double t1, double t2)
 		{
 			double val = 0;
-			double t1 = s1, t2 = s2;
-			if (mode == 1) {
-				t1 = v1; t2 = v2;
-			}
-			val =( (get_hkij(0,0,0)*t1*t1+ get_hkij(0, 0, 1) * t1 * t2+ get_hkij(0, 1, 0) * t2 * t1+ get_hkij(0, 1, 1) * t2 * t2)*
-				(_ref->get__gammaijk(0,0,1)*t1*t1+ _ref->get__gammaijk(0, 1, 1) * t1 * t2+ _ref->get__gammaijk(1, 0, 1) * t2 * t1+ _ref->get__gammaijk(1, 1, 1) * t2 * t2)
-				- (get_hkij(1, 0, 0) * t1 * t1 + get_hkij(1, 0, 1) * t1 * t2 + get_hkij(1, 1, 0) * t2 * t1 + get_hkij(1, 1, 1) * t2 * t2) *
-				(_ref->get__gammaijk(0, 0, 0) * t1 * t1 + _ref->get__gammaijk(0, 1, 0) * t1 * t2 + _ref->get__gammaijk(1, 0, 0) * t2 * t1 + _ref->get__gammaijk(1, 1, 0) * t2 * t2)
-				
-				)/ _ref->_refDv;
+
+			val = ((get_gkij(0, 0, 0) * _ref->get__Gij(0, 0) * get_eij(0, 1) + get_gkij(0, 0, 0) * _ref->get__Gij(0, 1) * get_eij(1, 1) + get_gkij(0, 0, 1) * _ref->get__Gij(1, 0) * get_eij(0, 1) + get_gkij(0, 0, 1) * _ref->get__Gij(1, 1) * get_eij(1, 1)) * t1 +
+				(get_gkij(1, 0, 0) * _ref->get__Gij(0, 0) * get_eij(0, 1) + get_gkij(1, 0, 0) * _ref->get__Gij(0, 1) * get_eij(1, 1) + get_gkij(1, 0, 1) * _ref->get__Gij(1, 0) * get_eij(0, 1) + get_gkij(1, 0, 1) * _ref->get__Gij(1, 1) * get_eij(1, 1)) * t2 -
+				(get_gkij(0, 1, 0) * _ref->get__Gij(0, 0) * get_eij(0, 0) + get_gkij(0, 1, 0) * _ref->get__Gij(0, 1) * get_eij(1, 0) + get_gkij(0, 1, 1) * _ref->get__Gij(1, 0) * get_eij(0, 0) + get_gkij(0, 1, 1) * _ref->get__Gij(1, 1) * get_eij(1, 0)) * t1 -
+				(get_gkij(1, 1, 0) * _ref->get__Gij(0, 0) * get_eij(0, 0) + get_gkij(1, 1, 0) * _ref->get__Gij(0, 1) * get_eij(1, 0) + get_gkij(1, 1, 1) * _ref->get__Gij(1, 0) * get_eij(0, 0) + get_gkij(1, 1, 1) * _ref->get__Gij(1, 1) * get_eij(1, 0)) * t2)
+				/ _ref->_refDv;
+
 
 			return val;
 		}
-		void parallel_transportation2_xi(double*ptr,bool accurate, int mode)
+
+		void parallel_transportation_xi(double* ptr, bool accurate, double t1, double t2)
 		{
 			double val = 0;
-			double t1 = s1, t2 = s2;
-			if (mode == 1) {
-				t1 = v1; t2 = v2;
+
+			double* ptr1 = ptr;
+			
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _g111 = 0, _g112 = 0, _g121 = 0, _g122 = 0, _g221 = 0, _g222 = 0, _g211 = 0, _g212 = 0;
+				double _e11 = 0, _e12 = 0, _e22 = 0;
+				for (int i = 0; i < _ref->_nNode; i++)
+				{
+
+					_g111 += (_ref->d2[0][i] * _ref->buf_xi[i]) * (_ref->d1[0][s]);
+					_g211 += (_ref->d2[1][i] * _ref->buf_xi[i]) * (_ref->d1[0][s]);
+					_g112 += (_ref->d2[0][i] * _ref->buf_xi[i]) * (_ref->d1[1][s]);
+					_g212 += (_ref->d2[1][i] * _ref->buf_xi[i]) * (_ref->d1[1][s]);
+					_g122 += (_ref->d2[1][i] * _ref->buf_xi[i]) * (_ref->d1[1][s]);
+					_g222 += (_ref->d2[3][i] * _ref->buf_xi[i]) * (_ref->d1[1][s]);
+
+					_g111 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d2[0][s]);
+					_g211 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d2[1][s]);
+					_g112 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d2[1][s]);
+					_g212 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d2[3][s]);
+					_g122 += (_ref->d1[1][i] * _ref->buf_xi[i]) * (_ref->d2[1][s]);
+					_g222 += (_ref->d1[1][i] * _ref->buf_xi[i]) * (_ref->d2[3][s]);
+
+					_g111 += (_ref->d2[0][s]) * (_ref->d1[0][i] * _ref->buf_xi[i]);
+					_g211 += (_ref->d2[1][s]) * (_ref->d1[0][i] * _ref->buf_xi[i]);
+					_g112 += (_ref->d2[0][s]) * (_ref->d1[1][i] * _ref->buf_xi[i]);
+					_g212 += (_ref->d2[1][s]) * (_ref->d1[1][i] * _ref->buf_xi[i]);
+					_g122 += (_ref->d2[1][s]) * (_ref->d1[1][i] * _ref->buf_xi[i]);
+					_g222 += (_ref->d2[3][s]) * (_ref->d1[1][i] * _ref->buf_xi[i]);
+
+					_g111 += (_ref->d1[0][s]) * (_ref->d2[0][i] * _ref->buf_xi[i]);
+					_g211 += (_ref->d1[0][s]) * (_ref->d2[1][i] * _ref->buf_xi[i]);
+					_g112 += (_ref->d1[0][s]) * (_ref->d2[1][i] * _ref->buf_xi[i]);
+					_g212 += (_ref->d1[0][s]) * (_ref->d2[3][i] * _ref->buf_xi[i]);
+					_g122 += (_ref->d1[1][s]) * (_ref->d2[1][i] * _ref->buf_xi[i]);
+					_g222 += (_ref->d1[1][s]) * (_ref->d2[3][i] * _ref->buf_xi[i]);
+
+
+
+					_e11 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d1[0][s]);
+					_e12 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d1[1][s]);
+					_e22 += (_ref->d1[1][i] * _ref->buf_xi[i]) * (_ref->d1[1][s]);
+
+					_e11 += (_ref->d1[0][s]) * (_ref->d1[0][i] * _ref->buf_xi[i]);
+					_e12 += (_ref->d1[0][s]) * (_ref->d1[1][i] * _ref->buf_xi[i]);
+					_e22 += (_ref->d1[1][s]) * (_ref->d1[1][i] * _ref->buf_xi[i]);
+				}
+				double _e21 = _e12;
+
+				_g111 += -this->get_Gammaijk(0, 0, 0) * _e11 - this->get_Gammaijk(0, 0, 1) * _e12 - this->get_Gammaijk(0, 0, 0) * _e11 - this->get_Gammaijk(0, 0, 1) * _e12;
+				_g211 += -this->get_Gammaijk(1, 0, 0) * _e11 - this->get_Gammaijk(1, 0, 1) * _e12 - this->get_Gammaijk(1, 0, 0) * _e11 - this->get_Gammaijk(1, 0, 1) * _e12;
+				_g112 += -this->get_Gammaijk(0, 0, 0) * _e21 - this->get_Gammaijk(0, 0, 1) * _e22 - this->get_Gammaijk(0, 1, 0) * _e11 - this->get_Gammaijk(0, 1, 1) * _e12;
+				_g212 += -this->get_Gammaijk(1, 0, 0) * _e21 - this->get_Gammaijk(1, 0, 1) * _e22 - this->get_Gammaijk(1, 1, 0) * _e11 - this->get_Gammaijk(1, 1, 1) * _e12;
+				_g122 += -this->get_Gammaijk(0, 1, 0) * _e21 - this->get_Gammaijk(0, 1, 1) * _e22 - this->get_Gammaijk(0, 1, 0) * _e21 - this->get_Gammaijk(0, 1, 1) * _e22;
+				_g222 += -this->get_Gammaijk(1, 1, 0) * _e21 - this->get_Gammaijk(1, 1, 1) * _e22 - this->get_Gammaijk(1, 1, 0) * _e21 - this->get_Gammaijk(1, 1, 1) * _e22;
+
+				_g121 = _g112;
+				_g221 = _g212;
+				//double dtr = _g111 * t1 * _ref->get__Gij(0, 0) + _g112 * t1 * _ref->get__Gij(0, 1) + _g121 * t1 * _ref->get__Gij(1, 0) + _g122 * t1 * _ref->get__Gij(1, 1) +
+				//	_g211 * t2 * _ref->get__Gij(0, 0) + _g212 * t2 * _ref->get__Gij(0, 1) + _g221 * t2 * _ref->get__Gij(1, 0) + _g222 * t2 * _ref->get__Gij(1, 1);
+
+				//val = (_g111 * t1 * v1 * s1 + _g112 * t1 * v1 * s2 + _g121 * t1 * v2 * s1 + _g122 * t1 * v2 * s2 +
+				//	_g211 * t2 * v1 * s1 + _g212 * t2 * v1 * s2 + _g221 * t2 * v2 * s1 + _g222 * t2 * v2 * s2);
+				val = ((_g111 * _ref->get__Gij(0, 0) * get_eij(0, 1) + _g111 * _ref->get__Gij(0, 1) * get_eij(1, 1) + _g112 * _ref->get__Gij(1, 0) * get_eij(0, 1) + _g112 * _ref->get__Gij(1, 1) * get_eij(1, 1)) * t1 +
+					(_g211 * _ref->get__Gij(0, 0) * get_eij(0, 1) + _g211 * _ref->get__Gij(0, 1) * get_eij(1, 1) + _g212 * _ref->get__Gij(1, 0) * get_eij(0, 1) + _g212 * _ref->get__Gij(1, 1) * get_eij(1, 1)) * t2 -
+					(_g121 * _ref->get__Gij(0, 0) * get_eij(0, 0) + _g121 * _ref->get__Gij(0, 1) * get_eij(1, 0) + _g122 * _ref->get__Gij(1, 0) * get_eij(0, 0) + _g122 * _ref->get__Gij(1, 1) * get_eij(1, 0)) * t1 -
+					(_g221 * _ref->get__Gij(0, 0) * get_eij(0, 0) + _g221 * _ref->get__Gij(0, 1) * get_eij(1, 0) + _g222 * _ref->get__Gij(1, 0) * get_eij(0, 0) + _g222 * _ref->get__Gij(1, 1) * get_eij(1, 0)) * t2) / _ref->_refDv;
+
+				val += ((get_gkij(0, 0, 0) * _ref->get__Gij(0, 0) * _e12 + get_gkij(0, 0, 0) * _ref->get__Gij(0, 1) * _e22 + get_gkij(0, 0, 1) * _ref->get__Gij(1, 0) * _e12 + get_gkij(0, 0, 1) * _ref->get__Gij(1, 1) * _e22) * t1 +
+					(get_gkij(1, 0, 0) * _ref->get__Gij(0, 0) * _e12 + get_gkij(1, 0, 0) * _ref->get__Gij(0, 1) * _e22 + get_gkij(1, 0, 1) * _ref->get__Gij(1, 0) * _e21 + get_gkij(1, 0, 1) * _ref->get__Gij(1, 1) * _e22) * t2 -
+					(get_gkij(0, 1, 0) * _ref->get__Gij(0, 0) * _e11 + get_gkij(0, 1, 0) * _ref->get__Gij(0, 1) * _e21 + get_gkij(0, 1, 1) * _ref->get__Gij(1, 0) * _e11 + get_gkij(0, 1, 1) * _ref->get__Gij(1, 1) * _e21) * t1 -
+					(get_gkij(1, 1, 0) * _ref->get__Gij(0, 0) * _e11 + get_gkij(1, 1, 0) * _ref->get__Gij(0, 1) * _e21 + get_gkij(1, 1, 1) * _ref->get__Gij(1, 0) * _e11 + get_gkij(1, 1, 1) * _ref->get__Gij(1, 1) * _e21) * t2) / _ref->_refDv;
+
+				*ptr1 = val;
+				ptr1++;
 			}
+
+		}
+		void parallel_transportation_eta(double* ptr, bool accurate, double t1, double t2)
+		{
+			double val = 0;
+
+		
+			double* ptr1 = ptr;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _g111 = 0, _g112 = 0, _g121 = 0, _g122 = 0, _g221 = 0, _g222 = 0, _g211 = 0, _g212 = 0;
+				double _e11 = 0, _e12 = 0, _e22 = 0;
+				for (int i = 0; i < _ref->_nNode; i++)
+				{
+
+					_g111 += (_ref->d2[0][i] * _ref->buf_eta[i]) * (_ref->d1[0][s]);
+					_g211 += (_ref->d2[1][i] * _ref->buf_eta[i]) * (_ref->d1[0][s]);
+					_g112 += (_ref->d2[0][i] * _ref->buf_eta[i]) * (_ref->d1[1][s]);
+					_g212 += (_ref->d2[1][i] * _ref->buf_eta[i]) * (_ref->d1[1][s]);
+					_g122 += (_ref->d2[1][i] * _ref->buf_eta[i]) * (_ref->d1[1][s]);
+					_g222 += (_ref->d2[3][i] * _ref->buf_eta[i]) * (_ref->d1[1][s]);
+
+					_g111 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d2[0][s]);
+					_g211 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d2[1][s]);
+					_g112 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d2[1][s]);
+					_g212 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d2[3][s]);
+					_g122 += (_ref->d1[1][i] * _ref->buf_eta[i]) * (_ref->d2[1][s]);
+					_g222 += (_ref->d1[1][i] * _ref->buf_eta[i]) * (_ref->d2[3][s]);
+
+					_g111 += (_ref->d2[0][s]) * (_ref->d1[0][i] * _ref->buf_eta[i]);
+					_g211 += (_ref->d2[1][s]) * (_ref->d1[0][i] * _ref->buf_eta[i]);
+					_g112 += (_ref->d2[0][s]) * (_ref->d1[1][i] * _ref->buf_eta[i]);
+					_g212 += (_ref->d2[1][s]) * (_ref->d1[1][i] * _ref->buf_eta[i]);
+					_g122 += (_ref->d2[1][s]) * (_ref->d1[1][i] * _ref->buf_eta[i]);
+					_g222 += (_ref->d2[3][s]) * (_ref->d1[1][i] * _ref->buf_eta[i]);
+
+					_g111 += (_ref->d1[0][s]) * (_ref->d2[0][i] * _ref->buf_eta[i]);
+					_g211 += (_ref->d1[0][s]) * (_ref->d2[1][i] * _ref->buf_eta[i]);
+					_g112 += (_ref->d1[0][s]) * (_ref->d2[1][i] * _ref->buf_eta[i]);
+					_g212 += (_ref->d1[0][s]) * (_ref->d2[3][i] * _ref->buf_eta[i]);
+					_g122 += (_ref->d1[1][s]) * (_ref->d2[1][i] * _ref->buf_eta[i]);
+					_g222 += (_ref->d1[1][s]) * (_ref->d2[3][i] * _ref->buf_eta[i]);
+
+
+					_e11 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d1[0][s]);
+					_e12 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d1[1][s]);
+					_e22 += (_ref->d1[1][i] * _ref->buf_eta[i]) * (_ref->d1[1][s]);
+
+					_e11 += (_ref->d1[0][s]) * (_ref->d1[0][i] * _ref->buf_eta[i]);
+					_e12 += (_ref->d1[0][s]) * (_ref->d1[1][i] * _ref->buf_eta[i]);
+					_e22 += (_ref->d1[1][s]) * (_ref->d1[1][i] * _ref->buf_eta[i]);
+				}
+
+				double _e21 = _e12;
+				_g111 += -this->get_Gammaijk(0, 0, 0) * _e11 - this->get_Gammaijk(0, 0, 1) * _e12 - this->get_Gammaijk(0, 0, 0) * _e11 - this->get_Gammaijk(0, 0, 1) * _e12;
+				_g211 += -this->get_Gammaijk(1, 0, 0) * _e11 - this->get_Gammaijk(1, 0, 1) * _e12 - this->get_Gammaijk(1, 0, 0) * _e11 - this->get_Gammaijk(1, 0, 1) * _e12;
+				_g112 += -this->get_Gammaijk(0, 0, 0) * _e21 - this->get_Gammaijk(0, 0, 1) * _e22 - this->get_Gammaijk(0, 1, 0) * _e11 - this->get_Gammaijk(0, 1, 1) * _e12;
+				_g212 += -this->get_Gammaijk(1, 0, 0) * _e21 - this->get_Gammaijk(1, 0, 1) * _e22 - this->get_Gammaijk(1, 1, 0) * _e11 - this->get_Gammaijk(1, 1, 1) * _e12;
+				_g122 += -this->get_Gammaijk(0, 1, 0) * _e21 - this->get_Gammaijk(0, 1, 1) * _e22 - this->get_Gammaijk(0, 1, 0) * _e21 - this->get_Gammaijk(0, 1, 1) * _e22;
+				_g222 += -this->get_Gammaijk(1, 1, 0) * _e21 - this->get_Gammaijk(1, 1, 1) * _e22 - this->get_Gammaijk(1, 1, 0) * _e21 - this->get_Gammaijk(1, 1, 1) * _e22;
+
+				_g121 = _g112;
+				_g221 = _g212;
+				//val = (_g111 * t1 * v1 * s1 + _g112 * t1 * v1 * s2 + _g121 * t1 * v2 * s1 + _g122 * t1 * v2 * s2 +
+				//	_g211 * t2 * v1 * s1 + _g212 * t2 * v1 * s2 + _g221 * t2 * v2 * s1 + _g222 * t2 * v2 * s2);
+
+				val = ((_g111 * _ref->get__Gij(0, 0) * get_eij(0, 1) + _g111 * _ref->get__Gij(0, 1) * get_eij(1, 1) + _g112 * _ref->get__Gij(1, 0) * get_eij(0, 1) + _g112 * _ref->get__Gij(1, 1) * get_eij(1, 1)) * t1 +
+					(_g211 * _ref->get__Gij(0, 0) * get_eij(0, 1) + _g211 * _ref->get__Gij(0, 1) * get_eij(1, 1) + _g212 * _ref->get__Gij(1, 0) * get_eij(0, 1) + _g212 * _ref->get__Gij(1, 1) * get_eij(1, 1)) * t2 -
+					(_g121 * _ref->get__Gij(0, 0) * get_eij(0, 0) + _g121 * _ref->get__Gij(0, 1) * get_eij(1, 0) + _g122 * _ref->get__Gij(1, 0) * get_eij(0, 0) + _g122 * _ref->get__Gij(1, 1) * get_eij(1, 0)) * t1 -
+					(_g221 * _ref->get__Gij(0, 0) * get_eij(0, 0) + _g221 * _ref->get__Gij(0, 1) * get_eij(1, 0) + _g222 * _ref->get__Gij(1, 0) * get_eij(0, 0) + _g222 * _ref->get__Gij(1, 1) * get_eij(1, 0)) * t2) / _ref->_refDv;
+
+				val += ((get_gkij(0, 0, 0) * _ref->get__Gij(0, 0) * _e12 + get_gkij(0, 0, 0) * _ref->get__Gij(0, 1) * _e22 + get_gkij(0, 0, 1) * _ref->get__Gij(1, 0) * _e12 + get_gkij(0, 0, 1) * _ref->get__Gij(1, 1) * _e22) * t1 +
+					(get_gkij(1, 0, 0) * _ref->get__Gij(0, 0) * _e12 + get_gkij(1, 0, 0) * _ref->get__Gij(0, 1) * _e22 + get_gkij(1, 0, 1) * _ref->get__Gij(1, 0) * _e21 + get_gkij(1, 0, 1) * _ref->get__Gij(1, 1) * _e22) * t2 -
+					(get_gkij(0, 1, 0) * _ref->get__Gij(0, 0) * _e11 + get_gkij(0, 1, 0) * _ref->get__Gij(0, 1) * _e21 + get_gkij(0, 1, 1) * _ref->get__Gij(1, 0) * _e11 + get_gkij(0, 1, 1) * _ref->get__Gij(1, 1) * _e21) * t1 -
+					(get_gkij(1, 1, 0) * _ref->get__Gij(0, 0) * _e11 + get_gkij(1, 1, 0) * _ref->get__Gij(0, 1) * _e21 + get_gkij(1, 1, 1) * _ref->get__Gij(1, 0) * _e11 + get_gkij(1, 1, 1) * _ref->get__Gij(1, 1) * _e21) * t2) / _ref->_refDv;
+
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
+		void parallel_transportation_nu(double* ptr, bool accurate, double t1,double t2)
+		{
+			double val = 0;
+
+			double* ptr1 = ptr;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _g111 = 0, _g112 = 0, _g121 = 0, _g122 = 0, _g221 = 0, _g222 = 0, _g211 = 0, _g212 = 0;
+				double _e11 = 0, _e12 = 0, _e22 = 0;
+				for (int i = 0; i < _ref->_nNode; i++)
+				{
+
+					_g111 += (_ref->d2[0][i] * _ref->buf_nu[i]) * (_ref->d1[0][s]);
+					_g211 += (_ref->d2[1][i] * _ref->buf_nu[i]) * (_ref->d1[0][s]);
+					_g112 += (_ref->d2[0][i] * _ref->buf_nu[i]) * (_ref->d1[1][s]);
+					_g212 += (_ref->d2[1][i] * _ref->buf_nu[i]) * (_ref->d1[1][s]);
+					_g122 += (_ref->d2[1][i] * _ref->buf_nu[i]) * (_ref->d1[1][s]);
+					_g222 += (_ref->d2[3][i] * _ref->buf_nu[i]) * (_ref->d1[1][s]);
+
+					_g111 += (_ref->d1[0][i] * _ref->buf_nu[i]) * (_ref->d2[0][s]);
+					_g211 += (_ref->d1[0][i] * _ref->buf_nu[i]) * (_ref->d2[1][s]);
+					_g112 += (_ref->d1[0][i] * _ref->buf_nu[i]) * (_ref->d2[1][s]);
+					_g212 += (_ref->d1[0][i] * _ref->buf_nu[i]) * (_ref->d2[3][s]);
+					_g122 += (_ref->d1[1][i] * _ref->buf_nu[i]) * (_ref->d2[1][s]);
+					_g222 += (_ref->d1[1][i] * _ref->buf_nu[i]) * (_ref->d2[3][s]);
+
+					_g111 += (_ref->d2[0][s]) * (_ref->d1[0][i] * _ref->buf_nu[i]);
+					_g211 += (_ref->d2[1][s]) * (_ref->d1[0][i] * _ref->buf_nu[i]);
+					_g112 += (_ref->d2[0][s]) * (_ref->d1[1][i] * _ref->buf_nu[i]);
+					_g212 += (_ref->d2[1][s]) * (_ref->d1[1][i] * _ref->buf_nu[i]);
+					_g122 += (_ref->d2[1][s]) * (_ref->d1[1][i] * _ref->buf_nu[i]);
+					_g222 += (_ref->d2[3][s]) * (_ref->d1[1][i] * _ref->buf_nu[i]);
+
+					_g111 += (_ref->d1[0][s]) * (_ref->d2[0][i] * _ref->buf_nu[i]);
+					_g211 += (_ref->d1[0][s]) * (_ref->d2[1][i] * _ref->buf_nu[i]);
+					_g112 += (_ref->d1[0][s]) * (_ref->d2[1][i] * _ref->buf_nu[i]);
+					_g212 += (_ref->d1[0][s]) * (_ref->d2[3][i] * _ref->buf_nu[i]);
+					_g122 += (_ref->d1[1][s]) * (_ref->d2[1][i] * _ref->buf_nu[i]);
+					_g222 += (_ref->d1[1][s]) * (_ref->d2[3][i] * _ref->buf_nu[i]);
+
+
+					_e11 += (_ref->d1[0][i] * _ref->buf_nu[i]) * (_ref->d1[0][s]);
+					_e12 += (_ref->d1[0][i] * _ref->buf_nu[i]) * (_ref->d1[1][s]);
+					_e22 += (_ref->d1[1][i] * _ref->buf_nu[i]) * (_ref->d1[1][s]);
+
+					_e11 += (_ref->d1[0][s]) * (_ref->d1[0][i] * _ref->buf_nu[i]);
+					_e12 += (_ref->d1[0][s]) * (_ref->d1[1][i] * _ref->buf_nu[i]);
+					_e22 += (_ref->d1[1][s]) * (_ref->d1[1][i] * _ref->buf_nu[i]);
+				}
+
+				double _e21 = _e12;
+				_g111 += -this->get_Gammaijk(0, 0, 0) * _e11 - this->get_Gammaijk(0, 0, 1) * _e12 - this->get_Gammaijk(0, 0, 0) * _e11 - this->get_Gammaijk(0, 0, 1) * _e12;
+				_g211 += -this->get_Gammaijk(1, 0, 0) * _e11 - this->get_Gammaijk(1, 0, 1) * _e12 - this->get_Gammaijk(1, 0, 0) * _e11 - this->get_Gammaijk(1, 0, 1) * _e12;
+				_g112 += -this->get_Gammaijk(0, 0, 0) * _e21 - this->get_Gammaijk(0, 0, 1) * _e22 - this->get_Gammaijk(0, 1, 0) * _e11 - this->get_Gammaijk(0, 1, 1) * _e12;
+				_g212 += -this->get_Gammaijk(1, 0, 0) * _e21 - this->get_Gammaijk(1, 0, 1) * _e22 - this->get_Gammaijk(1, 1, 0) * _e11 - this->get_Gammaijk(1, 1, 1) * _e12;
+				_g122 += -this->get_Gammaijk(0, 1, 0) * _e21 - this->get_Gammaijk(0, 1, 1) * _e22 - this->get_Gammaijk(0, 1, 0) * _e21 - this->get_Gammaijk(0, 1, 1) * _e22;
+				_g222 += -this->get_Gammaijk(1, 1, 0) * _e21 - this->get_Gammaijk(1, 1, 1) * _e22 - this->get_Gammaijk(1, 1, 0) * _e21 - this->get_Gammaijk(1, 1, 1) * _e22;
+
+				_g121 = _g112;
+				_g221 = _g212;
+				//val = (_g111 * t1 * v1 * s1 + _g112 * t1 * v1 * s2 + _g121 * t1 * v2 * s1 + _g122 * t1 * v2 * s2 +
+				//	_g211 * t2 * v1 * s1 + _g212 * t2 * v1 * s2 + _g221 * t2 * v2 * s1 + _g222 * t2 * v2 * s2);
+
+				val = ((_g111 * _ref->get__Gij(0, 0) * get_eij(0, 1) + _g111 * _ref->get__Gij(0, 1) * get_eij(1, 1) + _g112 * _ref->get__Gij(1, 0) * get_eij(0, 1) + _g112 * _ref->get__Gij(1, 1) * get_eij(1, 1)) * t1 +
+					(_g211 * _ref->get__Gij(0, 0) * get_eij(0, 1) + _g211 * _ref->get__Gij(0, 1) * get_eij(1, 1) + _g212 * _ref->get__Gij(1, 0) * get_eij(0, 1) + _g212 * _ref->get__Gij(1, 1) * get_eij(1, 1)) * t2 -
+					(_g121 * _ref->get__Gij(0, 0) * get_eij(0, 0) + _g121 * _ref->get__Gij(0, 1) * get_eij(1, 0) + _g122 * _ref->get__Gij(1, 0) * get_eij(0, 0) + _g122 * _ref->get__Gij(1, 1) * get_eij(1, 0)) * t1 -
+					(_g221 * _ref->get__Gij(0, 0) * get_eij(0, 0) + _g221 * _ref->get__Gij(0, 1) * get_eij(1, 0) + _g222 * _ref->get__Gij(1, 0) * get_eij(0, 0) + _g222 * _ref->get__Gij(1, 1) * get_eij(1, 0)) * t2) / _ref->_refDv;
+
+				val += ((get_gkij(0, 0, 0) * _ref->get__Gij(0, 0) * _e12 + get_gkij(0, 0, 0) * _ref->get__Gij(0, 1) * _e22 + get_gkij(0, 0, 1) * _ref->get__Gij(1, 0) * _e12 + get_gkij(0, 0, 1) * _ref->get__Gij(1, 1) * _e22) * t1 +
+					(get_gkij(1, 0, 0) * _ref->get__Gij(0, 0) * _e12 + get_gkij(1, 0, 0) * _ref->get__Gij(0, 1) * _e22 + get_gkij(1, 0, 1) * _ref->get__Gij(1, 0) * _e21 + get_gkij(1, 0, 1) * _ref->get__Gij(1, 1) * _e22) * t2 -
+					(get_gkij(0, 1, 0) * _ref->get__Gij(0, 0) * _e11 + get_gkij(0, 1, 0) * _ref->get__Gij(0, 1) * _e21 + get_gkij(0, 1, 1) * _ref->get__Gij(1, 0) * _e11 + get_gkij(0, 1, 1) * _ref->get__Gij(1, 1) * _e21) * t1 -
+					(get_gkij(1, 1, 0) * _ref->get__Gij(0, 0) * _e11 + get_gkij(1, 1, 0) * _ref->get__Gij(0, 1) * _e21 + get_gkij(1, 1, 1) * _ref->get__Gij(1, 0) * _e11 + get_gkij(1, 1, 1) * _ref->get__Gij(1, 1) * _e21) * t2) / _ref->_refDv;
+
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
+		double parallel_transportation2(bool accurate, double t1,double t2)
+		{
+		
+
+			double val = ((get_gkij(0, 0, 0) * get_Eij(0, 0) * get__Sij(0, 1) + get_gkij(0, 0, 0) * get_Eij(0, 1) * get__Sij(1, 1) + get_gkij(0, 0, 1) * get_Eij(1, 0) * get__Sij(0, 1) + get_gkij(0, 0, 1) * get_Eij(1, 1) * get__Sij(1, 1)) * t1 +
+				(get_gkij(1, 0, 0) * get_Eij(0, 0) * get__Sij(0, 1) + get_gkij(1, 0, 0) * get_Eij(0, 1) * get__Sij(1, 1) + get_gkij(1, 0, 1) * get_Eij(1, 0) * get__Sij(0, 1) + get_gkij(1, 0, 1) * get_Eij(1, 1) * get__Sij(1, 1)) * t2 -
+				(get_gkij(0, 1, 0) * get_Eij(0, 0) * get__Sij(0, 0) + get_gkij(0, 1, 0) * get_Eij(0, 1) * get__Sij(1, 0) + get_gkij(0, 1, 1) * get_Eij(1, 0) * get__Sij(0, 0) + get_gkij(0, 1, 1) * get_Eij(1, 1) * get__Sij(1, 0)) * t1 -
+				(get_gkij(1, 1, 0) * get_Eij(0, 0) * get__Sij(0, 0) + get_gkij(1, 1, 0) * get_Eij(0, 1) * get__Sij(1, 0) + get_gkij(1, 1, 1) * get_Eij(1, 0) * get__Sij(0, 0) + get_gkij(1, 1, 1) * get_Eij(1, 1) * get__Sij(1, 0)) * t2)
+				/ _ref->_refDv;
+
+			return val;
+		}
+		void parallel_transportation2_z(double* ptr, bool accurate, double t1, double t2)
+		{
+			double val = 0;
+
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				double _h111 = 0, _h211 = 0, _h112 = 0, _h212 = 0, _h121 = 0, _h221 = -0, _h122 = 0, _h222 = 0;
-				for (int t = 0; t < _ref->_nNode; t++)
-				{
-					_h111 += _ref->d2[0][s] * _ref->d1[0][t] * _ref->buf_xi[t];
-					_h211 += _ref->d2[0][s] * _ref->d1[1][t] * _ref->buf_xi[t];
-					_h112 += _ref->d2[1][s] * _ref->d1[0][t] * _ref->buf_xi[t];
-					_h212 += _ref->d2[1][s] * _ref->d1[1][t] * _ref->buf_xi[t];
-					_h121 += _ref->d2[2][s] * _ref->d1[0][t] * _ref->buf_xi[t];
-					_h221 += _ref->d2[2][s] * _ref->d1[1][t] * _ref->buf_xi[t];
-					_h122 += _ref->d2[3][s] * _ref->d1[0][t] * _ref->buf_xi[t];
-					_h222 += _ref->d2[3][s] * _ref->d1[1][t] * _ref->buf_xi[t];
+				double _S11 = (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+				double _S12 = (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+				double _S22 = (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+				double _S21 = _S12;
 
-					_h111 += _ref->d2[0][t] * _ref->buf_xi[t] * _ref->d1[0][s];
-					_h211 += _ref->d2[0][t] * _ref->buf_xi[t] * _ref->d1[1][s];
-					_h112 += _ref->d2[1][t] * _ref->buf_xi[t] * _ref->d1[0][s];
-					_h212 += _ref->d2[1][t] * _ref->buf_xi[t] * _ref->d1[1][s];
-					_h121 += _ref->d2[2][t] * _ref->buf_xi[t] * _ref->d1[0][s];
-					_h221 += _ref->d2[2][t] * _ref->buf_xi[t] * _ref->d1[1][s];
-					_h122 += _ref->d2[3][t] * _ref->buf_xi[t] * _ref->d1[0][s];
-					_h222 += _ref->d2[3][t] * _ref->buf_xi[t] * _ref->d1[1][s];
-
-				
-				}
-				val = ((_h111 * t1 * t1 + _h112 * t1 * t2 +_h121 * t2 * t1 +_h122 * t2 * t2) *
-					(_ref->get__gammaijk(0, 0, 1) * t1 * t1 + _ref->get__gammaijk(0, 1, 1) * t1 * t2 + _ref->get__gammaijk(1, 0, 1) * t2 * t1 + _ref->get__gammaijk(1, 1, 1) * t2 * t2)
-					- (_h211 * t1 * t1 +_h212 * t1 * t2 + _h221 * t2 * t1 + _h222 * t2 * t2) *
-					(_ref->get__gammaijk(0, 0, 0) * t1 * t1 + _ref->get__gammaijk(0, 1, 0) * t1 * t2 + _ref->get__gammaijk(1, 0, 0) * t2 * t1 + _ref->get__gammaijk(1, 1, 0) * t2 * t2)
-
-					) / _ref->_refDv;
+				double val = ((get_gkij(0, 0, 0) * get_Eij(0, 0) * _S12 + get_gkij(0, 0, 0) * get_Eij(0, 1) * _S22 + get_gkij(0, 0, 1) * get_Eij(1, 0) * _S12 + get_gkij(0, 0, 1) * get_Eij(1, 1) * _S22) * t1 +
+					(get_gkij(1, 0, 0) * get_Eij(0, 0) * _S12 + get_gkij(1, 0, 0) * get_Eij(0, 1) * _S22 + get_gkij(1, 0, 1) * get_Eij(1, 0) * _S12 + get_gkij(1, 0, 1) * get_Eij(1, 1) * _S22) * t2 -
+					(get_gkij(0, 1, 0) * get_Eij(0, 0) * _S11 + get_gkij(0, 1, 0) * get_Eij(0, 1) * _S21 + get_gkij(0, 1, 1) * get_Eij(1, 0) * _S11 + get_gkij(0, 1, 1) * get_Eij(1, 1) * _S21) * t1 -
+					(get_gkij(1, 1, 0) * get_Eij(0, 0) * _S11 + get_gkij(1, 1, 0) * get_Eij(0, 1) * _S21 + get_gkij(1, 1, 1) * get_Eij(1, 0) * _S11 + get_gkij(1, 1, 1) * get_Eij(1, 1) * _S21) * t2)
+					/ _ref->_refDv;
 				*ptr1 = val;
 				ptr1++;
 			}
 		}
-		void parallel_transportation2_eta(double* ptr, bool accurate, int mode)
+		void parallel_transportation2_xi(double*ptr,bool accurate, double t1,double t2)
 		{
 			double val = 0;
-			double t1 = s1, t2 = s2;
-			if (mode == 1) {
-				t1 = v1; t2 = v2;
-			}
+			
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				double _h111 = 0, _h211 = 0, _h112 = 0, _h212 = 0, _h121 = 0, _h221 = -0, _h122 = 0, _h222 = 0;
-				for (int t = 0; t < _ref->_nNode; t++)
+				double _g111 = 0, _g112 = 0, _g121 = 0, _g122 = 0, _g221 = 0, _g222 = 0, _g211 = 0, _g212 = 0;
+				double _e11 = 0, _e12 = 0, _e22 = 0;
+				for (int i = 0; i < _ref->_nNode; i++)
 				{
-					
 
-					_h111 += _ref->d2[0][s] * _ref->d1[0][t] * _ref->buf_eta[t];
-					_h211 += _ref->d2[0][s] * _ref->d1[1][t] * _ref->buf_eta[t];
-					_h112 += _ref->d2[1][s] * _ref->d1[0][t] * _ref->buf_eta[t];
-					_h212 += _ref->d2[1][s] * _ref->d1[1][t] * _ref->buf_eta[t];
-					_h121 += _ref->d2[2][s] * _ref->d1[0][t] * _ref->buf_eta[t];
-					_h221 += _ref->d2[2][s] * _ref->d1[1][t] * _ref->buf_eta[t];
-					_h122 += _ref->d2[3][s] * _ref->d1[0][t] * _ref->buf_eta[t];
-					_h222 += _ref->d2[3][s] * _ref->d1[1][t] * _ref->buf_eta[t];
+					_g111 += (_ref->d2[0][i] * _ref->buf_xi[i]) * (_ref->d1[0][s]);
+					_g211 += (_ref->d2[1][i] * _ref->buf_xi[i]) * (_ref->d1[0][s]);
+					_g112 += (_ref->d2[0][i] * _ref->buf_xi[i]) * (_ref->d1[1][s]);
+					_g212 += (_ref->d2[1][i] * _ref->buf_xi[i]) * (_ref->d1[1][s]);
+					_g122 += (_ref->d2[1][i] * _ref->buf_xi[i]) * (_ref->d1[1][s]);
+					_g222 += (_ref->d2[3][i] * _ref->buf_xi[i]) * (_ref->d1[1][s]);
 
-					_h111 += _ref->d2[0][t] * _ref->buf_eta[t] * _ref->d1[0][s];
-					_h211 += _ref->d2[0][t] * _ref->buf_eta[t] * _ref->d1[1][s];
-					_h112 += _ref->d2[1][t] * _ref->buf_eta[t] * _ref->d1[0][s];
-					_h212 += _ref->d2[1][t] * _ref->buf_eta[t] * _ref->d1[1][s];
-					_h121 += _ref->d2[2][t] * _ref->buf_eta[t] * _ref->d1[0][s];
-					_h221 += _ref->d2[2][t] * _ref->buf_eta[t] * _ref->d1[1][s];
-					_h122 += _ref->d2[3][t] * _ref->buf_eta[t] * _ref->d1[0][s];
-					_h222 += _ref->d2[3][t] * _ref->buf_eta[t] * _ref->d1[1][s];
+					_g111 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d2[0][s]);
+					_g211 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d2[1][s]);
+					_g112 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d2[1][s]);
+					_g212 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d2[3][s]);
+					_g122 += (_ref->d1[1][i] * _ref->buf_xi[i]) * (_ref->d2[1][s]);
+					_g222 += (_ref->d1[1][i] * _ref->buf_xi[i]) * (_ref->d2[3][s]);
+
+					_g111 += (_ref->d2[0][s]) * (_ref->d1[0][i] * _ref->buf_xi[i]);
+					_g211 += (_ref->d2[1][s]) * (_ref->d1[0][i] * _ref->buf_xi[i]);
+					_g112 += (_ref->d2[0][s]) * (_ref->d1[1][i] * _ref->buf_xi[i]);
+					_g212 += (_ref->d2[1][s]) * (_ref->d1[1][i] * _ref->buf_xi[i]);
+					_g122 += (_ref->d2[1][s]) * (_ref->d1[1][i] * _ref->buf_xi[i]);
+					_g222 += (_ref->d2[3][s]) * (_ref->d1[1][i] * _ref->buf_xi[i]);
+
+					_g111 += (_ref->d1[0][s]) * (_ref->d2[0][i] * _ref->buf_xi[i]);
+					_g211 += (_ref->d1[0][s]) * (_ref->d2[1][i] * _ref->buf_xi[i]);
+					_g112 += (_ref->d1[0][s]) * (_ref->d2[1][i] * _ref->buf_xi[i]);
+					_g212 += (_ref->d1[0][s]) * (_ref->d2[3][i] * _ref->buf_xi[i]);
+					_g122 += (_ref->d1[1][s]) * (_ref->d2[1][i] * _ref->buf_xi[i]);
+					_g222 += (_ref->d1[1][s]) * (_ref->d2[3][i] * _ref->buf_xi[i]);
+
+
+					_e11 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d1[0][s]);
+					_e12 += (_ref->d1[0][i] * _ref->buf_xi[i]) * (_ref->d1[1][s]);
+					_e22 += (_ref->d1[1][i] * _ref->buf_xi[i]) * (_ref->d1[1][s]);
+
+					_e11 += (_ref->d1[0][s]) * (_ref->d1[0][i] * _ref->buf_xi[i]);
+					_e12 += (_ref->d1[0][s]) * (_ref->d1[1][i] * _ref->buf_xi[i]);
+					_e22 += (_ref->d1[1][s]) * (_ref->d1[1][i] * _ref->buf_xi[i]);
 				}
-				val = ((_h111 * t1 * t1 + _h112 * t1 * t2 + _h121 * t2 * t1 + _h122 * t2 * t2) *
-					(_ref->get__gammaijk(0, 0, 1) * t1 * t1 + _ref->get__gammaijk(0, 1, 1) * t1 * t2 + _ref->get__gammaijk(1, 0, 1) * t2 * t1 + _ref->get__gammaijk(1, 1, 1) * t2 * t2)
-					- (_h211 * t1 * t1 + _h212 * t1 * t2 + _h221 * t2 * t1 + _h222 * t2 * t2) *
-					(_ref->get__gammaijk(0, 0, 0) * t1 * t1 + _ref->get__gammaijk(0, 1, 0) * t1 * t2 + _ref->get__gammaijk(1, 0, 0) * t2 * t1 + _ref->get__gammaijk(1, 1, 0) * t2 * t2)
 
-					) / _ref->_refDv;
+				double _e21 = _e12;
+				double _E11 = _e22 * sc, _E22 = _e11 * sc, _E21 = -_e12 * sc, _E12 = -_e12 * sc;
+				_g111 += -this->get_Gammaijk(0, 0, 0) * _e11 - this->get_Gammaijk(0, 0, 1) * _e12 - this->get_Gammaijk(0, 0, 0) * _e11 - this->get_Gammaijk(0, 0, 1) * _e12;
+				_g211 += -this->get_Gammaijk(1, 0, 0) * _e11 - this->get_Gammaijk(1, 0, 1) * _e12 - this->get_Gammaijk(1, 0, 0) * _e11 - this->get_Gammaijk(1, 0, 1) * _e12;
+				_g112 += -this->get_Gammaijk(0, 0, 0) * _e21 - this->get_Gammaijk(0, 0, 1) * _e22 - this->get_Gammaijk(0, 1, 0) * _e11 - this->get_Gammaijk(0, 1, 1) * _e12;
+				_g212 += -this->get_Gammaijk(1, 0, 0) * _e21 - this->get_Gammaijk(1, 0, 1) * _e22 - this->get_Gammaijk(1, 1, 0) * _e11 - this->get_Gammaijk(1, 1, 1) * _e12;
+				_g122 += -this->get_Gammaijk(0, 1, 0) * _e21 - this->get_Gammaijk(0, 1, 1) * _e22 - this->get_Gammaijk(0, 1, 0) * _e21 - this->get_Gammaijk(0, 1, 1) * _e22;
+				_g222 += -this->get_Gammaijk(1, 1, 0) * _e21 - this->get_Gammaijk(1, 1, 1) * _e22 - this->get_Gammaijk(1, 1, 0) * _e21 - this->get_Gammaijk(1, 1, 1) * _e22;
+
+				_g121 = _g112;
+				_g221 = _g212;
+				double val = ((_g111 * get_Eij(0, 0) * get__Sij(0, 1) + _g111 * get_Eij(0, 1) * get__Sij(1, 1) + _g112 * get_Eij(1, 0) * get__Sij(0, 1) + _g112 * get_Eij(1, 1) * get__Sij(1, 1)) * t1 +
+					(_g211 * get_Eij(0, 0) * get__Sij(0, 1) + _g211 * get_Eij(0, 1) * get__Sij(1, 1) + _g212 * get_Eij(1, 0) * get__Sij(0, 1) + _g212 * get_Eij(1, 1) * get__Sij(1, 1)) * t2 -
+					(_g121 * get_Eij(0, 0) * get__Sij(0, 0) + _g121 * get_Eij(0, 1) * get__Sij(1, 0) + _g122 * get_Eij(1, 0) * get__Sij(0, 0) + _g122 * get_Eij(1, 1) * get__Sij(1, 0)) * t1 -
+					(_g221 * get_Eij(0, 0) * get__Sij(0, 0) + _g221 * get_Eij(0, 1) * get__Sij(1, 0) + _g222 * get_Eij(1, 0) * get__Sij(0, 0) + _g222 * get_Eij(1, 1) * get__Sij(1, 0)) * t2)
+					/ _ref->_refDv;
+				val += ((get_gkij(0, 0, 0) * _E11 * get__Sij(0, 1) + get_gkij(0, 0, 0) * _E12 * get__Sij(1, 1) + get_gkij(0, 0, 1) * _E21 * get__Sij(0, 1) + get_gkij(0, 0, 1) * _E22 * get__Sij(1, 1)) * t1 +
+					(get_gkij(1, 0, 0) * _E11 * get__Sij(0, 1) + get_gkij(1, 0, 0) * _E12 * get__Sij(1, 1) + get_gkij(1, 0, 1) * _E21 * get__Sij(0, 1) + get_gkij(1, 0, 1) * _E22 * get__Sij(1, 1)) * t2 -
+					(get_gkij(0, 1, 0) * _E11 * get__Sij(0, 0) + get_gkij(0, 1, 0) * _E12 * get__Sij(1, 0) + get_gkij(0, 1, 1) * _E21 * get__Sij(0, 0) + get_gkij(0, 1, 1) * _E22 * get__Sij(1, 0)) * t1 -
+					(get_gkij(1, 1, 0) * _E11 * get__Sij(0, 0) + get_gkij(1, 1, 0) * _E12 * get__Sij(1, 0) + get_gkij(1, 1, 1) * _E21 * get__Sij(0, 0) + get_gkij(1, 1, 1) * _E22 * get__Sij(1, 0)) * t2)
+					/ _ref->_refDv;
 				*ptr1 = val;
 				ptr1++;
 			}
 		}
-		void parallel_transportation2_nu(double* ptr, bool accurate, int mode)
+		void parallel_transportation2_eta(double* ptr, bool accurate, double t1,double t2)
 		{
 			double val = 0;
-			double t1 = s1, t2 = s2;
-			if (mode == 1) {
-				t1 = v1; t2 = v2;
-			}
+
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				double _h111 = 0, _h211 = 0, _h112 = 0, _h212 = 0, _h121 = 0, _h221 = -0, _h122 = 0, _h222 = 0;
-				for (int t = 0; t < _ref->_nNode; t++)
+				double _g111 = 0, _g112 = 0, _g121 = 0, _g122 = 0, _g221 = 0, _g222 = 0, _g211 = 0, _g212 = 0;
+				double _e11 = 0, _e12 = 0, _e22 = 0;
+				for (int i = 0; i < _ref->_nNode; i++)
 				{
 
+					_g111 += (_ref->d2[0][i] * _ref->buf_eta[i]) * (_ref->d1[0][s]);
+					_g211 += (_ref->d2[1][i] * _ref->buf_eta[i]) * (_ref->d1[0][s]);
+					_g112 += (_ref->d2[0][i] * _ref->buf_eta[i]) * (_ref->d1[1][s]);
+					_g212 += (_ref->d2[1][i] * _ref->buf_eta[i]) * (_ref->d1[1][s]);
+					_g122 += (_ref->d2[1][i] * _ref->buf_eta[i]) * (_ref->d1[1][s]);
+					_g222 += (_ref->d2[3][i] * _ref->buf_eta[i]) * (_ref->d1[1][s]);
 
-					_h111 += _ref->d2[0][s] * _ref->d1[0][t] * _ref->buf_nu[t];
-					_h211 += _ref->d2[0][s] * _ref->d1[1][t] * _ref->buf_nu[t];
-					_h112 += _ref->d2[1][s] * _ref->d1[0][t] * _ref->buf_nu[t];
-					_h212 += _ref->d2[1][s] * _ref->d1[1][t] * _ref->buf_nu[t];
-					_h121 += _ref->d2[2][s] * _ref->d1[0][t] * _ref->buf_nu[t];
-					_h221 += _ref->d2[2][s] * _ref->d1[1][t] * _ref->buf_nu[t];
-					_h122 += _ref->d2[3][s] * _ref->d1[0][t] * _ref->buf_nu[t];
-					_h222 += _ref->d2[3][s] * _ref->d1[1][t] * _ref->buf_nu[t];
+					_g111 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d2[0][s]);
+					_g211 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d2[1][s]);
+					_g112 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d2[1][s]);
+					_g212 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d2[3][s]);
+					_g122 += (_ref->d1[1][i] * _ref->buf_eta[i]) * (_ref->d2[1][s]);
+					_g222 += (_ref->d1[1][i] * _ref->buf_eta[i]) * (_ref->d2[3][s]);
 
-					_h111 += _ref->d2[0][t] * _ref->buf_nu[t] * _ref->d1[0][s];
-					_h211 += _ref->d2[0][t] * _ref->buf_nu[t] * _ref->d1[1][s];
-					_h112 += _ref->d2[1][t] * _ref->buf_nu[t] * _ref->d1[0][s];
-					_h212 += _ref->d2[1][t] * _ref->buf_nu[t] * _ref->d1[1][s];
-					_h121 += _ref->d2[2][t] * _ref->buf_nu[t] * _ref->d1[0][s];
-					_h221 += _ref->d2[2][t] * _ref->buf_nu[t] * _ref->d1[1][s];
-					_h122 += _ref->d2[3][t] * _ref->buf_nu[t] * _ref->d1[0][s];
-					_h222 += _ref->d2[3][t] * _ref->buf_nu[t] * _ref->d1[1][s];
+					_g111 += (_ref->d2[0][s]) * (_ref->d1[0][i] * _ref->buf_eta[i]);
+					_g211 += (_ref->d2[1][s]) * (_ref->d1[0][i] * _ref->buf_eta[i]);
+					_g112 += (_ref->d2[0][s]) * (_ref->d1[1][i] * _ref->buf_eta[i]);
+					_g212 += (_ref->d2[1][s]) * (_ref->d1[1][i] * _ref->buf_eta[i]);
+					_g122 += (_ref->d2[1][s]) * (_ref->d1[1][i] * _ref->buf_eta[i]);
+					_g222 += (_ref->d2[3][s]) * (_ref->d1[1][i] * _ref->buf_eta[i]);
+
+					_g111 += (_ref->d1[0][s]) * (_ref->d2[0][i] * _ref->buf_eta[i]);
+					_g211 += (_ref->d1[0][s]) * (_ref->d2[1][i] * _ref->buf_eta[i]);
+					_g112 += (_ref->d1[0][s]) * (_ref->d2[1][i] * _ref->buf_eta[i]);
+					_g212 += (_ref->d1[0][s]) * (_ref->d2[3][i] * _ref->buf_eta[i]);
+					_g122 += (_ref->d1[1][s]) * (_ref->d2[1][i] * _ref->buf_eta[i]);
+					_g222 += (_ref->d1[1][s]) * (_ref->d2[3][i] * _ref->buf_eta[i]);
+
+
+					_e11 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d1[0][s]);
+					_e12 += (_ref->d1[0][i] * _ref->buf_eta[i]) * (_ref->d1[1][s]);
+					_e22 += (_ref->d1[1][i] * _ref->buf_eta[i]) * (_ref->d1[1][s]);
+
+					_e11 += (_ref->d1[0][s]) * (_ref->d1[0][i] * _ref->buf_eta[i]);
+					_e12 += (_ref->d1[0][s]) * (_ref->d1[1][i] * _ref->buf_eta[i]);
+					_e22 += (_ref->d1[1][s]) * (_ref->d1[1][i] * _ref->buf_eta[i]);
 				}
-				val = ((_h111 * t1 * t1 + _h112 * t1 * t2 + _h121 * t2 * t1 + _h122 * t2 * t2) *
-					(_ref->get__gammaijk(0, 0, 1) * t1 * t1 + _ref->get__gammaijk(0, 1, 1) * t1 * t2 + _ref->get__gammaijk(1, 0, 1) * t2 * t1 + _ref->get__gammaijk(1, 1, 1) * t2 * t2)
-					- (_h211 * t1 * t1 + _h212 * t1 * t2 + _h221 * t2 * t1 + _h222 * t2 * t2) *
-					(_ref->get__gammaijk(0, 0, 0) * t1 * t1 + _ref->get__gammaijk(0, 1, 0) * t1 * t2 + _ref->get__gammaijk(1, 0, 0) * t2 * t1 + _ref->get__gammaijk(1, 1, 0) * t2 * t2)
 
-					) / _ref->_refDv;
+				double _e21 = _e12;
+				double _E11 = _e22 * sc, _E22 = _e11 * sc, _E21 = -_e12 * sc, _E12 = -_e12 * sc;
+				_g111 += -this->get_Gammaijk(0, 0, 0) * _e11 - this->get_Gammaijk(0, 0, 1) * _e12 - this->get_Gammaijk(0, 0, 0) * _e11 - this->get_Gammaijk(0, 0, 1) * _e12;
+				_g211 += -this->get_Gammaijk(1, 0, 0) * _e11 - this->get_Gammaijk(1, 0, 1) * _e12 - this->get_Gammaijk(1, 0, 0) * _e11 - this->get_Gammaijk(1, 0, 1) * _e12;
+				_g112 += -this->get_Gammaijk(0, 0, 0) * _e21 - this->get_Gammaijk(0, 0, 1) * _e22 - this->get_Gammaijk(0, 1, 0) * _e11 - this->get_Gammaijk(0, 1, 1) * _e12;
+				_g212 += -this->get_Gammaijk(1, 0, 0) * _e21 - this->get_Gammaijk(1, 0, 1) * _e22 - this->get_Gammaijk(1, 1, 0) * _e11 - this->get_Gammaijk(1, 1, 1) * _e12;
+				_g122 += -this->get_Gammaijk(0, 1, 0) * _e21 - this->get_Gammaijk(0, 1, 1) * _e22 - this->get_Gammaijk(0, 1, 0) * _e21 - this->get_Gammaijk(0, 1, 1) * _e22;
+				_g222 += -this->get_Gammaijk(1, 1, 0) * _e21 - this->get_Gammaijk(1, 1, 1) * _e22 - this->get_Gammaijk(1, 1, 0) * _e21 - this->get_Gammaijk(1, 1, 1) * _e22;
+
+				_g121 = _g112;
+				_g221 = _g212;
+				double val = ((_g111 * get_Eij(0, 0) * get__Sij(0, 1) + _g111 * get_Eij(0, 1) * get__Sij(1, 1) + _g112 * get_Eij(1, 0) * get__Sij(0, 1) + _g112 * get_Eij(1, 1) * get__Sij(1, 1)) * t1 +
+					(_g211 * get_Eij(0, 0) * get__Sij(0, 1) + _g211 * get_Eij(0, 1) * get__Sij(1, 1) + _g212 * get_Eij(1, 0) * get__Sij(0, 1) + _g212 * get_Eij(1, 1) * get__Sij(1, 1)) * t2 -
+					(_g121 * get_Eij(0, 0) * get__Sij(0, 0) + _g121 * get_Eij(0, 1) * get__Sij(1, 0) + _g122 * get_Eij(1, 0) * get__Sij(0, 0) + _g122 * get_Eij(1, 1) * get__Sij(1, 0)) * t1 -
+					(_g221 * get_Eij(0, 0) * get__Sij(0, 0) + _g221 * get_Eij(0, 1) * get__Sij(1, 0) + _g222 * get_Eij(1, 0) * get__Sij(0, 0) + _g222 * get_Eij(1, 1) * get__Sij(1, 0)) * t2)
+					/ _ref->_refDv;
+				val += ((get_gkij(0, 0, 0) * _E11 * get__Sij(0, 1) + get_gkij(0, 0, 0) * _E12 * get__Sij(1, 1) + get_gkij(0, 0, 1) * _E21 * get__Sij(0, 1) + get_gkij(0, 0, 1) * _E22 * get__Sij(1, 1)) * t1 +
+					(get_gkij(1, 0, 0) * _E11 * get__Sij(0, 1) + get_gkij(1, 0, 0) * _E12 * get__Sij(1, 1) + get_gkij(1, 0, 1) * _E21 * get__Sij(0, 1) + get_gkij(1, 0, 1) * _E22 * get__Sij(1, 1)) * t2 -
+					(get_gkij(0, 1, 0) * _E11 * get__Sij(0, 0) + get_gkij(0, 1, 0) * _E12 * get__Sij(1, 0) + get_gkij(0, 1, 1) * _E21 * get__Sij(0, 0) + get_gkij(0, 1, 1) * _E22 * get__Sij(1, 0)) * t1 -
+					(get_gkij(1, 1, 0) * _E11 * get__Sij(0, 0) + get_gkij(1, 1, 0) * _E12 * get__Sij(1, 0) + get_gkij(1, 1, 1) * _E21 * get__Sij(0, 0) + get_gkij(1, 1, 1) * _E22 * get__Sij(1, 0)) * t2)
+					/ _ref->_refDv;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		void parallel_transportation2_nu(double* ptr, bool accurate, double t1,double t2)
+		{
+			double val = 0;
+
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _g111 = 0, _g112 = 0, _g121 = 0, _g122 = 0, _g221 = 0, _g222 = 0, _g211 = 0, _g212 = 0;
+				double _e11 = 0, _e12 = 0, _e22 = 0;
+				for (int i = 0; i < _ref->_nNode; i++)
+				{
+
+					_g111 += (_ref->d2[0][i] * _ref->buf_nu[i]) * (_ref->d1[0][s]);
+					_g211 += (_ref->d2[1][i] * _ref->buf_nu[i]) * (_ref->d1[0][s]);
+					_g112 += (_ref->d2[0][i] * _ref->buf_nu[i]) * (_ref->d1[1][s]);
+					_g212 += (_ref->d2[1][i] * _ref->buf_nu[i]) * (_ref->d1[1][s]);
+					_g122 += (_ref->d2[1][i] * _ref->buf_nu[i]) * (_ref->d1[1][s]);
+					_g222 += (_ref->d2[3][i] * _ref->buf_nu[i]) * (_ref->d1[1][s]);
+
+					_g111 += (_ref->d1[0][i] * _ref->buf_nu[i]) * (_ref->d2[0][s]);
+					_g211 += (_ref->d1[0][i] * _ref->buf_nu[i]) * (_ref->d2[1][s]);
+					_g112 += (_ref->d1[0][i] * _ref->buf_nu[i]) * (_ref->d2[1][s]);
+					_g212 += (_ref->d1[0][i] * _ref->buf_nu[i]) * (_ref->d2[3][s]);
+					_g122 += (_ref->d1[1][i] * _ref->buf_nu[i]) * (_ref->d2[1][s]);
+					_g222 += (_ref->d1[1][i] * _ref->buf_nu[i]) * (_ref->d2[3][s]);
+
+					_g111 += (_ref->d2[0][s]) * (_ref->d1[0][i] * _ref->buf_nu[i]);
+					_g211 += (_ref->d2[1][s]) * (_ref->d1[0][i] * _ref->buf_nu[i]);
+					_g112 += (_ref->d2[0][s]) * (_ref->d1[1][i] * _ref->buf_nu[i]);
+					_g212 += (_ref->d2[1][s]) * (_ref->d1[1][i] * _ref->buf_nu[i]);
+					_g122 += (_ref->d2[1][s]) * (_ref->d1[1][i] * _ref->buf_nu[i]);
+					_g222 += (_ref->d2[3][s]) * (_ref->d1[1][i] * _ref->buf_nu[i]);
+
+					_g111 += (_ref->d1[0][s]) * (_ref->d2[0][i] * _ref->buf_nu[i]);
+					_g211 += (_ref->d1[0][s]) * (_ref->d2[1][i] * _ref->buf_nu[i]);
+					_g112 += (_ref->d1[0][s]) * (_ref->d2[1][i] * _ref->buf_nu[i]);
+					_g212 += (_ref->d1[0][s]) * (_ref->d2[3][i] * _ref->buf_nu[i]);
+					_g122 += (_ref->d1[1][s]) * (_ref->d2[1][i] * _ref->buf_nu[i]);
+					_g222 += (_ref->d1[1][s]) * (_ref->d2[3][i] * _ref->buf_nu[i]);
+
+
+					_e11 += (_ref->d1[0][i] * _ref->buf_nu[i]) * (_ref->d1[0][s]);
+					_e12 += (_ref->d1[0][i] * _ref->buf_nu[i]) * (_ref->d1[1][s]);
+					_e22 += (_ref->d1[1][i] * _ref->buf_nu[i]) * (_ref->d1[1][s]);
+
+					_e11 += (_ref->d1[0][s]) * (_ref->d1[0][i] * _ref->buf_nu[i]);
+					_e12 += (_ref->d1[0][s]) * (_ref->d1[1][i] * _ref->buf_nu[i]);
+					_e22 += (_ref->d1[1][s]) * (_ref->d1[1][i] * _ref->buf_nu[i]);
+				}
+
+				double _e21 = _e12;
+				double _E11 = _e22 * sc, _E22 = _e11 * sc, _E21 = -_e12 * sc, _E12 = -_e12 * sc;
+				_g111 += -this->get_Gammaijk(0, 0, 0) * _e11 - this->get_Gammaijk(0, 0, 1) * _e12 - this->get_Gammaijk(0, 0, 0) * _e11 - this->get_Gammaijk(0, 0, 1) * _e12;
+				_g211 += -this->get_Gammaijk(1, 0, 0) * _e11 - this->get_Gammaijk(1, 0, 1) * _e12 - this->get_Gammaijk(1, 0, 0) * _e11 - this->get_Gammaijk(1, 0, 1) * _e12;
+				_g112 += -this->get_Gammaijk(0, 0, 0) * _e21 - this->get_Gammaijk(0, 0, 1) * _e22 - this->get_Gammaijk(0, 1, 0) * _e11 - this->get_Gammaijk(0, 1, 1) * _e12;
+				_g212 += -this->get_Gammaijk(1, 0, 0) * _e21 - this->get_Gammaijk(1, 0, 1) * _e22 - this->get_Gammaijk(1, 1, 0) * _e11 - this->get_Gammaijk(1, 1, 1) * _e12;
+				_g122 += -this->get_Gammaijk(0, 1, 0) * _e21 - this->get_Gammaijk(0, 1, 1) * _e22 - this->get_Gammaijk(0, 1, 0) * _e21 - this->get_Gammaijk(0, 1, 1) * _e22;
+				_g222 += -this->get_Gammaijk(1, 1, 0) * _e21 - this->get_Gammaijk(1, 1, 1) * _e22 - this->get_Gammaijk(1, 1, 0) * _e21 - this->get_Gammaijk(1, 1, 1) * _e22;
+
+				_g121 = _g112;
+				_g221 = _g212;
+				double val = ((_g111 * get_Eij(0, 0) * get__Sij(0, 1) + _g111 * get_Eij(0, 1) * get__Sij(1, 1) + _g112 * get_Eij(1, 0) * get__Sij(0, 1) + _g112 * get_Eij(1, 1) * get__Sij(1, 1)) * t1 +
+					(_g211 * get_Eij(0, 0) * get__Sij(0, 1) + _g211 * get_Eij(0, 1) * get__Sij(1, 1) + _g212 * get_Eij(1, 0) * get__Sij(0, 1) + _g212 * get_Eij(1, 1) * get__Sij(1, 1)) * t2 -
+					(_g121 * get_Eij(0, 0) * get__Sij(0, 0) + _g121 * get_Eij(0, 1) * get__Sij(1, 0) + _g122 * get_Eij(1, 0) * get__Sij(0, 0) + _g122 * get_Eij(1, 1) * get__Sij(1, 0)) * t1 -
+					(_g221 * get_Eij(0, 0) * get__Sij(0, 0) + _g221 * get_Eij(0, 1) * get__Sij(1, 0) + _g222 * get_Eij(1, 0) * get__Sij(0, 0) + _g222 * get_Eij(1, 1) * get__Sij(1, 0)) * t2)
+					/ _ref->_refDv;
+				val += ((get_gkij(0, 0, 0) * _E11 * get__Sij(0, 1) + get_gkij(0, 0, 0) * _E12 * get__Sij(1, 1) + get_gkij(0, 0, 1) * _E21 * get__Sij(0, 1) + get_gkij(0, 0, 1) * _E22 * get__Sij(1, 1)) * t1 +
+					(get_gkij(1, 0, 0) * _E11 * get__Sij(0, 1) + get_gkij(1, 0, 0) * _E12 * get__Sij(1, 1) + get_gkij(1, 0, 1) * _E21 * get__Sij(0, 1) + get_gkij(1, 0, 1) * _E22 * get__Sij(1, 1)) * t2 -
+					(get_gkij(0, 1, 0) * _E11 * get__Sij(0, 0) + get_gkij(0, 1, 0) * _E12 * get__Sij(1, 0) + get_gkij(0, 1, 1) * _E21 * get__Sij(0, 0) + get_gkij(0, 1, 1) * _E22 * get__Sij(1, 0)) * t1 -
+					(get_gkij(1, 1, 0) * _E11 * get__Sij(0, 0) + get_gkij(1, 1, 0) * _E12 * get__Sij(1, 0) + get_gkij(1, 1, 1) * _E21 * get__Sij(0, 0) + get_gkij(1, 1, 1) * _E22 * get__Sij(1, 0)) * t2)
+					/ _ref->_refDv;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -5347,7 +5647,7 @@ namespace KingOfMonsters {
 		}
 		void parallel_transportation3_z(double* ptr, bool accurate, int mode)
 		{
-			double val = 0;
+			
 
 			double* ptr1 = ptr;
 			double t1 = s1, t2 = s2;
@@ -5356,6 +5656,7 @@ namespace KingOfMonsters {
 			}
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
+				double val = 0;
 				double _S11 = (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
@@ -5379,11 +5680,11 @@ namespace KingOfMonsters {
 
 
 
-				val = ((get_hkij(0, 0, 0) * get_Eij(0, 0) * _S12 + get_hkij(0, 0, 0) * get_Eij(0, 1) * _S22 + get_hkij(0, 0, 1) * get_Eij(1, 0) * _S12 + get_hkij(0, 0, 1) * get_Eij(1, 1) * _S22) * t1 +
+				/*val = ((get_hkij(0, 0, 0) * get_Eij(0, 0) * _S12 + get_hkij(0, 0, 0) * get_Eij(0, 1) * _S22 + get_hkij(0, 0, 1) * get_Eij(1, 0) * _S12 + get_hkij(0, 0, 1) * get_Eij(1, 1) * _S22) * t1 +
 					(get_hkij(1, 0, 0) * get_Eij(0, 0) * _S12 + get_hkij(1, 0, 0) * get_Eij(0, 1) * _S22 + get_hkij(1, 0, 1) * get_Eij(1, 0) * _S12 + get_hkij(1, 0, 1) * get_Eij(1, 1) * _S22) * t2 -
 					(get_hkij(0, 1, 0) * get_Eij(0, 0) * _S11 + get_hkij(0, 1, 0) * get_Eij(0, 1) * _S21 + get_hkij(0, 1, 1) * get_Eij(1, 0) * _S11 + get_hkij(0, 1, 1) * get_Eij(1, 1) * _S21) * t1 -
 					(get_hkij(1, 1, 0) * get_Eij(0, 0) * _S11 + get_hkij(1, 1, 0) * get_Eij(0, 1) * _S21 + get_hkij(1, 1, 1) * get_Eij(1, 0) * _S11 + get_hkij(1, 1, 1) * get_Eij(1, 1) * _S21) * t2)
-					/_ref->_refDv; 
+					/_ref->_refDv; */
 				val += ((_h111 * get_Eij(0, 0) * get__Sij(0, 1) + _h111 * get_Eij(0, 1) * get__Sij(1, 1) + _h112 * get_Eij(1, 0) * get__Sij(0, 1) + _h112 * get_Eij(1, 1) * get__Sij(1, 1)) * t1 +
 					(_h211 * get_Eij(0, 0) * get__Sij(0, 1) + _h211 * get_Eij(0, 1) * get__Sij(1, 1) + _h212 * get_Eij(1, 0) * get__Sij(0, 1) + _h212 * get_Eij(1, 1) * get__Sij(1, 1)) * t2 -
 					(_h121 * get_Eij(0, 0) * get__Sij(0, 0) + _h121 * get_Eij(0, 1) * get__Sij(1, 0) + _h122 * get_Eij(1, 0) * get__Sij(0, 0) + _h122 * get_Eij(1, 1) * get__Sij(1, 0)) * t1 -
@@ -5559,12 +5860,13 @@ namespace KingOfMonsters {
 		}
 		void parallel_transportation3_z(double* ptr, bool accurate, double t1,double t2)
 		{
-			double val = 0;
+			
 
 			double* ptr1 = ptr;
 		
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
+				double val = 0;
 				double _S11 = (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
@@ -5588,11 +5890,11 @@ namespace KingOfMonsters {
 
 
 
-				val = ((get_hkij(0, 0, 0) * get_Eij(0, 0) * _S12 + get_hkij(0, 0, 0) * get_Eij(0, 1) * _S22 + get_hkij(0, 0, 1) * get_Eij(1, 0) * _S12 + get_hkij(0, 0, 1) * get_Eij(1, 1) * _S22) * t1 +
+				/*val = ((get_hkij(0, 0, 0) * get_Eij(0, 0) * _S12 + get_hkij(0, 0, 0) * get_Eij(0, 1) * _S22 + get_hkij(0, 0, 1) * get_Eij(1, 0) * _S12 + get_hkij(0, 0, 1) * get_Eij(1, 1) * _S22) * t1 +
 					(get_hkij(1, 0, 0) * get_Eij(0, 0) * _S12 + get_hkij(1, 0, 0) * get_Eij(0, 1) * _S22 + get_hkij(1, 0, 1) * get_Eij(1, 0) * _S12 + get_hkij(1, 0, 1) * get_Eij(1, 1) * _S22) * t2 -
 					(get_hkij(0, 1, 0) * get_Eij(0, 0) * _S11 + get_hkij(0, 1, 0) * get_Eij(0, 1) * _S21 + get_hkij(0, 1, 1) * get_Eij(1, 0) * _S11 + get_hkij(0, 1, 1) * get_Eij(1, 1) * _S21) * t1 -
 					(get_hkij(1, 1, 0) * get_Eij(0, 0) * _S11 + get_hkij(1, 1, 0) * get_Eij(0, 1) * _S21 + get_hkij(1, 1, 1) * get_Eij(1, 0) * _S11 + get_hkij(1, 1, 1) * get_Eij(1, 1) * _S21) * t2)
-					/ _ref->_refDv;
+					/ _ref->_refDv;*/
 				val += ((_h111 * get_Eij(0, 0) * get__Sij(0, 1) + _h111 * get_Eij(0, 1) * get__Sij(1, 1) + _h112 * get_Eij(1, 0) * get__Sij(0, 1) + _h112 * get_Eij(1, 1) * get__Sij(1, 1)) * t1 +
 					(_h211 * get_Eij(0, 0) * get__Sij(0, 1) + _h211 * get_Eij(0, 1) * get__Sij(1, 1) + _h212 * get_Eij(1, 0) * get__Sij(0, 1) + _h212 * get_Eij(1, 1) * get__Sij(1, 1)) * t2 -
 					(_h121 * get_Eij(0, 0) * get__Sij(0, 0) + _h121 * get_Eij(0, 1) * get__Sij(1, 0) + _h122 * get_Eij(1, 0) * get__Sij(0, 0) + _h122 * get_Eij(1, 1) * get__Sij(1, 0)) * t1 -
@@ -7240,6 +7542,86 @@ namespace KingOfMonsters {
 			}
 			
 		}
+		double align_sigma2(bool accurate)
+		{
+			double val = 0;
+
+			double S11 = 0;
+
+			double scale = 1  /*/ trEij*/ / _ref->_refDv;
+			val = (get_gij2(0, 0) * get__sij(0, 0) * get__Sij(0, 1) + get_gij2(0, 0) * get__sij(0, 1) * get__Sij(1, 1) + get_gij2(0, 1) * get__sij(1, 0) * get__Sij(0, 1) + get_gij2(0, 1) * get__sij(1, 1) * get__Sij(1, 1)) * scale;
+			val -= (get_gij2(1, 0) * get__sij(0, 0) * get__Sij(0, 0) + get_gij2(1, 0) * get__sij(0, 1) * get__Sij(1, 0) + get_gij2(1, 1) * get__sij(1, 0) * get__Sij(0, 0) + get_gij2(1, 1) * get__sij(1, 1) * get__Sij(1, 0)) * scale;
+
+			return val;
+
+		}
+		
+		void align_sigma2_z(double* ptr, bool accurate)
+		{
+
+			double* ptr1 = ptr;
+
+			double scale = 1 /* / trEij*/ / _ref->_refDv;
+
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double val = 0;
+				double S11_z = (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+				double S12_z = (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+				double S21_z = S12_z;
+				double S22_z = (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+
+				val = (get_gij2(0, 0) * get__sij(0, 0) * S12_z + get_gij2(0, 0) * get__sij(0, 1) * S22_z + get_gij2(0, 1) * get__sij(1, 0) * S12_z + get_gij2(0, 1) * get__sij(1, 1) * S22_z) * scale;
+				val -= (get_gij2(1, 0) * get__sij(0, 0) * S11_z + get_gij2(1, 0) * get__sij(0, 1) * S21_z + get_gij2(1, 1) * get__sij(1, 0) * S11_z + get_gij2(1, 1) * get__sij(1, 1) * S21_z) * scale;
+				double _g11 = 0, _g12 = 0, _g22 = 0;
+				for (int t = 0; t < _ref->_nNode; t++)
+				{
+					_g11 += 2 * (_ref->d1[0][s]) * (_ref->d1[0][t]) * _ref->buf_z[t];
+
+					_g12 += (_ref->d1[0][s]) * (_ref->d1[1][t]) * _ref->buf_z[t];
+					_g12 += (_ref->d1[1][s]) * (_ref->d1[0][t]) * _ref->buf_z[t];
+
+					_g22 += 2 * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_z[t];
+				}
+				double _g21 = _g12;
+				val += (_g11 * get__sij(0, 0) * get__Sij(0, 1) + _g11 * get__sij(0, 1) * get__Sij(1, 1) + _g12 * get__sij(1, 0) * get__Sij(0, 1) + _g12 * get__sij(1, 1) * get__Sij(1, 1)) * scale;
+				val -= (_g21 * get__sij(0, 0) * get__Sij(0, 0) + _g21 * get__sij(0, 1) * get__Sij(1, 0) + _g22 * get__sij(1, 0) * get__Sij(0, 0) + _g22 * get__sij(1, 1) * get__Sij(1, 0)) * scale;
+
+
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
+		void align_sigma2_phi(double* ptr, bool accurate)
+		{
+
+			double* ptr1 = ptr;
+
+
+
+			double scale = 1 * sc/*/trEij */ / _ref->_refDv;
+			//double S21 = S12;
+
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double val = 0;
+				double _s22_phi = (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+				double _s12_phi = -(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+				double _s21_phi = _s12_phi;
+				double _s11_phi = (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+				
+
+				val = (get_gij2(0, 0) * _s11_phi * get__Sij(0, 1) + get_gij2(0, 0) * _s12_phi * get__Sij(1, 1) + get_gij2(0, 1) * _s21_phi * get__Sij(0, 1) + get_gij2(0, 1) * _s22_phi * get__Sij(1, 1)) * scale;
+				val -= (get_gij2(1, 0) * _s11_phi * get__Sij(0, 0) + get_gij2(1, 0) * _s12_phi * get__Sij(1, 0) + get_gij2(1, 1) * _s21_phi * get__Sij(0, 0) + get_gij2(1, 1) * _s22_phi * get__Sij(1, 0)) * scale;
+
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
 		void __bodyF_phi(double* ptr, bool accurate)
 		{
 			double s11 = 0;
@@ -8643,6 +9025,7 @@ namespace KingOfMonsters {
 		double xi, eta,mu,nu;
 		double refDv;
 		double _refDv;
+		double load_dv;
 		double dv;
 		double _dv;
 	public:
@@ -8920,23 +9303,72 @@ namespace KingOfMonsters {
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
 
 		}
-		double parallel_transportation2(bool accurate, int mode)
+		double parallel_transportation(bool accurate, double t1,double t2)
 		{
-			return __mem->parallel_transportation2(accurate, mode);
+			return __mem->parallel_transportation(accurate, t1,t2);
 		}
 
-		void parallel_transportation2_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate, int mode)
+		void parallel_transportation_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate, double t1, double t2)
 		{
-			__mem->parallel_transportation2_xi(__mem->__grad, accurate, mode);
+			__mem->parallel_transportation_xi(__mem->__grad, accurate, t1, t2);
 
 
 
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
 
 		}
-		void parallel_transportation2_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate, int mode)
+		void parallel_transportation_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate, double t1, double t2)
 		{
-			__mem->parallel_transportation2_eta(__mem->__grad, accurate, mode);
+			__mem->parallel_transportation_eta(__mem->__grad, accurate, t1, t2);
+
+
+
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
+
+		}
+		void parallel_transportation_nu(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate, double t1, double t2)
+		{
+			__mem->parallel_transportation_nu(__mem->__grad, accurate, t1, t2);
+
+
+
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
+
+		}
+		double parallel_transportation2(bool accurate, double v1,double v2)
+		{
+			return __mem->parallel_transportation2(accurate, v1,v2);
+		}
+		void parallel_transportation2_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate, double v1, double v2)
+		{
+			__mem->parallel_transportation2_z(__mem->__grad, accurate, v1, v2);
+
+
+
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
+
+		}
+		void parallel_transportation2_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate, double v1, double v2)
+		{
+			__mem->parallel_transportation2_xi(__mem->__grad, accurate, v1, v2);
+
+
+
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
+
+		}
+		void parallel_transportation2_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate, double v1, double v2)
+		{
+			__mem->parallel_transportation2_eta(__mem->__grad, accurate, v1, v2);
+
+
+
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
+
+		}
+		void parallel_transportation2_nu(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate, double v1, double v2)
+		{
+			__mem->parallel_transportation2_nu(__mem->__grad, accurate, v1, v2);
 
 
 
@@ -9218,7 +9650,22 @@ namespace KingOfMonsters {
 			__mem->singularity2_nu(__mem->__grad);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
 		}
-	
+		double align_sigma2(bool accurate)
+		{
+			return __mem->align_sigma2(accurate);
+		}
+
+
+		void align_sigma2_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate)
+		{
+			__mem->align_sigma2_phi(__mem->__grad, accurate);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, sc, __mem->_nNode, c1);
+		}
+		void align_sigma2_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate)
+		{
+			__mem->align_sigma2_z(__mem->__grad, accurate);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, sc, __mem->_nNode, c1);
+		}
 		double align_sigma( bool accurate)
 		{  
 			return __mem->align_sigma(accurate);
@@ -9329,15 +9776,15 @@ namespace KingOfMonsters {
 			__mem->st_phi(arr->_arr->__v.data(), v1, v2, accurate);
 
 		}
-		double st2(double v1, double v2, bool accurate)
+		double st2(double w, bool accurate)
 		{
 
-			return __mem->st2(v1, v2, accurate);
+			return __mem->st2(w, accurate);
 		}
-		void st2_phi(myDoubleArray^ arr, double v1, double v2, bool accurate)
+		void st2_z(myDoubleArray^ arr, double w, bool accurate)
 		{
 
-			__mem->st2_phi(arr->_arr->__v.data(), v1, v2, accurate);
+			__mem->st2_z(arr->_arr->__v.data(), w,accurate);
 
 		}
 		void tt_z(myDoubleArray^ arr, double v1, double v2, bool accurate)
@@ -9740,11 +10187,22 @@ namespace KingOfMonsters {
 		{
 			return __mem->_detphi();
 		}
+		void bodyF_freeze()
+		{
+			this->load_dv = __mem->_ref->load_dv;
+			
+		}
+		void bodyF_update()
+		{
+			__mem->_ref->load_dv = __mem->dv;
+			this->load_dv = __mem->_ref->load_dv;
+		}
+
 		double bodyF(double load,bool accurate) {
 			//double sc = 1.0/__mem->_ref->_refDv/ __mem->_ref->_refDv;
 			if(accurate)
 			{
-				return __mem->sc * __mem->bodyF-load* __mem->dv/ __mem->_ref->_refDv;
+				return __mem->sc * __mem->bodyF-load* __mem->_ref->load_dv / __mem->_ref->_refDv;
 			}
 			else
 			{
@@ -9801,6 +10259,7 @@ namespace KingOfMonsters {
 			phi = __mem->phi;
 			dv = __mem->dv;
 			_dv = __mem->_dv;
+			
 			_refDv = __mem->_dv;
 			refDv = __mem->dv;
 
