@@ -735,6 +735,22 @@ namespace KingOfMonsters {
 		{
 			this->dat->setzero(row);
 		}
+		void setOne(int N)
+		{
+			std::vector<Eigen::Triplet<double>> dat;
+			dat.resize(N * N);
+			for (int i = 0; i < N; i++)
+			{
+				for (int j = 0; j < N; j++)
+				{
+					dat.push_back(Eigen::Triplet<double>(i, j, 1));
+				}
+			}
+			this->dat->_mat[0].resize(N, N);
+			this->dat->_mat[0].setFromTriplets(dat.begin(), dat.end());
+		}
+		
+		
 		void ofStack(System::Collections::Generic::List<mySparse^> ^jacobians)
 		{
 			int M = this->dat->_mat[0].rows();
