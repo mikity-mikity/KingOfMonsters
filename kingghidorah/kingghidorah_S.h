@@ -1096,44 +1096,64 @@ namespace KingOfMonsters {
 
 			v1 = get_v1();
 			v2 = get_v2();
-			//if (mode == "U")
+			if (mode == "U")
 			{
+				if (accurate)
 
-				/*double length = v1 * gij2[0] * v1 + 2 * v1 * gij2[1] * v2 + v2 * gij2[3] * v2;
-				double slength = sqrt(length);
-				v1 /= slength;
-				v2 /= slength;
+				{
+					double length = v1 * gij2[0] * v1 + 2 * v1 * gij2[1] * v2 + v2 * gij2[3] * v2;
+					double slength = sqrt(length);
+					v1 /= slength;
+					v2 /= slength;
 
-				s1 = gij2[1] * v1 + gij2[3] * v2;
-				s2 = -gij2[0] * v1 - gij2[1] * v2;
+					s1 = gij2[1] * v1 + gij2[3] * v2;
+					s2 = -gij2[0] * v1 - gij2[1] * v2;
 
-				s1 /= dv;
-				s2 /= dv;*/
-				double length = v1 * _ref->_gij[0] * v1 + 2 * v1 * _ref->_gij[1] * v2 + v2 * _ref->_gij[3] * v2;
-				double slength = sqrt(length);
-				v1 /= slength;
-				v2 /= slength;
-				
-				s1 = _ref->_gij[1] * v1 + _ref->_gij[3] * v2;
-				s2 = -_ref->_gij[0] * v1 - _ref->_gij[1] * v2;
+					s1 /= dv;
+					s2 /= dv;
+				}
+				else {
+					double length = v1 * _ref->_gij[0] * v1 + 2 * v1 * _ref->_gij[1] * v2 + v2 * _ref->_gij[3] * v2;
+					double slength = sqrt(length);
+					v1 /= slength;
+					v2 /= slength;
 
-				s1 /= dv;
-				s2 /= dv;
+					s1 = _ref->_gij[1] * v1 + _ref->_gij[3] * v2;
+					s2 = -_ref->_gij[0] * v1 - _ref->_gij[1] * v2;
+
+					s1 /= dv;
+					s2 /= dv;
+				}
 			}
-			/*else {
+			else {
+				if (accurate)
 
-				double length = v1 * gij[0] * v1 + 2 * v1 * gij[1] * v2 + v2 * gij[3] * v2;
-				double slength = sqrt(length);
-				v1 /= slength;
-				v2 /= slength;
+				{
+					double length = v1 * gij[0] * v1 + 2 * v1 * gij[1] * v2 + v2 * gij[3] * v2;
+					double slength = sqrt(length);
+					v1 /= slength;
+					v2 /= slength;
 
-				s1 = gij[1] * v1 + gij[3] * v2;
-				s2 = -gij[0] * v1 - gij[1] * v2;
+					s1 = gij[1] * v1 + gij[3] * v2;
+					s2 = -gij[0] * v1 - gij[1] * v2;
 
-				s1 /= dv;
-				s2 /= dv;
+					s1 /= dv;
+					s2 /= dv;
+				}
+				else {
+					double length = v1 * _ref->_gij[0] * v1 + 2 * v1 * _ref->_gij[1] * v2 + v2 * _ref->_gij[3] * v2;
+					double slength = sqrt(length);
+					v1 /= slength;
+					v2 /= slength;
 
-			}*/
+					s1 = _ref->_gij[1] * v1 + _ref->_gij[3] * v2;
+					s2 = -_ref->_gij[0] * v1 - _ref->_gij[1] * v2;
+
+					s1 /= dv;
+					s2 /= dv;
+				}
+
+			}
 			memset(eij, 0, sizeof(double) * 4);
 			memset(gkij, 0, sizeof(double) * 8);
 			//memset(hkij, 0, sizeof(double) * 8);
@@ -5060,7 +5080,7 @@ namespace KingOfMonsters {
 			if (mode == 1) {
 				t1 = v1; t2 = v2;
 			}
-			//if (accurate)
+			if (accurate)
 			{
 				val = ((get_gkij(0, 0, 0) * get_Gij2(0, 0) * get_eij(0, 1) + get_gkij(0, 0, 0) * get_Gij2(0, 1) * get_eij(1, 1) + get_gkij(0, 0, 1) * get_Gij2(1, 0) * get_eij(0, 1) + get_gkij(0, 0, 1) * get_Gij2(1, 1) * get_eij(1, 1)) * t1 +
 					(get_gkij(1, 0, 0) * get_Gij2(0, 0) * get_eij(0, 1) + get_gkij(1, 0, 0) * get_Gij2(0, 1) * get_eij(1, 1) + get_gkij(1, 0, 1) * get_Gij2(1, 0) * get_eij(0, 1) + get_gkij(1, 0, 1) * get_Gij2(1, 1) * get_eij(1, 1)) * t2 -
@@ -5068,14 +5088,14 @@ namespace KingOfMonsters {
 					(get_gkij(1, 1, 0) * get_Gij2(0, 0) * get_eij(0, 0) + get_gkij(1, 1, 0) * get_Gij2(0, 1) * get_eij(1, 0) + get_gkij(1, 1, 1) * get_Gij2(1, 0) * get_eij(0, 0) + get_gkij(1, 1, 1) * get_Gij2(1, 1) * get_eij(1, 0)) * t2)
 					/ _ref->_refDv;
 			}
-			/*else {
+			else {
 				val = ((get_gkij(0, 0, 0) * get_Gij(0, 0) * get_eij(0, 1) + get_gkij(0, 0, 0) * get_Gij(0, 1) * get_eij(1, 1) + get_gkij(0, 0, 1) * get_Gij(1, 0) * get_eij(0, 1) + get_gkij(0, 0, 1) * get_Gij(1, 1) * get_eij(1, 1)) * t1 +
 					(get_gkij(1, 0, 0) * get_Gij(0, 0) * get_eij(0, 1) + get_gkij(1, 0, 0) * get_Gij(0, 1) * get_eij(1, 1) + get_gkij(1, 0, 1) * get_Gij(1, 0) * get_eij(0, 1) + get_gkij(1, 0, 1) * get_Gij(1, 1) * get_eij(1, 1)) * t2 -
 					(get_gkij(0, 1, 0) * get_Gij(0, 0) * get_eij(0, 0) + get_gkij(0, 1, 0) * get_Gij(0, 1) * get_eij(1, 0) + get_gkij(0, 1, 1) * get_Gij(1, 0) * get_eij(0, 0) + get_gkij(0, 1, 1) * get_Gij(1, 1) * get_eij(1, 0)) * t1 -
 					(get_gkij(1, 1, 0) * get_Gij(0, 0) * get_eij(0, 0) + get_gkij(1, 1, 0) * get_Gij(0, 1) * get_eij(1, 0) + get_gkij(1, 1, 1) * get_Gij(1, 0) * get_eij(0, 0) + get_gkij(1, 1, 1) * get_Gij(1, 1) * get_eij(1, 0)) * t2)
 					/ _ref->_refDv;
 
-			}*/
+			}
 			
 			return val;
 		}
@@ -5154,7 +5174,7 @@ namespace KingOfMonsters {
 				}
 				_g121 = _g112;
 				_g221 = _g212;
-				//if (accurate)
+				if (accurate)
 				{
 					val = ((_g111 * get_Gij2(0, 0) * get_eij(0, 1) + _g111 * get_Gij2(0, 1) * get_eij(1, 1) + _g112 * get_Gij2(1, 0) * get_eij(0, 1) + _g112 * get_Gij2(1, 1) * get_eij(1, 1)) * t1 +
 						(_g211 * get_Gij2(0, 0) * get_eij(0, 1) + _g211 * get_Gij2(0, 1) * get_eij(1, 1) + _g212 * get_Gij2(1, 0) * get_eij(0, 1) + _g212 * get_Gij2(1, 1) * get_eij(1, 1)) * t2 -
@@ -5165,7 +5185,7 @@ namespace KingOfMonsters {
 						(get_gkij(1, 0, 0) * get_Gij2(0, 0) * _e12 + get_gkij(1, 0, 0) * get_Gij2(0, 1) * _e22 + get_gkij(1, 0, 1) * get_Gij2(1, 0) * _e21 + get_gkij(1, 0, 1) * get_Gij2(1, 1) * _e22) * t2 -
 						(get_gkij(0, 1, 0) * get_Gij2(0, 0) * _e11 + get_gkij(0, 1, 0) * get_Gij2(0, 1) * _e21 + get_gkij(0, 1, 1) * get_Gij2(1, 0) * _e11 + get_gkij(0, 1, 1) * get_Gij2(1, 1) * _e21) * t1 -
 						(get_gkij(1, 1, 0) * get_Gij2(0, 0) * _e11 + get_gkij(1, 1, 0) * get_Gij2(0, 1) * _e21 + get_gkij(1, 1, 1) * get_Gij2(1, 0) * _e11 + get_gkij(1, 1, 1) * get_Gij2(1, 1) * _e21) * t2) / _ref->_refDv;
-				}/*
+				}
 				else {
 					val = ((_g111 * get_Gij(0, 0) * get_eij(0, 1) + _g111 * get_Gij(0, 1) * get_eij(1, 1) + _g112 * get_Gij(1, 0) * get_eij(0, 1) + _g112 * get_Gij(1, 1) * get_eij(1, 1)) * t1 +
 						(_g211 * get_Gij(0, 0) * get_eij(0, 1) + _g211 * get_Gij(0, 1) * get_eij(1, 1) + _g212 * get_Gij(1, 0) * get_eij(0, 1) + _g212 * get_Gij(1, 1) * get_eij(1, 1)) * t2 -
@@ -5177,7 +5197,7 @@ namespace KingOfMonsters {
 						(get_gkij(0, 1, 0) * get_Gij(0, 0) * _e11 + get_gkij(0, 1, 0) * get_Gij(0, 1) * _e21 + get_gkij(0, 1, 1) * get_Gij(1, 0) * _e11 + get_gkij(0, 1, 1) * get_Gij(1, 1) * _e21) * t1 -
 						(get_gkij(1, 1, 0) * get_Gij(0, 0) * _e11 + get_gkij(1, 1, 0) * get_Gij(0, 1) * _e21 + get_gkij(1, 1, 1) * get_Gij(1, 0) * _e11 + get_gkij(1, 1, 1) * get_Gij(1, 1) * _e21) * t2) / _ref->_refDv;
 
-				}*/
+				}
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -5262,7 +5282,7 @@ namespace KingOfMonsters {
 				//val = (_g111 * t1 * v1 * s1 + _g112 * t1 * v1 * s2 + _g121 * t1 * v2 * s1 + _g122 * t1 * v2 * s2 +
 				//	_g211 * t2 * v1 * s1 + _g212 * t2 * v1 * s2 + _g221 * t2 * v2 * s1 + _g222 * t2 * v2 * s2);
 
-				//if (accurate)
+				if (accurate)
 				{
 					val = ((_g111 * get_Gij2(0, 0) * get_eij(0, 1) + _g111 * get_Gij2(0, 1) * get_eij(1, 1) + _g112 * get_Gij2(1, 0) * get_eij(0, 1) + _g112 * get_Gij2(1, 1) * get_eij(1, 1)) * t1 +
 						(_g211 * get_Gij2(0, 0) * get_eij(0, 1) + _g211 * get_Gij2(0, 1) * get_eij(1, 1) + _g212 * get_Gij2(1, 0) * get_eij(0, 1) + _g212 * get_Gij2(1, 1) * get_eij(1, 1)) * t2 -
@@ -5274,7 +5294,7 @@ namespace KingOfMonsters {
 						(get_gkij(0, 1, 0) * get_Gij2(0, 0) * _e11 + get_gkij(0, 1, 0) * get_Gij2(0, 1) * _e21 + get_gkij(0, 1, 1) * get_Gij2(1, 0) * _e11 + get_gkij(0, 1, 1) * get_Gij2(1, 1) * _e21) * t1 -
 						(get_gkij(1, 1, 0) * get_Gij2(0, 0) * _e11 + get_gkij(1, 1, 0) * get_Gij2(0, 1) * _e21 + get_gkij(1, 1, 1) * get_Gij2(1, 0) * _e11 + get_gkij(1, 1, 1) * get_Gij2(1, 1) * _e21) * t2) / _ref->_refDv;
 				}
-				/*else {
+				else {
 					val = ((_g111 * get_Gij(0, 0) * get_eij(0, 1) + _g111 * get_Gij(0, 1) * get_eij(1, 1) + _g112 * get_Gij(1, 0) * get_eij(0, 1) + _g112 * get_Gij(1, 1) * get_eij(1, 1)) * t1 +
 						(_g211 * get_Gij(0, 0) * get_eij(0, 1) + _g211 * get_Gij(0, 1) * get_eij(1, 1) + _g212 * get_Gij(1, 0) * get_eij(0, 1) + _g212 * get_Gij(1, 1) * get_eij(1, 1)) * t2 -
 						(_g121 * get_Gij(0, 0) * get_eij(0, 0) + _g121 * get_Gij(0, 1) * get_eij(1, 0) + _g122 * get_Gij(1, 0) * get_eij(0, 0) + _g122 * get_Gij(1, 1) * get_eij(1, 0)) * t1 -
@@ -5285,7 +5305,7 @@ namespace KingOfMonsters {
 						(get_gkij(0, 1, 0) * get_Gij(0, 0) * _e11 + get_gkij(0, 1, 0) * get_Gij(0, 1) * _e21 + get_gkij(0, 1, 1) * get_Gij(1, 0) * _e11 + get_gkij(0, 1, 1) * get_Gij(1, 1) * _e21) * t1 -
 						(get_gkij(1, 1, 0) * get_Gij(0, 0) * _e11 + get_gkij(1, 1, 0) * get_Gij(0, 1) * _e21 + get_gkij(1, 1, 1) * get_Gij(1, 0) * _e11 + get_gkij(1, 1, 1) * get_Gij(1, 1) * _e21) * t2) / _ref->_refDv;
 
-				}*/
+				}
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -5370,7 +5390,7 @@ namespace KingOfMonsters {
 				//val = (_g111 * t1 * v1 * s1 + _g112 * t1 * v1 * s2 + _g121 * t1 * v2 * s1 + _g122 * t1 * v2 * s2 +
 				//	_g211 * t2 * v1 * s1 + _g212 * t2 * v1 * s2 + _g221 * t2 * v2 * s1 + _g222 * t2 * v2 * s2);
 
-				//if (accurate)
+				if (accurate)
 				{
 					val = ((_g111 * get_Gij2(0, 0) * get_eij(0, 1) + _g111 * get_Gij2(0, 1) * get_eij(1, 1) + _g112 * get_Gij2(1, 0) * get_eij(0, 1) + _g112 * get_Gij2(1, 1) * get_eij(1, 1)) * t1 +
 						(_g211 * get_Gij2(0, 0) * get_eij(0, 1) + _g211 * get_Gij2(0, 1) * get_eij(1, 1) + _g212 * get_Gij2(1, 0) * get_eij(0, 1) + _g212 * get_Gij2(1, 1) * get_eij(1, 1)) * t2 -
@@ -5382,7 +5402,7 @@ namespace KingOfMonsters {
 						(get_gkij(0, 1, 0) * get_Gij2(0, 0) * _e11 + get_gkij(0, 1, 0) * get_Gij2(0, 1) * _e21 + get_gkij(0, 1, 1) * get_Gij2(1, 0) * _e11 + get_gkij(0, 1, 1) * get_Gij2(1, 1) * _e21) * t1 -
 						(get_gkij(1, 1, 0) * get_Gij2(0, 0) * _e11 + get_gkij(1, 1, 0) * get_Gij2(0, 1) * _e21 + get_gkij(1, 1, 1) * get_Gij2(1, 0) * _e11 + get_gkij(1, 1, 1) * get_Gij2(1, 1) * _e21) * t2) / _ref->_refDv;
 				}
-				/*else {
+				else {
 					val = ((_g111 * get_Gij(0, 0) * get_eij(0, 1) + _g111 * get_Gij(0, 1) * get_eij(1, 1) + _g112 * get_Gij(1, 0) * get_eij(0, 1) + _g112 * get_Gij(1, 1) * get_eij(1, 1)) * t1 +
 						(_g211 * get_Gij(0, 0) * get_eij(0, 1) + _g211 * get_Gij(0, 1) * get_eij(1, 1) + _g212 * get_Gij(1, 0) * get_eij(0, 1) + _g212 * get_Gij(1, 1) * get_eij(1, 1)) * t2 -
 						(_g121 * get_Gij(0, 0) * get_eij(0, 0) + _g121 * get_Gij(0, 1) * get_eij(1, 0) + _g122 * get_Gij(1, 0) * get_eij(0, 0) + _g122 * get_Gij(1, 1) * get_eij(1, 0)) * t1 -
@@ -5393,7 +5413,7 @@ namespace KingOfMonsters {
 						(get_gkij(0, 1, 0) * get_Gij(0, 0) * _e11 + get_gkij(0, 1, 0) * get_Gij(0, 1) * _e21 + get_gkij(0, 1, 1) * get_Gij(1, 0) * _e11 + get_gkij(0, 1, 1) * get_Gij(1, 1) * _e21) * t1 -
 						(get_gkij(1, 1, 0) * get_Gij(0, 0) * _e11 + get_gkij(1, 1, 0) * get_Gij(0, 1) * _e21 + get_gkij(1, 1, 1) * get_Gij(1, 0) * _e11 + get_gkij(1, 1, 1) * get_Gij(1, 1) * _e21) * t2) / _ref->_refDv;
 
-				}*/
+				}
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -5410,7 +5430,7 @@ namespace KingOfMonsters {
 				t2 = (-get_gij2(0, 0) * v1 - get_gij2(0, 1) * v2) / dv;
 			}
 
-			//if (accurate)
+			if (accurate)
 			{
 				val = ((get_gkij(0, 0, 0) * get_Gij2(0, 0) * get_eij(0, 1) + get_gkij(0, 0, 0) * get_Gij2(0, 1) * get_eij(1, 1) + get_gkij(0, 0, 1) * get_Gij2(1, 0) * get_eij(0, 1) + get_gkij(0, 0, 1) * get_Gij2(1, 1) * get_eij(1, 1)) * t1 +
 					(get_gkij(1, 0, 0) * get_Gij2(0, 0) * get_eij(0, 1) + get_gkij(1, 0, 0) * get_Gij2(0, 1) * get_eij(1, 1) + get_gkij(1, 0, 1) * get_Gij2(1, 0) * get_eij(0, 1) + get_gkij(1, 0, 1) * get_Gij2(1, 1) * get_eij(1, 1)) * t2 -
@@ -5418,14 +5438,14 @@ namespace KingOfMonsters {
 					(get_gkij(1, 1, 0) * get_Gij2(0, 0) * get_eij(0, 0) + get_gkij(1, 1, 0) * get_Gij2(0, 1) * get_eij(1, 0) + get_gkij(1, 1, 1) * get_Gij2(1, 0) * get_eij(0, 0) + get_gkij(1, 1, 1) * get_Gij2(1, 1) * get_eij(1, 0)) * t2)
 					/ _ref->_refDv;
 			}
-			/*else {
+			else {
 				val = ((get_gkij(0, 0, 0) * get_Gij(0, 0) * get_eij(0, 1) + get_gkij(0, 0, 0) * get_Gij(0, 1) * get_eij(1, 1) + get_gkij(0, 0, 1) * get_Gij(1, 0) * get_eij(0, 1) + get_gkij(0, 0, 1) * get_Gij(1, 1) * get_eij(1, 1)) * t1 +
 					(get_gkij(1, 0, 0) * get_Gij(0, 0) * get_eij(0, 1) + get_gkij(1, 0, 0) * get_Gij(0, 1) * get_eij(1, 1) + get_gkij(1, 0, 1) * get_Gij(1, 0) * get_eij(0, 1) + get_gkij(1, 0, 1) * get_Gij(1, 1) * get_eij(1, 1)) * t2 -
 					(get_gkij(0, 1, 0) * get_Gij(0, 0) * get_eij(0, 0) + get_gkij(0, 1, 0) * get_Gij(0, 1) * get_eij(1, 0) + get_gkij(0, 1, 1) * get_Gij(1, 0) * get_eij(0, 0) + get_gkij(0, 1, 1) * get_Gij(1, 1) * get_eij(1, 0)) * t1 -
 					(get_gkij(1, 1, 0) * get_Gij(0, 0) * get_eij(0, 0) + get_gkij(1, 1, 0) * get_Gij(0, 1) * get_eij(1, 0) + get_gkij(1, 1, 1) * get_Gij(1, 0) * get_eij(0, 0) + get_gkij(1, 1, 1) * get_Gij(1, 1) * get_eij(1, 0)) * t2)
 					/ _ref->_refDv;
 
-			}*/
+			}
 
 			return val;
 		}
@@ -5509,7 +5529,7 @@ namespace KingOfMonsters {
 				}
 				_g121 = _g112;
 				_g221 = _g212;
-				//if (accurate)
+				if (accurate)
 				{
 					val = ((_g111 * get_Gij2(0, 0) * get_eij(0, 1) + _g111 * get_Gij2(0, 1) * get_eij(1, 1) + _g112 * get_Gij2(1, 0) * get_eij(0, 1) + _g112 * get_Gij2(1, 1) * get_eij(1, 1)) * t1 +
 						(_g211 * get_Gij2(0, 0) * get_eij(0, 1) + _g211 * get_Gij2(0, 1) * get_eij(1, 1) + _g212 * get_Gij2(1, 0) * get_eij(0, 1) + _g212 * get_Gij2(1, 1) * get_eij(1, 1)) * t2 -
@@ -5521,7 +5541,7 @@ namespace KingOfMonsters {
 						(get_gkij(0, 1, 0) * get_Gij2(0, 0) * _e11 + get_gkij(0, 1, 0) * get_Gij2(0, 1) * _e21 + get_gkij(0, 1, 1) * get_Gij2(1, 0) * _e11 + get_gkij(0, 1, 1) * get_Gij2(1, 1) * _e21) * t1 -
 						(get_gkij(1, 1, 0) * get_Gij2(0, 0) * _e11 + get_gkij(1, 1, 0) * get_Gij2(0, 1) * _e21 + get_gkij(1, 1, 1) * get_Gij2(1, 0) * _e11 + get_gkij(1, 1, 1) * get_Gij2(1, 1) * _e21) * t2) / _ref->_refDv;
 				}
-				/*else {
+				else {
 					val = ((_g111 * get_Gij(0, 0) * get_eij(0, 1) + _g111 * get_Gij(0, 1) * get_eij(1, 1) + _g112 * get_Gij(1, 0) * get_eij(0, 1) + _g112 * get_Gij(1, 1) * get_eij(1, 1)) * t1 +
 						(_g211 * get_Gij(0, 0) * get_eij(0, 1) + _g211 * get_Gij(0, 1) * get_eij(1, 1) + _g212 * get_Gij(1, 0) * get_eij(0, 1) + _g212 * get_Gij(1, 1) * get_eij(1, 1)) * t2 -
 						(_g121 * get_Gij(0, 0) * get_eij(0, 0) + _g121 * get_Gij(0, 1) * get_eij(1, 0) + _g122 * get_Gij(1, 0) * get_eij(0, 0) + _g122 * get_Gij(1, 1) * get_eij(1, 0)) * t1 -
@@ -5532,7 +5552,7 @@ namespace KingOfMonsters {
 						(get_gkij(0, 1, 0) * get_Gij(0, 0) * _e11 + get_gkij(0, 1, 0) * get_Gij(0, 1) * _e21 + get_gkij(0, 1, 1) * get_Gij(1, 0) * _e11 + get_gkij(0, 1, 1) * get_Gij(1, 1) * _e21) * t1 -
 						(get_gkij(1, 1, 0) * get_Gij(0, 0) * _e11 + get_gkij(1, 1, 0) * get_Gij(0, 1) * _e21 + get_gkij(1, 1, 1) * get_Gij(1, 0) * _e11 + get_gkij(1, 1, 1) * get_Gij(1, 1) * _e21) * t2) / _ref->_refDv;
 
-				}*/
+				}
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -5619,7 +5639,7 @@ namespace KingOfMonsters {
 				_g221 = _g212;
 				//val = (_g111 * t1 * v1 * s1 + _g112 * t1 * v1 * s2 + _g121 * t1 * v2 * s1 + _g122 * t1 * v2 * s2 +
 				//	_g211 * t2 * v1 * s1 + _g212 * t2 * v1 * s2 + _g221 * t2 * v2 * s1 + _g222 * t2 * v2 * s2);
-				//if (accurate)
+				if (accurate)
 				{
 					val = ((_g111 * get_Gij2(0, 0) * get_eij(0, 1) + _g111 * get_Gij2(0, 1) * get_eij(1, 1) + _g112 * get_Gij2(1, 0) * get_eij(0, 1) + _g112 * get_Gij2(1, 1) * get_eij(1, 1)) * t1 +
 						(_g211 * get_Gij2(0, 0) * get_eij(0, 1) + _g211 * get_Gij2(0, 1) * get_eij(1, 1) + _g212 * get_Gij2(1, 0) * get_eij(0, 1) + _g212 * get_Gij2(1, 1) * get_eij(1, 1)) * t2 -
@@ -5631,7 +5651,7 @@ namespace KingOfMonsters {
 						(get_gkij(0, 1, 0) * get_Gij2(0, 0) * _e11 + get_gkij(0, 1, 0) * get_Gij2(0, 1) * _e21 + get_gkij(0, 1, 1) * get_Gij2(1, 0) * _e11 + get_gkij(0, 1, 1) * get_Gij2(1, 1) * _e21) * t1 -
 						(get_gkij(1, 1, 0) * get_Gij2(0, 0) * _e11 + get_gkij(1, 1, 0) * get_Gij2(0, 1) * _e21 + get_gkij(1, 1, 1) * get_Gij2(1, 0) * _e11 + get_gkij(1, 1, 1) * get_Gij2(1, 1) * _e21) * t2) / _ref->_refDv;
 				}
-				/*else {
+				else {
 					val = ((_g111 * get_Gij(0, 0) * get_eij(0, 1) + _g111 * get_Gij(0, 1) * get_eij(1, 1) + _g112 * get_Gij(1, 0) * get_eij(0, 1) + _g112 * get_Gij(1, 1) * get_eij(1, 1)) * t1 +
 						(_g211 * get_Gij(0, 0) * get_eij(0, 1) + _g211 * get_Gij(0, 1) * get_eij(1, 1) + _g212 * get_Gij(1, 0) * get_eij(0, 1) + _g212 * get_Gij(1, 1) * get_eij(1, 1)) * t2 -
 						(_g121 * get_Gij(0, 0) * get_eij(0, 0) + _g121 * get_Gij(0, 1) * get_eij(1, 0) + _g122 * get_Gij(1, 0) * get_eij(0, 0) + _g122 * get_Gij(1, 1) * get_eij(1, 0)) * t1 -
@@ -5642,7 +5662,7 @@ namespace KingOfMonsters {
 						(get_gkij(0, 1, 0) * get_Gij(0, 0) * _e11 + get_gkij(0, 1, 0) * get_Gij(0, 1) * _e21 + get_gkij(0, 1, 1) * get_Gij(1, 0) * _e11 + get_gkij(0, 1, 1) * get_Gij(1, 1) * _e21) * t1 -
 						(get_gkij(1, 1, 0) * get_Gij(0, 0) * _e11 + get_gkij(1, 1, 0) * get_Gij(0, 1) * _e21 + get_gkij(1, 1, 1) * get_Gij(1, 0) * _e11 + get_gkij(1, 1, 1) * get_Gij(1, 1) * _e21) * t2) / _ref->_refDv;
 
-				}*/
+				}
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -5732,7 +5752,7 @@ namespace KingOfMonsters {
 				//val = (_g111 * t1 * v1 * s1 + _g112 * t1 * v1 * s2 + _g121 * t1 * v2 * s1 + _g122 * t1 * v2 * s2 +
 				//	_g211 * t2 * v1 * s1 + _g212 * t2 * v1 * s2 + _g221 * t2 * v2 * s1 + _g222 * t2 * v2 * s2);
 
-				//if (accurate)
+				if (accurate)
 				{
 					val = ((_g111 * get_Gij2(0, 0) * get_eij(0, 1) + _g111 * get_Gij2(0, 1) * get_eij(1, 1) + _g112 * get_Gij2(1, 0) * get_eij(0, 1) + _g112 * get_Gij2(1, 1) * get_eij(1, 1)) * t1 +
 						(_g211 * get_Gij2(0, 0) * get_eij(0, 1) + _g211 * get_Gij2(0, 1) * get_eij(1, 1) + _g212 * get_Gij2(1, 0) * get_eij(0, 1) + _g212 * get_Gij2(1, 1) * get_eij(1, 1)) * t2 -
@@ -5744,7 +5764,7 @@ namespace KingOfMonsters {
 						(get_gkij(0, 1, 0) * get_Gij2(0, 0) * _e11 + get_gkij(0, 1, 0) * get_Gij2(0, 1) * _e21 + get_gkij(0, 1, 1) * get_Gij2(1, 0) * _e11 + get_gkij(0, 1, 1) * get_Gij2(1, 1) * _e21) * t1 -
 						(get_gkij(1, 1, 0) * get_Gij2(0, 0) * _e11 + get_gkij(1, 1, 0) * get_Gij2(0, 1) * _e21 + get_gkij(1, 1, 1) * get_Gij2(1, 0) * _e11 + get_gkij(1, 1, 1) * get_Gij2(1, 1) * _e21) * t2) / _ref->_refDv;
 				}
-				/*else {
+				else {
 					val = ((_g111 * get_Gij(0, 0) * get_eij(0, 1) + _g111 * get_Gij(0, 1) * get_eij(1, 1) + _g112 * get_Gij(1, 0) * get_eij(0, 1) + _g112 * get_Gij(1, 1) * get_eij(1, 1)) * t1 +
 						(_g211 * get_Gij(0, 0) * get_eij(0, 1) + _g211 * get_Gij(0, 1) * get_eij(1, 1) + _g212 * get_Gij(1, 0) * get_eij(0, 1) + _g212 * get_Gij(1, 1) * get_eij(1, 1)) * t2 -
 						(_g121 * get_Gij(0, 0) * get_eij(0, 0) + _g121 * get_Gij(0, 1) * get_eij(1, 0) + _g122 * get_Gij(1, 0) * get_eij(0, 0) + _g122 * get_Gij(1, 1) * get_eij(1, 0)) * t1 -
@@ -5755,7 +5775,7 @@ namespace KingOfMonsters {
 						(get_gkij(0, 1, 0) * get_Gij(0, 0) * _e11 + get_gkij(0, 1, 0) * get_Gij(0, 1) * _e21 + get_gkij(0, 1, 1) * get_Gij(1, 0) * _e11 + get_gkij(0, 1, 1) * get_Gij(1, 1) * _e21) * t1 -
 						(get_gkij(1, 1, 0) * get_Gij(0, 0) * _e11 + get_gkij(1, 1, 0) * get_Gij(0, 1) * _e21 + get_gkij(1, 1, 1) * get_Gij(1, 0) * _e11 + get_gkij(1, 1, 1) * get_Gij(1, 1) * _e21) * t2) / _ref->_refDv;
 
-				}*/
+				}
 				*ptr1 = val;
 				ptr1++;
 			}
