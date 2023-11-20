@@ -1040,7 +1040,7 @@ namespace KingOfMonsters {
 		~_memS() {
 			del();
 		}
-		void update_optional(bool accurate)
+		void update_optional(bool accurate, bool accurate2)
 		{
 
 
@@ -1267,7 +1267,7 @@ namespace KingOfMonsters {
 			}*/
 
 			
-			/*for (int i = 0; i < _nNode; i++)
+			for (int i = 0; i < _nNode; i++)
 			{
 				xij = &_ref->buf_xi[0];
 				etaj = &_ref->buf_eta[0];
@@ -1330,9 +1330,9 @@ namespace KingOfMonsters {
 				b12i++;
 				b21i++;
 				b22i++;
-			}*/
-			/*
-			if (accurate)
+			}
+			
+			if (accurate2)
 			{
 				gkij[0] += -get_Gammaijk2(0, 0, 0) * eij[0] - get_Gammaijk2(0, 0, 1) * eij[1] - get_Gammaijk2(0, 0, 0) * eij[0] - get_Gammaijk2(0, 0, 1) * eij[1];
 				gkij[1] += -get_Gammaijk2(1, 0, 0) * eij[0] - get_Gammaijk2(1, 0, 1) * eij[1] - get_Gammaijk2(1, 0, 0) * eij[0] - get_Gammaijk2(1, 0, 1) * eij[1];
@@ -1356,7 +1356,7 @@ namespace KingOfMonsters {
 				gkij[5] = gkij[3];
 
 			}
-			*/
+			
 			eij[2] = eij[1];
 			Eij[0] = eij[3]*sc;
 			Eij[3] = eij[0]*sc;
@@ -5069,7 +5069,7 @@ namespace KingOfMonsters {
 
 		}
 		
-		double parallel_transportation(bool accurate,int mode)
+		double parallel_transportation(bool accurate1, bool accurate2, int mode)
 		{
 			double val = 0;
 			
@@ -5080,7 +5080,7 @@ namespace KingOfMonsters {
 			if (mode == 1) {
 				t1 = v1; t2 = v2;
 			}
-			if (accurate)
+			if (accurate1)
 			{
 				val = ((get_gkij(0, 0, 0) * get_Gij2(0, 0) * get_eij(0, 1) + get_gkij(0, 0, 0) * get_Gij2(0, 1) * get_eij(1, 1) + get_gkij(0, 0, 1) * get_Gij2(1, 0) * get_eij(0, 1) + get_gkij(0, 0, 1) * get_Gij2(1, 1) * get_eij(1, 1)) * t1 +
 					(get_gkij(1, 0, 0) * get_Gij2(0, 0) * get_eij(0, 1) + get_gkij(1, 0, 0) * get_Gij2(0, 1) * get_eij(1, 1) + get_gkij(1, 0, 1) * get_Gij2(1, 0) * get_eij(0, 1) + get_gkij(1, 0, 1) * get_Gij2(1, 1) * get_eij(1, 1)) * t2 -
@@ -5100,7 +5100,7 @@ namespace KingOfMonsters {
 			return val;
 		}
 		
-		void parallel_transportation_xi(double* ptr,  bool accurate,int mode)
+		void parallel_transportation_xi(double* ptr, bool accurate1, bool accurate2,int mode)
 		{
 			double val = 0;
 
@@ -5155,7 +5155,7 @@ namespace KingOfMonsters {
 					_e22 += (_ref->d1[1][s]) * (_ref->d1[1][i] * _ref->buf_xi[i]);
 				}
 				double _e21 = _e12;
-				if (accurate)
+				if (accurate2)
 				{
 					_g111 += -this->get_Gammaijk2(0, 0, 0) * _e11 - this->get_Gammaijk2(0, 0, 1) * _e12 - this->get_Gammaijk2(0, 0, 0) * _e11 - this->get_Gammaijk2(0, 0, 1) * _e12;
 					_g211 += -this->get_Gammaijk2(1, 0, 0) * _e11 - this->get_Gammaijk2(1, 0, 1) * _e12 - this->get_Gammaijk2(1, 0, 0) * _e11 - this->get_Gammaijk2(1, 0, 1) * _e12;
@@ -5174,7 +5174,7 @@ namespace KingOfMonsters {
 				}
 				_g121 = _g112;
 				_g221 = _g212;
-				if (accurate)
+				if (accurate1)
 				{
 					val = ((_g111 * get_Gij2(0, 0) * get_eij(0, 1) + _g111 * get_Gij2(0, 1) * get_eij(1, 1) + _g112 * get_Gij2(1, 0) * get_eij(0, 1) + _g112 * get_Gij2(1, 1) * get_eij(1, 1)) * t1 +
 						(_g211 * get_Gij2(0, 0) * get_eij(0, 1) + _g211 * get_Gij2(0, 1) * get_eij(1, 1) + _g212 * get_Gij2(1, 0) * get_eij(0, 1) + _g212 * get_Gij2(1, 1) * get_eij(1, 1)) * t2 -
@@ -5203,7 +5203,7 @@ namespace KingOfMonsters {
 			}
 			
 		}
-		void parallel_transportation_eta(double* ptr,  bool accurate,int mode)
+		void parallel_transportation_eta(double* ptr, bool accurate1, bool accurate2, int mode)
 		{
 			double val = 0;
 		
@@ -5260,7 +5260,7 @@ namespace KingOfMonsters {
 				}
 
 				double _e21 = _e12;
-				if (accurate)
+				if (accurate2)
 				{
 					_g111 += -this->get_Gammaijk2(0, 0, 0) * _e11 - this->get_Gammaijk2(0, 0, 1) * _e12 - this->get_Gammaijk2(0, 0, 0) * _e11 - this->get_Gammaijk2(0, 0, 1) * _e12;
 					_g211 += -this->get_Gammaijk2(1, 0, 0) * _e11 - this->get_Gammaijk2(1, 0, 1) * _e12 - this->get_Gammaijk2(1, 0, 0) * _e11 - this->get_Gammaijk2(1, 0, 1) * _e12;
@@ -5282,7 +5282,7 @@ namespace KingOfMonsters {
 				//val = (_g111 * t1 * v1 * s1 + _g112 * t1 * v1 * s2 + _g121 * t1 * v2 * s1 + _g122 * t1 * v2 * s2 +
 				//	_g211 * t2 * v1 * s1 + _g212 * t2 * v1 * s2 + _g221 * t2 * v2 * s1 + _g222 * t2 * v2 * s2);
 
-				if (accurate)
+				if (accurate1)
 				{
 					val = ((_g111 * get_Gij2(0, 0) * get_eij(0, 1) + _g111 * get_Gij2(0, 1) * get_eij(1, 1) + _g112 * get_Gij2(1, 0) * get_eij(0, 1) + _g112 * get_Gij2(1, 1) * get_eij(1, 1)) * t1 +
 						(_g211 * get_Gij2(0, 0) * get_eij(0, 1) + _g211 * get_Gij2(0, 1) * get_eij(1, 1) + _g212 * get_Gij2(1, 0) * get_eij(0, 1) + _g212 * get_Gij2(1, 1) * get_eij(1, 1)) * t2 -
@@ -5311,7 +5311,7 @@ namespace KingOfMonsters {
 			}
 
 		}
-		void parallel_transportation_nu(double* ptr, bool accurate, int mode)
+		void parallel_transportation_nu(double* ptr, bool accurate1, bool accurate2, int mode)
 		{
 			double val = 0;
 
@@ -5368,7 +5368,7 @@ namespace KingOfMonsters {
 				}
 
 				double _e21 = _e12;
-				if (accurate)
+				if (accurate2)
 				{
 					_g111 += -this->get_Gammaijk2(0, 0, 0) * _e11 - this->get_Gammaijk2(0, 0, 1) * _e12 - this->get_Gammaijk2(0, 0, 0) * _e11 - this->get_Gammaijk2(0, 0, 1) * _e12;
 					_g211 += -this->get_Gammaijk2(1, 0, 0) * _e11 - this->get_Gammaijk2(1, 0, 1) * _e12 - this->get_Gammaijk2(1, 0, 0) * _e11 - this->get_Gammaijk2(1, 0, 1) * _e12;
@@ -5390,7 +5390,7 @@ namespace KingOfMonsters {
 				//val = (_g111 * t1 * v1 * s1 + _g112 * t1 * v1 * s2 + _g121 * t1 * v2 * s1 + _g122 * t1 * v2 * s2 +
 				//	_g211 * t2 * v1 * s1 + _g212 * t2 * v1 * s2 + _g221 * t2 * v2 * s1 + _g222 * t2 * v2 * s2);
 
-				if (accurate)
+				if (accurate1)
 				{
 					val = ((_g111 * get_Gij2(0, 0) * get_eij(0, 1) + _g111 * get_Gij2(0, 1) * get_eij(1, 1) + _g112 * get_Gij2(1, 0) * get_eij(0, 1) + _g112 * get_Gij2(1, 1) * get_eij(1, 1)) * t1 +
 						(_g211 * get_Gij2(0, 0) * get_eij(0, 1) + _g211 * get_Gij2(0, 1) * get_eij(1, 1) + _g212 * get_Gij2(1, 0) * get_eij(0, 1) + _g212 * get_Gij2(1, 1) * get_eij(1, 1)) * t2 -
@@ -5419,7 +5419,7 @@ namespace KingOfMonsters {
 			}
 
 		}
-		double parallel_transportation(bool accurate, double v1, double v2,int mode)
+		double parallel_transportation(bool accurate1, bool accurate2, double v1, double v2,int mode)
 		{
 			double val = 0;
 			double t1 = v1, t2 = v2;
@@ -5430,7 +5430,7 @@ namespace KingOfMonsters {
 				t2 = (-get_gij2(0, 0) * v1 - get_gij2(0, 1) * v2) / dv;
 			}
 
-			if (accurate)
+			if (accurate1)
 			{
 				val = ((get_gkij(0, 0, 0) * get_Gij2(0, 0) * get_eij(0, 1) + get_gkij(0, 0, 0) * get_Gij2(0, 1) * get_eij(1, 1) + get_gkij(0, 0, 1) * get_Gij2(1, 0) * get_eij(0, 1) + get_gkij(0, 0, 1) * get_Gij2(1, 1) * get_eij(1, 1)) * t1 +
 					(get_gkij(1, 0, 0) * get_Gij2(0, 0) * get_eij(0, 1) + get_gkij(1, 0, 0) * get_Gij2(0, 1) * get_eij(1, 1) + get_gkij(1, 0, 1) * get_Gij2(1, 0) * get_eij(0, 1) + get_gkij(1, 0, 1) * get_Gij2(1, 1) * get_eij(1, 1)) * t2 -
@@ -5450,7 +5450,7 @@ namespace KingOfMonsters {
 			return val;
 		}
 
-		void parallel_transportation_xi(double* ptr, bool accurate, double v1, double v2,int mode)
+		void parallel_transportation_xi(double* ptr, bool accurate1, bool accurate2, double v1, double v2,int mode)
 		{
 			double val = 0;
 
@@ -5510,7 +5510,7 @@ namespace KingOfMonsters {
 				}
 				double _e21 = _e12;
 
-				if (accurate)
+				if (accurate2)
 				{
 					_g111 += -this->get_Gammaijk2(0, 0, 0) * _e11 - this->get_Gammaijk2(0, 0, 1) * _e12 - this->get_Gammaijk2(0, 0, 0) * _e11 - this->get_Gammaijk2(0, 0, 1) * _e12;
 					_g211 += -this->get_Gammaijk2(1, 0, 0) * _e11 - this->get_Gammaijk2(1, 0, 1) * _e12 - this->get_Gammaijk2(1, 0, 0) * _e11 - this->get_Gammaijk2(1, 0, 1) * _e12;
@@ -5529,7 +5529,7 @@ namespace KingOfMonsters {
 				}
 				_g121 = _g112;
 				_g221 = _g212;
-				if (accurate)
+				if (accurate1)
 				{
 					val = ((_g111 * get_Gij2(0, 0) * get_eij(0, 1) + _g111 * get_Gij2(0, 1) * get_eij(1, 1) + _g112 * get_Gij2(1, 0) * get_eij(0, 1) + _g112 * get_Gij2(1, 1) * get_eij(1, 1)) * t1 +
 						(_g211 * get_Gij2(0, 0) * get_eij(0, 1) + _g211 * get_Gij2(0, 1) * get_eij(1, 1) + _g212 * get_Gij2(1, 0) * get_eij(0, 1) + _g212 * get_Gij2(1, 1) * get_eij(1, 1)) * t2 -
@@ -5558,7 +5558,7 @@ namespace KingOfMonsters {
 			}
 
 		}
-		void parallel_transportation_eta(double* ptr, bool accurate, double v1, double v2,int mode)
+		void parallel_transportation_eta(double* ptr, bool accurate1, bool accurate2, double v1, double v2,int mode)
 		{
 			double val = 0;
 			double t1 = v1, t2 = v2;
@@ -5618,7 +5618,7 @@ namespace KingOfMonsters {
 				}
 
 				double _e21 = _e12;
-				if (accurate)
+				if (accurate2)
 				{
 					_g111 += -this->get_Gammaijk2(0, 0, 0) * _e11 - this->get_Gammaijk2(0, 0, 1) * _e12 - this->get_Gammaijk2(0, 0, 0) * _e11 - this->get_Gammaijk2(0, 0, 1) * _e12;
 					_g211 += -this->get_Gammaijk2(1, 0, 0) * _e11 - this->get_Gammaijk2(1, 0, 1) * _e12 - this->get_Gammaijk2(1, 0, 0) * _e11 - this->get_Gammaijk2(1, 0, 1) * _e12;
@@ -5639,7 +5639,7 @@ namespace KingOfMonsters {
 				_g221 = _g212;
 				//val = (_g111 * t1 * v1 * s1 + _g112 * t1 * v1 * s2 + _g121 * t1 * v2 * s1 + _g122 * t1 * v2 * s2 +
 				//	_g211 * t2 * v1 * s1 + _g212 * t2 * v1 * s2 + _g221 * t2 * v2 * s1 + _g222 * t2 * v2 * s2);
-				if (accurate)
+				if (accurate1)
 				{
 					val = ((_g111 * get_Gij2(0, 0) * get_eij(0, 1) + _g111 * get_Gij2(0, 1) * get_eij(1, 1) + _g112 * get_Gij2(1, 0) * get_eij(0, 1) + _g112 * get_Gij2(1, 1) * get_eij(1, 1)) * t1 +
 						(_g211 * get_Gij2(0, 0) * get_eij(0, 1) + _g211 * get_Gij2(0, 1) * get_eij(1, 1) + _g212 * get_Gij2(1, 0) * get_eij(0, 1) + _g212 * get_Gij2(1, 1) * get_eij(1, 1)) * t2 -
@@ -5668,7 +5668,7 @@ namespace KingOfMonsters {
 			}
 
 		}
-		void parallel_transportation_nu(double* ptr, bool accurate, double v1,double v2,int mode)
+		void parallel_transportation_nu(double* ptr, bool accurate1,bool accurate2, double v1,double v2,int mode)
 		{
 			double val = 0;
 
@@ -5730,7 +5730,7 @@ namespace KingOfMonsters {
 				}
 
 				double _e21 = _e12;
-				if (accurate)
+				if (accurate2)
 				{
 					_g111 += -this->get_Gammaijk2(0, 0, 0) * _e11 - this->get_Gammaijk2(0, 0, 1) * _e12 - this->get_Gammaijk2(0, 0, 0) * _e11 - this->get_Gammaijk2(0, 0, 1) * _e12;
 					_g211 += -this->get_Gammaijk2(1, 0, 0) * _e11 - this->get_Gammaijk2(1, 0, 1) * _e12 - this->get_Gammaijk2(1, 0, 0) * _e11 - this->get_Gammaijk2(1, 0, 1) * _e12;
@@ -5752,7 +5752,7 @@ namespace KingOfMonsters {
 				//val = (_g111 * t1 * v1 * s1 + _g112 * t1 * v1 * s2 + _g121 * t1 * v2 * s1 + _g122 * t1 * v2 * s2 +
 				//	_g211 * t2 * v1 * s1 + _g212 * t2 * v1 * s2 + _g221 * t2 * v2 * s1 + _g222 * t2 * v2 * s2);
 
-				if (accurate)
+				if (accurate1)
 				{
 					val = ((_g111 * get_Gij2(0, 0) * get_eij(0, 1) + _g111 * get_Gij2(0, 1) * get_eij(1, 1) + _g112 * get_Gij2(1, 0) * get_eij(0, 1) + _g112 * get_Gij2(1, 1) * get_eij(1, 1)) * t1 +
 						(_g211 * get_Gij2(0, 0) * get_eij(0, 1) + _g211 * get_Gij2(0, 1) * get_eij(1, 1) + _g212 * get_Gij2(1, 0) * get_eij(0, 1) + _g212 * get_Gij2(1, 1) * get_eij(1, 1)) * t2 -
@@ -8794,32 +8794,32 @@ namespace KingOfMonsters {
 			__mem->symm3_nu(__mem->__grad, v1, v2);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
 		}
-		double parallel_transportation(bool accurate,int mode)
+		double parallel_transportation(bool accurate1, bool accurate2, int mode)
 		{
-			return __mem->parallel_transportation(accurate,mode);
+			return __mem->parallel_transportation(accurate1,accurate2,mode);
 		}
 	
-		void parallel_transportation_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate,int mode)
+		void parallel_transportation_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate1, bool accurate2, int mode)
 		{
-			__mem->parallel_transportation_xi(__mem->__grad, accurate,mode);
+			__mem->parallel_transportation_xi(__mem->__grad, accurate1, accurate2, mode);
 
 		
 
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
 
 		}
-		void parallel_transportation_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate,int mode)
+		void parallel_transportation_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate1, bool accurate2, int mode)
 		{
-			__mem->parallel_transportation_eta(__mem->__grad,  accurate,mode);
+			__mem->parallel_transportation_eta(__mem->__grad, accurate1, accurate2, mode);
 
 	
 
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
 
 		}
-		void parallel_transportation_nu(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate, int mode)
+		void parallel_transportation_nu(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate1, bool accurate2, int mode)
 		{
-			__mem->parallel_transportation_nu(__mem->__grad, accurate, mode);
+			__mem->parallel_transportation_nu(__mem->__grad, accurate1, accurate2, mode);
 
 
 
@@ -8827,32 +8827,32 @@ namespace KingOfMonsters {
 
 		}
 		
-		double parallel_transportation(bool accurate, double t1,double t2,int mode)
+		double parallel_transportation(bool accurate1,bool accurate2, double t1,double t2,int mode)
 		{
-			return __mem->parallel_transportation(accurate, t1,t2,mode);
+			return __mem->parallel_transportation(accurate1, accurate2, t1,t2,mode);
 		}
 
-		void parallel_transportation_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate, double t1, double t2, int mode)
+		void parallel_transportation_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate1, bool accurate2, double t1, double t2, int mode)
 		{
-			__mem->parallel_transportation_xi(__mem->__grad, accurate, t1, t2, mode);
+			__mem->parallel_transportation_xi(__mem->__grad, accurate1, accurate2, t1, t2, mode);
 
 
 
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
 
 		}
-		void parallel_transportation_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate, double t1, double t2, int mode)
+		void parallel_transportation_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate1, bool accurate2, double t1, double t2, int mode)
 		{
-			__mem->parallel_transportation_eta(__mem->__grad, accurate, t1, t2, mode);
+			__mem->parallel_transportation_eta(__mem->__grad, accurate1, accurate2, t1, t2, mode);
 
 
 
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
 
 		}
-		void parallel_transportation_nu(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate, double t1, double t2, int mode)
+		void parallel_transportation_nu(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate1, bool accurate2, double t1, double t2, int mode)
 		{
-			__mem->parallel_transportation_nu(__mem->__grad, accurate, t1, t2, mode);
+			__mem->parallel_transportation_nu(__mem->__grad, accurate1,accurate2, t1, t2, mode);
 
 
 
@@ -9136,9 +9136,9 @@ namespace KingOfMonsters {
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, __mem->__grad2, sc, __mem->_nNode, c1, c2);
 		}
 
-		void d0(mySparse^ mat, int ii, myIntArray^ index, double sc)
+		void d0(mySparse^ mat, int ii, myIntArray^ index, double sc,double c1)
 		{
-			mat->dat->addrow(ii, index->_arr, __mem->_ref->d0, sc, __mem->_nNode);
+			mat->dat->addrow(ii, index->_arr, __mem->_ref->d0, sc, __mem->_nNode,c1);
 		}
 		void U_z(mySparse^ mat, int ii, myIntArray^ index, double sc)
 		{
@@ -9576,9 +9576,9 @@ namespace KingOfMonsters {
 
 			//nu = __mem->nu;
 		}
-		void update_optional(bool accurate)
+		void update_optional(bool accurate, bool accurate2)
 		{
-			__mem->update_optional(accurate);
+			__mem->update_optional(accurate,accurate2);
 			xi = __mem->xi;
 			eta = __mem->eta;
 			mu = __mem->mu;
