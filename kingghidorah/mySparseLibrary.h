@@ -929,6 +929,13 @@ namespace KingOfMonsters {
 			this->dat->OfDuplicate(m->dat);
 			this->dat->copycoefffrom(m->dat);
 		}
+		void ofvv(myDoubleArray^ v,double sc)
+		{
+			int n = v->_arr->__v.size();
+			this->dat->_dmat.resize(n, n);
+			
+			this->dat->_dmat = sc*(v->_arr->__v * v->_arr->__v.transpose());
+		}
 		double sum() {
 			if (this->dat->_mat[0].nonZeros() > 0)
 				return this->dat->_mat[0].cwiseAbs().sum();
