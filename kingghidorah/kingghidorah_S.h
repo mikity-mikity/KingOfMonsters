@@ -4742,7 +4742,7 @@ namespace KingOfMonsters {
 		}
 		double __AREA_sigma()
 		{
-			return sqrt(get_eij(0, 0) * get_eij(1, 1) - get_eij(0, 1) * get_eij(0, 1));
+			return /*sqrt*/get_eij(0, 0) * _ref->get__Gij(0, 0) + 2 * get_eij(0, 1) * _ref->get__Gij(0, 1) + get_eij(1, 1) * _ref->get__Gij(1, 1);
 		}
 		double AREA_sigma(_myDoubleArray *v, int64_t* index1, int64_t* index2, int64_t* index3,double sc) {
 			double _area = __AREA_sigma();
@@ -4761,8 +4761,8 @@ namespace KingOfMonsters {
 					_e22 += 2 * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_xi[t];
 				}
 
-				double df = get_eij(0, 0) * _e22 + _e11 * get_eij(1, 1) - 2 * get_eij(0, 1) * _e12;
-				v->__v(index1[s]) = (0.5 / _area * df) * sc;
+				
+				v->__v(index1[s]) = (_e11 * _ref->get__Gij(0, 0) + 2 * _e12 * _ref->get__Gij(0, 1) +_e22 * _ref->get__Gij(1, 1))*sc;
 				
 			}
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -4779,8 +4779,7 @@ namespace KingOfMonsters {
 					_e22 += 2 * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_eta[t];
 				}
 
-				double df = get_eij(0, 0) * _e22 + _e11 * get_eij(1, 1) - 2 * get_eij(0, 1) * _e12;
-				v->__v(index2[s]) = (0.5 / _area * df) * sc;
+				v->__v(index2[s]) = (_e11 * _ref->get__Gij(0, 0) + 2 * _e12 * _ref->get__Gij(0, 1) + _e22 * _ref->get__Gij(1, 1)) * sc;
 
 			}
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -4797,8 +4796,7 @@ namespace KingOfMonsters {
 					_e22 += 2 * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_nu[t];
 				}
 
-				double df = get_eij(0, 0) * _e22 + _e11 * get_eij(1, 1) - 2 * get_eij(0, 1) * _e12;
-				v->__v(index3[s]) = (0.5 / _area * df) * sc;
+				v->__v(index3[s]) = (_e11 * _ref->get__Gij(0, 0) + 2 * _e12 * _ref->get__Gij(0, 1) + _e22 * _ref->get__Gij(1, 1)) * sc;
 
 			}
 			return _area * sc;
