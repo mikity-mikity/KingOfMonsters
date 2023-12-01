@@ -649,6 +649,10 @@ namespace KingOfMonsters {
 		{
 				this->dat->_mat[0] += m->dat->_mat[0]*sc;
 		}
+		void plusvvt(myDoubleArray^ v,double sc)
+		{
+			this->dat->_dmat += sc*v->_arr->__v * v->_arr->__v.transpose();
+		}
 		void multiply(myDoubleArray^ v, myDoubleArray^ ret)
 		{
 			ret->_arr->__v = this->dat->_mat[0] * v->_arr->__v;
@@ -1912,6 +1916,10 @@ namespace KingOfMonsters {
 		}
 		void addsmallidentity(double salt, bool sparse, bool dense,int m) {
 			this->dat->addsmallidentity(salt, sparse, dense,m);
+		}
+		void addsmallones(double salt)
+		{
+			this->dat->_dmat += salt * Eigen::MatrixXd::Ones(this->dat->_dmat.rows(), this->dat->_dmat.cols());
 		}
 		void Clear() {
 			this->dat->Clear();
