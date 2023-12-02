@@ -1365,20 +1365,20 @@ namespace KingOfMonsters {
 			//trEij = tr;
 			//tr = eij[0] * _ref->get__Gij(0, 0) + 2 * eij[1] * _ref->get__Gij(0, 1) + eij[3] * _ref->get__Gij(1, 1);
 			//treij = tr;
-			double A11 = get_Eij(0, 0) * get__hij(0, 0) + get_Eij(0, 1) * get__hij(1, 0);
-			double A12 = get_Eij(0, 0) * get__hij(0, 1) + get_Eij(0, 1) * get__hij(1, 1);
-			double A21 = get_Eij(1, 0) * get__hij(0, 0) + get_Eij(1, 1) * get__hij(1, 0);
-			double A22 = get_Eij(1, 0) * get__hij(0, 1) + get_Eij(1, 1) * get__hij(1, 1);
-			//double B11 = get_Eij(0, 0) * get__Sij(0, 0) + get_Eij(0, 1) * get__Sij(1, 0);
-			//double B12 = get_Eij(0, 0) * get__Sij(0, 1) + get_Eij(0, 1) * get__Sij(1, 1);
-			//double B21 = get_Eij(1, 0) * get__Sij(0, 0) + get_Eij(1, 1) * get__Sij(1, 0);
-			//double B22 = get_Eij(1, 0) * get__Sij(0, 1) + get_Eij(1, 1) * get__Sij(1, 1);
+			//double A11 = get_Eij(0, 0) * get__hij(0, 0) + get_Eij(0, 1) * get__hij(1, 0);
+			//double A12 = get_Eij(0, 0) * get__hij(0, 1) + get_Eij(0, 1) * get__hij(1, 1);
+			//double A21 = get_Eij(1, 0) * get__hij(0, 0) + get_Eij(1, 1) * get__hij(1, 0);
+			//double A22 = get_Eij(1, 0) * get__hij(0, 1) + get_Eij(1, 1) * get__hij(1, 1);
+			double B11 = get_Eij(0, 0) * get__Sij(0, 0) + get_Eij(0, 1) * get__Sij(1, 0);
+			double B12 = get_Eij(0, 0) * get__Sij(0, 1) + get_Eij(0, 1) * get__Sij(1, 1);
+			double B21 = get_Eij(1, 0) * get__Sij(0, 0) + get_Eij(1, 1) * get__Sij(1, 0);
+			double B22 = get_Eij(1, 0) * get__Sij(0, 1) + get_Eij(1, 1) * get__Sij(1, 1);
 
-			double trA = A11 + A22;
-			double detA = A11 * A22 - A12 * A21;
-			//double trB = B11 + B22;
-			//double detB = B11 * B22 - B12 * B21;
-			//if(trA*trA-4*detA>trB*trB-4*detB)
+			//double trA = A11 + A22;
+			//double detA = A11 * A22 - A12 * A21;
+			double trB = B11 + B22;
+			double detB = B11 * B22 - B12 * B21;
+			/*if (trA * trA - 4 * detA>trB * trB - 4 * detB)
 			{
 				double L1 = trA / 2 + sqrt(trA * trA / 4 - detA);
 				double L2 = trA / 2 - sqrt(trA * trA / 4 - detA);
@@ -1397,8 +1397,9 @@ namespace KingOfMonsters {
 					w1 = 1; w1 = 0;
 					q1 = 0; q2 = 1;
 				}
-			}
-			/*else {
+			}*/
+			//else 
+			{
 				double L1 = trB / 2 + sqrt(trB * trB / 4 - detB);
 				double L2 = trB / 2 - sqrt(trB * trB / 4 - detB);
 
@@ -1417,7 +1418,7 @@ namespace KingOfMonsters {
 					q1 = 0; q2 = 1;
 				}
 
-			}*/
+			}
 			double nn = w1 * this->get_gij2(0, 0) * w1 + 2 * w1 * this->get_gij2(0, 1) * w2 + w2 * this->get_gij2(1, 1) * w2;
 			nn = sqrt(nn);
 			w1 /= nn; w2 /= nn;
@@ -5506,7 +5507,7 @@ namespace KingOfMonsters {
 				t1 = (get_gij2(1, 0) * w1 + get_gij2(1, 1) * w2) / dv;
 				t2 = (-get_gij2(0, 0) * w1 - get_gij2(0, 1) * w2) / dv;
 			}
-			double S11 = get__hij(1, 1) * sc, S12 = -get__hij(0, 1) * sc, S22 = get__hij(0, 0) * sc;
+			double S11 = get__Sij(1, 1) * sc, S12 = -get__Sij(0, 1) * sc, S22 = get__Sij(0, 0) * sc;
 			double S21 = S12;
 
 			val = ((get_gkij(0, 0, 0) * S11 * get_eij(0, 1) + get_gkij(0, 0, 0) * S12 * get_eij(1, 1) + get_gkij(0, 0, 1) * S21 * get_eij(0, 1) + get_gkij(0, 0, 1) * S22 * get_eij(1, 1)) * t1 +
@@ -5530,7 +5531,7 @@ namespace KingOfMonsters {
 				t1 = (get_gij2(1, 0) * w1 + get_gij2(1, 1) * w2) / dv;
 				t2 = (-get_gij2(0, 0) * w1 - get_gij2(0, 1) * w2) / dv;
 			}
-			double S11 = get__hij(1, 1) * sc, S12 = -get__hij(0, 1) * sc, S22 = get__hij(0, 0) * sc;
+			double S11 = get__Sij(1, 1) * sc, S12 = -get__Sij(0, 1) * sc, S22 = get__Sij(0, 0) * sc;
 			double S21 = S12;
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -5630,7 +5631,7 @@ namespace KingOfMonsters {
 				t1 = (get_gij2(1, 0) * w1 + get_gij2(1, 1) * w2) / dv;
 				t2 = (-get_gij2(0, 0) * w1 - get_gij2(0, 1) * w2) / dv;
 			}
-			double S11 = get__hij(1, 1) * sc, S12 = -get__hij(0, 1) * sc, S22 = get__hij(0, 0) * sc;
+			double S11 = get__Sij(1, 1) * sc, S12 = -get__Sij(0, 1) * sc, S22 = get__Sij(0, 0) * sc;
 			double S21 = S12;
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -5730,7 +5731,7 @@ namespace KingOfMonsters {
 				t1 = (get_gij2(1, 0) * w1 + get_gij2(1, 1) * w2) / dv;
 				t2 = (-get_gij2(0, 0) * w1 - get_gij2(0, 1) * w2) / dv;
 			}
-			double S11 = get__hij(1, 1) * sc, S12 = -get__hij(0, 1) * sc, S22 = get__hij(0, 0) * sc;
+			double S11 = get__Sij(1, 1) * sc, S12 = -get__Sij(0, 1) * sc, S22 = get__Sij(0, 0) * sc;
 			double S21 = S12;
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -5835,7 +5836,7 @@ namespace KingOfMonsters {
 			{
 				t1 = q1; t2 = q2;
 			}
-			double S11 = get__hij(1,1)*sc, S12 = -get__hij(0, 1) * sc, S22 = get__hij(0, 0) * sc;
+			double S11 = get__Sij(1, 1) * sc, S12 = -get__Sij(0, 1) * sc, S22 = get__Sij(0, 0) * sc;
 			double S21 = S12;
 			
 			val = ((get_gkij(0, 0, 0) * S11 * get_eij(0, 1) + get_gkij(0, 0, 0) * S12 * get_eij(1, 1) + get_gkij(0, 0, 1) * S21 * get_eij(0, 1) + get_gkij(0, 0, 1) * S22 * get_eij(1, 1)) * t1 +
@@ -5864,7 +5865,7 @@ namespace KingOfMonsters {
 			{
 				t1 = q1; t2 = q2;
 			}
-			double S11 = get__hij(1, 1) * sc, S12 = -get__hij(0, 1) * sc, S22 = get__hij(0, 0) * sc;
+			double S11 = get__Sij(1, 1) * sc, S12 = -get__Sij(0, 1) * sc, S22 = get__Sij(0, 0) * sc;
 			double S21 = S12;
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -5969,7 +5970,7 @@ namespace KingOfMonsters {
 			{
 				t1 = q1; t2 = q2;
 			}
-			double S11 = get__hij(1, 1) * sc, S12 = -get__hij(0, 1) * sc, S22 = get__hij(0, 0) * sc;
+			double S11 = get__Sij(1, 1) * sc, S12 = -get__Sij(0, 1) * sc, S22 = get__Sij(0, 0) * sc;
 			double S21 = S12;
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -6068,7 +6069,7 @@ namespace KingOfMonsters {
 			{
 				t1 = q1; t2 = q2;
 			}
-			double S11 = get__hij(1, 1) * sc, S12 = -get__hij(0, 1) * sc, S22 = get__hij(0, 0) * sc;
+			double S11 = get__Sij(1, 1) * sc, S12 = -get__Sij(0, 1) * sc, S22 = get__Sij(0, 0) * sc;
 			double S21 = S12;
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
