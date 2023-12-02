@@ -2616,11 +2616,11 @@ namespace KingOfMonsters {
 		
 		inline double ___SLOPE_phi(double dcdtstar0, double dcdtstar1, double sc) {
 
-			return sc * (___SLOPE_phi(0) * dcdtstar0 + ___SLOPE_phi(1) * dcdtstar1);// val;
+			return sc * (____SLOPE_phi(0) * dcdtstar0 + ____SLOPE_phi(1) * dcdtstar1);// val;
 		}
 		inline double ___SLOPE_z(double dcdtstar0, double dcdtstar1, double sc) {
 
-			return sc * (___SLOPE_z(0) * dcdtstar0 + ___SLOPE_z(1) * dcdtstar1);// val;
+			return sc * (____SLOPE_z(0) * dcdtstar0 + ____SLOPE_z(1) * dcdtstar1);// val;
 		}
 
 		inline void constant_SLOPE(double* ptr, double dcdtstar0, double dcdtstar1, double sc, bool accurate)
@@ -2992,6 +2992,11 @@ namespace KingOfMonsters {
 			double f2 = a * this->get_gi(1, 0) + b * this->get_gi(1, 1);
 			return f1 * get_Gij(0, l) + f2 * get_Gij(1, l);
 		}
+		inline double _Dc(double a, double b, int l) {
+			double f1 = a * _ref->get__gi(0, 0) + b * _ref->get__gi(0, 1);
+			double f2 = a * _ref->get__gi(1, 0) + b * _ref->get__gi(1, 1);
+			return f1 * _ref->get__Gij(0, l) + f2 * _ref->get__Gij(1, l);
+		}
 		inline double __a(int l)
 		{
 			return this->get_gi(0, 0) * get_Gij(0, l) + this->get_gi(1, 0) * get_Gij(1, l);
@@ -2999,6 +3004,14 @@ namespace KingOfMonsters {
 		inline double __b(int l)
 		{
 			return this->get_gi(0, 1) * get_Gij(0, l) + this->get_gi(1, 1) * get_Gij(1, l);
+		}
+		inline double ___a(int l)
+		{
+			return _ref->get__gi(0, 0) * _ref->get__Gij(0, l) + _ref->get__gi(1, 0) * _ref->get__Gij(1, l);
+		}
+		inline double ___b(int l)
+		{
+			return _ref->get__gi(0, 1) * _ref->get__Gij(0, l) + _ref->get__gi(1, 1) * _ref->get__Gij(1, l);
 		}
 		inline double __K(int l, int I) {
 			double val = 0;
@@ -10715,11 +10728,20 @@ namespace KingOfMonsters {
 		double Dc(double a, double b, int l) {
 			return __mem->Dc(a, b, l);
 		}
+		double _Dc(double a, double b, int l) {
+			return __mem->_Dc(a, b, l);
+		}
 		double get_a(int l) {
 			return __mem->__a(l);
 		}
 		double get_b(int l) {
 			return __mem->__b(l);
+		}
+		double get__a(int l) {
+			return __mem->___a(l);
+		}
+		double get__b(int l) {
+			return __mem->___b(l);
 		}
 		double F4(int i, int I, int J) {
 			return __mem->F4(i, I, J);
