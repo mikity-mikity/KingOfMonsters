@@ -2898,21 +2898,26 @@ namespace KingOfMonsters {
 
 			double xi = (xi_U * dcdtstar0 + xi_V * dcdtstar1);
 			double eta = (eta_U * dcdtstar0 + eta_V * dcdtstar1);
+			double xi0 = (_ref->xi_1 * dcdtstar1 - _ref->xi_2 * dcdtstar0);
+			double eta0 = (_ref->eta_1 * dcdtstar1 - _ref->eta_2 * dcdtstar0);
 
-			double xi0 = _ref->xi_1 * _ref->get__Gij(0, 0) * dcdtstar0 + _ref->xi_2 * _ref->get__Gij(1, 0) * dcdtstar0 +
-				_ref->xi_1 * _ref->get__Gij(0, 1) * dcdtstar1 + _ref->xi_2 * _ref->get__Gij(1, 1) * dcdtstar1;
-			double eta0 = _ref->eta_1 * _ref->get__Gij(0, 0) * dcdtstar0 + _ref->eta_2 * _ref->get__Gij(1, 0) * dcdtstar0 +
-				_ref->eta_1 * _ref->get__Gij(0, 1) * dcdtstar1 + _ref->eta_2 * _ref->get__Gij(1, 1) * dcdtstar1;
 
-			double val = xi * eta0 - eta * xi0;
+			double val = xi * xi0 + eta * eta0;
 			return val;
 		}
 		void _SLOPE_symm_xi(double *ptr,double dcdtstar0, double dcdtstar1) {
 			double* ptr1 = ptr;
-			double xi0 = _ref->xi_1 * _ref->get__Gij(0, 0) * dcdtstar0 + _ref->xi_2 * _ref->get__Gij(1, 0) * dcdtstar0 +
-				_ref->xi_1 * _ref->get__Gij(0, 1) * dcdtstar1 + _ref->xi_2 * _ref->get__Gij(1, 1) * dcdtstar1;
-			double eta0 = _ref->eta_1 * _ref->get__Gij(0, 0) * dcdtstar0 + _ref->eta_2 * _ref->get__Gij(1, 0) * dcdtstar0 +
-				_ref->eta_1 * _ref->get__Gij(0, 1) * dcdtstar1 + _ref->eta_2 * _ref->get__Gij(1, 1) * dcdtstar1;
+			double xi_u = 0, xi_v = 0;
+			double eta_u = 0, eta_v = 0;
+			for (int i = 0; i < _nNode; i++)
+			{
+				xi_u += _ref->d1[0][i] * _ref->buf_xi[i];
+				xi_v += _ref->d1[1][i] * _ref->buf_xi[i];
+				eta_u += _ref->d1[0][i] * _ref->buf_eta[i];
+				eta_v += _ref->d1[1][i] * _ref->buf_eta[i];
+			}
+			double xi0 = (_ref->xi_1 * dcdtstar1 - _ref->xi_2 * dcdtstar0);
+			double eta0 = (_ref->eta_1 * dcdtstar1 - _ref->eta_2 * dcdtstar0);
 
 			for (int s = 0; s< _nNode; s++)
 			{
@@ -2923,7 +2928,7 @@ namespace KingOfMonsters {
 
 				double _xi = (_xi_U * dcdtstar0 + _xi_V * dcdtstar1);
 
-				double val = _xi * eta0;
+				double val = _xi *xi0;
 				*ptr1 = val;
 				ptr1 ++ ;
 			}
@@ -2932,10 +2937,17 @@ namespace KingOfMonsters {
 		void _SLOPE_symm_eta(double* ptr,double dcdtstar0, double dcdtstar1) {
 
 			double* ptr1 = ptr;
-			double xi0 = _ref->xi_1 * _ref->get__Gij(0, 0) * dcdtstar0 + _ref->xi_2 * _ref->get__Gij(1, 0) * dcdtstar0 +
-				_ref->xi_1 * _ref->get__Gij(0, 1) * dcdtstar1 + _ref->xi_2 * _ref->get__Gij(1, 1) * dcdtstar1;
-			double eta0 = _ref->eta_1 * _ref->get__Gij(0, 0) * dcdtstar0 + _ref->eta_2 * _ref->get__Gij(1, 0) * dcdtstar0 +
-				_ref->eta_1 * _ref->get__Gij(0, 1) * dcdtstar1 + _ref->eta_2 * _ref->get__Gij(1, 1) * dcdtstar1;
+			double xi_u = 0, xi_v = 0;
+			double eta_u = 0, eta_v = 0;
+			for (int i = 0; i < _nNode; i++)
+			{
+				xi_u += _ref->d1[0][i] * _ref->buf_xi[i];
+				xi_v += _ref->d1[1][i] * _ref->buf_xi[i];
+				eta_u += _ref->d1[0][i] * _ref->buf_eta[i];
+				eta_v += _ref->d1[1][i] * _ref->buf_eta[i];
+			}
+			double xi0 = (_ref->xi_1 * dcdtstar1 - _ref->xi_2 * dcdtstar0);
+			double eta0 = (_ref->eta_1 * dcdtstar1 - _ref->eta_2 * dcdtstar0);
 
 			for (int s = 0; s < _nNode; s++)
 			{
@@ -2946,7 +2958,8 @@ namespace KingOfMonsters {
 
 				double _eta = (_eta_U * dcdtstar0 + _eta_V * dcdtstar1);
 
-				double val = -_eta * xi0;
+
+				double val = _eta * eta0;
 				*ptr1 = val;
 				ptr1++;
 			}
