@@ -56,7 +56,7 @@ namespace KingOfMonsters {
 		double* buf_eta = 0;
 		double* buf_mu = 0;
 		double* buf_nu = 0;
-
+		double xi_1,xi_2, eta_1,eta_2;
 		double _gi[6];
 		double _Gi[6];
 		double _gij[4];
@@ -638,7 +638,7 @@ namespace KingOfMonsters {
 		double* gradG = 0;
 		const int ___ll[4]{ 0,3,6,9 };
 	public:
-		double x, y, z, Z, _Z, phi, eta, xi,mu,nu;/// , chi;
+		double x, y, z, Z, _Z, phi, eta, xi,mu,nu,xi_1, xi_2, eta_1, eta_2;;/// , chi;
 		double dv, _dv;
 	public:
 		inline void set_lo(double L1, double L2) {
@@ -1067,8 +1067,57 @@ namespace KingOfMonsters {
 				pptr2++;
 			}
 			this->eta = val;
+			
+			pptr1 = &_ref->buf_xi[0];
+			pptr2 = &_ref->d1[0][0];
+			val = 0;
+			for (int i = 0; i < _nNode; i++)
+			{
+				//val += _ref->d0[i] * _ref->buf_phi[i];
+				val += (*pptr1) * (*pptr2);
+				pptr1++;
+				pptr2++;
+			}
+			xi_1 = val;
 
+			pptr1 = &_ref->buf_xi[0];
+			pptr2 = &_ref->d1[1][0];
+			val = 0;
+			for (int i = 0; i < _nNode; i++)
+			{
+				//val += _ref->d0[i] * _ref->buf_phi[i];
+				val += (*pptr1) * (*pptr2);
+				pptr1++;
+				pptr2++;
+			}
+			xi_2 = val;
 
+			pptr1 = &_ref->buf_eta[0];
+			pptr2 = &_ref->d1[0][0];
+			val = 0;
+			for (int i = 0; i < _nNode; i++)
+			{
+				//val += _ref->d0[i] * _ref->buf_phi[i];
+				val += (*pptr1) * (*pptr2);
+				pptr1++;
+				pptr2++;
+			}
+			eta_1 = val;
+
+			pptr1 = &_ref->buf_eta[0];
+			pptr2 = &_ref->d1[1][0];
+			val = 0;
+			for (int i = 0; i < _nNode; i++)
+			{
+				//val += _ref->d0[i] * _ref->buf_phi[i];
+				val += (*pptr1) * (*pptr2);
+				pptr1++;
+				pptr2++;
+			}
+			eta_2 = val;
+	
+
+			
 			pptr1 = &_ref->buf_mu[0];
 			pptr2 = &_ref->d0[0];
 			val = 0;
@@ -2831,6 +2880,78 @@ namespace KingOfMonsters {
 			}
 
 		}
+		inline double _SLOPE_symm(double dcdtstar0, double dcdtstar1) {
+
+			double xi_u = 0, xi_v = 0;
+			double eta_u = 0, eta_v = 0;
+			for (int i = 0; i < _nNode; i++)
+			{
+				xi_u += _ref->d1[0][i] * _ref->buf_xi[i];
+				xi_v += _ref->d1[1][i] * _ref->buf_xi[i];
+				eta_u += _ref->d1[0][i] * _ref->buf_eta[i];
+				eta_v += _ref->d1[1][i] * _ref->buf_eta[i];
+			}
+			double xi_U = xi_u * _ref->get__Gij(0, 0) + xi_v * _ref->get__Gij(1, 0);
+			double xi_V = xi_u * _ref->get__Gij(0, 1) + xi_v * _ref->get__Gij(1, 1);
+			double eta_U = eta_u * _ref->get__Gij(0, 0) + eta_v * _ref->get__Gij(1, 0);
+			double eta_V = eta_u * _ref->get__Gij(0, 1) + eta_v * _ref->get__Gij(1, 1);
+
+			double xi = (xi_U * dcdtstar0 + xi_V * dcdtstar1);
+			double eta = (eta_U * dcdtstar0 + eta_V * dcdtstar1);
+
+			double xi0 = _ref->xi_1 * _ref->get__Gij(0, 0) * dcdtstar0 + _ref->xi_2 * _ref->get__Gij(1, 0) * dcdtstar0 +
+				_ref->xi_1 * _ref->get__Gij(0, 1) * dcdtstar1 + _ref->xi_2 * _ref->get__Gij(1, 1) * dcdtstar1;
+			double eta0 = _ref->eta_1 * _ref->get__Gij(0, 0) * dcdtstar0 + _ref->eta_2 * _ref->get__Gij(1, 0) * dcdtstar0 +
+				_ref->eta_1 * _ref->get__Gij(0, 1) * dcdtstar1 + _ref->eta_2 * _ref->get__Gij(1, 1) * dcdtstar1;
+
+			double val = xi * eta0 - eta * xi0;
+			return val;
+		}
+		void _SLOPE_symm_xi(double *ptr,double dcdtstar0, double dcdtstar1) {
+			double* ptr1 = ptr;
+			double xi0 = _ref->xi_1 * _ref->get__Gij(0, 0) * dcdtstar0 + _ref->xi_2 * _ref->get__Gij(1, 0) * dcdtstar0 +
+				_ref->xi_1 * _ref->get__Gij(0, 1) * dcdtstar1 + _ref->xi_2 * _ref->get__Gij(1, 1) * dcdtstar1;
+			double eta0 = _ref->eta_1 * _ref->get__Gij(0, 0) * dcdtstar0 + _ref->eta_2 * _ref->get__Gij(1, 0) * dcdtstar0 +
+				_ref->eta_1 * _ref->get__Gij(0, 1) * dcdtstar1 + _ref->eta_2 * _ref->get__Gij(1, 1) * dcdtstar1;
+
+			for (int s = 0; s< _nNode; s++)
+			{
+				double _xi_u = _ref->d1[0][s];
+				double _xi_v = _ref->d1[1][s];
+				double _xi_U = _xi_u * _ref->get__Gij(0, 0) + _xi_v * _ref->get__Gij(1, 0);
+				double _xi_V = _xi_u * _ref->get__Gij(0, 1) + _xi_v * _ref->get__Gij(1, 1);
+
+				double _xi = (_xi_U * dcdtstar0 + _xi_V * dcdtstar1);
+
+				double val = _xi * eta0;
+				*ptr1 = val;
+				ptr1 ++ ;
+			}
+			
+		}
+		void _SLOPE_symm_eta(double* ptr,double dcdtstar0, double dcdtstar1) {
+
+			double* ptr1 = ptr;
+			double xi0 = _ref->xi_1 * _ref->get__Gij(0, 0) * dcdtstar0 + _ref->xi_2 * _ref->get__Gij(1, 0) * dcdtstar0 +
+				_ref->xi_1 * _ref->get__Gij(0, 1) * dcdtstar1 + _ref->xi_2 * _ref->get__Gij(1, 1) * dcdtstar1;
+			double eta0 = _ref->eta_1 * _ref->get__Gij(0, 0) * dcdtstar0 + _ref->eta_2 * _ref->get__Gij(1, 0) * dcdtstar0 +
+				_ref->eta_1 * _ref->get__Gij(0, 1) * dcdtstar1 + _ref->eta_2 * _ref->get__Gij(1, 1) * dcdtstar1;
+
+			for (int s = 0; s < _nNode; s++)
+			{
+				double _eta_u = _ref->d1[0][s];
+				double _eta_v = _ref->d1[1][s];
+				double _eta_U = _eta_u * _ref->get__Gij(0, 0) + _eta_v * _ref->get__Gij(1, 0);
+				double _eta_V = _eta_u * _ref->get__Gij(0, 1) + _eta_v * _ref->get__Gij(1, 1);
+
+				double _eta = (_eta_U * dcdtstar0 + _eta_V * dcdtstar1);
+
+				double val = -_eta * xi0;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+
 		inline double _SLOPE_xi(double dcdtstar0, double dcdtstar1) {
 
 			double xi_u = 0, xi_v = 0;
@@ -5127,8 +5248,8 @@ namespace KingOfMonsters {
 
 			val = get_eij(0, 0) * v1 * v1 + get_eij(0, 1) * v1 * v2 + get_eij(1, 0) * v2 * v1 + get_eij(1, 1) * v2 * v2;
 			val += get_eij(0, 0) * s1 * s1 + get_eij(0, 1) * s1 * s2 + get_eij(1, 0) * s2 * s1 + get_eij(1, 1) * s2 * s2;
-			val -= _ref->get__gij(0, 0) * v1 * v1 + _ref->get__gij(0, 1) * v1 * v2 + _ref->get__gij(1, 0) * v2 * v1 + _ref->get__gij(1, 1) * v2 * v2;
-			val -= _ref->get__gij(0, 0) * s1 * s1 + _ref->get__gij(0, 1) * s1 * s2 + _ref->get__gij(1, 0) * s2 * s1 + _ref->get__gij(1, 1) * s2 * s2;
+			//val -= _ref->get__gij(0, 0) * v1 * v1 + _ref->get__gij(0, 1) * v1 * v2 + _ref->get__gij(1, 0) * v2 * v1 + _ref->get__gij(1, 1) * v2 * v2;
+			//val -= _ref->get__gij(0, 0) * s1 * s1 + _ref->get__gij(0, 1) * s1 * s2 + _ref->get__gij(1, 0) * s2 * s1 + _ref->get__gij(1, 1) * s2 * s2;
 			return val;
 		}
 
@@ -9633,6 +9754,10 @@ namespace KingOfMonsters {
 			__mem->_eta = eta;
 			__mem->_nu = nu;
 			__mem->_mu = mu;
+			__mem->xi_1 = xi_1;
+			__mem->xi_2 = xi_2;
+			__mem->eta_1 = eta_1;
+			__mem->eta_2 = eta_2;
 
 			std::memcpy(__mem->_Sij, _Sij, sizeof(double) * 4);
 			std::memcpy(__mem->_gi, gi, sizeof(double) * 6);
@@ -10652,6 +10777,19 @@ namespace KingOfMonsters {
 		{
 			__mem->constant_SLOPE(arr->_arr->__v.data() + shift, dcdt1, dcdt2, sc, accurate);
 
+		}
+		double  _SLOPE_symm(double dcdt1, double dcdt2) {
+			return __mem->_SLOPE_symm(dcdt1, dcdt2);
+		}
+		void _SLOPE_symm_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double dcdt1, double dcdt2) {
+			__mem->_SLOPE_symm_xi(__mem->__grad_z, dcdt1, dcdt2);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad_phi, 0,sc, __mem->_nNode,true, coeff);
+		}
+
+
+		void _SLOPE_symm_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double dcdt1, double dcdt2) {
+			__mem->_SLOPE_symm_eta(__mem->__grad_z, dcdt1, dcdt2);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad_phi, 0, sc, __mem->_nNode, false, coeff);
 		}
 		void _SLOPE(myDoubleArray^ arr, double dcdt1, double dcdt2,double sc) {
 			__mem->_SLOPE(arr->_arr->__v.data(), dcdt1, dcdt2,sc);
