@@ -10809,13 +10809,13 @@ namespace KingOfMonsters {
 		}
 		void _SLOPE_symm_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double dcdt1, double dcdt2) {
 			__mem->_SLOPE_symm_xi(__mem->__grad_z, dcdt1, dcdt2);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad_phi, 0,sc, __mem->_nNode,true, coeff);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad_z, 0,sc, __mem->_nNode,true, coeff);
 		}
 
 
 		void _SLOPE_symm_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double dcdt1, double dcdt2) {
 			__mem->_SLOPE_symm_eta(__mem->__grad_z, dcdt1, dcdt2);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad_phi, 0, sc, __mem->_nNode, false, coeff);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad_z, 0, sc, __mem->_nNode, false, coeff);
 		}
 		void _SLOPE(myDoubleArray^ arr, double dcdt1, double dcdt2,double sc) {
 			__mem->_SLOPE(arr->_arr->__v.data(), dcdt1, dcdt2,sc);
