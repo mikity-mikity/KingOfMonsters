@@ -2898,11 +2898,16 @@ namespace KingOfMonsters {
 
 			double xi = (xi_U * dcdtstar0 + xi_V * dcdtstar1);
 			double eta = (eta_U * dcdtstar0 + eta_V * dcdtstar1);
-			double xi0 = (_ref->xi_1 * dcdtstar1 - _ref->xi_2 * dcdtstar0);
-			double eta0 = (_ref->eta_1 * dcdtstar1 - _ref->eta_2 * dcdtstar0);
+			double xi0_U = (_ref->xi_1 * _ref->get__Gij(0, 0)) + (_ref->xi_2 * _ref->get__Gij(1, 0));
+			double xi0_V = (_ref->xi_1 * _ref->get__Gij(0, 1)) + (_ref->xi_2 * _ref->get__Gij(1, 1));
+			double eta0_U = (_ref->eta_1 * _ref->get__Gij(0, 0)) + (_ref->eta_2 * _ref->get__Gij(1, 0));
+			double eta0_V = (_ref->eta_1 * _ref->get__Gij(0, 1)) + (_ref->eta_2 * _ref->get__Gij(1, 1));
+
+			double xi0 = (xi0_U* dcdtstar0+ xi0_V * dcdtstar1);
+			double eta0 = (eta0_U * dcdtstar0 + eta0_V * dcdtstar1);
 
 
-			double val = xi * xi0 + eta * eta0;
+			double val = xi * eta0 - eta * xi0;
 			return val;
 		}
 		void _SLOPE_symm_xi(double *ptr,double dcdtstar0, double dcdtstar1) {
@@ -2916,9 +2921,13 @@ namespace KingOfMonsters {
 				eta_u += _ref->d1[0][i] * _ref->buf_eta[i];
 				eta_v += _ref->d1[1][i] * _ref->buf_eta[i];
 			}
-			double xi0 = (_ref->xi_1 * dcdtstar1 - _ref->xi_2 * dcdtstar0);
-			double eta0 = (_ref->eta_1 * dcdtstar1 - _ref->eta_2 * dcdtstar0);
+			double xi0_U = (_ref->xi_1 * _ref->get__Gij(0, 0)) + (_ref->xi_2 * _ref->get__Gij(1, 0));
+			double xi0_V = (_ref->xi_1 * _ref->get__Gij(0, 1)) + (_ref->xi_2 * _ref->get__Gij(1, 1));
+			double eta0_U = (_ref->eta_1 * _ref->get__Gij(0, 0)) + (_ref->eta_2 * _ref->get__Gij(1, 0));
+			double eta0_V = (_ref->eta_1 * _ref->get__Gij(0, 1)) + (_ref->eta_2 * _ref->get__Gij(1, 1));
 
+			double xi0 = (xi0_U * dcdtstar0 + xi0_V * dcdtstar1);
+			double eta0 = (eta0_U * dcdtstar0 + eta0_V * dcdtstar1);
 			for (int s = 0; s< _nNode; s++)
 			{
 				double _xi_u = _ref->d1[0][s];
@@ -2928,7 +2937,7 @@ namespace KingOfMonsters {
 
 				double _xi = (_xi_U * dcdtstar0 + _xi_V * dcdtstar1);
 
-				double val = _xi *xi0;
+				double val = _xi *eta0;
 				*ptr1 = val;
 				ptr1 ++ ;
 			}
@@ -2946,9 +2955,13 @@ namespace KingOfMonsters {
 				eta_u += _ref->d1[0][i] * _ref->buf_eta[i];
 				eta_v += _ref->d1[1][i] * _ref->buf_eta[i];
 			}
-			double xi0 = (_ref->xi_1 * dcdtstar1 - _ref->xi_2 * dcdtstar0);
-			double eta0 = (_ref->eta_1 * dcdtstar1 - _ref->eta_2 * dcdtstar0);
+			double xi0_U = (_ref->xi_1 * _ref->get__Gij(0, 0)) + (_ref->xi_2 * _ref->get__Gij(1, 0));
+			double xi0_V = (_ref->xi_1 * _ref->get__Gij(0, 1)) + (_ref->xi_2 * _ref->get__Gij(1, 1));
+			double eta0_U = (_ref->eta_1 * _ref->get__Gij(0, 0)) + (_ref->eta_2 * _ref->get__Gij(1, 0));
+			double eta0_V = (_ref->eta_1 * _ref->get__Gij(0, 1)) + (_ref->eta_2 * _ref->get__Gij(1, 1));
 
+			double xi0 = (xi0_U * dcdtstar0 + xi0_V * dcdtstar1);
+			double eta0 = (eta0_U * dcdtstar0 + eta0_V * dcdtstar1);
 			for (int s = 0; s < _nNode; s++)
 			{
 				double _eta_u = _ref->d1[0][s];
@@ -2959,7 +2972,7 @@ namespace KingOfMonsters {
 				double _eta = (_eta_U * dcdtstar0 + _eta_V * dcdtstar1);
 
 
-				double val = _eta * eta0;
+				double val = -_eta * xi0;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -3489,9 +3502,9 @@ namespace KingOfMonsters {
 			for (int i = 0; i < _nNode; i++)
 			{
 				int I = index[i];
-				for (int j = 0; j < _nNode; j++)
+				for (int64_t j = 0; j < _nNode; j++)
 				{
-					int J = index[j];
+					int64_t J = index[j];
 					mat->_mat[0].coeffRef(I, J) += F2A(i, j) * sc;
 				}
 			}
@@ -3783,7 +3796,7 @@ namespace KingOfMonsters {
 		void G3(_myDoubleArray* vec, int64_t* index, double sc) {
 			for (int i = 0; i < _nNode; i++)
 			{
-				int I = index[i];
+				int64_t I = index[i];
 				vec->__v.coeffRef(I) += G3(i) * sc;
 			}
 

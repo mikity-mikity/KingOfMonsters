@@ -1108,7 +1108,7 @@ namespace KingOfMonsters {
 		{
 			for (int i = 0; i < _nNode; i++)
 			{
-				int I = _index[i] * 3;
+				int64_t I = _index[i] * 3;
 				for (int s = 0; s < 3; s++)
 				{
 					for (int j = 0; j < _nNode; j++)
