@@ -5366,20 +5366,46 @@ namespace KingOfMonsters {
 			}
 
 		}
-		double guide_norm(bool accurate)
+		double guide_norm(bool accurate,double n1, double n2, double w)
 		{
 			double val = 0;
+			double t1 = n1, t2 = n2;
+			double length = get_gij2(0, 0) * t1 * t1 + 2 * get_gij2(0, 1) * t1 * t2 + get_gij2(1, 1) * t2* t2;
+			t1 /= sqrt(length);
+			t2 /= sqrt(length);
 
-			val = get_eij(0, 0) * v1 * v1 + get_eij(0, 1) * v1 * v2 + get_eij(1, 0) * v2 * v1 + get_eij(1, 1) * v2 * v2;
-			val += get_eij(0, 0) * s1 * s1 + get_eij(0, 1) * s1 * s2 + get_eij(1, 0) * s2 * s1 + get_eij(1, 1) * s2 * s2;
+			double u1 = t1 * get_gij2(0, 1) + t2 * get_gij2(1, 1);
+			double u2 = - t1 * get_gij2(0, 0) - t2 * get_gij2(1, 0);
+
+			u1 /= dv;
+			u2 /= dv;
+			//t1 = v1; t2 = v2;
+			//u1 = s1; u2 = s2;
+			val = w*(get_eij(0, 0) * t1 * t1 + get_eij(0, 1) * t1 * t2 + get_eij(1, 0) * t2 * t1 + get_eij(1, 1) * t2 * t2);
+			val +=( get_eij(0, 0) * u1 * u1 + get_eij(0, 1) * u1 * u2 + get_eij(1, 0) * u2 * u1 + get_eij(1, 1) * u2 * u2);
+			//val += 1./w*(get_eij(0, 0) * t1 * u1 + get_eij(0, 1) * t1 * u2 + get_eij(1, 0) * t2 * u1 + get_eij(1, 1) * t2 * u2);
+			//val += 1./w * (get_eij(0, 0) * u1 * t1 + get_eij(0, 1) * u1 * t2 + get_eij(1, 0) * u2 * t1 + get_eij(1, 1) * u2 * t2);
+
 			//val -= _ref->get__gij(0, 0) * v1 * v1 + _ref->get__gij(0, 1) * v1 * v2 + _ref->get__gij(1, 0) * v2 * v1 + _ref->get__gij(1, 1) * v2 * v2;
 			//val -= _ref->get__gij(0, 0) * s1 * s1 + _ref->get__gij(0, 1) * s1 * s2 + _ref->get__gij(1, 0) * s2 * s1 + _ref->get__gij(1, 1) * s2 * s2;
 			return val;
 		}
 
-		void guide_norm_xi(double* ptr, bool accurate)
+		void guide_norm_xi(double* ptr, bool accurate, double n1, double n2, double w)
 		{
 			double val = 0;
+			double t1 = n1, t2 = n2;
+			double length = get_gij2(0, 0) * t1 * t1 + 2 * get_gij2(0, 1) * t1 * t2 + get_gij2(1, 1) * t2 * t2;
+			t1 /= sqrt(length);
+			t2 /= sqrt(length);
+
+			double u1 = t1 * get_gij2(0, 1) + t2 * get_gij2(1, 1);
+			double u2 = -t1 * get_gij2(0, 0) - t2 * get_gij2(1, 0);
+
+			u1 /= dv;
+			u2 /= dv;
+			//t1 = v1; t2 = v2;
+			//u1 = s1; u2 = s2;
 
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -5396,17 +5422,31 @@ namespace KingOfMonsters {
 				}
 				double _e21 = _e12;
 
-				val = _e11 * v1 * v1 + _e12 * v1 * v2 + _e21 * v2 * v1 + _e22 * v2 * v2;
-				val += _e11 * s1 * s1 + _e12 * s1 * s2 + _e21 * s2 * s1 + _e22 * s2 * s2;
+				val = w*(_e11 * t1 * t1 + _e12 * t1 * t2 + _e21 * t2 * t1 + _e22 * t2 * t2);
+				val +=(_e11 * u1 * u1 + _e12 * u1 * u2 + _e21 * u2 * u1 + _e22 * u2 * u2);
+				//val += 1./w*(_e11 * t1 * u1 + _e12 * t1 * u2 + _e21 * t2 * u1 + _e22 * t2 * u2);
+				//val += 1./w * (_e11 * u1 * t1 + _e12 * u1 * t2 + _e21 * u2 * t1 + _e22 * u2 * t2);
 
 				*ptr1 = val;
 				ptr1++;
 			}
 
 		}
-		void guide_norm_eta(double* ptr, bool accurate)
+		void guide_norm_eta(double* ptr, bool accurate, double n1, double n2, double w)
 		{
 			double val = 0;
+			double t1 = n1, t2 = n2;
+			double length = get_gij2(0, 0) * t1 * t1 + 2 * get_gij2(0, 1) * t1 * t2 + get_gij2(1, 1) * t2 * t2;
+			t1 /= sqrt(length);
+			t2 /= sqrt(length);
+
+			double u1 = t1 * get_gij2(0, 1) + t2 * get_gij2(1, 1);
+			double u2 = -t1 * get_gij2(0, 0) - t2 * get_gij2(1, 0);
+
+			u1 /= dv;
+			u2 /= dv;
+			//t1 = v1; t2 = v2;
+			//u1 = s1; u2 = s2;
 
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -5423,18 +5463,31 @@ namespace KingOfMonsters {
 				}
 				double _e21 = _e12;
 
-				val = _e11 * v1 * v1 + _e12 * v1 * v2 + _e21 * v2 * v1 + _e22 * v2 * v2;
-				val += _e11 * s1 * s1 + _e12 * s1 * s2 + _e21 * s2 * s1 + _e22 * s2 * s2;
-
+				val = 2*(_e11 * t1 * t1 + _e12 * t1 * t2 + _e21 * t2 * t1 + _e22 * t2 * t2);
+				val +=  (_e11 * u1 * u1 + _e12 * u1 * u2 + _e21 * u2 * u1 + _e22 * u2 * u2);
+				//val +=1./w * (_e11 * t1 * u1 + _e12 * t1 * u2 + _e21 * t2 * u1 + _e22 * t2 * u2);
+				//val += 1./w * (_e11 * u1 * t1 + _e12 * u1 * t2 + _e21 * u2 * t1 + _e22 * u2 * t2);
 				*ptr1 = val;
 				ptr1++;
 			}
 
 		}
 
-		void guide_norm_nu(double* ptr, bool accurate)
+		void guide_norm_nu(double* ptr, bool accurate, double n1, double n2, double w)
 		{
 			double val = 0;
+			double t1 = n1, t2 = n2;
+			double length = get_gij2(0, 0) * t1 * t1 + 2 * get_gij2(0, 1) * t1 * t2 + get_gij2(1, 1) * t2 * t2;
+			t1 /= sqrt(length);
+			t2 /= sqrt(length);
+
+			double u1 = t1 * get_gij2(0, 1) + t2 * get_gij2(1, 1);
+			double u2 = -t1 * get_gij2(0, 0) - t2 * get_gij2(1, 0);
+
+			u1 /= dv;
+			u2 /= dv;
+			//t1 = v1; t2 = v2;
+			//u1 = s1; u2 = s2;
 
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -5451,9 +5504,10 @@ namespace KingOfMonsters {
 				}
 				double _e21 = _e12;
 
-				val = _e11 * v1 * v1 + _e12 * v1 * v2 + _e21 * v2 * v1 + _e22 * v2 * v2;
-				val += _e11 * s1 * s1 + _e12 * s1 * s2 + _e21 * s2 * s1 + _e22 * s2 * s2;
-
+				val =  w*(_e11 * t1 * t1 + _e12 * t1 * t2 + _e21 * t2 * t1 + _e22 * t2 * t2);
+				val += (_e11 * u1 * u1 + _e12 * u1 * u2 + _e21 * u2 * u1 + _e22 * u2 * u2);
+				//val += 1./w * (_e11 * t1 * u1 + _e12 * t1 * u2 + _e21 * t2 * u1 + _e22 * t2 * u2);
+				//val += 1./w * (_e11 * u1 * t1 + _e12 * u1 * t2 + _e21 * u2 * t1 + _e22 * u2 * t2);
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -10238,24 +10292,24 @@ namespace KingOfMonsters {
 			__mem->guide_nu(__mem->__grad, accurate);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
 		}
-		double guide_norm(bool accurate)
+		double guide_norm(bool accurate,double n1,double n2,double w)
 		{
-			return __mem->guide_norm(accurate);
+			return __mem->guide_norm(accurate,n1,n2,w);
 		}
 
-		void guide_norm_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate)
+		void guide_norm_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate, double n1, double n2, double w)
 		{
-			__mem->guide_norm_xi(__mem->__grad, accurate);
+			__mem->guide_norm_xi(__mem->__grad, accurate, n1, n2, w);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
 		}
-		void guide_norm_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate)
+		void guide_norm_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate, double n1, double n2, double w)
 		{
-			__mem->guide_norm_eta(__mem->__grad, accurate);
+			__mem->guide_norm_eta(__mem->__grad, accurate, n1, n2, w);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
 		}
-		void guide_norm_nu(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate)
+		void guide_norm_nu(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool accurate, double n1, double n2, double w)
 		{
-			__mem->guide_norm_nu(__mem->__grad, accurate);
+			__mem->guide_norm_nu(__mem->__grad, accurate, n1, n2, w);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
 		}
 		

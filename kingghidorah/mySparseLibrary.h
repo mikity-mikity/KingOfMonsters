@@ -126,6 +126,10 @@ namespace KingOfMonsters {
 		void Zeros() {
 			this->_vec->_vec.setZero();
 		}
+		void scale(double sc)
+		{
+			this->_vec->_vec *= sc;
+		}
 		~mySparseVector()
 		{
 			if (_vec != 0)
@@ -173,7 +177,10 @@ namespace KingOfMonsters {
 			_new->_arr->__v = this->_arr->__v;
 			return _new;
 		}
-
+		void _plus(mySparseVector^ v, double sc)
+		{
+			this->_arr->__v += sc * v->_vec->_vec;
+		}
 		void plus_useindex(myDoubleArray^ vec, double sc, int N, array<int>^index)
 		{
 			for (int i = 0; i < N; i++)
@@ -653,6 +660,11 @@ namespace KingOfMonsters {
 		{
 			this->dat->_dmat += sc*v->_arr->__v * v->_arr->__v.transpose();
 		}
+		void _plusvvt(mySparseVector ^ v, double sc)
+		{
+			this->dat->_mat[0] += sc * v->_vec->_vec * v->_vec->_vec.transpose();
+		}
+		
 		void multiply(myDoubleArray^ v, myDoubleArray^ ret)
 		{
 			ret->_arr->__v = this->dat->_mat[0] * v->_arr->__v;
