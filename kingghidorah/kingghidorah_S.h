@@ -1039,6 +1039,77 @@ namespace KingOfMonsters {
 		~_memS() {
 			del();
 		}
+		void update_eigenvectors()
+		{
+			//double A11 = get_Eij(0, 0) * get__hij(0, 0) + get_Eij(0, 1) * get__hij(1, 0);
+		//double A12 = get_Eij(0, 0) * get__hij(0, 1) + get_Eij(0, 1) * get__hij(1, 1);
+		//double A21 = get_Eij(1, 0) * get__hij(0, 0) + get_Eij(1, 1) * get__hij(1, 0);
+		//double A22 = get_Eij(1, 0) * get__hij(0, 1) + get_Eij(1, 1) * get__hij(1, 1);
+			double B11 = get_Eij(0, 0) * get__Sij(0, 0) + get_Eij(0, 1) * get__Sij(1, 0);
+			double B12 = get_Eij(0, 0) * get__Sij(0, 1) + get_Eij(0, 1) * get__Sij(1, 1);
+			double B21 = get_Eij(1, 0) * get__Sij(0, 0) + get_Eij(1, 1) * get__Sij(1, 0);
+			double B22 = get_Eij(1, 0) * get__Sij(0, 1) + get_Eij(1, 1) * get__Sij(1, 1);
+
+			//double trA = A11 + A22;
+			//double detA = A11 * A22 - A12 * A21;
+			double trB = B11 + B22;
+			double detB = B11 * B22 - B12 * B21;
+			/*if (trA * trA - 4 * detA>trB * trB - 4 * detB)
+			{
+				double L1 = trA / 2 + sqrt(trA * trA / 4 - detA);
+				double L2 = trA / 2 - sqrt(trA * trA / 4 - detA);
+
+				if (A21 != 0)
+				{
+					w1 = L1 - A22; w2 = A21;
+					q1 = L2 - A22; q2 = A21;
+
+				}
+				else if (A12 != 0) {
+					w1 = A12; w2 = L1 - A11;
+					q1 = A12; q2 = L2 - A11;
+				}
+				else {
+					w1 = 1; w1 = 0;
+					q1 = 0; q2 = 1;
+				}
+			}*/
+			//else 
+			{
+				double L1 = trB / 2 + sqrt(trB * trB / 4 - detB);
+				double L2 = trB / 2 - sqrt(trB * trB / 4 - detB);
+
+				if (B21 != 0)
+				{
+					w1 = L1 - B22; w2 = B21;
+					q1 = L2 - B22; q2 = B21;
+
+				}
+				else if (B12 != 0) {
+					w1 = B12; w2 = L1 - B11;
+					q1 = B12; q2 = L2 - B11;
+				}
+				else {
+					w1 = 1; w1 = 0;
+					q1 = 0; q2 = 1;
+				}
+
+			}
+			double nn = w1 * this->get_gij2(0, 0) * w1 + 2 * w1 * this->get_gij2(0, 1) * w2 + w2 * this->get_gij2(1, 1) * w2;
+			nn = sqrt(nn);
+			w1 /= nn; w2 /= nn;
+			nn = q1 * this->get_gij2(0, 0) * q1 + 2 * q1 * this->get_gij2(0, 1) * q2 + q2 * this->get_gij2(1, 1) * q2;
+			nn = sqrt(nn);
+			q1 /= nn; q2 /= nn;
+		}
+		double get_eigenvectors(int n)
+		{
+			if (n == 0)return w1;
+			if (n == 1)return w2;
+			if (n == 2)return q1;
+			return q2;
+
+		}
 		void update_optional(bool accurate, bool accurate2)
 		{
 
@@ -1414,66 +1485,7 @@ namespace KingOfMonsters {
 			//trEij = tr;
 			//tr = eij[0] * _ref->get__Gij(0, 0) + 2 * eij[1] * _ref->get__Gij(0, 1) + eij[3] * _ref->get__Gij(1, 1);
 			//treij = tr;
-			//double A11 = get_Eij(0, 0) * get__hij(0, 0) + get_Eij(0, 1) * get__hij(1, 0);
-			//double A12 = get_Eij(0, 0) * get__hij(0, 1) + get_Eij(0, 1) * get__hij(1, 1);
-			//double A21 = get_Eij(1, 0) * get__hij(0, 0) + get_Eij(1, 1) * get__hij(1, 0);
-			//double A22 = get_Eij(1, 0) * get__hij(0, 1) + get_Eij(1, 1) * get__hij(1, 1);
-			double B11 = get_Eij(0, 0) * get__Sij(0, 0) + get_Eij(0, 1) * get__Sij(1, 0);
-			double B12 = get_Eij(0, 0) * get__Sij(0, 1) + get_Eij(0, 1) * get__Sij(1, 1);
-			double B21 = get_Eij(1, 0) * get__Sij(0, 0) + get_Eij(1, 1) * get__Sij(1, 0);
-			double B22 = get_Eij(1, 0) * get__Sij(0, 1) + get_Eij(1, 1) * get__Sij(1, 1);
-
-			//double trA = A11 + A22;
-			//double detA = A11 * A22 - A12 * A21;
-			double trB = B11 + B22;
-			double detB = B11 * B22 - B12 * B21;
-			/*if (trA * trA - 4 * detA>trB * trB - 4 * detB)
-			{
-				double L1 = trA / 2 + sqrt(trA * trA / 4 - detA);
-				double L2 = trA / 2 - sqrt(trA * trA / 4 - detA);
-
-				if (A21 != 0)
-				{
-					w1 = L1 - A22; w2 = A21;
-					q1 = L2 - A22; q2 = A21;
-
-				}
-				else if (A12 != 0) {
-					w1 = A12; w2 = L1 - A11;
-					q1 = A12; q2 = L2 - A11;
-				}
-				else {
-					w1 = 1; w1 = 0;
-					q1 = 0; q2 = 1;
-				}
-			}*/
-			//else 
-			{
-				double L1 = trB / 2 + sqrt(trB * trB / 4 - detB);
-				double L2 = trB / 2 - sqrt(trB * trB / 4 - detB);
-
-				if (B21 != 0)
-				{
-					w1 = L1 - B22; w2 = B21;
-					q1 = L2 - B22; q2 = B21;
-
-				}
-				else if (B12 != 0) {
-					w1 = B12; w2 = L1 - B11;
-					q1 = B12; q2 = L2 - B11;
-				}
-				else {
-					w1 = 1; w1 = 0;
-					q1 = 0; q2 = 1;
-				}
-
-			}
-			double nn = w1 * this->get_gij2(0, 0) * w1 + 2 * w1 * this->get_gij2(0, 1) * w2 + w2 * this->get_gij2(1, 1) * w2;
-			nn = sqrt(nn);
-			w1 /= nn; w2 /= nn;
-			nn = q1 * this->get_gij2(0, 0) * q1 + 2 * q1 * this->get_gij2(0, 1) * q2 + q2 * this->get_gij2(1, 1) * q2;
-			nn = sqrt(nn);
-			q1 /= nn; q2 /= nn;
+		
 
 		}
 		void update2() {
@@ -11307,6 +11319,14 @@ namespace KingOfMonsters {
 			eta = __mem->eta;
 			mu = __mem->mu;
 			nu = __mem->nu;
+		}
+		void update_eigenvectors()
+		{
+			__mem->update_eigenvectors();
+		}
+		double get_eigenvectors(int n)
+		{
+			return __mem->get_eigenvectors(n);
 		}
 		void update_lo(array<double>^ lo) {
 			__mem->set_lo(lo[0], lo[1]);
