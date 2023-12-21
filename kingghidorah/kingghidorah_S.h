@@ -7095,7 +7095,91 @@ namespace KingOfMonsters {
 		}
 
 		
-		
+		double align_mix(double v1,double v2,double w1,double w2)
+		{
+			double val = 0;
+			double length = get_gij2(0, 0) * v1 * v1 + 2 * get_gij2(0, 1) * v1 * v2 +get_gij2(1, 1) * v2 * v2;
+			v1 /= sqrt(length);
+			v2 /= sqrt(length);
+
+			double s1 = (v1 * get_gij2(0, 1) + v2 * get_gij2(1, 1)) / dv;
+			double s2= (-v1 * get_gij2(0, 0) - v2 * get_gij2(0, 1)) / dv;
+			double E11 = w1 * (v1 * v1) + w2 * (s1 * s1);
+			double E12 = w1 * (v1 * v2) + w2 * (s1 * s2);
+			double E21 = w1 * (v2 * v1) + w2 * (s2 * s1);
+			double E22 = w1 * (v2 * v2) + w2 * (s2 * s2);
+
+			double scale = 1 / _ref->_refDv;
+			val = (get__hij(0, 0) *E11 * get__Sij(0, 1) + get__hij(0, 0) * E12 * get__Sij(1, 1) + get__hij(0, 1) *E21 * get__Sij(0, 1) + get__hij(0, 1) * E22 * get__Sij(1, 1)) * scale;
+			val -= (get__hij(1, 0) *E11* get__Sij(0, 0) + get__hij(1, 0) * E12 * get__Sij(1, 0) + get__hij(1, 1) * E21 * get__Sij(0, 0) + get__hij(1, 1) * E22 * get__Sij(1, 0)) * scale;
+
+			return val;
+
+		}
+
+
+		void align_mix_z(double* ptr,double v1,double v2,double w1,double w2)
+		{
+
+			double length = get_gij2(0, 0) * v1 * v1 + 2 * get_gij2(0, 1) * v1 * v2 + get_gij2(1, 1) * v2 * v2;
+			v1 /= sqrt(length);
+			v2 /= sqrt(length);
+
+			double s1 = (v1 * get_gij2(0, 1) + v2 * get_gij2(1, 1)) / dv;
+			double s2 = (-v1 * get_gij2(0, 0) - v2 * get_gij2(0, 1)) / dv;
+			double E11 = w1 * (v1 * v1) + w2 * (s1 * s1);
+			double E12 = w1 * (v1 * v2) + w2 * (s1 * s2);
+			double E21 = w1 * (v2 * v1) + w2 * (s2 * s1);
+			double E22 = w1 * (v2 * v2) + w2 * (s2 * s2);
+
+			double scale = 1  /*/ trEij*/ / _ref->_refDv;
+			double* ptr1 = ptr;
+			double val = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+
+				double _S11 = (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+				double _S12 = (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+				double _S22 = (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+				double _S21 = _S12;
+				val = (get__hij(0, 0) * E11 * _S12 + get__hij(0, 0) * E12 * _S22 + get__hij(0, 1) * E21 * _S12 + get__hij(0, 1) * E22 * _S22) * scale;
+				val -= (get__hij(1, 0) * E11 * _S11 + get__hij(1, 0) *E12 * _S21 + get__hij(1, 1) * E21 * _S11 + get__hij(1, 1) * E22 * _S21) * scale;
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
+		void align_mix_phi(double* ptr, double v1, double v2, double w1, double w2)
+		{
+
+			double length = get_gij2(0, 0) * v1 * v1 + 2 * get_gij2(0, 1) * v1 * v2 + get_gij2(1, 1) * v2 * v2;
+			v1 /= sqrt(length);
+			v2 /= sqrt(length);
+
+			double s1 = (v1 * get_gij2(0, 1) + v2 * get_gij2(1, 1)) / dv;
+			double s2 = (-v1 * get_gij2(0, 0) - v2 * get_gij2(0, 1)) / dv;
+			double E11 = w1 * (v1 * v1) + w2 * (s1 * s1);
+			double E12 = w1 * (v1 * v2) + w2 * (s1 * s2);
+			double E21 = w1 * (v2 * v1) + w2 * (s2 * s1);
+			double E22 = w1 * (v2 * v2) + w2 * (s2 * s2);
+
+			double scale = 1  /*/ trEij*/ / _ref->_refDv;
+			double val = 0;
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+
+				double _h11 = (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+				double _h12 = (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+				double _h22 = (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+				double _h21 = _h12;
+				val = (_h11 * E11 * get__Sij(0, 1) + _h11 * E12 * get__Sij(1, 1) + _h12 * E21 * get__Sij(0, 1) + _h12 * E22 * get__Sij(1, 1)) * scale;
+				val -= (_h21 * E11 * get__Sij(0, 0) + _h21 * E12 * get__Sij(1, 0) + _h22 * E21 * get__Sij(0, 0) + _h22 * E22 * get__Sij(1, 0)) * scale;
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
 		double align_sigma()
 		{
 			double val = 0;
@@ -7110,114 +7194,7 @@ namespace KingOfMonsters {
 
 		}
 		
-		void align_sigma_xi(double* ptr)
-		{
-
-
-			double S11 = 0;
-
-			double scale = 1  /*/ trEij*/ / _ref->_refDv;
-			double* ptr1 = ptr;
-			double val = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-
-				double _e11 = 0, _e12 = 0, _e22 = 0;
-				for (int t = 0; t < _ref->_nNode; t++)
-				{
-					_e11 += 2 * (_ref->d1[0][s]) * (_ref->d1[0][t]) * _ref->buf_xi[t];
-
-					_e12 += (_ref->d1[0][s]) * (_ref->d1[1][t]) * _ref->buf_xi[t];
-					_e12 += (_ref->d1[1][s]) * (_ref->d1[0][t]) * _ref->buf_xi[t];
-
-					_e22 += 2 * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_xi[t];
-				}
-				double _e21 = _e12;
-				double _E11 = _e22 * sc;
-				double _E22 = _e11 * sc;
-				double _E12 = -_e12 * sc;
-				double _E21 = -_e21 * sc;
-
-
-				val = (get__hij(0, 0) *_E11 * get__Sij(0, 1) + get__hij(0, 0) * _E12 * get__Sij(1, 1) + get__hij(0, 1) *_E21 * get__Sij(0, 1) + get__hij(0, 1) * _E22 * get__Sij(1, 1)) * scale;
-				val -= (get__hij(1, 0) *_E11 * get__Sij(0, 0) + get__hij(1, 0) * _E12 * get__Sij(1, 0) + get__hij(1, 1) * _E21 * get__Sij(0, 0) + get__hij(1, 1) * _E22 * get__Sij(1, 0)) * scale;
-				*ptr1 = val;
-				ptr1++;
-			}
-
-		}
-		void align_sigma_eta(double* ptr)
-		{
-
-
-			double S11 = 0;
-
-			double scale = 1  /*/ trEij*/ / _ref->_refDv;
-			double* ptr1 = ptr;
-			double val = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-
-				double _e11 = 0, _e12 = 0, _e22 = 0;
-				for (int t = 0; t < _ref->_nNode; t++)
-				{
-					_e11 += 2 * (_ref->d1[0][s]) * (_ref->d1[0][t]) * _ref->buf_eta[t];
-
-					_e12 += (_ref->d1[0][s]) * (_ref->d1[1][t]) * _ref->buf_eta[t];
-					_e12 += (_ref->d1[1][s]) * (_ref->d1[0][t]) * _ref->buf_eta[t];
-
-					_e22 += 2 * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_eta[t];
-				}
-				double _e21 = _e12;
-				double _E11 = _e22 * sc;
-				double _E22 = _e11 * sc;
-				double _E12 = -_e12 * sc;
-				double _E21 = -_e21 * sc;
-
-
-				val = (get__hij(0, 0) * _E11 * get__Sij(0, 1) + get__hij(0, 0) * _E12 * get__Sij(1, 1) + get__hij(0, 1) * _E21 * get__Sij(0, 1) + get__hij(0, 1) * _E22 * get__Sij(1, 1)) * scale;
-				val -= (get__hij(1, 0) * _E11 * get__Sij(0, 0) + get__hij(1, 0) * _E12 * get__Sij(1, 0) + get__hij(1, 1) * _E21 * get__Sij(0, 0) + get__hij(1, 1) * _E22 * get__Sij(1, 0)) * scale;
-				*ptr1 = val;
-				ptr1++;
-			}
-
-		}
-		void align_sigma_nu(double* ptr)
-		{
-
-
-			double S11 = 0;
-
-			double scale = 1  /*/ trEij*/ / _ref->_refDv;
-			double* ptr1 = ptr;
-			double val = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-
-				double _e11 = 0, _e12 = 0, _e22 = 0;
-				for (int t = 0; t < _ref->_nNode; t++)
-				{
-					_e11 += 2 * (_ref->d1[0][s]) * (_ref->d1[0][t]) * _ref->buf_nu[t];
-
-					_e12 += (_ref->d1[0][s]) * (_ref->d1[1][t]) * _ref->buf_nu[t];
-					_e12 += (_ref->d1[1][s]) * (_ref->d1[0][t]) * _ref->buf_nu[t];
-
-					_e22 += 2 * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_nu[t];
-				}
-				double _e21 = _e12;
-				double _E11 = _e22 * sc;
-				double _E22 = _e11 * sc;
-				double _E12 = -_e12 * sc;
-				double _E21 = -_e21 * sc;
-
-
-				val = (get__hij(0, 0) * _E11 * get__Sij(0, 1) + get__hij(0, 0) * _E12 * get__Sij(1, 1) + get__hij(0, 1) * _E21 * get__Sij(0, 1) + get__hij(0, 1) * _E22 * get__Sij(1, 1)) * scale;
-				val -= (get__hij(1, 0) * _E11 * get__Sij(0, 0) + get__hij(1, 0) * _E12 * get__Sij(1, 0) + get__hij(1, 1) * _E21 * get__Sij(0, 0) + get__hij(1, 1) * _E22 * get__Sij(1, 0)) * scale;
-				*ptr1 = val;
-				ptr1++;
-			}
-
-		}
+		
 		void align_sigma_z(double *ptr)
 		{
 
@@ -9045,21 +9022,6 @@ namespace KingOfMonsters {
 			return __mem->align_sigma();
 		}
 		
-		void align_sigma_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1)
-		{
-			__mem->align_sigma_xi(__mem->__grad);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
-		}
-		void align_sigma_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1)
-		{
-			__mem->align_sigma_eta(__mem->__grad);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
-		}
-		void align_sigma_nu(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1)
-		{
-			__mem->align_sigma_nu(__mem->__grad);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
-		}
 		
 		void align_sigma_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1)
 		{
@@ -9071,7 +9033,22 @@ namespace KingOfMonsters {
 			__mem->align_sigma_phi(__mem->__grad);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
 		}
-		
+		double align_mix(double v1,double v2,double w1,double w2)
+		{
+			return __mem->align_mix(v1,v2,w1,w2);
+		}
+
+
+		void align_mix_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, double w1, double w2)
+		{
+			__mem->align_mix_z(__mem->__grad, v1, v2, w1, w2);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
+		}
+		void align_mix_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, double w1, double w2)
+		{
+			__mem->align_mix_phi(__mem->__grad, v1, v2, w1, w2);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
+		}
 		double mix2(double v1, double v2, double w1, double w2, bool accurate)
 		{
 			return __mem->mix2(v1, v2, w1, w2, accurate);
