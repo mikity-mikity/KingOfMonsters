@@ -2823,6 +2823,10 @@ namespace KingOfMonsters {
 			return _ref->d1[0][i] * get_Gij(0, l) + _ref->d1[1][i] * get_Gij(1, l);
 
 		}
+		inline double _SLOPE(int l, int i) {
+			return _ref->d1[0][i] * _ref->get__Gij(0, l) + _ref->d1[1][i] * _ref->get__Gij(1, l);
+
+		}
 		inline void SLOPE(double* ptr, double dcdt1, double dcdt2, double sc) {
 			double* ptr1 = ptr;
 			for (int i = 0; i < _nNode; i++)
@@ -6048,9 +6052,14 @@ namespace KingOfMonsters {
 			double length = v1 * v1 * get_gij2(0, 0) + 2 * v1 * v2 * get_gij2(0, 1) + v2 * v2 * get_gij2(1, 1);
 			v1 /= length;
 			v2 /= length;
+			double s1 = (get_gij2(1, 0) * v1 + get_gij2(1, 1) * v2) / dv;
+			double s2 = (-get_gij2(0, 0) * v1 - get_gij2(0, 1) * v2) / dv;
+
+			//Svv/Svs
 			double val1 = get__Sij(0, 0) * v1 * v1 + 2 * get__Sij(0, 1) * v1 * v2 + get__Sij(1, 1) * v2 * v2;
-			double val2 = get__Sij(0, 0) * get_Gij2(0, 0) + 2 * get__Sij(0, 1) * get_Gij2(0, 1) + get__Sij(1, 1) * get_Gij2(1, 1);
-			return /*1.0-*/2.0*val1/val2;
+			double val2 = get__Sij(0, 0) * v1 * s1 + get__Sij(0, 1) * v1 * s2 + get__Sij(1, 0) * v2 * s1 + get__Sij(1, 1) * v2 * s2;              // get__Sij(0, 0) * get_Gij2(0, 0) + 2 * get__Sij(0, 1) * get_Gij2(0, 1) + get__Sij(1, 1) * get_Gij2(1, 1);
+				if (val1 * val1 + val2 * val2 == 0)return 1;
+				return /*1.0-*/val1 / sqrt(val1*val1+ val2*val2);
 		}
 
 
@@ -9321,6 +9330,9 @@ namespace KingOfMonsters {
 		}
 		double SLOPE(int l, int i) {
 			return __mem->SLOPE(l, i);
+		}
+		double _SLOPE(int l, int i) {
+			return __mem->_SLOPE(l, i);
 		}
 		double constant_SLOPE_z(double dcdtstar0, double dcdtstar1, bool accurate) {
 			return __mem->constant_SLOPE_z(dcdtstar0, dcdtstar1, accurate);
