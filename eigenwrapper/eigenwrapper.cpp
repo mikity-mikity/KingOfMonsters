@@ -3484,12 +3484,18 @@ int64_t KingOfMonsters::_mySparse::_solveI(_mySparse* ret)
 	//Eigen::SparseLU<Eigen::SparseMatrix<double,Eigen::ColMajor>> llt;
 	//Eigen::FullPivLU<
 }
-int64_t KingOfMonsters::_mySparse::_solveI_dense(_mySparse* ret)
+std::string KingOfMonsters::_mySparse::_solveI_dense(_mySparse * ret)
 {
 	//ret->_dmat = this->_dmat.inverse();
 	//return 0;
-	ret->_dmat = this->_dmat.inverse();
-	return 0;
+	std::stringstream sss;
+	int N = ret->_dmat.rows();
+	Eigen::FullPivHouseholderQR<Eigen::MatrixXd> solve(this->_dmat);
+	ret->_dmat = solve.inverse();// this->_dmat.inverse();
+	sss << "rank"<<solve.rank();
+	sss << "row()" << this->_dmat.rows();
+	sss << "solveI" << "residual=" << ((this->_dmat * ret->_dmat - Eigen::MatrixXd::Identity(N, N)).trace());
+	return sss.str();
 	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);	
 	//Eigen::SimplicialLLT<Eigen::SparseMatrix<double>, Eigen::ColMajor> llt;
 	//Eigen::SparseLU<Eigen::SparseMatrix<double,Eigen::ColMajor>> llt;

@@ -1747,8 +1747,10 @@ namespace KingOfMonsters {
 		Int64 solveI(mySparse^ ret) {
 			return this->dat->_solveI(ret->dat);
 		}
-		Int64 solveI_dense(mySparse^ ret) {
-			return this->dat->_solveI_dense(ret->dat);
+		System::String^ solveI_dense(mySparse^ ret) {
+			auto _ss = this->dat->_solveI_dense(ret->dat);
+			auto ss = gcnew System::String(_ss.c_str());
+			return ss;
 		}
 		System::String^ solveI_gpu(myCuda^ gpu, mySparse^ ret) {
 			auto _ss = this->dat->_solveI_gpu_single(gpu->cuda(), ret->dat);

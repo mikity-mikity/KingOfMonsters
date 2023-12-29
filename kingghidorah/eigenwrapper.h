@@ -19,15 +19,15 @@
 */
 #ifndef _CPU
 #include <cuda_runtime.h>
-//#include <device_launch_paraMeters.h>
+#include <device_launch_paraMeters.h>
 #include<cuda.h>
-//#include <cuda_runtime_api.h>
+#include <cuda_runtime_api.h>
 #endif
 #include <stdlib.h>
 #include <stdio.h>
 #include <cusolverDn.h>
 #include <cusolverMg.h>
-//#include <cublas_v2.h>
+#include <cublas_v2.h>
 #include <chrono>
 #include <vector>
 #include <map>
@@ -300,7 +300,9 @@ namespace KingOfMonsters {
 		void setmiddlecolum(Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>& f, int64_t start, int64_t end);
 		void solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void LSsolve(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, double, int mode);
-		void Project(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, double);		
+		void Project(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, double);
+		//void _solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
+		//Eigen::MatrixXd _solve0(_myLLT* LLT, _mySparse* mat);
 		std::string _solve0_lu_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering);
 		std::string _solve0_chol_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering);
 		void solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
@@ -314,7 +316,7 @@ namespace KingOfMonsters {
 		void turnDense();
 		void _solve0_gpu(KingOfMonsters::cuda* cuda, _mySparse* rhs, _mySparse* ret);
 		int64_t _solveI(_mySparse* ret);
-		int64_t _solveI_dense(_mySparse* ret);
+		std::string _solveI_dense(_mySparse* ret);
 		std::string _solveI_gpu_sparse(KingOfMonsters::cuda* cuda, _mySparse* ret);
 		std::string _solveI_gpu(KingOfMonsters::cuda* cuda, _mySparse* ret);
 		std::string _solveI_cpu(_mySparse* ret);
@@ -324,7 +326,7 @@ namespace KingOfMonsters {
 		void plus(Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>* m);
 		//void _solveI_gpu_mg(KingOfMonsters::cuda* cuda, _mySparse* ret);
 		void __solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
-		//Eigen::MatrixXd _solve0(_myLLT* LLT, _mySparse* mat);
+
 		Eigen::MatrixXd inv();
 		Eigen::MatrixXd solve0(_mySparse* rhs);
 		void minus(_mySparse* m);
