@@ -639,7 +639,7 @@ namespace KingOfMonsters {
 		const int ___ll[4]{ 0,3,6,9 };
 	public:
 		double x, y, z, Z, _Z, phi, eta, xi,mu,nu,xi_1, xi_2, eta_1, eta_2;;/// , chi;
-		double dv, _dv;
+		double dv, _dv, sigma_dv,sigma_trace;
 	public:
 		inline void set_lo(double L1, double L2) {
 			lo[0] = L1;
@@ -1430,11 +1430,12 @@ namespace KingOfMonsters {
 			
 			
 			eij[2] = eij[1];
+			sigma_dv = sqrt(eij[0] * eij[3] - eij[1] * eij[1]);
 			Eij[0] = eij[3]*sc;
 			Eij[3] = eij[0]*sc;
 			Eij[1] = -eij[1]*sc;
 			Eij[2] = -eij[1]*sc;
-			//double tr = Eij[0] * _ref->get__gij(0, 0) + 2 * Eij[1] * _ref->get__gij(0, 1) + Eij[3] * _ref->get__gij(1, 1);
+			sigma_trace = Eij[0] * _ref->get__gij(0, 0) + 2 * Eij[1] * _ref->get__gij(0, 1) + Eij[3] * _ref->get__gij(1, 1);
 			//trEij = tr;
 			//tr = eij[0] * _ref->get__Gij(0, 0) + 2 * eij[1] * _ref->get__Gij(0, 1) + eij[3] * _ref->get__Gij(1, 1);
 			//treij = tr;
@@ -9509,6 +9510,14 @@ namespace KingOfMonsters {
 		//body force reference area
 		double G(int i) {
 			return __mem->G(i);
+		}
+		double get_sgima_dv()
+		{
+			return __mem->sigma_dv;
+		}
+		double get_sgima_trace()
+		{
+			return __mem->sigma_trace;
 		}
 		//bending term
 		double K(int i, int s, int j, int k, double _la, double _mu) {
