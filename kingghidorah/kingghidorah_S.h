@@ -9515,7 +9515,7 @@ namespace KingOfMonsters {
 		{
 			return __mem->sigma_dv;
 		}
-		double get_sgima_trace()
+		double get_sigma_trace()
 		{
 			return __mem->sigma_trace;
 		}
