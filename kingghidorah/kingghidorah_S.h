@@ -7419,6 +7419,7 @@ namespace KingOfMonsters {
 			double E21 = w1 * (v2 * v1) + w2 * (s2 * s1);
 			double E22 = w1 * (v2 * v2) + w2 * (s2 * s2);
 
+
 			double scale = 1 / _ref->_refDv;
 			val = (get__hij(0, 0) *E11 * get__Sij(0, 1) + get__hij(0, 0) * E12 * get__Sij(1, 1) + get__hij(0, 1) *E21 * get__Sij(0, 1) + get__hij(0, 1) * E22 * get__Sij(1, 1)) * scale;
 			val -= (get__hij(1, 0) *E11* get__Sij(0, 0) + get__hij(1, 0) * E12 * get__Sij(1, 0) + get__hij(1, 1) * E21 * get__Sij(0, 0) + get__hij(1, 1) * E22 * get__Sij(1, 0)) * scale;
@@ -7447,13 +7448,30 @@ namespace KingOfMonsters {
 			double val = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
+				double _g11 = 0, _g12 = 0, _g22 = 0;
+				for (int t = 0; t < _ref->_nNode; t++)
+				{
+					_g11 += 2 * (_ref->d1[0][s]) * (_ref->d1[0][t]) * _ref->buf_z[t];
 
+					_g12 += (_ref->d1[0][s]) * (_ref->d1[1][t]) * _ref->buf_z[t];
+					_g12 += (_ref->d1[1][s]) * (_ref->d1[0][t]) * _ref->buf_z[t];
+
+					_g22 += 2 * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_z[t];
+				}
+				double _g21 = _g12;
+
+				double _s1 = (v1 * _g12+ v2 * _g22) / dv;
+				double _s2 = (-v1 * _g11 - v2 * _g12) / dv;
+			
 				double _S11 = (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
 				double _S21 = _S12;
 				val = (get__hij(0, 0) * E11 * _S12 + get__hij(0, 0) * E12 * _S22 + get__hij(0, 1) * E21 * _S12 + get__hij(0, 1) * E22 * _S22) * scale;
 				val -= (get__hij(1, 0) * E11 * _S11 + get__hij(1, 0) *E12 * _S21 + get__hij(1, 1) * E21 * _S11 + get__hij(1, 1) * E22 * _S21) * scale;
+				val += (get__hij(0, 0) * (_s1*_s1)*get__Sij(0, 1) + get__hij(0, 0) * (_s1 * _s2) * get__Sij(1, 1) + get__hij(0, 1) * (_s1 * _s2) * get__Sij(0, 1) + get__hij(0, 1) * (_s2 * _s2) * get__Sij(1, 1)) * scale;
+				val -= (get__hij(1, 0) * (_s1 * _s1) * get__Sij(0, 0) + get__hij(1, 0) * (_s1 * _s2) * get__Sij(1, 0) + get__hij(1, 1) * (_s1 * _s2) * get__Sij(0, 0) + get__hij(1, 1) * (_s2 * _s2) * get__Sij(1, 0)) * scale;
+
 				*ptr1 = val;
 				ptr1++;
 			}
