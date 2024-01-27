@@ -1930,8 +1930,9 @@ int64_t KingOfMonsters::_mySparse::numBlocks()
 std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 {	
 	static std::vector<std::vector<int64_t>> index;
-	static std::map<_mySparse*,std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>>> ___e;
-	static std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>> e2;
+	static std::map<_mySparse*, std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>>> ___e;
+	static std::map<_mySparse*, std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>>> ___e2;
+	//static std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>> e2;
 	auto ss = std::stringstream();
 	auto now = high_resolution_clock::now();
 	int64_t nn = this->cols();
@@ -1944,11 +1945,13 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 	now = high_resolution_clock::now();
 	int64_t __mt = _mt;// std::min(_nt / 10, _mt * 10);
 	std::vector < Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>>* e;
+	std::vector < Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>>* e2;
 	if (___e.contains(this))e = &___e[this]; else { std::vector < Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>> _e; ___e[this] = _e; e = &___e[this]; }
+	if (___e2.contains(this))e2 = &___e2[this]; else { std::vector < Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>> _e2; ___e2[this] = _e2; e2 = &___e2[this]; }
 	if (e->size() < __mt)
 	{
 		e->resize(__mt);
-		e2.resize(__mt);
+		e2->resize(__mt);
 	}
 	//Eigen::initParallel();
 	//Eigen::setNbThreads(1);
@@ -1989,8 +1992,8 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 			(*e)[i].makeCompressed();
 		}
 		memset((*e)[i].valuePtr(), 0, sizeof(double) * prevmat->nonZeros());
-		e2[i].resize(nn, mm);
-		e2[i].reserve(nn * mm / 100);
+		(*e2)[i].resize(nn, mm);
+		(*e2)[i].reserve(nn * mm / 100);
 	}
 	index.resize(__mt);
 #pragma omp parallel for
@@ -2002,7 +2005,7 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 		//auto _e = e[_ii];
 		for (int64_t tt = 0; tt < 4000; tt++)
 		{
-//#pragma omp critical
+#pragma omp critical
 			{
 				S = job;
 				E = job + sss;
@@ -2018,48 +2021,25 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 				
 					if (_map == 0)
 					{
-						e2[_ii] = this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
-						(*e)[_ii] += e2[_ii];
+						(*e2)[_ii] = this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
+						(*e)[_ii] += (*e2)[_ii];
 					}
 					else {
 						
-						int rows = this->_mat[ii].rows();
-						auto M = this->_mat[ii];
-
-						auto C = coeff[ii];
-						double val = 0;
-							for (int64_t k = 0; k < mm; ++k) {								
-								for(int64_t t=0; t<mm; ++t) {
-									val = 0;
-									Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>::InnerIterator it(M, k);
-									Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>::InnerIterator it2(M, t);
-									
-									double* Cptr = C.data();
-									for (int s = 0; s < rows; ++s)
-									{
-										val += it.value() * it2.value() * *Cptr;
-										++it;
-										++it2;
-										++Cptr;
-									}
-									*((*e)[_ii].valuePtr() + (*_map)[k*mm+t]) += val;
-									
-								}
-							}
 						
 						//auto cc = coeff[ii].asDiagonal();
-						/*e2[_ii] = this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
-						if (e2[_ii].nonZeros() > 0)
+						(*e2)[_ii] = this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
+						if ((*e2)[_ii].nonZeros() > 0)
 						{
 							//int64_t* ptr = &index[_ii][0];
 							for (int64_t k = 0; k < mm; ++k) {
-								for (Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>::InnerIterator it(e2[_ii], k); it; ++it) {
+								for (Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>::InnerIterator it((*e2)[_ii], k); it; ++it) {
 									//e[0].coeffRef(it.row(), it.col()) += it.value();
 									*((*e)[_ii].valuePtr() + (*_map)[it.row() * mm + it.col()]) += it.value();
 									//ptr++;
 								}
 							}
-						}*/
+						}
 						//e[_ii].makeCompressed();
 					}				
 			}
