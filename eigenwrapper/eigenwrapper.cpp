@@ -2002,7 +2002,7 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 		//auto _e = e[_ii];
 		for (int64_t tt = 0; tt < 4000; tt++)
 		{
-#pragma omp critical
+//#pragma omp critical
 			{
 				S = job;
 				E = job + sss;
@@ -2022,9 +2022,33 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 						(*e)[_ii] += e2[_ii];
 					}
 					else {
-						auto cc = coeff[ii].asDiagonal();
 						
-						e2[_ii] = this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
+						int rows = this->_mat[ii].rows();
+						auto M = this->_mat[ii];
+
+						auto C = coeff[ii];
+						double val = 0;
+							for (int64_t k = 0; k < mm; ++k) {								
+								for(int64_t t=0; t<mm; ++t) {
+									val = 0;
+									Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>::InnerIterator it(M, k);
+									Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>::InnerIterator it2(M, t);
+									
+									double* Cptr = C.data();
+									for (int s = 0; s < rows; ++s)
+									{
+										val += it.value() * it2.value() * *Cptr;
+										++it;
+										++it2;
+										++Cptr;
+									}
+									*((*e)[_ii].valuePtr() + (*_map)[k*mm+t]) += val;
+									
+								}
+							}
+						
+						//auto cc = coeff[ii].asDiagonal();
+						/*e2[_ii] = this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
 						if (e2[_ii].nonZeros() > 0)
 						{
 							//int64_t* ptr = &index[_ii][0];
@@ -2035,7 +2059,7 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 									//ptr++;
 								}
 							}
-						}
+						}*/
 						//e[_ii].makeCompressed();
 					}				
 			}
