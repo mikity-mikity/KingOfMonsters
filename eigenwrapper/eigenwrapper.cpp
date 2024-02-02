@@ -1746,7 +1746,10 @@ void KingOfMonsters::_mySparse::addrow(int64_t ii, int64_t* ptr, double* data, i
 	ptr += shift;
 	if (dat.size() != 1)dat.resize(1);
 	if (_coeff.size() != 1)_coeff.resize(1);
-	dat[0].reserve(dat[0].size() + N);
+	if(dat[0].capacity()<dat[0].size()+N)
+		dat[0].reserve(dat[0].size() + N*50);
+	if (_coeff[0].capacity() < coeff[0].size() + N)
+		_coeff[0].reserve(_coeff[0].size() + N * 50);
 	for (int64_t i = 0; i < N; i++)
 	{
 		dat[0].push_back(Eigen::Triplet<double>(ii, *ptr, (*data)*__coeff));
