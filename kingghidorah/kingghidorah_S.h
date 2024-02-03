@@ -69,7 +69,8 @@ namespace KingOfMonsters {
 		double _Gammaijk[8];
 		double _gammaijk[8];
 		double* __dh[4]{ 0,0,0,0 };
-		
+		double Fij[4];//LR->HR transformation matrix
+		double sc11=0, sc22=0, sc12=0, sc21=0;
 		double* __mat = 0;
 		double** M[2]{ 0,0 };
 		int** dd = 0;
@@ -1482,11 +1483,11 @@ namespace KingOfMonsters {
 		
 
 		}
-		void update2()
+		void update2(std::string __mode)
 		{
-			update2(0);
+			update2(0,__mode);
 		}
-		void update2(_memS_ref *LR) {
+		void update2(_memS_ref *LR,string __mode) {
 			if (!_ref->initialized || RAM == SAVE)
 			{
 
@@ -1695,7 +1696,7 @@ namespace KingOfMonsters {
 			this->phi = val;
 
 
-
+			if (__mode == "SIMPLE")return;
 			
 
 			
@@ -1856,6 +1857,20 @@ namespace KingOfMonsters {
 			N[0] = Nx;
 			N[1] = Ny;
 			N[2] = Nz;
+			
+
+			if (!_ref->initialized && LR!=0)
+			{
+				_ref->Fij[0] = LR->get__Gi(0, 0) * get_gi(0, 0) + LR->get__Gi(0, 1) * get_gi(0, 1);
+				_ref->Fij[1] = LR->get__Gi(0, 0) * get_gi(1, 0) + LR->get__Gi(0, 1) * get_gi(1, 1);
+				_ref->Fij[2] = LR->get__Gi(1, 0) * get_gi(0, 0) + LR->get__Gi(1, 1) * get_gi(0, 1);
+				_ref->Fij[3] = LR->get__Gi(1, 0) * get_gi(1, 0) + LR->get__Gi(1, 1) * get_gi(1, 1);	
+				_ref->sc11 = _ref->Fij[0] * _ref->Fij[0];
+				_ref->sc12 = _ref->Fij[0] * _ref->Fij[3];
+				_ref->sc21 = _ref->sc12;
+				_ref->sc22 = _ref->Fij[3] * _ref->Fij[3];
+
+			}
 			if (mode == "SLOPE")
 			{
 				if (!_ref->initialized)
@@ -1966,7 +1981,7 @@ namespace KingOfMonsters {
 				}
 			}
 
-
+			if (__mode == "STANDARD")return;
 
 
 
@@ -2025,7 +2040,7 @@ namespace KingOfMonsters {
 									}
 								}
 								*/
-								val = _ref->__dh[0][i] * LR->__dh[3][j] - 2 * _ref->__dh[1][i] * LR->__dh[1][j] + _ref->__dh[3][i] * LR->__dh[0][j];
+								val = _ref->__dh[0][i] * LR->__dh[3][j]*_ref->sc22 - 2 *_ref->__dh[1][i] * LR->__dh[1][j]* _ref->sc12 + _ref->__dh[3][i] * LR->__dh[0][j]* _ref->sc11;
 								*pptr = val;
 								pptr++;
 								//_pt0++;
@@ -2117,7 +2132,7 @@ namespace KingOfMonsters {
 						*pptr2 = val2 * sc;
 						pptr2++;
 					}
-					pptr = _ref->__mat;
+					pptr = &_ref->__mat[0];
 					pptr1 = &_ref->buf_z[0];
 					pptr2 = &__grad_z[0];
 					/*for (int j = 0; j < _nNode; j++) {
@@ -8332,7 +8347,7 @@ namespace KingOfMonsters {
 			}
 
 		}
-		double align_mix2(double v1, double v2, double s1,double s2,double w1, double w2)
+		double align_mix2(_memS *LR, double v1, double v2, double s1,double s2,double w1, double w2)
 		{
 			double val = 0;
 			/*double length = get_gij2(0, 0) * v1 * v1 + 2 * get_gij2(0, 1) * v1 * v2 + get_gij2(1, 1) * v2 * v2;
@@ -8350,15 +8365,15 @@ namespace KingOfMonsters {
 
 
 			double scale = 1 / _ref->_refDv;
-			val = (get__hij(0, 0) * E11 * get__Sij(0, 1) + get__hij(0, 0) * E12 * get__Sij(1, 1) + get__hij(0, 1) * E21 * get__Sij(0, 1) + get__hij(0, 1) * E22 * get__Sij(1, 1)) * scale;
-			val -= (get__hij(1, 0) * E11 * get__Sij(0, 0) + get__hij(1, 0) * E12 * get__Sij(1, 0) + get__hij(1, 1) * E21 * get__Sij(0, 0) + get__hij(1, 1) * E22 * get__Sij(1, 0)) * scale;
+			val = (get__hij(0, 0)*_ref->sc11 * E11 * get__Sij(0, 1) + get__hij(0, 0)* _ref->sc11 * E12 * get__Sij(1, 1) + get__hij(0, 1) * _ref->sc12 * E21 * get__Sij(0, 1) + get__hij(0, 1) * _ref->sc12 * E22 * get__Sij(1, 1))* scale;
+			val -= (get__hij(1, 0) * _ref->sc21 * E11 * get__Sij(0, 0) + get__hij(1, 0) * _ref->sc21 * E12 * get__Sij(1, 0) + get__hij(1, 1) * _ref->sc22 * E21 * get__Sij(0, 0) + get__hij(1, 1) * _ref->sc22 * E22 * get__Sij(1, 0)) * scale;
 
 			return val;
 
 		}
 
 
-		void align_mix2_z(double* ptr, double v1, double v2, double s1, double s2, double w1, double w2)
+		void align_mix2_z(_memS* LR,double* ptr, double v1, double v2, double s1, double s2, double w1, double w2)
 		{
 
 			/*double length = get_gij2(0, 0) * v1 * v1 + 2 * get_gij2(0, 1) * v1 * v2 + get_gij2(1, 1) * v2 * v2;
@@ -8393,12 +8408,12 @@ namespace KingOfMonsters {
 				//double _s2 = (-v1 * _g11 - v2 * _g12) / dv;
 				//_s1 += -(v1 * get_gij2(0, 1) + v2 * get_gij2(1, 1)) / dv / dv * ddv;
 				//_s2 += -(-v1 * get_gij2(0, 0) - v2 * get_gij2(0, 1)) / dv / dv * ddv;
-				double _S11 = (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
-				double _S12 = (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
-				double _S22 = (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+				double _S11 = _ref->__dh[0][s];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+				double _S12 = _ref->__dh[1][s];// (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+				double _S22 = _ref->__dh[3][s];// (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
 				double _S21 = _S12;
-				val = (get__hij(0, 0) * E11 * _S12 + get__hij(0, 0) * E12 * _S22 + get__hij(0, 1) * E21 * _S12 + get__hij(0, 1) * E22 * _S22) * scale;
-				val -= (get__hij(1, 0) * E11 * _S11 + get__hij(1, 0) * E12 * _S21 + get__hij(1, 1) * E21 * _S11 + get__hij(1, 1) * E22 * _S21) * scale;
+				val = (get__hij(0, 0) * _ref->sc11 * E11 * _S12 + get__hij(0, 0) * _ref->sc11 * E12 * _S22 + get__hij(0, 1) * _ref->sc12 * E21 * _S12 + get__hij(0, 1) * _ref->sc12 * E22 * _S22) * scale;
+				val -= (get__hij(1, 0) * _ref->sc21 * E11 * _S11 + get__hij(1, 0) * _ref->sc21 * E12 * _S21 + get__hij(1, 1) * _ref->sc22 * E21 * _S11 + get__hij(1, 1) * _ref->sc22 * E22 * _S21) * scale;
 				//val += (get__hij(0, 0) * (2 * w2 * _s1 * s1) * get__Sij(0, 1) + get__hij(0, 0) * (w2 * s1 * _s2 + w2 * _s1 * s2) * get__Sij(1, 1) + get__hij(0, 1) * (w2 * s1 * _s2 + w2 * _s1 * s2) * get__Sij(0, 1) + get__hij(0, 1) * (2 * w2 * s2 * _s2) * get__Sij(1, 1)) * scale;
 				//val -= (get__hij(1, 0) * (2 * w2 * _s1 * s1) * get__Sij(0, 0) + get__hij(1, 0) * (w2 * s1 * _s2 + w2 * _s1 * s2) * get__Sij(1, 0) + get__hij(1, 1) * (w2 * s1 * _s2 + w2 * _s1 * s2) * get__Sij(0, 0) + get__hij(1, 1) * (2 * w2 * s2 * _s2) * get__Sij(1, 0)) * scale;
 
@@ -8407,7 +8422,7 @@ namespace KingOfMonsters {
 			}
 
 		}
-		void align_mix2_phi(double* ptr, double v1, double v2, double s1, double s2, double w1, double w2)
+		void align_mix2_phi(_memS* LR,double* ptr, double v1, double v2, double s1, double s2, double w1, double w2)
 		{
 
 			/*double length = get_gij2(0, 0) * v1 * v1 + 2 * get_gij2(0, 1) * v1 * v2 + get_gij2(1, 1) * v2 * v2;
@@ -8428,9 +8443,9 @@ namespace KingOfMonsters {
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 
-				double _h11 = (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
-				double _h12 = (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
-				double _h22 = (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+				double _h11 = LR->_ref->__dh[0][s] * _ref->sc11;// (LR->_ref->d2[0][s] - LR->_ref->_Gammaijk[0] * LR->_ref->d1[0][s] - LR->_ref->_Gammaijk[1] * LR->_ref->d1[1][s])* _ref->sc11;
+				double _h12 = LR->_ref->__dh[1][s] * _ref->sc12;// (LR->_ref->d2[1][s] - LR->_ref->_Gammaijk[2] * LR->_ref->d1[0][s] - LR->_ref->_Gammaijk[3] * LR->_ref->d1[1][s])* _ref->sc12;
+				double _h22 = LR->_ref->__dh[3][s] * _ref->sc22;// (LR->_ref->d2[3][s] - LR->_ref->_Gammaijk[6] * LR->_ref->d1[0][s] - LR->_ref->_Gammaijk[7] * LR->_ref->d1[1][s]) * _ref->sc22;
 				double _h21 = _h12;
 				val = (_h11 * E11 * get__Sij(0, 1) + _h11 * E12 * get__Sij(1, 1) + _h12 * E21 * get__Sij(0, 1) + _h12 * E22 * get__Sij(1, 1)) * scale;
 				val -= (_h21 * E11 * get__Sij(0, 0) + _h21 * E12 * get__Sij(1, 0) + _h22 * E21 * get__Sij(0, 0) + _h22 * E22 * get__Sij(1, 0)) * scale;
@@ -10484,20 +10499,20 @@ namespace KingOfMonsters {
 			__mem->align_mix_phi(__mem->__grad, v1, v2, w1, w2);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
 		}
-		double align_mix2(double v1, double v2,double s1,double s2, double w1, double w2)
+		double align_mix2(memS ^LR, double v1, double v2,double s1,double s2, double w1, double w2)
 		{
-			return __mem->align_mix2(v1, v2, s1,s2,w1, w2);
+			return __mem->align_mix2(LR->__mem, v1, v2, s1,s2,w1, w2);
 		}
 
 
-		void align_mix2_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, double s1, double s2, double w1, double w2)
+		void align_mix2_z(memS^ LR,mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, double s1, double s2, double w1, double w2)
 		{
-			__mem->align_mix2_z(__mem->__grad, v1, v2, s1,s2,w1, w2);
+			__mem->align_mix2_z(LR->__mem, __mem->__grad, v1, v2, s1,s2,w1, w2);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
 		}
-		void align_mix2_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, double s1, double s2, double w1, double w2)
+		void align_mix2_phi(memS^ LR,mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, double s1, double s2, double w1, double w2)
 		{
-			__mem->align_mix2_phi(__mem->__grad, v1, v2, s1,s2,w1, w2);
+			__mem->align_mix2_phi(LR->__mem, __mem->__grad, v1, v2, s1,s2,w1, w2);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
 		}
 		double mix2(double v1, double v2, double w1, double w2, bool accurate)
@@ -11095,13 +11110,13 @@ namespace KingOfMonsters {
 			double z = __mem->get_Gi(0, 2) * d1 + __mem->get_Gi(1, 2) * d2;
 			return sqrt(x * x + y * y + z * z);
 		}
-		void compute() {
-			compute(nullptr);
+		void compute(String ^simple) {
+				compute(nullptr,simple);
 		}
-		double compute(memS_ref^ LR) {
-			
-			
-		
+		void compute() {
+			compute(nullptr,"FULL");
+		}
+		double compute(memS_ref^ LR,String ^simple) {		
 			if (__mem->RAM == SAVE)
 			{
 				__mem->_ref->__mat = __mem->__mat;
@@ -11126,10 +11141,21 @@ namespace KingOfMonsters {
 
 			if (LR == nullptr)
 			{
-				__mem->update2(0);
+				if(simple=="SIMPLE")
+					__mem->update2(0,"SIMPLE");
+				else if (simple == "FULL")
+					__mem->update2(0, "FULL");
+				else
+					__mem->update2(0, "STANDARD");
+
 			}
 			else {
-				__mem->update2(LR->__mem);
+				if (simple == "SIMPLE")
+					__mem->update2(LR->__mem, "SIMPLE");
+				else if (simple == "FULL")
+					__mem->update2(LR->__mem, "FULL");
+				else
+					__mem->update2(LR->__mem, "STANDARD");
 			}
 			// 3. 現在日時を再度取得
 			high_resolution_clock::time_point end = high_resolution_clock::now();

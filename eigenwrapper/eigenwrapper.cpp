@@ -27,6 +27,8 @@ bool __cuinit = false;
 std::map<std::tuple<KingOfMonsters::_mySparse*,int64_t>, KingOfMonsters::spgemm> dict;
 std::map<KingOfMonsters::_mySparse*, Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>> dict2;
 std::map< Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>*, std::vector<int64_t>>  map;
+static std::map<KingOfMonsters::_mySparse*, std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>>> ___e;
+static std::map<KingOfMonsters::_mySparse*, std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>>> ___e2;
 
 void KingOfMonsters::cuda::disable()
 {
@@ -1932,9 +1934,8 @@ int64_t KingOfMonsters::_mySparse::numBlocks()
 
 std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 {	
-	static std::vector<std::vector<int64_t>> index;
-	static std::map<_mySparse*, std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>>> ___e;
-	static std::map<_mySparse*, std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>>> ___e2;
+	//static std::vector<std::vector<int64_t>> index;
+
 	//static std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>> e2;
 	auto ss = std::stringstream();
 	auto now = high_resolution_clock::now();
@@ -1998,7 +1999,7 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 		(*e2)[i].resize(nn, mm);
 		(*e2)[i].reserve(nn * mm / 100);
 	}
-	index.resize(__mt);
+	//index.resize(__mt);
 #pragma omp parallel for
 	for (int64_t _ii = 0; _ii < __mt; _ii++)
 	{

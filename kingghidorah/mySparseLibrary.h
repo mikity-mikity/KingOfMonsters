@@ -1172,10 +1172,10 @@ namespace KingOfMonsters {
 			return ret;
 		}
 		System::String^ _ofAtA_sparse(mySparse^ m) {
-			return ofAtA(m, true);
-			//auto str = dat->_ofAtA_sparse(m->dat);
-			//auto ret = gcnew System::String(str.c_str());
-			//return ret;
+			//return ofAtA(m, true);
+			auto str = dat->_ofAtA_sparse(m->dat);
+			auto ret = gcnew System::String(str.c_str());
+			return ret;
 		}
 		void ofAtB(mySparse^ m, bool sparse) {
 			dat->ofAtB(m->dat, sparse);
