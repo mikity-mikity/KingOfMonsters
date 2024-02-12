@@ -29,6 +29,9 @@ std::map<KingOfMonsters::_mySparse*, Eigen::SparseMatrix<double, Eigen::ColMajor
 std::map< Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>*, std::vector<int64_t>>  map;
 static std::map<KingOfMonsters::_mySparse*, std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>>> ___e;
 static std::map<KingOfMonsters::_mySparse*, std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>>> ___e2;
+static std::map<KingOfMonsters::_mySparse*, std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>>> ___e3;
+static std::map<KingOfMonsters::_mySparse*, std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>>> ___e4;
+
 
 void KingOfMonsters::cuda::disable()
 {
@@ -1950,6 +1953,7 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 	int64_t __mt = _mt;// std::min(_nt / 10, _mt * 10);
 	std::vector < Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>>* e;
 	std::vector < Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>>* e2;
+
 	if (___e.contains(this))e = &___e[this]; else { std::vector < Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>> _e; ___e[this] = _e; e = &___e[this]; }
 	if (___e2.contains(this))e2 = &___e2[this]; else { std::vector < Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>> _e2; ___e2[this] = _e2; e2 = &___e2[this]; }
 	if (e->size() < __mt)
@@ -2362,6 +2366,45 @@ void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B,/* Eigen::VectorXd* b, */_m
 
 	//*ret = D.transpose() * *b;
 }
+void KingOfMonsters::_mySparse::_ofCtAB(_mySparse* B, _mySparse* C/* Eigen::VectorXd* b, */,_mySparse* D/*, Eigen::VectorXd* ret*/)
+{
+	Eigen::MatrixXd _D;
+
+	int64_t nn = C->_mat[0].cols();
+	int64_t mm = B->_mat[0].cols();
+	int64_t kk = _dmat.cols();// __c;
+
+	D->_dmat.setZero(nn, mm);
+
+	auto left = C->_mat[0].transpose();
+	auto mid = _dmat;
+	auto right = B->_mat[0];
+
+	_D.resize(nn, kk);
+	int64_t ss = kk / _mt / 2;
+
+#pragma omp parallel for schedule(dynamic,4)
+	for (int64_t ii = 0; ii < kk; ii += ss)
+	{
+		int64_t _S = ii;
+		int64_t _E = ii + ss;
+		if (_E >= kk)_E = kk;
+		_D.middleCols(_S, _E - _S).noalias() = left * mid.middleCols(_S, _E - _S);
+	}
+	//D.noalias() = left * mid;
+	ss = mm / _mt / 2;
+#pragma omp parallel for schedule(dynamic,4)
+	for (int64_t ii = 0; ii < mm; ii += ss)
+	{
+		int64_t _S = ii;
+		int64_t _E = ii + ss;
+		if (_E >= mm)_E = mm;
+		D->_dmat.middleCols(_S, _E - _S).noalias() = _D * right.middleCols(_S, _E - _S);
+	}
+
+
+	//*ret = D.transpose() * *b;
+}
 void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B, _mySparse* B2,/* Eigen::VectorXd* b, */_mySparse* C/*, Eigen::VectorXd* ret*/)
 {
 	Eigen::MatrixXd D;
@@ -2371,7 +2414,7 @@ void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B, _mySparse* B2,/* Eigen::Ve
 	int64_t mm = B2->_mat[0].cols();
 	int64_t kk = _dmat.cols();
 
-	C->_dmat.setZero(nn+mm, nn+mm);
+	C->_dmat.setZero(nn + mm, nn + mm);
 
 	auto left = B->_mat[0].transpose();
 	auto mid = _dmat;
@@ -2383,7 +2426,7 @@ void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B, _mySparse* B2,/* Eigen::Ve
 	D2.resize(mm, kk);
 	int64_t ss = kk / _mt / 2;
 
-//#pragma omp parallel for schedule(dynamic,4)
+	//#pragma omp parallel for schedule(dynamic,4)
 	for (int64_t ii = 0; ii < kk; ii += ss)
 	{
 		int64_t _S = ii;
@@ -2391,7 +2434,7 @@ void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B, _mySparse* B2,/* Eigen::Ve
 		if (_E >= kk)_E = kk;
 		D.middleCols(_S, _E - _S).noalias() = left * mid.middleCols(_S, _E - _S);
 	}
-//#pragma omp parallel for schedule(dynamic,4)
+	//#pragma omp parallel for schedule(dynamic,4)
 	for (int64_t ii = 0; ii < kk; ii += ss)
 	{
 		int64_t _S = ii;
@@ -2409,16 +2452,16 @@ void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B, _mySparse* B2,/* Eigen::Ve
 		C->_dmat.middleCols(_S, _E - _S).topRows(nn).noalias() = D * right.middleCols(_S, _E - _S);
 	}
 	ss = mm / _mt / 2;
-//#pragma omp parallel for schedule(dynamic,4)
+	//#pragma omp parallel for schedule(dynamic,4)
 	for (int64_t ii = 0; ii < mm; ii += ss)
 	{
 		int64_t _S = ii;
 		int64_t _E = ii + ss;
 		if (_E >= mm)_E = mm;
-		C->_dmat.middleCols(_S+nn, _E - _S).bottomRows(mm).noalias() = D2 * right2.middleCols(_S, _E - _S);
+		C->_dmat.middleCols(_S + nn, _E - _S).bottomRows(mm).noalias() = D2 * right2.middleCols(_S, _E - _S);
 	}
 	ss = nn / _mt / 2;
-//#pragma omp parallel for schedule(dynamic,4)
+	//#pragma omp parallel for schedule(dynamic,4)
 	for (int64_t ii = 0; ii < nn; ii += ss)
 	{
 		int64_t _S = ii;
@@ -2427,13 +2470,13 @@ void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B, _mySparse* B2,/* Eigen::Ve
 		C->_dmat.middleCols(_S, _E - _S).bottomRows(mm).noalias() = D2 * right.middleCols(_S, _E - _S);
 	}
 	ss = mm / _mt / 2;
-//#pragma omp parallel for schedule(dynamic,4)
+	//#pragma omp parallel for schedule(dynamic,4)
 	for (int64_t ii = 0; ii < mm; ii += ss)
 	{
 		int64_t _S = ii;
 		int64_t _E = ii + ss;
 		if (_E >= mm)_E = mm;
-		C->_dmat.middleCols(_S+nn, _E - _S).topRows(nn).noalias() = D * right2.middleCols(_S, _E - _S);
+		C->_dmat.middleCols(_S + nn, _E - _S).topRows(nn).noalias() = D * right2.middleCols(_S, _E - _S);
 	}
 
 
@@ -2567,8 +2610,6 @@ void KingOfMonsters::_mySparse::_ofCBtAB2(_mySparse* B, _mySparse* C, _mySparse*
 void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)
 {
 	static std::vector<std::vector<int64_t>> index;
-	static std::map<_mySparse*, std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>>> ___e;
-	static std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>> e2;
 	auto ss = std::stringstream();
 	auto now = high_resolution_clock::now();
 	int64_t nn = this->cols();
@@ -2582,12 +2623,14 @@ void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)
 	ss << duration.count() << "ms" << std::endl;
 	now = high_resolution_clock::now();
 	int64_t __mt = _mt;// std::min(_nt / 10, _mt * 10);
-	std::vector < Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>>* e;
-	if (___e.contains(this))e = &___e[this]; else { std::vector < Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>> _e; ___e[this] = _e; e = &___e[this]; }
+	std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>>* e;
+	std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>>* e2;
+	if (___e3.contains(this))e = &___e3[this]; else { std::vector < Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>> _e; ___e3[this] = _e; e = &___e3[this]; }
+	if (___e4.contains(this))e2 = &___e4[this]; else { std::vector < Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>> _e2; ___e4[this] = _e2; e2 = &___e4[this]; }
 	if (e->size() < __mt)
 	{
 		e->resize(__mt);
-		e2.resize(__mt);
+		e2->resize(__mt);
 	}
 	//Eigen::initParallel();
 	//Eigen::setNbThreads(1);
@@ -2628,8 +2671,8 @@ void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)
 			(*e)[i].makeCompressed();
 		}
 		memset((*e)[i].valuePtr(), 0, sizeof(double) * prevmat->nonZeros());
-		e2[i].resize(nn, mm);
-		e2[i].reserve(nn * mm / 100);
+		(*e2)[i].resize(nn, mm);
+		(*e2)[i].reserve(nn * mm / 100);
 	}
 	index.resize(__mt);
 #pragma omp parallel for
@@ -2656,21 +2699,21 @@ void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)
 //#pragma omp critical
 				{
 
-					e2[_ii] = this->_mat[ii].transpose() * coeff[ii].asDiagonal() * B->_mat[ii];
+					(*e2)[_ii] = this->_mat[ii].transpose() * coeff[ii].asDiagonal() * B->_mat[ii];
 	
 
 					//#pragma omp critical
 					{
 						if (_map == 0)
 						{
-							(*e)[_ii] += e2[_ii];
+							(*e)[_ii] += (*e2)[_ii];
 						}
 						else {
-							if (e2[_ii].nonZeros() > 0)
+							if ((*e2)[_ii].nonZeros() > 0)
 							{
 								//int64_t* ptr = &index[_ii][0];
 								for (int64_t k = 0; k < mm; ++k) {
-									for (Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>::InnerIterator it(e2[_ii], k); it; ++it) {
+									for (Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>::InnerIterator it((*e2)[_ii], k); it; ++it) {
 										//e[0].coeffRef(it.row(), it.col()) += it.value();
 										*((*e)[_ii].valuePtr() + (*_map)[it.row() * mm + it.col()]) += it.value();
 										//ptr++;
@@ -3152,6 +3195,17 @@ double KingOfMonsters::_mySparse::computeeigen(_mySparse* i1, _mySparse* i2, _my
 	vec = xXXx * vec;
 	return vec.norm();
 	//return eigen.eigenvalues();
+
+}
+void KingOfMonsters::_myDoubleArray::plus_useindex(double* ptr, double sc, int64_t N, int64_t * index) {
+	double* ptr1 = ptr;
+	int64_t* ptr2 = index;
+	for (int i = 0; i < N; i++)
+	{
+		this->__v(*ptr2) += *ptr1*sc;
+		ptr1++;
+		ptr2++;
+	}
 
 }
 void  KingOfMonsters::_mySparse::project(_mySparse* i1/*JxxJ*/, _mySparse* i2/*JXXJ*/, _mySparse* f1/*JxJX*/,_myDoubleArray* v1,_myDoubleArray* v2, _myDoubleArray* _ret1, _myDoubleArray* _ret2)

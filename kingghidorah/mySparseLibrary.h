@@ -1197,6 +1197,21 @@ namespace KingOfMonsters {
 			//ptr = nullptr;
 			//return ret;
 		}
+		void _ofCtAB(mySparse^ A, mySparse^ B, mySparse^ C, myDoubleArray^ b, myDoubleArray^ ret)
+		{
+			A->dat->_ofCtAB(B->dat, C->dat, this->dat);
+		}
+		void _ofAssemble(mySparse^ TL, mySparse^ TR, mySparse^ BR)
+		{
+			this->dat->_dmat.resize(TL->dat->_dmat.rows()+BR->dat->_dmat.rows(), TL->dat->_dmat.cols() + BR->dat->_dmat.cols());
+			this->dat->_dmat.setZero();
+			this->dat->_dmat.topLeftCorner(TL->dat->_dmat.rows(), TL->dat->_dmat.cols()) = TL->dat->_dmat;
+			this->dat->_dmat.bottomRightCorner(BR->dat->_dmat.rows(), BR->dat->_dmat.cols()) = BR->dat->_dmat;
+			if (TR != nullptr) {
+				this->dat->_dmat.topRightCorner(TL->dat->_dmat.rows(), BR->dat->_dmat.cols()) = TR->dat->_dmat;
+				this->dat->_dmat.bottomLeftCorner(BR->dat->_dmat.rows(), TL->dat->_dmat.cols()) = TR->dat->_dmat.transpose();
+			}
+		}
 		void _ofBtAB(mySparse^ A, mySparse^ B, mySparse^ B2, myDoubleArray^ b, myDoubleArray^ ret)
 		{
 			//pin_ptr<double> ptr = &b[0];

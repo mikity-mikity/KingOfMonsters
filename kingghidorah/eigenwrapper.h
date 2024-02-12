@@ -134,6 +134,7 @@ namespace KingOfMonsters {
 		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	public:
 		Eigen::VectorXd __v;
+		void plus_useindex(double *ptr, double sc, int64_t , int64_t *_arr);
 
 	};
 	class _myLLT {
@@ -280,6 +281,7 @@ namespace KingOfMonsters {
 		void ofAtB(_mySparse* B, bool sparse);
 		void _ofAtB(_mySparse* B, _mySparse* C);
 		void _ofBtAB(_mySparse* B, /*Eigen::VectorXd* b, */_mySparse* C/*, Eigen::VectorXd* ret*/);
+		void _ofCtAB(_mySparse* B, _mySparse* C, /*Eigen::VectorXd* b, */_mySparse* D/*, Eigen::VectorXd* ret*/);
 		void _ofBtAB(_mySparse* B, _mySparse* B2, /*Eigen::VectorXd* b, */_mySparse* C/*, Eigen::VectorXd* ret*/);
 		//void _ofBtAB2(_mySparse* B, _mySparse* C, _mySparse* Q, _mySparse* R, KingOfMonsters::cuda* cuda);
 		void _ofCBtAB(_mySparse* B, _mySparse* C, _mySparse* D);
