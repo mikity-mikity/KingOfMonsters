@@ -167,6 +167,10 @@ namespace KingOfMonsters {
 			//buf_z[i] = val;
 			memcpy(buf_nu, ptr, sizeof(double) * N);
 		}
+		inline void clear_buf_nu(const int& N)
+		{
+			memset(buf_nu, 0, sizeof(double) * N);
+		}
 		inline double& get_node(const int& i, const int& s) {
 			return node[___ll[i] + s];
 		}
@@ -1301,13 +1305,13 @@ namespace KingOfMonsters {
 					LR->__dsigma_22[2][i] += 2 * (*g2i * *g2j * *nuj);
 
 					LR->eij[0] += *g1i * *xii * *g1j * *xij;
-					LR->eij[1] += *g1i * *xii * *g2j * *xij;
-					LR->eij[3] += *g2i * *xii * *g2j * *xij;
 					LR->eij[0] += *g1i * *etai * *g1j * *etaj;
-					LR->eij[1] += *g1i * *etai * *g2j * *etaj;
-					LR->eij[3] += *g2i * *etai * *g2j * *etaj;
 					LR->eij[0] += *g1i * *nui * *g1j * *nuj;
+					LR->eij[1] += *g1i * *xii * *g2j * *xij;
+					LR->eij[1] += *g1i * *etai * *g2j * *etaj;
 					LR->eij[1] += *g1i * *nui * *g2j * *nuj;
+					LR->eij[3] += *g2i * *xii * *g2j * *xij;
+					LR->eij[3] += *g2i * *etai * *g2j * *etaj;
 					LR->eij[3] += *g2i * *nui * *g2j * *nuj;
 					g1j++;
 					g2j++;
@@ -1316,13 +1320,13 @@ namespace KingOfMonsters {
 					nuj++;
 				}
 				LR->__dsigma_11[0][i] *= _ref->sc11;
-				LR->__dsigma_12[0][i] *= _ref->sc12;
-				LR->__dsigma_22[0][i] *= _ref->sc22;
 				LR->__dsigma_11[1][i] *= _ref->sc11;
-				LR->__dsigma_12[1][i] *= _ref->sc12;
-				LR->__dsigma_22[1][i] *= _ref->sc22;
 				LR->__dsigma_11[2][i] *= _ref->sc11;
+				LR->__dsigma_12[0][i] *= _ref->sc12;
+				LR->__dsigma_12[1][i] *= _ref->sc12;
 				LR->__dsigma_12[2][i] *= _ref->sc12;
+				LR->__dsigma_22[0][i] *= _ref->sc22;
+				LR->__dsigma_22[1][i] *= _ref->sc22;
 				LR->__dsigma_22[2][i] *= _ref->sc22;
 
 				g1i++;
@@ -7049,7 +7053,7 @@ namespace KingOfMonsters {
 				double _e11 = __dsigma_11[2][s];
 				double _e12 = __dsigma_12[2][s];
 				double _e21 = _e12;
-				double _e22 = __dsigma_22[2][s];
+				double _e22 = __dsigma_22[2][s]; 
 
 				val = (_e11 * t1 * t1 + 2 * _e12 * t1 * t2 + _e22 * t2 * t2);
 
@@ -9473,6 +9477,9 @@ namespace KingOfMonsters {
 			if (nu != nullptr)
 			{
 				__mem->set_buf_nu(nu->_arr->__v.data(), nNode);
+			}
+			else {
+				__mem->clear_buf_nu(nNode);
 			}
 		}
 		
