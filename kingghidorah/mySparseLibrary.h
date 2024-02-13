@@ -183,9 +183,15 @@ namespace KingOfMonsters {
 		}
 		void plus_useindex(myDoubleArray^ vec, double sc, int N, array<int>^index)
 		{
+			pin_ptr<int> ptr = &index[0];
+			int* ptr1 = ptr;
+			double* ptr2 = vec->_arr->__v.data();
+
 			for (int i = 0; i < N; i++)
 			{
-				this->_arr->__v(index[i]) += sc * vec->_arr->__v(i);
+				this->_arr->__v(*ptr1) += sc * *ptr2;
+				ptr1++;
+				ptr2++;
 			}
 		}
 		void addResidual(myDoubleArray^ r, myDoubleArray^ ret)

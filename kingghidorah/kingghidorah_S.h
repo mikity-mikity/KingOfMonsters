@@ -5600,9 +5600,9 @@ namespace KingOfMonsters {
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				double _e11 = LR->__dsigma_11[0][s] * _ref->sc11;
-				double _e12 = LR->__dsigma_12[0][s] * _ref->sc12;
-				double _e22 = LR->__dsigma_22[0][s] * _ref->sc22;
+				double _e11 = LR->__dsigma_11[0][s];
+				double _e12 = LR->__dsigma_12[0][s];
+				double _e22 = LR->__dsigma_22[0][s];
 
 				double _e21 = _e12;
 
@@ -5645,9 +5645,9 @@ namespace KingOfMonsters {
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				double _e11 = LR->__dsigma_11[1][s] * _ref->sc11;
-				double _e12 = LR->__dsigma_12[1][s] * _ref->sc12;
-				double _e22 = LR->__dsigma_22[1][s] * _ref->sc22;
+				double _e11 = LR->__dsigma_11[1][s];
+				double _e12 = LR->__dsigma_12[1][s];
+				double _e22 = LR->__dsigma_22[1][s];
 
 				double _e21 = _e12;
 
@@ -5691,9 +5691,9 @@ namespace KingOfMonsters {
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				double _e11 = LR->__dsigma_11[2][s] * _ref->sc11;
-				double _e12 = LR->__dsigma_12[2][s] * _ref->sc12;
-				double _e22 = LR->__dsigma_22[2][s] * _ref->sc22;
+				double _e11 = LR->__dsigma_11[2][s];
+				double _e12 = LR->__dsigma_12[2][s];
+				double _e22 = LR->__dsigma_22[2][s];
 
 				double _e21 = _e12;
 
@@ -5720,9 +5720,9 @@ namespace KingOfMonsters {
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				double _e11 = LR->__dsigma_11[0][s]*_ref->sc11;
-				double _e12 = LR->__dsigma_12[0][s] * _ref->sc12;
-				double _e22 = LR->__dsigma_22[0][s] * _ref->sc22;
+				double _e11 = LR->__dsigma_11[0][s];
+				double _e12 = LR->__dsigma_12[0][s];
+				double _e22 = LR->__dsigma_22[0][s];
 
 				double _e21 = _e12;
 
@@ -5741,9 +5741,9 @@ namespace KingOfMonsters {
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				double _e11 = LR->__dsigma_11[1][s] * _ref->sc11;
-				double _e12 = LR->__dsigma_12[1][s] * _ref->sc12;
-				double _e22 = LR->__dsigma_22[1][s] * _ref->sc22;
+				double _e11 = LR->__dsigma_11[1][s];
+				double _e12 = LR->__dsigma_12[1][s];
+				double _e22 = LR->__dsigma_22[1][s];
 
 				double _e21 = _e12;
 
@@ -5762,9 +5762,9 @@ namespace KingOfMonsters {
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				double _e11 = LR->__dsigma_11[2][s]*_ref->sc11;
-				double _e12 = LR->__dsigma_12[2][s] * _ref->sc12;
-				double _e22 = LR->__dsigma_22[2][s] * _ref->sc22;
+				double _e11 = LR->__dsigma_11[2][s];
+				double _e12 = LR->__dsigma_12[2][s];
+				double _e22 = LR->__dsigma_22[2][s];
 
 				double _e21 = _e12;
 
