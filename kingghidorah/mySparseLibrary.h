@@ -247,6 +247,10 @@ namespace KingOfMonsters {
 		void plus(myDoubleArray^ a, double sc) {
 			_arr->__v += a->_arr->__v * sc;
 		}
+		void plus(myDoubleArray^ a, double sc, int S1, int S2, int L)
+		{
+			_arr->__v.middleRows(S1, L) += a->_arr->__v.middleRows(S2, L) * sc;
+		}
 		!myDoubleArray()
 		{
 			if (_arr != 0)

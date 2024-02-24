@@ -3454,13 +3454,15 @@ namespace KingOfMonsters {
 
 			double f1 = a * _ref->get__gi(0, 0) + b * _ref->get__gi(0, 1);
 			double f2 = a * _ref->get__gi(1, 0) + b * _ref->get__gi(1, 1);
-			return f1 * v1 + f1 * v2;
+			return f1 * v1 + f2 * v2;
 		}
 
 		void _Dc2_x(double *ptr, double a, double b, double v1, double v2) {
 			double length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + 2 * v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
 			//v1 /= length;
 			//v2 /= length;
+			double ov1 = v1 / length;
+			double ov2 = v2 / length;
 
 			double f1 = a * _ref->get__gi(0, 0) + b * _ref->get__gi(0, 1);
 			double f2 = a * _ref->get__gi(1, 0) + b * _ref->get__gi(1, 1);
@@ -3479,7 +3481,10 @@ namespace KingOfMonsters {
 				double _length = 0.5 / (length) * (v1 * v1 * _g11 + 2 * v1 * v2 * _g12 + v2 * v2 * _g22);
 				double _v1 = -v1 / length / length * _length;
 				double _v2 = -v2 / length / length * _length;
-				double val= f1 * _v1 + f1 * _v2;
+				double _f1 = a * _ref->d1[0][s];
+				double _f2 = a * _ref->d1[1][s];
+				
+				double val= f1 * _v1 + f2 * _v2+_f1*ov1+_f2*ov2;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -3489,6 +3494,8 @@ namespace KingOfMonsters {
 			double length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + 2 * v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
 			//v1 /= length;
 			//v2 /= length;
+			double ov1 = v1 / length;
+			double ov2 = v2 / length;
 
 			double f1 = a * _ref->get__gi(0, 0) + b * _ref->get__gi(0, 1);
 			double f2 = a * _ref->get__gi(1, 0) + b * _ref->get__gi(1, 1);
@@ -3507,7 +3514,9 @@ namespace KingOfMonsters {
 				double _length = 0.5 / (length) * (v1 * v1 * _g11 + 2 * v1 * v2 * _g12 + v2 * v2 * _g22);
 				double _v1 = -v1 / length / length * _length;
 				double _v2 = -v2 / length / length * _length;
-				double val = f1 * _v1 + f1 * _v2;
+				double _f1 = b * _ref->d1[0][s];
+				double _f2 = b * _ref->d1[1][s];
+				double val = f1 * _v1 + f2 * _v2+_f1*ov1+_f2*ov2;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -11275,12 +11284,12 @@ namespace KingOfMonsters {
 			
 		}
 
-		void _SLOPE2_phi_x(myDoubleArray^ arr, double v1, double v2, int shift, bool add)
+		void _SLOPE2_phi_x(myDoubleArray^ arr, double v1, double v2, int shift)
 		{
 			__mem->_SLOPE2_phi_x(arr->_arr->__v.data(), v1, v2);
 	
 		}
-		void _SLOPE2_phi_y(myDoubleArray^ arr, double v1, double v2, int shift, bool add)
+		void _SLOPE2_phi_y(myDoubleArray^ arr, double v1, double v2, int shift)
 		{
 			__mem->_SLOPE2_phi_y(arr->_arr->__v.data(), v1, v2);
 		}
