@@ -2699,7 +2699,7 @@ void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)
 //#pragma omp critical
 				{
 
-					(*e2)[_ii] = this->_mat[ii].transpose() * coeff[ii].asDiagonal() * B->_mat[ii];
+					(*e2)[_ii] = this->_mat[ii].transpose() * (0.5*(coeff[ii].asDiagonal()+B->coeff[ii].asDiagonal())) * B->_mat[ii];
 	
 
 					//#pragma omp critical
