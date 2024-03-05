@@ -3850,6 +3850,110 @@ namespace KingOfMonsters {
 			}
 			return c;
 		}
+		double _tracenu(_memS* LR)
+		{
+
+			/*double A11 = LR->_ref->get__Gij(0, 0) * LR->get_fij(0, 0) * LR->_ref->get__Gij(0, 0) + LR->_ref->get__Gij(0, 0) * LR->get_fij(0, 1) * LR->_ref->get__Gij(1, 0) + LR->_ref->get__Gij(0, 1) * LR->get_fij(1, 0) * LR->_ref->get__Gij(0, 0) + LR->_ref->get__Gij(0, 1) * LR->get_fij(1, 1) * LR->_ref->get__Gij(1, 0);
+			double A12 = LR->_ref->get__Gij(0, 0) * LR->get_fij(0, 0) * LR->_ref->get__Gij(0, 1) + LR->_ref->get__Gij(0, 0) * LR->get_fij(0, 1) * LR->_ref->get__Gij(1, 1) + LR->_ref->get__Gij(0, 1) * LR->get_fij(1, 0) * LR->_ref->get__Gij(0, 1) + LR->_ref->get__Gij(0, 1) * LR->get_fij(1, 1) * LR->_ref->get__Gij(1, 1);
+			double A22 = LR->_ref->get__Gij(1, 0) * LR->get_fij(0, 0) * LR->_ref->get__Gij(0, 1) + LR->_ref->get__Gij(1, 0) * LR->get_fij(0, 1) * LR->_ref->get__Gij(1, 1) + LR->_ref->get__Gij(1, 1) * LR->get_fij(1, 0) * LR->_ref->get__Gij(0, 1) + LR->_ref->get__Gij(1, 1) * LR->get_fij(1, 1) * LR->_ref->get__Gij(1, 1);
+			double a22 = A11 / sc;
+			double a11 = A22 / sc;
+			double a12 = -A12 / sc;
+			double a21 = a12;*/
+
+			double k11 = LR->get_eij(0, 0);// +a11;
+			double k22 = LR->get_eij(1, 1);// +a22;
+			double k12 = LR->get_eij(0, 1);// +a12;
+			double k21 = k12;
+
+			return k11 * _ref->get__Gij(0, 0) + 2 * k12 * _ref->get__Gij(0, 1) + k22 * _ref->get__Gij(1, 1);
+		}
+	
+		void _tracenu_nu(_memS * LR, double* ptr)
+		{
+
+			double* ptr1 = ptr;
+			/*double A11 = LR->_ref->get__Gij(0, 0) * LR->get_fij(0, 0) * LR->_ref->get__Gij(0, 0) + LR->_ref->get__Gij(0, 0) * LR->get_fij(0, 1) * LR->_ref->get__Gij(1, 0) + LR->_ref->get__Gij(0, 1) * LR->get_fij(1, 0) * LR->_ref->get__Gij(0, 0) + LR->_ref->get__Gij(0, 1) * LR->get_fij(1, 1) * LR->_ref->get__Gij(1, 0);
+			double A12 = LR->_ref->get__Gij(0, 0) * LR->get_fij(0, 0) * LR->_ref->get__Gij(0, 1) + LR->_ref->get__Gij(0, 0) * LR->get_fij(0, 1) * LR->_ref->get__Gij(1, 1) + LR->_ref->get__Gij(0, 1) * LR->get_fij(1, 0) * LR->_ref->get__Gij(0, 1) + LR->_ref->get__Gij(0, 1) * LR->get_fij(1, 1) * LR->_ref->get__Gij(1, 1);
+			double A22 = LR->_ref->get__Gij(1, 0) * LR->get_fij(0, 0) * LR->_ref->get__Gij(0, 1) + LR->_ref->get__Gij(1, 0) * LR->get_fij(0, 1) * LR->_ref->get__Gij(1, 1) + LR->_ref->get__Gij(1, 1) * LR->get_fij(1, 0) * LR->_ref->get__Gij(0, 1) + LR->_ref->get__Gij(1, 1) * LR->get_fij(1, 1) * LR->_ref->get__Gij(1, 1);
+			double a22 = A11 / sc;
+			double a11 = A22 / sc;
+			double a12 = -A12 / sc;
+			double a21 = a12;*/
+
+
+
+			double k11 = LR->get_eij(0, 0);// +a11;
+			double k22 = LR->get_eij(1, 1);//+ a22;
+			double k12 = LR->get_eij(0, 1);// +a12;
+			double k21 = k12;
+
+
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _e11 = LR->__dsigma_11[2][s];
+				double _e12 = LR->__dsigma_12[2][s];
+				double _e22 = LR->__dsigma_22[2][s];
+
+				double _e21 = _e12;
+				double _k11 = _e11, _k22 = _e22, _k12 = _e12;
+				//double _tr = _e11 * _ref->get__Gij(0, 0) + 2 * _e12 * _ref->get__Gij(0, 1) + _e22 * _ref->get__Gij(1, 1);
+
+				*ptr1 =_k11 * _ref->get__Gij(0, 0) + 2 * _k12 * _ref->get__Gij(0, 1) + _k22 * _ref->get__Gij(1, 1);
+
+				ptr1++;
+			}
+		}
+
+
+		double _tracexi(_memS* LR)
+		{
+
+			/*double* pptr1 = &(LR->_ref->buf_nu[0]);
+			double a = 0;
+			double b = 0;
+			double c = 0;
+
+
+			for (int i = 0; i < _ref->_nNode; i++)
+			{
+				double _h11 = LR->_ref->__dh[0][i] * _ref->sc11;// (LR->_ref->d2[0][s] - LR->_ref->_Gammaijk[0] * LR->_ref->d1[0][s] - LR->_ref->_Gammaijk[1] * LR->_ref->d1[1][s])* _ref->sc11;
+				double _h12 = LR->_ref->__dh[1][i] * _ref->sc12;// (LR->_ref->d2[1][s] - LR->_ref->_Gammaijk[2] * LR->_ref->d1[0][s] - LR->_ref->_Gammaijk[3] * LR->_ref->d1[1][s])* _ref->sc12;
+				double _h22 = LR->_ref->__dh[3][i] * _ref->sc22;// (LR->_ref->d2[3][s] - LR->_ref->_Gammaijk[6] * LR->_ref->d1[0][s] - LR->_ref->_Gammaijk[7] * LR->_ref->d1[1][s]) * _ref->sc22;
+
+
+				a += pptr1[i] * _h11;
+				c += pptr1[i] * _h22;
+				b += pptr1[i] * _h12;
+			}*/
+			return LR->get_fij(0, 0) * _ref->get__Gij(0, 0) + 2 * LR->get_fij(0, 1) * _ref->get__Gij(0,1) + LR->get_fij(1, 1) * _ref->get__Gij(1, 1);
+		}
+		void _tracexi_xi(_memS* LR, double* ptr)
+		{
+
+			double* ptr1 = ptr;
+			double a = 0;
+			double b = 0;
+			double c = 0;
+
+
+			for (int i = 0; i < _ref->_nNode; i++)
+			{
+				double _f11 = LR->_ref->__dh[0][i] * _ref->sc11;// (LR->_ref->d2[0][s] - LR->_ref->_Gammaijk[0] * LR->_ref->d1[0][s] - LR->_ref->_Gammaijk[1] * LR->_ref->d1[1][s])* _ref->sc11;
+				double _f12 = LR->_ref->__dh[1][i] * _ref->sc12;// (LR->_ref->d2[1][s] - LR->_ref->_Gammaijk[2] * LR->_ref->d1[0][s] - LR->_ref->_Gammaijk[3] * LR->_ref->d1[1][s])* _ref->sc12;
+				double _f22 = LR->_ref->__dh[3][i] * _ref->sc22;// (LR->_ref->d2[3][s] - LR->_ref->_Gammaijk[6] * LR->_ref->d1[0][s] - LR->_ref->_Gammaijk[7] * LR->_ref->d1[1][s]) * _ref->sc22;
+
+
+				a = _f11;
+				c = _f22;
+				b = _f12;
+				*ptr1 = a * _ref->get__Gij(0, 0) + 2 *b* _ref->get__Gij(0, 1) + c * _ref->get__Gij(1, 1);
+
+				ptr1++;
+			}
+		}
+
 		double _detnu(_memS* LR)
 		{
 
@@ -7453,7 +7557,8 @@ namespace KingOfMonsters {
 				//double _tr = _e11 * _ref->get__Gij(0, 0) + 2 *_e12 * _ref->get__Gij(0, 1) + _e22 * _ref->get__Gij(1, 1);
 
 				//val = (_e11 * w1 * t1 + _e12 * w1 * t2 + _e21 * w2 * t1 + _e22 * w2 * t2);// / tr;
-				val = (_a11 * w1 * t1 + _a12 * w1 * t2 + _a21 * w2 * t1 + _a22 * w2 * t2);// / tr;
+				val = q1 * (_a11 * t1 * t1 + _a12 * t1 * t2 + _a21 * t2 * t1 + _a22 * t2 * t2);// / tr;
+				val -= q2 * (_a11 * w1 * w1 + _a12 * w1 * w2 + _a21 * w2 * w1 + _a22 * w2 * w2);// / tr;
 				//val += -(get_eij(0, 0) * w1 * t1 + get_eij(0, 1) * w1 * t2 + get_eij(1, 0) * w2 * t1 + get_eij(1, 1) * w2 * t2) / tr / tr * _tr;
 				*ptr1 = val;
 				ptr1++;
@@ -11851,9 +11956,9 @@ namespace KingOfMonsters {
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, __mem->__grad2, sc, __mem->_nNode, c1, c2);
 		}
 
-		void d0(mySparse^ mat, int ii, myIntArray^ index, double sc,double c1)
+		void d0(mySparse^ mat, int ii, myIntArray^ index, double sc,double c1,bool add)
 		{
-			mat->dat->addrow(ii, index->_arr, __mem->_ref->d0, sc, __mem->_nNode,c1);
+			mat->dat->addrow(ii, index->_arr, __mem->_ref->d0,0, sc, __mem->_nNode,add,c1);
 		}
 		
 		void U_z(mySparse^ mat, int ii, myIntArray^ index, double sc)
@@ -11971,6 +12076,14 @@ namespace KingOfMonsters {
 			__mem->_detphi_phi(LR->__mem, __mem->__grad);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, sc, __mem->_nNode, coeff);
 		}
+		double _detnu(memS^ LR)
+		{
+			return __mem->_detnu(LR->__mem);
+		}
+		double _detxi(memS^ LR)
+		{
+			return __mem->_detxi(LR->__mem);
+		}
 		void _detnu_nu(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
 		{
 			__mem->_detnu_nu(LR->__mem, __mem->__grad);
@@ -11985,6 +12098,31 @@ namespace KingOfMonsters {
 				{
 					__mem->_detxi_xi(LR->__mem, __mem->__grad);
 					mat->dat->addrow(ii, index->_arr, __mem->__grad, sc, __mem->_nNode, coeff);
+				}
+
+
+				double _tracenu(memS^ LR)
+				{
+					return __mem->_tracenu(LR->__mem);
+				}
+				double _tracexi(memS^ LR)
+				{
+					return __mem->_tracexi(LR->__mem);
+				}
+				void _tracenu_nu(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+				{
+					__mem->_tracenu_nu(LR->__mem, __mem->__grad);
+					mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
+				}
+				/*void _detnu_xi(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+				{
+					__mem->_detnu_xi(LR->__mem, __mem->__grad);
+					mat->dat->addrow(ii, index->_arr, __mem->__grad,0, sc, __mem->_nNode,true, coeff);
+				}*/
+				void _tracexi_xi(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+				{
+					__mem->_tracexi_xi(LR->__mem, __mem->__grad);
+					mat->dat->addrow(ii, index->_arr, __mem->__grad, 0,sc, __mem->_nNode, true,coeff);
 				}
 		array<double>^ fM(double _la, double _mu)
 		{
@@ -12435,14 +12573,7 @@ namespace KingOfMonsters {
 		{
 			return __mem->_detphi(LR->__mem );
 		}
-		double _detnu(memS^ LR)
-		{
-			return __mem->_detnu(LR->__mem);
-		}
-		double _detxi(memS^ LR)
-		{
-			return __mem->_detxi(LR->__mem);
-		}
+		
 		void bodyF_freeze()
 		{
 			this->load_dv = __mem->_ref->load_dv;
