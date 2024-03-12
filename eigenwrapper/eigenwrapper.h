@@ -269,6 +269,7 @@ namespace KingOfMonsters {
 		std::string ofAtA(_mySparse* A, bool sparse);
 		
 		void add_usemap(int64_t i, int64_t j, double val);
+		void add(int64_t i, int64_t j, double val);
 		void set_usemap(int64_t i, int64_t j, double val);
 		int find_location(int64_t i, int64_t j);
 		void add_uselocation(int64_t location, double val);

@@ -1319,6 +1319,10 @@ namespace KingOfMonsters {
 		{
 			this->dat->add_usemap(i, j, value);
 		}
+		void plus_sparse(Int64 i, Int64 j, double value)
+		{
+			this->dat->add(i, j, value);
+		}
 		void set_usemap(Int64 i, Int64 j, double value)
 		{
 			this->dat->set_usemap(i, j, value);
