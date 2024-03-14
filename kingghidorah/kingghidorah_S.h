@@ -9850,6 +9850,38 @@ namespace KingOfMonsters {
 			}
 
 		}
+
+		double mean(_memS* LR)
+		{
+			double val = 0;
+			double s11 = 0, s12 = 0, s22 = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				s11 += _ref->__dh[0][s] * LR->_ref->buf_nu[s];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+				s12 += _ref->__dh[1][s] * LR->_ref->buf_nu[s];// (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+				s22 += _ref->__dh[3][s] * LR->_ref->buf_nu[s];// (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+
+
+			}
+			val = s11 * _ref->get__Gij(0, 0) + 2*s12 * _ref->get__Gij(0, 1) + s22 * _ref->get__Gij(1, 1);
+			return val;
+		}
+		void mean_nu(_memS* LR, double* ptr)
+		{
+			double* ptr1 = ptr;
+			double val = 0;
+		
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _s11 = _ref->__dh[0][s];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+				double _s12 = _ref->__dh[1][s];// (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+				double _s22 = _ref->__dh[3][s];// (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+				double _s21 = _s12;
+				*ptr1 = _s11 * _ref->get__Gij(0, 0) + 2 * _s12 * _ref->get__Gij(0, 1) + _s22 * _ref->get__Gij(1, 1);
+
+				ptr1++;
+			}
+		}
 		double gauss(_memS* LR)
 		{
 			double val = 0;
@@ -12453,6 +12485,15 @@ namespace KingOfMonsters {
 			void gauss_nu(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
 			{
 				__mem->gauss_nu(LR->__mem, __mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, sc, __mem->_nNode, coeff);
+			}
+			double mean(memS^ LR)
+			{
+				return __mem->mean(LR->__mem);
+			}
+			void mean_nu(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->mean_nu(LR->__mem, __mem->__grad);
 				mat->dat->addrow(ii, index->_arr, __mem->__grad, sc, __mem->_nNode, coeff);
 			}
 		double bodyF(memS^ LR, double load, bool accurate) 
