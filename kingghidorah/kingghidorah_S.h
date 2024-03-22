@@ -10578,9 +10578,9 @@ namespace KingOfMonsters {
 			{
 				D1 += _ref->d1[0][s] * _ref->buf_z[s];
 				D2 += _ref->d1[1][s] * _ref->buf_z[s];
-				S11 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_z[s];
-				S12 += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->buf_z[s];
-				S22 += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_z[s];
+				S11 += _ref->__dh[0][s] * _ref->buf_z[s];
+				S12 += _ref->__dh[1][s] * _ref->buf_z[s];
+				S22 += _ref->__dh[3][s] * _ref->buf_z[s];
 			}
 			double* ptr1 = ptr;
 			double f1 = a * this->get_gi(0, 0) + b * this->get_gi(0, 1);
@@ -10591,9 +10591,9 @@ namespace KingOfMonsters {
 				double val = 0;
 				d1 = _ref->d1[0][s];
 				d2 = _ref->d1[1][s];
-				s11 = (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
-				s12 = (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
-				s22 = (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+				s11 = _ref->__dh[0][s];
+				s12 = _ref->__dh[1][s];
+				s22 = _ref->__dh[3][s];
 				double S21 = S12;
 				double s21 = s12;
 				//s11 = 0;
@@ -10606,7 +10606,7 @@ namespace KingOfMonsters {
 					//	get_gammaijk(1, 1, 0) * t2 * t2 * n1 + get_gammaijk(1, 1, 1) * t2 * t2 * n2;
 					//val -= tension * (d1 * n1 + d2 * n2 - dc);
 
-					val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2-dc);
+					val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2);
 
 				}
 				else {
@@ -10680,9 +10680,9 @@ namespace KingOfMonsters {
 			{
 				d1 += _ref->d1[0][s] * _ref->buf_phi[s];
 				d2 += _ref->d1[1][s] * _ref->buf_phi[s];
-				s11 += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_phi[s];
-				s12 += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->buf_phi[s];
-				s22 += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_phi[s];
+				s11 += _ref->__dh[0][s] * _ref->buf_phi[s];
+				s12 += _ref->__dh[1][s] * _ref->buf_phi[s];
+				s22 += _ref->__dh[3][s] * _ref->buf_phi[s];
 			}
 			double* ptr1 = ptr;
 			double f1 = a * this->get_gi(0, 0) + b * this->get_gi(0, 1);//down
@@ -10694,9 +10694,9 @@ namespace KingOfMonsters {
 
 				D1 = _ref->d1[0][s];
 				D2 = _ref->d1[1][s];
-				S11 = (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
-				S12 = (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
-				S22 = (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+				S11 = _ref->__dh[0][s];
+				S12 = _ref->__dh[1][s];
+				S22 = _ref->__dh[3][s];
 				double S21 = S12;
 				double s21 = s12;
 				//s11 = 0;
