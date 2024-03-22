@@ -1187,8 +1187,11 @@ namespace KingOfMonsters {
 			auto ret = gcnew System::String(str.c_str());
 			return ret;
 		}
+		void ofAtB(mySparse^ m, bool sparse,bool AorB) {
+			dat->ofAtB(m->dat, sparse,AorB);
+		}
 		void ofAtB(mySparse^ m, bool sparse) {
-			dat->ofAtB(m->dat, sparse);
+			dat->ofAtB(m->dat, sparse, false);
 		}
 		/*void ofAtB_gpu(mySparse^ m, bool sparse) {
 			dat->ofAtB_gpu(m->dat, sparse);
@@ -1211,7 +1214,7 @@ namespace KingOfMonsters {
 		{
 			A->dat->_ofCtAB(B->dat, C->dat, this->dat);
 		}
-		void _ofAssemble(mySparse^ TL, mySparse^ TR, mySparse^ BR)
+		void _ofAssemble(mySparse^ TL, mySparse^ TR,mySparse^ BLt, mySparse^ BR)
 		{
 			this->dat->_dmat.resize(TL->dat->_dmat.rows()+BR->dat->_dmat.rows(), TL->dat->_dmat.cols() + BR->dat->_dmat.cols());
 			this->dat->_dmat.setZero();
@@ -1219,7 +1222,7 @@ namespace KingOfMonsters {
 			this->dat->_dmat.bottomRightCorner(BR->dat->_dmat.rows(), BR->dat->_dmat.cols()) = BR->dat->_dmat;
 			if (TR != nullptr) {
 				this->dat->_dmat.topRightCorner(TL->dat->_dmat.rows(), BR->dat->_dmat.cols()) = TR->dat->_dmat;
-				this->dat->_dmat.bottomLeftCorner(BR->dat->_dmat.rows(), TL->dat->_dmat.cols()) = TR->dat->_dmat.transpose();
+				this->dat->_dmat.bottomLeftCorner(BR->dat->_dmat.rows(), TL->dat->_dmat.cols()) = BLt->dat->_dmat.transpose();
 			}
 		}
 		void _ofBtAB(mySparse^ A, mySparse^ B, mySparse^ B2, myDoubleArray^ b, myDoubleArray^ ret)

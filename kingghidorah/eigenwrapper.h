@@ -278,7 +278,7 @@ namespace KingOfMonsters {
 		std::string _ofAtA(_mySparse* A);
 		std::string _ofAtA_sparse(_mySparse* A);
 		//void ofAtB_gpu(_mySparse* B, bool sparse);
-		void ofAtB(_mySparse* B, bool sparse);
+		void ofAtB(_mySparse* B, bool sparse,bool AorB);
 		void _ofAtB(_mySparse* B, _mySparse* C);
 		void _ofBtAB(_mySparse* B, /*Eigen::VectorXd* b, */_mySparse* C/*, Eigen::VectorXd* ret*/);
 		void _ofCtAB(_mySparse* B, _mySparse* C, /*Eigen::VectorXd* b, */_mySparse* D/*, Eigen::VectorXd* ret*/);

@@ -10,6 +10,7 @@
 #include <omp.h> 
 #include <iostream>
 #include <fstream>
+#include <mutex>
 #define EIGEN_NO_DEBUG
 #define EIGEN_NO_STATIC_ASSERT
 #define EIGEN_USE_LAPACK
@@ -31,6 +32,8 @@ static std::map<KingOfMonsters::_mySparse*, std::vector<Eigen::SparseMatrix<doub
 static std::map<KingOfMonsters::_mySparse*, std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>>> ___e2;
 static std::map<KingOfMonsters::_mySparse*, std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>>> ___e3;
 static std::map<KingOfMonsters::_mySparse*, std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>>> ___e4;
+std::mutex mtx;
+
 
 
 void KingOfMonsters::cuda::disable()
@@ -55,7 +58,7 @@ double KingOfMonsters::_helper::VarPro(Eigen::VectorXd* coeff, Eigen::VectorXd* 
 		_mt2 = omp_get_num_threads();
 	}
 	if (_mt2 > _mt)_mt = _mt2;
-	Eigen::setNbThreads(_mt);
+	Eigen::setNbThreads(_mt-1);
 	//int m = __W->rows();
 
 	int nr1 = _r1->size();
@@ -217,7 +220,7 @@ double KingOfMonsters::_helper::ALT(Eigen::VectorXd* coeff, Eigen::VectorXd* phi
 		_mt2 = omp_get_num_threads();
 	}
 	if (_mt2 > _mt)_mt = _mt2;
-	Eigen::setNbThreads(_mt);
+	Eigen::setNbThreads(_mt-1);
 	//int m = __W->rows();
 
 	int nr1 = _r1->size();
@@ -357,7 +360,7 @@ double KingOfMonsters::_helper::Simple(Eigen::VectorXd* coeff, Eigen::VectorXd* 
 		_mt2 = omp_get_num_threads();
 	}
 	if (_mt2 > _mt)_mt = _mt2;
-	Eigen::setNbThreads(_mt);
+	Eigen::setNbThreads(_mt-1);
 	//int m = __W->rows();
 
 	int nr1 = _r2->size();
@@ -441,7 +444,7 @@ double KingOfMonsters::_helper::GN(Eigen::VectorXd* coeff, Eigen::VectorXd* phi,
 		_mt2 = omp_get_num_threads();
 	}
 	if (_mt2 > _mt)_mt = _mt2;
-	Eigen::setNbThreads(_mt);
+	Eigen::setNbThreads(_mt-1);
 	//int m = __W->rows();
 
 	int nr1 = _r1->size();
@@ -677,7 +680,8 @@ KingOfMonsters::cuda::cuda(int64_t N) {
 	dict2.clear();
 	map.clear();
 	Eigen::initParallel();
-	//Eigen::setNbThreads(omp_get_max_threads());
+	Eigen::setNbThreads(omp_get_max_threads());
+	omp_set_num_threads(omp_get_max_threads());
 	//e.shrink_to_fit();
 	//e.clear();
 	I.resize(0, 0);
@@ -1191,15 +1195,16 @@ KingOfMonsters::_mySparse::_mySparse()
 	_coeff.reserve(1000);
 	_mat.reserve(1000);
 	_mt = omp_get_max_threads();
-	/*int _mt2 = 0;
+	int _mt2 = 0;
 #pragma omp parallel
 	{
 #pragma omp single
-		_mt = omp_get_num_threads();
+		_mt2 = omp_get_num_threads();
 	}
-	if (_mt2 > _mt)_mt = _mt2;*/
+	if (_mt2 > _mt)_mt = _mt2;
 	Eigen::setNbThreads(_mt);
 	omp_set_num_threads(_mt);
+	_mt = _mt - 1;
 	//prevmat.resize(1, 1);
 	//e = new Eigen::SparseMatrix<double>[200];
 	//e2 = new Eigen::SparseMatrix<double>[200];
@@ -1231,7 +1236,7 @@ std::string KingOfMonsters::_mySparse::_testopenmp()
 	std::stringstream ss;
 	int64_t mt = omp_get_max_threads();
 	ss << "num threads:" << mt << std::endl;
-#pragma omp parallel for
+#pragma omp parallel for num_threads(mt)
 	for (int64_t i = 0; i < 100; i++)
 	{
 		int64_t ct = omp_get_thread_num();
@@ -1368,7 +1373,7 @@ void KingOfMonsters::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic
 		//prrm.transpose().applyThisOnTheRight(_dmat);
 		//perm.applyThisOnTheLeft(_dmat);
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(_mt)
 		for (int64_t i = 0; i < nn; i += S)
 		{
 			int64_t start = i;
@@ -1379,7 +1384,7 @@ void KingOfMonsters::_mySparse::_permute(Eigen::PermutationMatrix<Eigen::Dynamic
 			//perm.transpose().applyThisOnTheRight(_dmat.middleRows(start, end - start));
 		}
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(_mt)
 		for (int64_t i = 0; i < nn; i += S)
 		{
 			int64_t start = i;
@@ -1419,7 +1424,7 @@ void KingOfMonsters::_mySparse::_permuteCols(Eigen::PermutationMatrix<Eigen::Dyn
 		//prrm.transpose().applyThisOnTheRight(_dmat);
 		//perm.applyThisOnTheLeft(_dmat);
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(_mt)
 		for (int64_t i = 0; i < nn; i += S)
 		{
 			int64_t start = i;
@@ -1430,7 +1435,7 @@ void KingOfMonsters::_mySparse::_permuteCols(Eigen::PermutationMatrix<Eigen::Dyn
 			//perm.transpose().applyThisOnTheRight(_dmat.middleRows(start, end - start));
 		}
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(_mt)
 		for (int64_t i = 0; i < nn; i += S)
 		{
 			int64_t start = i;
@@ -1816,7 +1821,7 @@ void KingOfMonsters::_mySparse::end_construct(int64_t cc)
 	//_mat.shrink_to_fit();
 	_mat.resize(_nt);
 	coeff.resize(_nt);
-#pragma omp parallel for schedule(dynamic,4)
+#pragma omp parallel for schedule(dynamic,4) num_threads(_mt)
 	for (int64_t ii = 0; ii < _nt; ii++)
 	{
 		_mat[ii].resize(_coeff[ii].size(), cc);
@@ -1860,7 +1865,7 @@ void KingOfMonsters::_mySparse::_OfDuplicate(_mySparse* mat)
 void KingOfMonsters::_mySparse::ofDat()
 {
 	if (_mat.size() != _nt)_mat.resize(_nt);
-#pragma omp parallel for schedule(dynamic,2)
+#pragma omp parallel for schedule(dynamic,2) num_threads(_mt)
 	for (int64_t ii = 0; ii < _nt; ii++)
 	{
 		_mat[ii].setZero();
@@ -1976,11 +1981,15 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 	if (sss == 0)sss = 1;
 	Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>* prevmat;
 	if (dict2.contains(this)) {
-		prevmat = &dict2[this];
+			prevmat = &dict2[this];
 	}
 	else {
 		Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t> _prevmat(nn, nn);
-		dict2[this] = _prevmat;
+		{
+			std::lock_guard<std::mutex> lock(mtx); // mtxを使ってロックする
+			dict2[this] = _prevmat;
+		}
+
 		prevmat = &dict2[this];
 		prevmat->resize(nn, nn);
 		prevmat->reserve(nn * nn / 10);
@@ -1991,8 +2000,9 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 	{
 		_map = &map[prevmat];
 	}
-#pragma omp parallel for
+	#pragma omp parallel for num_threads(_mt)
 	for (int64_t i = 0; i < __mt; i++) {
+		
 		if (_map==0||(*e)[i].nonZeros()!=prevmat->nonZeros())
 		{
 			(*e)[i].resize(nn, mm);
@@ -2003,30 +2013,36 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 		(*e2)[i].resize(nn, mm);
 		(*e2)[i].reserve(nn * mm / 100);
 	}
+	end = high_resolution_clock::now();
+	duration = duration_cast<milliseconds>(now - end);
+	ss << duration.count() << "ms" << std::endl;
+	now = high_resolution_clock::now();
 	//index.resize(__mt);
-#pragma omp parallel for
+	#pragma omp parallel for num_threads(_mt)
 	for (int64_t _ii = 0; _ii < __mt; _ii++)
 	{
 		int64_t S = 0;
 		int64_t E = 0;
+
+		S = _nt*_ii/(__mt);
+		E = _nt * (_ii+1) / (__mt);
 		//int64_t K = 0;
 		//auto _e = e[_ii];
-		for (int64_t tt = 0; tt < 4000; tt++)
+		//for (int64_t tt = 0; tt < 16; tt++)
 		{
-#pragma omp critical
+			/*#pragma omp critical
 			{
 				S = job;
 				E = job + sss;
 				if (E > _nt)E = _nt;
 				job = E;
 			}
-			if (S >= _nt)break;
+			if (S >= _nt)break;*/
+			if(S == E || S >= _nt)break;
 			for (int64_t ii = S; ii < E; ii++)
 			{
 				
-				//(*e)[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
-//#pragma omp critical
-				
+
 					if (_map == 0)
 					{
 						(*e2)[_ii] = this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
@@ -2063,7 +2079,7 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 
 	for (int64_t tt = 0; tt < 4000; tt++)
 	{
-#pragma omp parallel for schedule(static,1)
+#pragma omp parallel for schedule(static,1) num_threads(_mt)
 		for (int64_t i = 0; i < __mt; i += 2)
 		{
 			if (i + 1 < __mt) {
@@ -2079,7 +2095,7 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 			}
 		}
 		int64_t _ct = 0;
-#pragma omp parallel for ordered schedule(static,1)
+#pragma omp parallel for ordered schedule(static,1) num_threads(_mt)
 		for (int64_t i = 0; i < __mt; i += 2)
 		{
 #pragma omp ordered
@@ -2110,7 +2126,11 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 		{
 			*prevmat = this->_mat[0];
 			prevmat->makeCompressed();
-			dict2[this] = *prevmat;
+			{
+				std::lock_guard<std::mutex> lock(mtx); // mtxを使ってロックする
+
+				dict2[this] = *prevmat;
+			}
 			//build map
 			std::vector<int64_t> __map;
 			__map.resize(nn*nn);
@@ -2126,7 +2146,14 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 					}
 				}
 			}
-			map[prevmat] = __map;
+			{
+				
+				{
+					std::lock_guard<std::mutex> lock(mtx); // mtxを使ってロックする
+
+					map[prevmat] = __map;
+				}
+			}
 		}
 	}
 
@@ -2302,7 +2329,7 @@ void KingOfMonsters::_mySparse::_ofAtB(_mySparse* B, _mySparse* C)
 	auto left = _dmat.transpose();
 	auto right = B->_mat[0];
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(_mt)
 	for (int64_t ii = 0; ii < mm; ii += ss)
 	{
 		int64_t S = ii;
@@ -2349,7 +2376,7 @@ void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B,/* Eigen::VectorXd* b, */_m
 	D.resize(nn, kk);
 	int64_t ss = kk / _mt / 2;
 
-#pragma omp parallel for schedule(dynamic,4)
+#pragma omp parallel for schedule(dynamic,4) num_threads(_mt)
 	for (int64_t ii = 0; ii < kk; ii += ss)
 	{
 		int64_t _S = ii;
@@ -2359,7 +2386,7 @@ void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B,/* Eigen::VectorXd* b, */_m
 	}
 	//D.noalias() = left * mid;
 	ss = nn / _mt / 2;
-#pragma omp parallel for schedule(dynamic,4)
+#pragma omp parallel for schedule(dynamic,4) num_threads(_mt)
 	for (int64_t ii = 0; ii < nn; ii += ss)
 	{
 		int64_t _S = ii;
@@ -2388,7 +2415,7 @@ void KingOfMonsters::_mySparse::_ofCtAB(_mySparse* B, _mySparse* C/* Eigen::Vect
 	_D.resize(nn, kk);
 	int64_t ss = kk / _mt / 2;
 
-#pragma omp parallel for schedule(dynamic,4)
+#pragma omp parallel for schedule(dynamic,4) num_threads(_mt)
 	for (int64_t ii = 0; ii < kk; ii += ss)
 	{
 		int64_t _S = ii;
@@ -2398,7 +2425,7 @@ void KingOfMonsters::_mySparse::_ofCtAB(_mySparse* B, _mySparse* C/* Eigen::Vect
 	}
 	//D.noalias() = left * mid;
 	ss = mm / _mt / 2;
-#pragma omp parallel for schedule(dynamic,4)
+#pragma omp parallel for schedule(dynamic,4) num_threads(_mt)
 	for (int64_t ii = 0; ii < mm; ii += ss)
 	{
 		int64_t _S = ii;
@@ -2431,7 +2458,7 @@ void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B, _mySparse* B2,/* Eigen::Ve
 	D2.resize(mm, kk);
 	int64_t ss = kk / _mt / 2;
 
-	//#pragma omp parallel for schedule(dynamic,4)
+#pragma omp parallel for schedule(dynamic,4) num_threads(_mt)
 	for (int64_t ii = 0; ii < kk; ii += ss)
 	{
 		int64_t _S = ii;
@@ -2439,7 +2466,7 @@ void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B, _mySparse* B2,/* Eigen::Ve
 		if (_E >= kk)_E = kk;
 		D.middleCols(_S, _E - _S).noalias() = left * mid.middleCols(_S, _E - _S);
 	}
-	//#pragma omp parallel for schedule(dynamic,4)
+	#pragma omp parallel for schedule(dynamic,4) num_threads(_mt)
 	for (int64_t ii = 0; ii < kk; ii += ss)
 	{
 		int64_t _S = ii;
@@ -2448,7 +2475,7 @@ void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B, _mySparse* B2,/* Eigen::Ve
 		D2.middleCols(_S, _E - _S).noalias() = left2 * mid.middleCols(_S, _E - _S);
 	}
 	//D.noalias() = left * mid;
-//#pragma omp parallel for schedule(dynamic,4)
+ #pragma omp parallel for schedule(dynamic,4) num_threads(_mt)
 	for (int64_t ii = 0; ii < nn; ii += ss)
 	{
 		int64_t _S = ii;
@@ -2457,7 +2484,7 @@ void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B, _mySparse* B2,/* Eigen::Ve
 		C->_dmat.middleCols(_S, _E - _S).topRows(nn).noalias() = D * right.middleCols(_S, _E - _S);
 	}
 	ss = mm / _mt / 2;
-	//#pragma omp parallel for schedule(dynamic,4)
+	#pragma omp parallel for schedule(dynamic,4) num_threads(_mt)
 	for (int64_t ii = 0; ii < mm; ii += ss)
 	{
 		int64_t _S = ii;
@@ -2466,7 +2493,7 @@ void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B, _mySparse* B2,/* Eigen::Ve
 		C->_dmat.middleCols(_S + nn, _E - _S).bottomRows(mm).noalias() = D2 * right2.middleCols(_S, _E - _S);
 	}
 	ss = nn / _mt / 2;
-	//#pragma omp parallel for schedule(dynamic,4)
+	#pragma omp parallel for schedule(dynamic,4) num_threads(_mt)
 	for (int64_t ii = 0; ii < nn; ii += ss)
 	{
 		int64_t _S = ii;
@@ -2475,7 +2502,7 @@ void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B, _mySparse* B2,/* Eigen::Ve
 		C->_dmat.middleCols(_S, _E - _S).bottomRows(mm).noalias() = D2 * right.middleCols(_S, _E - _S);
 	}
 	ss = mm / _mt / 2;
-	//#pragma omp parallel for schedule(dynamic,4)
+	#pragma omp parallel for schedule(dynamic,4) num_threads(_mt)
 	for (int64_t ii = 0; ii < mm; ii += ss)
 	{
 		int64_t _S = ii;
@@ -2516,7 +2543,7 @@ void KingOfMonsters::_mySparse::_ofCBtAB(_mySparse* B, _mySparse* C, _mySparse* 
 	E.resize(nn, kk);
 	int64_t ss = kk / _mt / 2;
 
-#pragma omp parallel for schedule(dynamic,4)
+#pragma omp parallel for schedule(dynamic,4) num_threads(_mt)
 	for (int64_t ii = 0; ii < kk; ii += ss)
 	{
 		int64_t _S = ii;
@@ -2526,7 +2553,7 @@ void KingOfMonsters::_mySparse::_ofCBtAB(_mySparse* B, _mySparse* C, _mySparse* 
 	}
 	//D.noalias() = left * mid;
 	ss = nn / _mt / 2;
-#pragma omp parallel for schedule(dynamic,4)
+#pragma omp parallel for schedule(dynamic,4) num_threads(_mt)
 	for (int64_t ii = 0; ii < nn; ii += ss)
 	{
 		int64_t _S = ii;
@@ -2612,7 +2639,7 @@ void KingOfMonsters::_mySparse::_ofCBtAB2(_mySparse* B, _mySparse* C, _mySparse*
 	//singularvalues->__v = eigen.eigenvalues().real();
 }
 
-void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)
+void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse,bool AorB)
 {
 	static std::vector<std::vector<int64_t>> index;
 	auto ss = std::stringstream();
@@ -2627,7 +2654,7 @@ void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)
 	auto duration = duration_cast<milliseconds>(now - end);
 	ss << duration.count() << "ms" << std::endl;
 	now = high_resolution_clock::now();
-	int64_t __mt = _mt;// std::min(_nt / 10, _mt * 10);
+	int64_t __mt = _mt;// *8;// std::min(_nt / 10, _mt * 10);
 	std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>>* e;
 	std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>>* e2;
 	if (___e3.contains(this))e = &___e3[this]; else { std::vector < Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>> _e; ___e3[this] = _e; e = &___e3[this]; }
@@ -2656,7 +2683,11 @@ void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)
 	}
 	else {
 		Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t> _prevmat(nn, mm);
-		dict2[this] = _prevmat;
+		{
+			std::lock_guard<std::mutex> lock(mtx); // mtxを使ってロックする
+
+			dict2[this] = _prevmat;
+		}
 		prevmat = &dict2[this];
 		prevmat->resize(nn, mm);
 		prevmat->reserve(nn * mm / 10);
@@ -2667,7 +2698,7 @@ void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)
 	{
 		_map = &map[prevmat];
 	}
-#pragma omp parallel for
+#pragma omp parallel for num_threads(_mt)
 	for (int64_t i = 0; i < __mt; i++) {
 		if (_map == 0 || (*e)[i].nonZeros() != prevmat->nonZeros())
 		{
@@ -2680,32 +2711,43 @@ void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)
 		(*e2)[i].reserve(nn * mm / 100);
 	}
 	index.resize(__mt);
-#pragma omp parallel for
+#pragma omp parallel for num_threads(_mt)
 	for (int64_t _ii = 0; _ii < __mt; _ii++)
 	{
 		int64_t S = 0;
 		int64_t E = 0;
 		//int64_t K = 0;
 		//auto _e = e[_ii];
-		for (int64_t tt = 0; tt < 4000; tt++)
+		S = _nt * _ii / (__mt);
+		E = _nt * (_ii + 1) / (__mt );
+
+		//for (int64_t tt = 0; tt < 4000; tt++)
 		{
-#pragma omp critical
+/*pragma omp critical
 			{
 				S = job;
 				E = job + sss;
 				if (E > _nt)E = _nt;
 				job = E;
 			}
-			if (S >= _nt)break;
+			if (S >= _nt)break;*/
+
+			if (S == E || S >= _nt)break;
 			for (int64_t ii = S; ii < E; ii++)
 			{
 		
 				//(*e)[_ii] += this->_mat[ii].transpose() * coeff[ii].asDiagonal() * this->_mat[ii];
 //#pragma omp critical
 				{
+					if (!AorB)
+					{
+						(*e2)[_ii] = this->_mat[ii].transpose() * (coeff[ii].asDiagonal() ) * B->_mat[ii];
 
-					(*e2)[_ii] = this->_mat[ii].transpose() * (0.5*(coeff[ii].asDiagonal()+B->coeff[ii].asDiagonal())) * B->_mat[ii];
-	
+					}
+					else {
+						(*e2)[_ii] = this->_mat[ii].transpose() * ((B->coeff[ii].asDiagonal())) * B->_mat[ii];
+
+					}
 
 					//#pragma omp critical
 					{
@@ -2742,7 +2784,7 @@ void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)
 
 	for (int64_t tt = 0; tt < 4000; tt++)
 	{
-#pragma omp parallel for schedule(static,1)
+#pragma omp parallel for schedule(static,1) num_threads(_mt)
 		for (int64_t i = 0; i < __mt; i += 2)
 		{
 			if (i + 1 < __mt) {
@@ -2758,7 +2800,7 @@ void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)
 			}
 		}
 		int64_t _ct = 0;
-#pragma omp parallel for ordered schedule(static,1)
+#pragma omp parallel for ordered schedule(static,1) num_threads(_mt)
 		for (int64_t i = 0; i < __mt; i += 2)
 		{
 #pragma omp ordered
@@ -2786,7 +2828,11 @@ void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)
 		{
 			*prevmat = this->_mat[0];
 			prevmat->makeCompressed();
-			dict2[this] = *prevmat;
+			{
+				std::lock_guard<std::mutex> lock(mtx); // mtxを使ってロックする
+
+				dict2[this] = *prevmat;
+			}
 			//build map
 			std::vector<int64_t> __map;
 			__map.resize(nn * mm);
@@ -2802,7 +2848,14 @@ void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse)
 					}
 				}
 			}
-			map[prevmat] = __map;
+			{
+			
+				{
+					std::lock_guard<std::mutex> lock(mtx); // mtxを使ってロックする
+
+					map[prevmat] = __map;
+				}
+			}
 		}
 	}
 
@@ -2851,24 +2904,26 @@ void KingOfMonsters::_mySparse::Atb(double* ptr, double* ptr2, double sc,int64_t
 	int64_t job = 0;
 	int64_t ss = _nt / _mt / 4;
 	if (ss == 0)ss = 1;
-#pragma omp parallel for
+	#pragma omp parallel for num_threads(_mt)
 	for (int64_t ii = 0; ii < _mt; ii++)
 	{
 
-		int64_t S = 0;
-		int64_t E = 0;
+		//int64_t S = 0;
+		//int64_t E = 0;
+		int64_t S = _nt * ii / (_mt);
+		int64_t E = _nt * (ii + 1) / (_mt);
 		//int64_t cpu =  omp_get_thread_num();
 		auto tmp = (*mm)[ii];
 		tmp.setZero();
-		for (int64_t kk = 0; kk < 200; kk++)
+		//for (int64_t kk = 0; kk < 200; kk++)
 		{
-#pragma omp critical
+/*#pragma omp critical
 			{
 				S = job;
 				E = S + ss;
 				if (E > _nt)E = _nt;
 				job = E;
-			}
+			}*/
 			if (S >= _nt)break;
 			int64_t offset = 0;
 			for (int64_t _t = 0; _t < S; _t++)
@@ -4155,8 +4210,24 @@ void KingOfMonsters::_mySparse::minus(_mySparse* m) {
 	this->_freeze();
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 	//Eigen::Map<Eigen::MatrixXd> m_dmat(m->___dmat, m->__r, m->__c);
+	int n = _dmat.cols();
+	_mt = omp_get_max_threads();
+	int _mt2 = 0;
+#pragma omp parallel
+	{
+#pragma omp single
+		_mt2 = omp_get_num_threads();
+	}
+	if (_mt2 > _mt)_mt = _mt2;
+#pragma omp parallel for
+	for (int ii = 0; ii < _mt; ii++)
+	{
+		int S = ii * n / _mt;
+		int E = (ii + 1) * n / _mt;
+		_dmat.middleCols(S, E - S) -= m->_dmat.middleCols(S, E - S);
+	}
 
-	_dmat = _dmat - m->_dmat;
+	//_dmat = _dmat - m->_dmat;
 	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);
 }
 void KingOfMonsters::_mySparse::clearcoeff() {
