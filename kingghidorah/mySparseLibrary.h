@@ -1391,6 +1391,12 @@ namespace KingOfMonsters {
 			ptr = nullptr;
 			dat = nullptr;
 		}
+		void addrow(Int64 ii, myIntArray^ index, myDoubleArray^ data, Int64 shift, double sc, Int64 N, bool add,double coeff) {
+
+
+			this->dat->addrow(ii, index->_arr, data->_arr->__v.data(), shift, sc, N, add, coeff);
+	
+		}
 		void addrow(Int64 ii, myIntArray^ index, myDoubleArray^ data, double sc, Int64 N) {
 			//pin_ptr<Int64> ptr = &index[0];
 			//pin_ptr<double> dat = &data[0];
