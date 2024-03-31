@@ -6494,7 +6494,7 @@ namespace KingOfMonsters {
 
 			double xy = xu * _ref->get__Gi(0, 1) + xv * _ref->get__Gi(1, 1);
 			double yx = yu * _ref->get__Gi(0, 0) + yv * _ref->get__Gi(1, 0);
-			double val = xy - yx;
+			double val = xy + yx;
 			return val;
 
 		}
@@ -6534,7 +6534,7 @@ namespace KingOfMonsters {
 				yv = _ref->d1[1][s];
 				//double xy = xu * _ref->get__Gi(0, 1) + xv * _ref->get__Gi(1, 1);
 				double yx = yu * _ref->get__Gi(0, 0) + yv * _ref->get__Gi(1, 0);
-				double val = -yx;// -yy;
+				double val = +yx;// -yy;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -12496,6 +12496,7 @@ namespace KingOfMonsters {
 				ptr1++;
 			}
 		}
+
 		double BCEQ(double _t1/*up*/, double _t2/*up*/,double stt, double a,double b,bool accurate)
 		{
 			double val = 0;
