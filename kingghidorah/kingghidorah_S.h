@@ -5296,6 +5296,11 @@ namespace KingOfMonsters {
 		double st(double t1, double t2, double n1, double n2)
 		{
 
+			double length = sqrt(t1 * t1 * _ref->get__gij(0, 0) + 2 * t1 * t2 * _ref->get__gij(0, 1) + t2 * t2 * _ref->get__gij(1, 1));
+			t1 /= length; t2 /= length;
+			length = sqrt(n1 * n1 * _ref->get__gij(0, 0) + 2 * n1 * n2 * _ref->get__gij(0, 1) + n2 * n2 * _ref->get__gij(1, 1));
+			n1 /= length; n2 /= length;
+
 			double val = get__hij(0, 0) * n1 * t1 + get__hij(0, 1) * n1 * t2 + get__hij(1, 0) * n2 * t1 + get__hij(1, 1) * n2 * t2;
 
 			return val;
@@ -5304,6 +5309,10 @@ namespace KingOfMonsters {
 
 		void st_phi(double* ptr, double t1, double t2, double n1, double n2)
 		{
+			double length = sqrt(t1 * t1 * _ref->get__gij(0, 0) + 2 * t1 * t2 * _ref->get__gij(0, 1) + t2 * t2 * _ref->get__gij(1, 1));
+			t1 /= length; t2 /= length;
+			length = sqrt(n1 * n1 * _ref->get__gij(0, 0) + 2 * n1 * n2 * _ref->get__gij(0, 1) + n2 * n2 * _ref->get__gij(1, 1));
+			n1 /= length; n2 /= length;
 
 
 			double* ptr1 = ptr;
@@ -5329,7 +5338,11 @@ namespace KingOfMonsters {
 
 		double st2(double t1,double t2,double n1,double n2)
 		{
-			
+			double length = sqrt(t1 * t1 * _ref->get__gij(0, 0) + 2 * t1 * t2 * _ref->get__gij(0, 1) + t2 * t2 * _ref->get__gij(1, 1));
+			t1 /= length; t2 /= length;
+			length = sqrt(n1 * n1 * _ref->get__gij(0, 0) + 2 * n1 * n2 * _ref->get__gij(0, 1) + n2 * n2 * _ref->get__gij(1, 1));
+			n1 /= length; n2 /= length;
+
 			double val = get__Sij(0, 0) * n1 * t1 +  get__Sij(0, 1) * n1 * t2 + get__Sij(1, 0) * n2 * t1 + get__Sij(1, 1) * n2 * t2;
 			
 			return val;
@@ -5339,7 +5352,11 @@ namespace KingOfMonsters {
 		void st2_z(double* ptr,double t1,double t2,double n1,double n2)
 		{
 
-			
+			double length = sqrt(t1 * t1 * _ref->get__gij(0, 0) + 2 * t1 * t2 * _ref->get__gij(0, 1) + t2 * t2 * _ref->get__gij(1, 1));
+			t1 /= length; t2 /= length;
+			length = sqrt(n1 * n1 * _ref->get__gij(0, 0) + 2 * n1 * n2 * _ref->get__gij(0, 1) + n2 * n2 * _ref->get__gij(1, 1));
+			n1 /= length; n2 /= length;
+
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
@@ -9108,10 +9125,10 @@ namespace KingOfMonsters {
 				double Suv = _ref->get__Gij(0, 0) * suu * _ref->get__Gij(0, 1) + _ref->get__Gij(0, 0) * suv * _ref->get__Gij(1, 1) + _ref->get__Gij(0, 1) * svu * _ref->get__Gij(0, 1) + _ref->get__Gij(0, 1) * svv * _ref->get__Gij(1, 1);
 				double Svv = _ref->get__Gij(1, 0) * suu * _ref->get__Gij(0, 1) + _ref->get__Gij(1, 0) * suv * _ref->get__Gij(1, 1) + _ref->get__Gij(1, 1) * svu * _ref->get__Gij(0, 1) + _ref->get__Gij(1, 1) * svv * _ref->get__Gij(1, 1);
 
-				suu =  get__hij(0,0) + Svv / sc;
-				suv = get__hij(0, 1) - Suv / sc;
-				svu = get__hij(1, 0) - Suv / sc;
-				svv = get__hij(1, 1) + Suu / sc;
+				suu =   + Svv / sc;
+				suv =  - Suv / sc;
+				svu =  - Suv / sc;
+				svv =  + Suu / sc;
 
 				val = (suu * t1 * t1 + suv * t1 * t2 + svu * t2 * t1 + svv * t2 * t2);
 
@@ -9119,29 +9136,7 @@ namespace KingOfMonsters {
 
 				return val;
 			}
-			void cont_uu_phi(_memS* LR, double* ptr, double t1, double t2)
-			{
-				double length = sqrt(_ref->get__gij(0, 0) * t1 * t1 + 2 * _ref->get__gij(0, 1) * t1 * t2 + _ref->get__gij(1, 1) * t2 * t2);
-				t1 /= length;
-				t2 /= length;
-
-				double val = 0;
-
-				double* ptr1 = ptr;
-				for (int s = 0; s < _ref->_nNode; s++)
-				{
-					double suu = LR->_ref->__dh[0][s];
-					double suv = LR->_ref->__dh[1][s];
-					double svu = LR->_ref->__dh[2][s];
-					double svv = LR->_ref->__dh[3][s];
-
-					val = suu * t1 * t1 + suv * t1 * t2 + svu * t2 * t1 + svv * t2 * t2;
-
-					*ptr1 = val;
-					ptr1++;
-				}
-
-			}
+			
 
 			void cont_uu_xi(_memS* LR, double* ptr, double t1, double t2)
 			{
@@ -9271,10 +9266,10 @@ namespace KingOfMonsters {
 				double Suv = _ref->get__Gij(0, 0) * suu * _ref->get__Gij(0, 1) + _ref->get__Gij(0, 0) * suv * _ref->get__Gij(1, 1) + _ref->get__Gij(0, 1) * svu * _ref->get__Gij(0, 1) + _ref->get__Gij(0, 1) * svv * _ref->get__Gij(1, 1);
 				double Svv = _ref->get__Gij(1, 0) * suu * _ref->get__Gij(0, 1) + _ref->get__Gij(1, 0) * suv * _ref->get__Gij(1, 1) + _ref->get__Gij(1, 1) * svu * _ref->get__Gij(0, 1) + _ref->get__Gij(1, 1) * svv * _ref->get__Gij(1, 1);
 
-				suu = get__hij(0,0) + Svv / sc;
-				suv = get__hij(0, 1) - Suv / sc;
-				svu = get__hij(1, 0) - Suv / sc;
-				svv = get__hij(1, 1) + Suu / sc;
+				suu =  + Svv / sc;
+				suv =  - Suv / sc;
+				svu =  - Suv / sc;
+				svv = + Suu / sc;
 
 
 
@@ -9284,29 +9279,7 @@ namespace KingOfMonsters {
 
 				return val;
 			}
-			void cont_uv_phi(_memS* LR, double* ptr, double t1, double t2, double s1, double s2)
-			{
-				double val = 0;
-				double length = sqrt(_ref->get__gij(0, 0) * t1 * t1 + 2 * _ref->get__gij(0, 1) * t1 * t2 + _ref->get__gij(1, 1) * t2 * t2);
-				t1 /= length;
-				t2 /= length;
-				length = sqrt(_ref->get__gij(0, 0) * s1 * s1 + 2 * _ref->get__gij(0, 1) * s1 * s2 + _ref->get__gij(1, 1) * s2 * s2);
-				s1 /= length;
-				s2 /= length;
-				double* ptr1 = ptr;
-				for (int s = 0; s < _ref->_nNode; s++)
-				{
-					double suu = LR->_ref->__dh[0][s];
-					double suv = LR->_ref->__dh[1][s];
-					double svu = LR->_ref->__dh[2][s];
-					double svv = LR->_ref->__dh[3][s];
-					val = (suu * s1 * t1 + suv * s1 * t2 + svu * s2 * t1 + svv * s2 * t2);
-
-					*ptr1 = val;
-					ptr1++;
-				}
-
-			}
+		
 			void cont_uv_xi(_memS* LR, double* ptr, double t1, double t2, double s1, double s2)
 			{
 				double val = 0;
@@ -12497,55 +12470,15 @@ namespace KingOfMonsters {
 			}
 		}
 
-		double BCEQ(double _t1/*up*/, double _t2/*up*/,double stt, double a,double b,bool accurate)
+		double BCEQ(double t1/*up*/, double t2/*up*/,double n1,double n2,double stt, double a,double b,bool accurate)
 		{
 			double val = 0;
 
-			
-			double length = 0;
-			double t1 = 0;//up
-			double t2 = 0;//up
-			double T1 = 0;//down
-			double T2 = 0;//down
-			double n1 = 0;//up
-			double n2 = 0;//up
-			double N1 = 0;//down
-			double N2 = 0;//down
-			double gamma = 0;
-			double eta = 0;
-			if (accurate)
-			{
-				length = sqrt(_t1 * _t1 * this->get_gij(0, 0) + _t2 * _t1 * this->get_gij(1, 0) + _t1 * _t2 * this->get_gij(0, 1) + _t2 * _t2 * this->get_gij(1, 1));
-				gamma = length* length;
-				t1 = _t1/length;
-				t2 = _t2/length;
-				T1 = this->get_gij(0, 0) * t1 + this->get_gij(0, 1) * t2;
-				T2 = this->get_gij(1, 0) * t1 + this->get_gij(1, 1) * t2;
-				n1 = T2;
-				n2 = -T1;
-				length = sqrt(n1 * n1 * this->get_gij(0, 0) + n2 * n1 * this->get_gij(1, 0) + n1 * n2 * this->get_gij(0, 1) + n2 * n2 * this->get_gij(1, 1));
-				n1 /= length;
-				n2 /= length;
-				eta = length * length;
-				N1 = this->get_gij(0, 0) * n1 + this->get_gij(0, 1) * n2;
-				N2 = this->get_gij(1, 0) * n1 + this->get_gij(1, 1) * n2;
-			}
-			else {
-				length = sqrt(_t1 * _t1 * _ref->get__gij(0, 0) + _t2 * _t1 * _ref->get__gij(1, 0) + _t1 * _t2 * _ref->get__gij(0, 1) + _t2 * _t2 * _ref->get__gij(1, 1));
-				gamma = length * length;
-				t1 = _t1 / length;
-				t2 = _t2 / length;
-				T1 = _ref->get__gij(0, 0) * t1 + _ref->get__gij(0, 1) * t2;
-				T2 = _ref->get__gij(1, 0) * t1 + _ref->get__gij(1, 1) * t2;
-				n1 = T2;
-				n2 = -T1;
-				length = sqrt(n1 * n1 * _ref->get__gij(0, 0) + n2 * n1 * _ref->get__gij(1, 0) + n1 * n2 * _ref->get__gij(0, 1) + n2 * n2 * _ref->get__gij(1, 1));
-				eta = length * length;
-				n1 /= length;
-				n2 /= length;
-				N1 = _ref->get__gij(0, 0) * n1 + _ref->get__gij(0, 1) * n2;
-				N2 = _ref->get__gij(1, 0) * n1 + _ref->get__gij(1, 1) * n2;
-			}
+			double length = sqrt(t1 * t1 * _ref->get__gij(0, 0) + 2 * t1 * t2 * _ref->get__gij(0, 1) + t2 * t2 * _ref->get__gij(1, 1));
+			t1 /= length; t2 /= length;
+			length = sqrt(n1 * n1 * _ref->get__gij(0, 0) + 2 * n1 * n2 * _ref->get__gij(0, 1) + n2 * n2 * _ref->get__gij(1, 1));
+			n1 /= length; n2 /= length;
+
 			double d1 = 0, d2 = 0, D1 = 0, D2 = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
@@ -12590,15 +12523,15 @@ namespace KingOfMonsters {
 				//double  tension=get_gammaijk(0, 0, 0)* t1* t1* n1 + get_gammaijk(0, 0, 1) * t1 * t1 * n2 + 2 * (get_gammaijk(0, 1, 0) * t1 * t2 * n1 + get_gammaijk(0, 1, 1) * t1 * t2 * n2 ) +
 				//		get_gammaijk(1, 1, 0) * t2 * t2 * n1 + get_gammaijk(1, 1, 1) * t2 * t2 * n2;
 				//val -= tension * (d1 * n1 + d2 * n2 - dc);
-				val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2 - dc);//Gammaijk
+				val += (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2 - dc);//Gammaijk
 			}
 			else {
-				val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * stt;
+				val += (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * stt;
 
 			}
 			return val;
 		}
-		void BCEQ_z(double* ptr, double _t1, double _t2,double stt,double a,double b ,bool accurate)
+		void BCEQ_z(double* ptr, double t1, double t2,double n1,double n2,double stt,double a,double b ,bool accurate)
 		{
 
 
@@ -12608,49 +12541,13 @@ namespace KingOfMonsters {
 			double s11 = 0;
 			double s12 = 0;
 			double s22 = 0;
-			double length = 0;
-			double t1 = 0;//up
-			double t2 = 0;//up
-			double T1 = 0;//down
-			double T2 = 0;//down
-			double n1 = 0;//up
-			double n2 = 0;//up
-			double N1 = 0;//down
-			double N2 = 0;//down
+		
 			double gamma = 0;
 			double eta = 0;
-			if (accurate)
-			{
-				length = sqrt(_t1 * _t1 * this->get_gij(0, 0) + _t2 * _t1 * this->get_gij(1, 0) + _t1 * _t2 * this->get_gij(0, 1) + _t2 * _t2 * this->get_gij(1, 1));
-				gamma = length * length;
-				t1 = _t1 / length;
-				t2 = _t2 / length;
-				T1 = this->get_gij(0, 0) * t1 + this->get_gij(0, 1) * t2;
-				T2 = this->get_gij(1, 0) * t1 + this->get_gij(1, 1) * t2;
-				n1 = T2;
-				n2 = -T1;
-				length = sqrt(n1 * n1 * this->get_gij(0, 0) + n2 * n1 * this->get_gij(1, 0) + n1 * n2 * this->get_gij(0, 1) + n2 * n2 * this->get_gij(1, 1));
-
-				n1 /= length;
-				n2 /= length;
-				N1 = this->get_gij(0, 0) * n1 + this->get_gij(0, 1) * n2;
-				N2 = this->get_gij(1, 0) * n1 + this->get_gij(1, 1) * n2;
-			}
-			else {
-				length = sqrt(_t1 * _t1 * _ref->get__gij(0, 0) + _t2 * _t1 * _ref->get__gij(1, 0) + _t1 * _t2 * _ref->get__gij(0, 1) + _t2 * _t2 * _ref->get__gij(1, 1));
-				gamma = length * length;
-				t1 = _t1 / length;
-				t2 = _t2 / length;
-				T1 = _ref->get__gij(0, 0) * t1 + _ref->get__gij(0, 1) * t2;
-				T2 = _ref->get__gij(1, 0) * t1 + _ref->get__gij(1, 1) * t2;
-				n1 = T2;
-				n2 = -T1;
-				length = sqrt(n1 * n1 * _ref->get__gij(0, 0) + n2 * n1 * _ref->get__gij(1, 0) + n1 * n2 * _ref->get__gij(0, 1) + n2 * n2 * _ref->get__gij(1, 1));
-				n1 /= length;
-				n2 /= length;
-				N1 = _ref->get__gij(0, 0) * n1 + _ref->get__gij(0, 1) * n2;
-				N2 = _ref->get__gij(1, 0) * n1 + _ref->get__gij(1, 1) * n2;
-			}
+			double length = sqrt(t1 * t1 * _ref->get__gij(0, 0) + 2 * t1 * t2 * _ref->get__gij(0, 1) + t2 * t2 * _ref->get__gij(1, 1));
+			t1 /= length; t2 /= length;
+			length = sqrt(n1 * n1 * _ref->get__gij(0, 0) + 2 * n1 * n2 * _ref->get__gij(0, 1) + n2 * n2 * _ref->get__gij(1, 1));
+			n1 /= length; n2 /= length;
 			double d1 = 0, d2 = 0, D1 = 0, D2 = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
@@ -12684,7 +12581,7 @@ namespace KingOfMonsters {
 					//	get_gammaijk(1, 1, 0) * t2 * t2 * n1 + get_gammaijk(1, 1, 1) * t2 * t2 * n2;
 					//val -= tension * (d1 * n1 + d2 * n2 - dc);
 
-					val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2);
+					val += (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2);
 
 				}
 				else {
@@ -12699,7 +12596,7 @@ namespace KingOfMonsters {
 
 
 		}
-		void BCEQ_phi(double* ptr, double _t1, double _t2, double stt, double a, double b, bool accurate)
+		void BCEQ_phi(double* ptr, double t1, double t2,double n1,double n2, double stt, double a, double b, bool accurate)
 		{
 			double S11 = 0;
 			double S12 = 0;
@@ -12707,51 +12604,14 @@ namespace KingOfMonsters {
 			double s11 = 0;
 			double s12 = 0;
 			double s22 = 0;
-			double length = 0;
-			double t1 = 0;//up
-			double t2 = 0;//up
-			double T1 = 0;//down
-			double T2 = 0;//down
-			double n1 = 0;//up
-			double n2 = 0;//up
-			double N1 = 0;//down
-			double N2 = 0;//down
+			
 			double gamma = 0;
 			//double eta = 0;
 			//double det = 0;
-			if (accurate)
-			{
-				length = sqrt(_t1 * _t1 * this->get_gij(0, 0) + _t2 * _t1 * this->get_gij(1, 0) + _t1 * _t2 * this->get_gij(0, 1) + _t2 * _t2 * this->get_gij(1, 1));
-				gamma = length * length;
-				t1 = _t1 / length;
-				t2 = _t2 / length;
-				T1 = this->get_gij(0, 0) * t1 + this->get_gij(0, 1) * t2;
-				T2 = this->get_gij(1, 0) * t1 + this->get_gij(1, 1) * t2;
-				n1 = T2;
-				n2 = -T1;
-				length = sqrt(n1 * n1 * this->get_gij(0, 0) + n2 * n1 * this->get_gij(1, 0) + n1 * n2 * this->get_gij(0, 1) + n2 * n2 * this->get_gij(1, 1));
-				//eta = length * length;
-				n1 /= length;
-				n2 /= length;
-				N1 = this->get_gij(0, 0) * n1 + this->get_gij(0, 1) * n2;
-				N2 = this->get_gij(1, 0) * n1 + this->get_gij(1, 1) * n2;
-			}
-			else {
-				length = sqrt(_t1 * _t1 * _ref->get__gij(0, 0) + _t2 * _t1 * _ref->get__gij(1, 0) + _t1 * _t2 * _ref->get__gij(0, 1) + _t2 * _t2 * _ref->get__gij(1, 1));
-				gamma = length * length;
-				t1 = _t1 / length;
-				t2 = _t2 / length;
-				T1 = _ref->get__gij(0, 0) * t1 + _ref->get__gij(0, 1) * t2;
-				T2 = _ref->get__gij(1, 0) * t1 + _ref->get__gij(1, 1) * t2;
-				n1 = T2;
-				n2 = -T1;
-				length = sqrt(n1 * n1 * _ref->get__gij(0, 0) + n2 * n1 * _ref->get__gij(1, 0) + n1 * n2 * _ref->get__gij(0, 1) + n2 * n2 * _ref->get__gij(1, 1));
-				//eta = length * length;
-				n1 /= length;
-				n2 /= length;
-				N1 = _ref->get__gij(0, 0) * n1 + _ref->get__gij(0, 1) * n2;
-				N2 = _ref->get__gij(1, 0) * n1 + _ref->get__gij(1, 1) * n2;
-			}
+			double length = sqrt(t1 * t1 * _ref->get__gij(0, 0) + 2 * t1 * t2 * _ref->get__gij(0, 1) + t2 * t2 * _ref->get__gij(1, 1));
+			t1 /= length; t2 /= length;
+			length = sqrt(n1 * n1 * _ref->get__gij(0, 0) + 2 * n1 * n2 * _ref->get__gij(0, 1) + n2 * n2 * _ref->get__gij(1, 1));
+			n1 /= length; n2 /= length;
 			//det = eta * gamma;
 			double d1 = 0, d2 = 0, D1 = 0, D2 = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -12788,7 +12648,7 @@ namespace KingOfMonsters {
 				}*/
 				if (stt < -100)
 				{
-					val -= (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2-dc);
+					val += (S11 * t1 * t1 + 2 * S12 * t1 * t2 + S22 * t2 * t2) * (d1 * n1 + d2 * n2-dc);
 
 
 				}
@@ -14369,11 +14229,7 @@ namespace KingOfMonsters {
 		{
 			return __mem->cont_uu(LR->__mem, t1, t2);
 		}
-		void cont_uu_phi(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, int shift, double t1, double t2, bool add)
-		{
-			__mem->cont_uu_phi(LR->__mem, __mem->__grad, t1, t2);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_nNode, add, c1);
-		}
+		
 
 		void cont_uu_xi(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double c1,int shift, double t1, double t2, bool add)
 		{
@@ -14390,11 +14246,7 @@ namespace KingOfMonsters {
 		{
 			return __mem->cont_uv(LR->__mem, t1, t2, s1, s2);
 		}
-		void cont_uv_phi(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, int shift, double t1, double t2, double s1, double s2, bool add)
-		{
-			__mem->cont_uv_phi(LR->__mem, __mem->__grad, t1, t2, s1, s2);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_nNode, add, c1);
-		}
+		
 		void cont_uv_xi(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, int shift,double t1, double t2, double s1, double s2, bool add)
 		{
 			__mem->cont_uv_xi(LR->__mem, __mem->__grad, t1, t2, s1, s2);
@@ -14729,18 +14581,18 @@ namespace KingOfMonsters {
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, sc, __mem->_nNode, c1);
 		}
 	
-		double BCEQ(double _t1, double _t2, double s11,double a,double b,bool accurate)
+		double BCEQ(double t1, double t2,double s1,double s2, double s11,double a,double b,bool accurate)
 		{
-			return __mem->BCEQ(_t1, _t2,s11,a,b,accurate);
+			return __mem->BCEQ(t1,t2,s1,s2,s11,a,b,accurate);
 		}
-		void BCEQ_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double _t1, double _t2,double  stt,double a,double b,bool accurate)
+		void BCEQ_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double t1, double t2,double s1,double s2,double  stt,double a,double b,bool accurate)
 		{
-			__mem->BCEQ_phi(__mem->__grad, _t1, _t2, stt,a,b, accurate);
+			__mem->BCEQ_phi(__mem->__grad, t1, t2,s1,s2, stt,a,b, accurate);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, sc, __mem->_nNode, c1);
 		}
-		void BCEQ_Z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double _t1, double _t2,double stt,double a,double b,bool accurate)
+		void BCEQ_Z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double t1, double t2,double s1,double s2,double stt,double a,double b,bool accurate)
 		{
-			__mem->BCEQ_z(__mem->__grad, _t1,_t2, stt, a,b,accurate);
+			__mem->BCEQ_z(__mem->__grad, t1,t2,s1,s2, stt, a,b,accurate);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, sc, __mem->_nNode, c1);
 		}
 		double mix_BC(double v1, double v2,  bool accurate)
