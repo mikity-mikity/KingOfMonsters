@@ -52,7 +52,7 @@ namespace KingOfMonsters {
 	public class _memS_ref {
 	public:
 		_RAM RAM;
-		double oG11, oG12, oG22;
+		double oG11, oG12, oG22,og11,og12,og22;
 		int _nNode;
 		int dim[2]{ 0,0 };
 		int _uDim, _vDim;
@@ -68,11 +68,14 @@ namespace KingOfMonsters {
 		double xi_1,xi_2, eta_1,eta_2;
 		double _gi[6];
 		double _Gi[6];
+		double _ogi[6];
+		double _oGi[6];
 		double _gij[4];
 		double _Gij[4];
 		double _bij[12];
 		double _Sij[4];
 		double _Gammaijk[8];
+		double oGammaijk[8];
 		double _gammaijk[8];
 		double* __dh[4]{ 0,0,0,0 };
 		double Fij[4];//LR->HR transformation matrix
@@ -6427,8 +6430,9 @@ namespace KingOfMonsters {
 			}
 
 		}
-		double div_free_x(_memS* LR)
+		double harmonic_x(_memS* LR)
 		{
+
 			double xu = 0, xv = 0;// , yu = 0, yv = 0;
 
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -6470,7 +6474,7 @@ namespace KingOfMonsters {
 			double val = sxuu * _ref->get__Gij(0, 0) + 2 * sxuv * _ref->get__Gij(0, 1) + sxvv * _ref->get__Gij(1, 1);
 			return val;
 		}
-		void div_free_x_xi(_memS* LR, double* ptr)
+		void harmonic_x_xi(_memS* LR, double* ptr)
 		{
 
 			double xuu = 0, xuv = 0, xvu = 0, xvv = 0;
@@ -6515,7 +6519,7 @@ namespace KingOfMonsters {
 			}
 		}
 
-		double div_free_y(_memS* LR)
+		double harmonic_y(_memS* LR)
 		{
 			//double xu = 0, xv = 0;
 			double yu = 0, yv = 0;
@@ -6560,7 +6564,7 @@ namespace KingOfMonsters {
 			double val = syuu * _ref->get__Gij(0, 0) + 2 * syuv * _ref->get__Gij(0, 1) + syvv * _ref->get__Gij(1, 1);
 			return val;
 		}
-		void div_free_y_eta(_memS* LR, double* ptr)
+		void harmonic_y_eta(_memS* LR, double* ptr)
 		{
 
 			double yuu = 0, yuv = 0, yvu = 0, yvv = 0;
@@ -6605,16 +6609,18 @@ namespace KingOfMonsters {
 				ptr1++;
 			}
 		}
-		double div_free_X(_memS* LR)
+
+		double harmonic_X(_memS* LR)
 		{
+
 			double xu = 0, xv = 0;// , yu = 0, yv = 0;
 
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				xu += _ref->d1[0][s] * _ref->buf_u[s];
 				xv += _ref->d1[1][s] * _ref->buf_u[s];
-				//yu += _ref->d1[0][s] * LR->_ref->buf_eta[s];
-				//yv += _ref->d1[1][s] * LR->_ref->buf_eta[s];
+				//yu += _ref->d1[0][s] * _ref->buf_v[s];
+				//yv += _ref->d1[1][s] * _ref->buf_v[s];
 			}
 
 			double xuu = 0, xuv = 0, xvu = 0, xvv = 0;
@@ -6622,10 +6628,10 @@ namespace KingOfMonsters {
 
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				xuu += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_u[s];
-				xuv += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->buf_u[s];
-				xvu += (_ref->d2[2][s] - _ref->_Gammaijk[4] * _ref->d1[0][s] - _ref->_Gammaijk[5] * _ref->d1[1][s]) * _ref->buf_u[s];
-				xvv += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_u[s];
+				xuu += (_ref->d2[0][s] - _ref->oGammaijk[0] * _ref->d1[0][s] - _ref->oGammaijk[1] * _ref->d1[1][s]) * _ref->buf_u[s];
+				xuv += (_ref->d2[1][s] - _ref->oGammaijk[2] * _ref->d1[0][s] - _ref->oGammaijk[3] * _ref->d1[1][s]) * _ref->buf_u[s];
+				xvu += (_ref->d2[2][s] - _ref->oGammaijk[4] * _ref->d1[0][s] - _ref->oGammaijk[5] * _ref->d1[1][s]) * _ref->buf_u[s];
+				xvv += (_ref->d2[3][s] - _ref->oGammaijk[6] * _ref->d1[0][s] - _ref->oGammaijk[7] * _ref->d1[1][s]) * _ref->buf_u[s];
 
 				//yuu += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s]  - _ref->_Gammaijk[1] * _ref->d1[1][s] ) * LR->_ref->buf_eta[s];
 				//yuv += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s]  - _ref->_Gammaijk[3] * _ref->d1[1][s] ) * LR->_ref->buf_eta[s];
@@ -6645,10 +6651,10 @@ namespace KingOfMonsters {
 			sxvv = xvv;// -_ref->_Gammaijk[6] * xu - _ref->_Gammaijk[7] * xv;
 			//syvv = yvv - _ref->_Gammaijk[6] * yu - _ref->_Gammaijk[7] * yv;
 
-			double val = sxuu * _ref->get__Gij(0, 0) + 2 * sxuv * _ref->get__Gij(0, 1) + sxvv * _ref->get__Gij(1, 1);
+			double val = sxuu * _ref->oG11 + 2 * sxuv * _ref->oG12 + sxvv * _ref->oG22;
 			return val;
 		}
-		void div_free_X_x(_memS* LR, double* ptr)
+		void harmonic_X_u(_memS* LR, double* ptr)
 		{
 
 			double xuu = 0, xuv = 0, xvu = 0, xvv = 0;
@@ -6664,10 +6670,10 @@ namespace KingOfMonsters {
 
 
 
-				xuu = _ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s];
-				xuv = _ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s];
-				xvu = _ref->d2[2][s] - _ref->_Gammaijk[4] * _ref->d1[0][s] - _ref->_Gammaijk[5] * _ref->d1[1][s];
-				xvv = _ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s];
+				xuu = _ref->d2[0][s] - _ref->oGammaijk[0] * _ref->d1[0][s] - _ref->oGammaijk[1] * _ref->d1[1][s];
+				xuv = _ref->d2[1][s] - _ref->oGammaijk[2] * _ref->d1[0][s] - _ref->oGammaijk[3] * _ref->d1[1][s];
+				xvu = _ref->d2[2][s] - _ref->oGammaijk[4] * _ref->d1[0][s] - _ref->oGammaijk[5] * _ref->d1[1][s];
+				xvv = _ref->d2[3][s] - _ref->oGammaijk[6] * _ref->d1[0][s] - _ref->oGammaijk[7] * _ref->d1[1][s];
 
 				//yuu += _ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s]  - _ref->_Gammaijk[1] * _ref->d1[1][s] ;
 				//yuv += _ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s]  - _ref->_Gammaijk[3] * _ref->d1[1][s] ;
@@ -6687,13 +6693,13 @@ namespace KingOfMonsters {
 				sxvv = xvv;// -_ref->_Gammaijk[6] * xu - _ref->_Gammaijk[7] * xv;
 				//syvv = yvv - _ref->_Gammaijk[6] * yu - _ref->_Gammaijk[7] * yv;
 
-				double val = sxuu * _ref->get__Gij(0, 0) + 2 * sxuv * _ref->get__Gij(0, 1) + sxvv * _ref->get__Gij(1, 1);
+				double val = sxuu * _ref->oG11 + 2 * sxuv * _ref->oG12 + sxvv * _ref->oG22;
 				*ptr1 = val;
 				ptr1++;
 			}
 		}
 
-		double div_free_Y(_memS* LR)
+		double harmonic_Y(_memS* LR)
 		{
 			//double xu = 0, xv = 0;
 			double yu = 0, yv = 0;
@@ -6716,10 +6722,10 @@ namespace KingOfMonsters {
 				//xvu += (_ref->d2[2][s] - _ref->_Gammaijk[4] * _ref->d1[0][s] * xu - _ref->_Gammaijk[5] * _ref->d1[1][s] * xv) * LR->_ref->buf_xi[s];
 				//xvv += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] * xu - _ref->_Gammaijk[7] * _ref->d1[1][s] * xv) * LR->_ref->buf_xi[s];
 
-				yuu += (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]) * _ref->buf_v[s];
-				yuv += (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]) * _ref->buf_v[s];
-				yvu += (_ref->d2[2][s] - _ref->_Gammaijk[4] * _ref->d1[0][s] - _ref->_Gammaijk[5] * _ref->d1[1][s]) * _ref->buf_v[s];
-				yvv += (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]) * _ref->buf_v[s];
+				yuu += (_ref->d2[0][s] - _ref->oGammaijk[0] * _ref->d1[0][s] - _ref->oGammaijk[1] * _ref->d1[1][s]) * _ref->buf_v[s];
+				yuv += (_ref->d2[1][s] - _ref->oGammaijk[2] * _ref->d1[0][s] - _ref->oGammaijk[3] * _ref->d1[1][s]) * _ref->buf_v[s];
+				yvu += (_ref->d2[2][s] - _ref->oGammaijk[4] * _ref->d1[0][s] - _ref->oGammaijk[5] * _ref->d1[1][s]) * _ref->buf_v[s];
+				yvv += (_ref->d2[3][s] - _ref->oGammaijk[6] * _ref->d1[0][s] - _ref->oGammaijk[7] * _ref->d1[1][s]) * _ref->buf_v[s];
 			}
 			//double sxuu = 0, sxuv = 0, sxvu = 0, sxvv = 0;
 			double syuu = 0, syuv = 0, syvu = 0, syvv = 0;
@@ -6735,10 +6741,10 @@ namespace KingOfMonsters {
 			//sxvv = xvv - _ref->_Gammaijk[6] * xu - _ref->_Gammaijk[7] * xv;
 			syvv = yvv;// -_ref->_Gammaijk[6] * yu - _ref->_Gammaijk[7] * yv;
 
-			double val = syuu * _ref->get__Gij(0, 0) + 2 * syuv * _ref->get__Gij(0, 1) + syvv * _ref->get__Gij(1, 1);
+			double val = syuu * _ref->oG11 + 2 * syuv * _ref->oG12 + syvv * _ref->oG22;
 			return val;
 		}
-		void div_free_Y_y(_memS* LR, double* ptr)
+		void harmonic_Y_v(_memS* LR, double* ptr)
 		{
 
 			double yuu = 0, yuv = 0, yvu = 0, yvv = 0;
@@ -6759,10 +6765,10 @@ namespace KingOfMonsters {
 				//xvu += _ref->d2[2][s] - _ref->_Gammaijk[4] * _ref->d1[0][s] * xu - _ref->_Gammaijk[5] * _ref->d1[1][s] * xv;
 				//xvv += _ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] * xu - _ref->_Gammaijk[7] * _ref->d1[1][s] * xv;
 
-				yuu = _ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s];
-				yuv = _ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s];
-				yvu = _ref->d2[2][s] - _ref->_Gammaijk[4] * _ref->d1[0][s] - _ref->_Gammaijk[5] * _ref->d1[1][s];
-				yvv = _ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s];
+				yuu = _ref->d2[0][s] - _ref->oGammaijk[0] * _ref->d1[0][s] - _ref->oGammaijk[1] * _ref->d1[1][s];
+				yuv = _ref->d2[1][s] - _ref->oGammaijk[2] * _ref->d1[0][s] - _ref->oGammaijk[3] * _ref->d1[1][s];
+				yvu = _ref->d2[2][s] - _ref->oGammaijk[4] * _ref->d1[0][s] - _ref->oGammaijk[5] * _ref->d1[1][s];
+				yvv = _ref->d2[3][s] - _ref->oGammaijk[6] * _ref->d1[0][s] - _ref->oGammaijk[7] * _ref->d1[1][s];
 
 				//double sxuu = 0, sxuv = 0, sxvu = 0, sxvv = 0;
 				double syuu = 0, syuv = 0, syvu = 0, syvv = 0;
@@ -6778,15 +6784,19 @@ namespace KingOfMonsters {
 				//sxvv = xvv - _ref->_Gammaijk[6] * xu - _ref->_Gammaijk[7] * xv;
 				syvv = yvv;// -_ref->_Gammaijk[6] * yu - _ref->_Gammaijk[7] * yv;
 
-				double val = syuu * _ref->get__Gij(0, 0) + 2 * syuv * _ref->get__Gij(0, 1) + syvv * _ref->get__Gij(1, 1);
+				double val = syuu * _ref->oG11 + 2 * syuv * _ref->oG12 + syvv * _ref->oG22;
 				*ptr1 = val;
 				ptr1++;
 			}
 		}
-		double harmonic_1(_memS* LR)
+
+
+		double conformal_x(_memS* LR)
 		{
-			double xu = 0, xv = 0 , yu = 0, yv = 0;
-			
+
+
+			double xu = 0, xv = 0, yu = 0, yv = 0;
+
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				xu += _ref->d1[0][s] * LR->_ref->buf_xi[s];
@@ -6794,114 +6804,309 @@ namespace KingOfMonsters {
 				yu += _ref->d1[0][s] * LR->_ref->buf_eta[s];
 				yv += _ref->d1[1][s] * LR->_ref->buf_eta[s];
 			}
-			
-			double xx = xu * _ref->get__Gi(0, 0) + xv * _ref->get__Gi(1, 0);
-			double yy = yu * _ref->get__Gi(0, 1) + yv * _ref->get__Gi(1, 1);
-			double val = xx - yy;
-			return val;
+			double xx = xu * _ref->_oGi[0] + xv * _ref->_oGi[3];
+			double xy = xu * _ref->_oGi[1] + xv * _ref->_oGi[4];
+			double yx = yu * _ref->_oGi[0] + yv * _ref->_oGi[3];
+			double yy = yu * _ref->_oGi[1] + yv * _ref->_oGi[4];
+
+			return xx - yy;
+		}
+
+
+
+		void conformal_x_xi(_memS* LR, double* ptr)
+		{
+
+			double xuu = 0, xuv = 0, xvu = 0, xvv = 0;
+			double* ptr1 = ptr;
+
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+
+				xu = _ref->d1[0][s];
+				xv = _ref->d1[1][s];
+				//yu = _ref->d1[0][s];
+				//yv = _ref->d1[1][s];
+
+				double xx = xu * _ref->_oGi[0] + xv * _ref->_oGi[3];
+				double xy = xu * _ref->_oGi[1] + xv * _ref->_oGi[4];
+				double yx = yu * _ref->_oGi[0] + yv * _ref->_oGi[3];
+				double yy = yu * _ref->_oGi[1] + yv * _ref->_oGi[4];
+
+				double val = xx - yy;
+
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		void conformal_x_eta(_memS* LR, double* ptr)
+		{
+
+			double xuu = 0, xuv = 0, xvu = 0, xvv = 0;
+			double* ptr1 = ptr;
+
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+
+				//xu = _ref->d1[0][s];
+				//xv = _ref->d1[1][s];
+				yu = _ref->d1[0][s];
+				yv = _ref->d1[1][s];
+				double xx = xu * _ref->_oGi[0] + xv * _ref->_oGi[3];
+				double xy = xu * _ref->_oGi[1] + xv * _ref->_oGi[4];
+				double yx = yu * _ref->_oGi[0] + yv * _ref->_oGi[3];
+				double yy = yu * _ref->_oGi[1] + yv * _ref->_oGi[4];
+
+				double val = xx - yy;
+
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		double conformal_y(_memS* LR)
+		{
+
+
+			double xu = 0, xv = 0, yu = 0, yv = 0;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				xu += _ref->d1[0][s] * LR->_ref->buf_xi[s];
+				xv += _ref->d1[1][s] * LR->_ref->buf_xi[s];
+				yu += _ref->d1[0][s] * LR->_ref->buf_eta[s];
+				yv += _ref->d1[1][s] * LR->_ref->buf_eta[s];
+			}
+			double xx = xu * _ref->_oGi[0] + xv * _ref->_oGi[3];
+			double xy = xu * _ref->_oGi[1] + xv * _ref->_oGi[4];
+			double yx = yu * _ref->_oGi[0] + yv * _ref->_oGi[3];
+			double yy = yu * _ref->_oGi[1] + yv * _ref->_oGi[4];
+
+			return xy + yx;
+		}
+
+
+
+		void conformal_y_xi(_memS* LR, double* ptr)
+		{
+
+			double xuu = 0, xuv = 0, xvu = 0, xvv = 0;
+			double* ptr1 = ptr;
+
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+
+				xu = _ref->d1[0][s];
+				xv = _ref->d1[1][s];
+				//yu = _ref->d1[0][s];
+				//yv = _ref->d1[1][s];
+
+				double xx = xu * _ref->_oGi[0] + xv * _ref->_oGi[3];
+				double xy = xu * _ref->_oGi[1] + xv * _ref->_oGi[4];
+				double yx = yu * _ref->_oGi[0] + yv * _ref->_oGi[3];
+				double yy = yu * _ref->_oGi[1] + yv * _ref->_oGi[4];
+
+				double val = xy + yx;
+
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		void conformal_y_eta(_memS* LR, double* ptr)
+		{
+
+			double xuu = 0, xuv = 0, xvu = 0, xvv = 0;
+			double* ptr1 = ptr;
+
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+
+				//xu = _ref->d1[0][s];
+				//xv = _ref->d1[1][s];
+				yu = _ref->d1[0][s];
+				yv = _ref->d1[1][s];
+
+				double xx = xu * _ref->_oGi[0] + xv * _ref->_oGi[3];
+				double xy = xu * _ref->_oGi[1] + xv * _ref->_oGi[4];
+				double yx = yu * _ref->_oGi[0] + yv * _ref->_oGi[3];
+				double yy = yu * _ref->_oGi[1] + yv * _ref->_oGi[4];
+
+				double val = xy + yx;
+
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+
+		double conformal_X(_memS* LR)
+		{
+
+
+			double xu = 0, xv = 0 , yu = 0, yv = 0;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				xu += _ref->d1[0][s] * _ref->buf_u[s];
+				xv += _ref->d1[1][s] * _ref->buf_u[s];
+				yu += _ref->d1[0][s] * _ref->buf_v[s];
+				yv += _ref->d1[1][s] * _ref->buf_v[s];
+			}
+			double xx = xu * _ref->_oGi[0] + xv * _ref->_oGi[3];
+			double xy = xu * _ref->_oGi[1] + xv * _ref->_oGi[4];
+			double yx = yu * _ref->_oGi[0] + yv * _ref->_oGi[3];
+			double yy = yu * _ref->_oGi[1] + yv * _ref->_oGi[4];
 		
+			return xx-yy;
 		}
-		void harmonic1_xi(_memS* LR, double* ptr)
+
+
+
+		void conformal_X_x(_memS* LR, double* ptr)
 		{
 			
-			
+			double xuu = 0, xuv = 0, xvu = 0, xvv = 0;
 			double* ptr1 = ptr;
-			double xu = 0, xv = 0 , yu = 0, yv = 0;
+		
 
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				xu = _ref->d1[0][s];
-				xv = _ref->d1[1][s];
-				//yu = _ref->d1[0][s];
-				//yv = _ref->d1[1][s];
-				double xx = xu * _ref->get__Gi(0, 0) + xv * _ref->get__Gi(1, 0);
-				//double yy = yu * _ref->get__Gi(0, 1) + yv * _ref->get__Gi(1, 1);
-				double val = xx;// -yy;
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+				
+					xu = _ref->d1[0][s];
+					xv = _ref->d1[1][s];
+					//yu = _ref->d1[0][s];
+					//yv = _ref->d1[1][s];
+					double xx = xu * _ref->_oGi[0] + xv * _ref->_oGi[3];
+					double xy = xu * _ref->_oGi[1] + xv * _ref->_oGi[4];
+					double yx = yu * _ref->_oGi[0] + yv * _ref->_oGi[3];
+					double yy = yu * _ref->_oGi[1] + yv * _ref->_oGi[4];
+
+				double val=xx - yy;
 
 				*ptr1 = val;
 				ptr1++;
 			}
 		}
-		void harmonic_1_eta(_memS* LR, double* ptr)
+		void conformal_X_y(_memS* LR, double* ptr)
 		{
 
-
+			double xuu = 0, xuv = 0, xvu = 0, xvv = 0;
 			double* ptr1 = ptr;
-			double xu = 0, xv = 0, yu = 0, yv = 0;
+
 
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+
 				//xu = _ref->d1[0][s];
 				//xv = _ref->d1[1][s];
 				yu = _ref->d1[0][s];
 				yv = _ref->d1[1][s];
-				//double xx = xu * _ref->get__Gi(0, 0) + xv * _ref->get__Gi(1, 0);
-				double yy = yu * _ref->get__Gi(0, 1) + yv * _ref->get__Gi(1, 1);
-				double val =   - yy;
+
+				double xx = xu * _ref->_oGi[0] + xv * _ref->_oGi[3];
+				double xy = xu * _ref->_oGi[1] + xv * _ref->_oGi[4];
+				double yx = yu * _ref->_oGi[0] + yv * _ref->_oGi[3];
+				double yy = yu * _ref->_oGi[1] + yv * _ref->_oGi[4];
+
+				double val = xx - yy;
 
 				*ptr1 = val;
 				ptr1++;
 			}
 		}
-		double harmonic_2(_memS* LR)
+		double conformal_Y(_memS* LR)
 		{
+
+
 			double xu = 0, xv = 0, yu = 0, yv = 0;
 
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				xu += _ref->d1[0][s] * LR->_ref->buf_xi[s];
-				xv += _ref->d1[1][s] * LR->_ref->buf_xi[s];
-				yu += _ref->d1[0][s] * LR->_ref->buf_eta[s];
-				yv += _ref->d1[1][s] * LR->_ref->buf_eta[s];
+				xu += _ref->d1[0][s] * _ref->buf_u[s];
+				xv += _ref->d1[1][s] * _ref->buf_u[s];
+				yu += _ref->d1[0][s] * _ref->buf_v[s];
+				yv += _ref->d1[1][s] * _ref->buf_v[s];
 			}
+			double xx = xu * _ref->_oGi[0] + xv * _ref->_oGi[3];
+			double xy = xu * _ref->_oGi[1] + xv * _ref->_oGi[4];
+			double yx = yu * _ref->_oGi[0] + yv * _ref->_oGi[3];
+			double yy = yu * _ref->_oGi[1] + yv * _ref->_oGi[4];
 
-			double xy = xu * _ref->get__Gi(0, 1) + xv * _ref->get__Gi(1, 1);
-			double yx = yu * _ref->get__Gi(0, 0) + yv * _ref->get__Gi(1, 0);
-			double val = xy + yx;
-			return val;
-
+			return xy + yx;
 		}
-		void harmonic2_xi(_memS* LR, double* ptr)
+
+
+
+		void conformal_Y_x(_memS* LR, double* ptr)
 		{
 
-
+			double xuu = 0, xuv = 0, xvu = 0, xvv = 0;
 			double* ptr1 = ptr;
-			double xu = 0, xv = 0, yu = 0, yv = 0;
+
 
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+
 				xu = _ref->d1[0][s];
 				xv = _ref->d1[1][s];
 				//yu = _ref->d1[0][s];
 				//yv = _ref->d1[1][s];
-				double xy = xu * _ref->get__Gi(0, 1) + xv * _ref->get__Gi(1, 1);
-				//double yx = yu * _ref->get__Gi(0, 0) + yv * _ref->get__Gi(1, 0);
-				double val = xy;// -yy;
+
+				double xx = xu * _ref->_oGi[0] + xv * _ref->_oGi[3];
+				double xy = xu * _ref->_oGi[1] + xv * _ref->_oGi[4];
+				double yx = yu * _ref->_oGi[0] + yv * _ref->_oGi[3];
+				double yy = yu * _ref->_oGi[1] + yv * _ref->_oGi[4];
+
+				double val = xy + yx;
 
 				*ptr1 = val;
 				ptr1++;
 			}
 		}
-		void harmonic_2_eta(_memS* LR, double* ptr)
+		void conformal_Y_y(_memS* LR, double* ptr)
 		{
 
-
+			double xuu = 0, xuv = 0, xvu = 0, xvv = 0;
 			double* ptr1 = ptr;
-			double xu = 0, xv = 0, yu = 0, yv = 0;
+
 
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+
 				//xu = _ref->d1[0][s];
 				//xv = _ref->d1[1][s];
 				yu = _ref->d1[0][s];
 				yv = _ref->d1[1][s];
-				//double xy = xu * _ref->get__Gi(0, 1) + xv * _ref->get__Gi(1, 1);
-				double yx = yu * _ref->get__Gi(0, 0) + yv * _ref->get__Gi(1, 0);
-				double val = +yx;// -yy;
+
+				double xx = xu * _ref->_oGi[0] + xv * _ref->_oGi[3];
+				double xy = xu * _ref->_oGi[1] + xv * _ref->_oGi[4];
+				double yx = yu * _ref->_oGi[0] + yv * _ref->_oGi[3];
+				double yy = yu * _ref->_oGi[1] + yv * _ref->_oGi[4];
+
+				double val = xy + yx;
+
 				*ptr1 = val;
 				ptr1++;
 			}
 		}
+		
 		double guide_trace2(_memS* LR)
 		{
 		
@@ -8798,7 +9003,7 @@ namespace KingOfMonsters {
 			}
 
 
-			double guide_free4(_memS* LR, double t1, double t2)
+			double guide_free4(_memS* LR, double t1, double t2,bool add)
 			{
 				double length = sqrt(_ref->get__gij(0, 0) * t1 * t1 + 2 * _ref->get__gij(0, 1) * t1 * t2 + _ref->get__gij(1, 1) * t2 * t2);
 				t1 /= length;
@@ -8830,19 +9035,50 @@ namespace KingOfMonsters {
 				double Suu = _ref->get__Gij(0, 0) * suu * _ref->get__Gij(0, 0) + _ref->get__Gij(0, 0) * suv * _ref->get__Gij(1, 0) + _ref->get__Gij(0, 1) * svu * _ref->get__Gij(0, 0) + _ref->get__Gij(0, 1) * svv * _ref->get__Gij(1, 0);
 				double Suv = _ref->get__Gij(0, 0) * suu * _ref->get__Gij(0, 1) + _ref->get__Gij(0, 0) * suv * _ref->get__Gij(1, 1) + _ref->get__Gij(0, 1) * svu * _ref->get__Gij(0, 1) + _ref->get__Gij(0, 1) * svv * _ref->get__Gij(1, 1);
 				double Svv = _ref->get__Gij(1, 0) * suu * _ref->get__Gij(0, 1) + _ref->get__Gij(1, 0) * suv * _ref->get__Gij(1, 1) + _ref->get__Gij(1, 1) * svu * _ref->get__Gij(0, 1) + _ref->get__Gij(1, 1) * svv * _ref->get__Gij(1, 1);
+				if (add) {
+					suu = get__hij(0, 0) + globalratio * (Svv) / sc;
+					suv = get__hij(0, 1) - globalratio * (Suv) / sc;
+					svu = get__hij(1, 0) - globalratio * (Suv) / sc;
+					svv = get__hij(1, 1) + globalratio * (Suu) / sc;
+				}
+				else {
+					suu =+ globalratio * (Svv) / sc;
+					suv =  - globalratio * (Suv) / sc;
+					svu =  - globalratio * (Suv) / sc;
+					svv = + globalratio * (Suu) / sc;
 
-				suu =  + Svv / sc;
-				suv =  - Suv / sc;
-				svu =  - Suv / sc;
-				svv =  + Suu / sc;
-
+				}
 				val = (suu * t1 * t1 + suv * t1 * t2 + svu * t2 * t1 + svv * t2 * t2);
 
 
 
 				return val;
 			}
-		
+			void guide_free4_phi(_memS* LR, double* ptr, double t1, double t2)
+			{
+				double length = sqrt(_ref->get__gij(0, 0) * t1 * t1 + 2 * _ref->get__gij(0, 1) * t1 * t2 + _ref->get__gij(1, 1) * t2 * t2);
+				t1 /= length;
+				t2 /= length;
+
+				double val = 0;
+
+				double* ptr1 = ptr;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					double _h11 = _ref->__dh[0][s];
+					double _h12 = _ref->__dh[1][s];
+					double _h21 = _ref->__dh[2][s];
+					double _h22 = _ref->__dh[3][s];
+
+
+
+					val = _h11 * t1 * t1 + _h12 * t1 * t2 + _h21 * t2 * t1 + _h22 * t2 * t2;
+
+					*ptr1 = val;
+					ptr1++;
+				}
+
+			}
 			void guide_free4_xi(_memS* LR, double* ptr, double t1, double t2)
 			{
 				double length = sqrt(_ref->get__gij(0, 0) * t1 * t1 + 2 * _ref->get__gij(0, 1) * t1 * t2 + _ref->get__gij(1, 1) * t2 * t2);
@@ -8876,10 +9112,10 @@ namespace KingOfMonsters {
 					double Suv = _ref->get__Gij(0, 0) * suu * _ref->get__Gij(0, 1) + _ref->get__Gij(0, 0) * suv * _ref->get__Gij(1, 1) + _ref->get__Gij(0, 1) * svu * _ref->get__Gij(0, 1) + _ref->get__Gij(0, 1) * svv * _ref->get__Gij(1, 1);
 					double Svv = _ref->get__Gij(1, 0) * suu * _ref->get__Gij(0, 1) + _ref->get__Gij(1, 0) * suv * _ref->get__Gij(1, 1) + _ref->get__Gij(1, 1) * svu * _ref->get__Gij(0, 1) + _ref->get__Gij(1, 1) * svv * _ref->get__Gij(1, 1);
 
-					double _h11 = +Svv / sc;
-					double _h12 = -Suv / sc;
-					double _h21 = -Suv / sc;
-					double _h22 = +Suu / sc;
+					double _h11 = globalratio * (+Svv) / sc;
+					double _h12 = globalratio * (-Suv) / sc;
+					double _h21 = globalratio * (-Suv) / sc;
+					double _h22 = globalratio * (+Suu) / sc;
 
 
 
@@ -8923,10 +9159,10 @@ namespace KingOfMonsters {
 					double Suv = _ref->get__Gij(0, 0) * suu * _ref->get__Gij(0, 1) + _ref->get__Gij(0, 0) * suv * _ref->get__Gij(1, 1) + _ref->get__Gij(0, 1) * svu * _ref->get__Gij(0, 1) + _ref->get__Gij(0, 1) * svv * _ref->get__Gij(1, 1);
 					double Svv = _ref->get__Gij(1, 0) * suu * _ref->get__Gij(0, 1) + _ref->get__Gij(1, 0) * suv * _ref->get__Gij(1, 1) + _ref->get__Gij(1, 1) * svu * _ref->get__Gij(0, 1) + _ref->get__Gij(1, 1) * svv * _ref->get__Gij(1, 1);
 
-					double _h11 = +Svv / sc;
-					double _h12 = -Suv / sc;
-					double _h21 = -Suv / sc;
-					double _h22 = +Suu / sc;
+					double _h11 = globalratio * (+Svv) / sc;
+					double _h12 = globalratio * (-Suv) / sc;
+					double _h21 = globalratio * (-Suv) / sc;
+					double _h22 = globalratio * (+Suu) / sc;
 
 					val = (_h11 * t1 * t1 + _h12 * t1 * t2 + _h21 * t2 * t1 + _h22 * t2 * t2);
 
@@ -9132,7 +9368,7 @@ namespace KingOfMonsters {
 			}
 
 
-			double guide_free5(_memS* LR, double t1, double t2, double s1, double s2)
+			double guide_free5(_memS* LR, double t1, double t2, double s1, double s2,bool add)
 			{
 				double length = sqrt(_ref->get__gij(0, 0) * t1 * t1 + 2 * _ref->get__gij(0, 1) * t1 * t2 + _ref->get__gij(1, 1) * t2 * t2);
 				t1 /= length;
@@ -9165,12 +9401,19 @@ namespace KingOfMonsters {
 				double Suu = _ref->get__Gij(0, 0) * suu * _ref->get__Gij(0, 0) + _ref->get__Gij(0, 0) * suv * _ref->get__Gij(1, 0) + _ref->get__Gij(0, 1) * svu * _ref->get__Gij(0, 0) + _ref->get__Gij(0, 1) * svv * _ref->get__Gij(1, 0);
 				double Suv = _ref->get__Gij(0, 0) * suu * _ref->get__Gij(0, 1) + _ref->get__Gij(0, 0) * suv * _ref->get__Gij(1, 1) + _ref->get__Gij(0, 1) * svu * _ref->get__Gij(0, 1) + _ref->get__Gij(0, 1) * svv * _ref->get__Gij(1, 1);
 				double Svv = _ref->get__Gij(1, 0) * suu * _ref->get__Gij(0, 1) + _ref->get__Gij(1, 0) * suv * _ref->get__Gij(1, 1) + _ref->get__Gij(1, 1) * svu * _ref->get__Gij(0, 1) + _ref->get__Gij(1, 1) * svv * _ref->get__Gij(1, 1);
+				if (add)
+				{
+					suu = get__hij(0, 0) + globalratio * (Svv) / sc;
+					suv = get__hij(0, 1) - globalratio * (Suv) / sc;
+					svu = get__hij(1, 0) - globalratio * (Suv) / sc;
+					svv = get__hij(1, 1) + globalratio * (Suu) / sc;
+				}else{
+					suu =  + globalratio * (Svv) / sc;
+					suv =  - globalratio * (Suv) / sc;
+					svu =  - globalratio * (Suv) / sc;
+					svv =  + globalratio * (Suu) / sc;
 
-				suu =+ Svv / sc;
-				suv =  - Suv / sc;
-				svu =  - Suv / sc;
-				svv =  + Suu / sc;
-
+				}
 
 
 				val = (suu * s1 * t1 + suv * s1 * t2 + svu * s2 * t1 + svv * s2 * t2);
@@ -9179,7 +9422,30 @@ namespace KingOfMonsters {
 
 				return val;
 			}
+			void guide_free5_phi(_memS* LR, double* ptr, double t1, double t2, double s1, double s2)
+			{
+				double val = 0;
+				double length = sqrt(_ref->get__gij(0, 0) * t1 * t1 + 2 * _ref->get__gij(0, 1) * t1 * t2 + _ref->get__gij(1, 1) * t2 * t2);
+				t1 /= length;
+				t2 /= length;
+				length = sqrt(_ref->get__gij(0, 0) * s1 * s1 + 2 * _ref->get__gij(0, 1) * s1 * s2 + _ref->get__gij(1, 1) * s2 * s2);
+				s1 /= length;
+				s2 /= length;
+				double* ptr1 = ptr;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					
+					double _h11 = _ref->__dh[0][s];
+					double _h12 = _ref->__dh[1][s];
+					double _h21 = _ref->__dh[2][s];
+					double _h22 = _ref->__dh[3][s];
+					val = (_h11 * s1 * t1 + _h12 * s1 * t2 + _h21 * s2 * t1 + _h22 * s2 * t2);
 
+					*ptr1 = val;
+					ptr1++;
+				}
+
+			}
 		
 			void guide_free5_xi(_memS* LR, double* ptr, double t1, double t2, double s1, double s2)
 			{
@@ -9215,10 +9481,10 @@ namespace KingOfMonsters {
 					double Suv = _ref->get__Gij(0, 0) * suu * _ref->get__Gij(0, 1) + _ref->get__Gij(0, 0) * suv * _ref->get__Gij(1, 1) + _ref->get__Gij(0, 1) * svu * _ref->get__Gij(0, 1) + _ref->get__Gij(0, 1) * svv * _ref->get__Gij(1, 1);
 					double Svv = _ref->get__Gij(1, 0) * suu * _ref->get__Gij(0, 1) + _ref->get__Gij(1, 0) * suv * _ref->get__Gij(1, 1) + _ref->get__Gij(1, 1) * svu * _ref->get__Gij(0, 1) + _ref->get__Gij(1, 1) * svv * _ref->get__Gij(1, 1);
 
-					double _h11 = Svv / sc;
-					double _h12 = -Suv / sc;
-					double _h21 = -Suv / sc;
-					double _h22 = Suu / sc;
+					double _h11 = globalratio*(Svv) / sc;
+					double _h12 = globalratio * (-Suv) / sc;
+					double _h21 = globalratio * (-Suv) / sc;
+					double _h22 = globalratio * (Suu) / sc;
 					val = (_h11 * s1 * t1 + _h12 * s1 * t2 + _h21 * s2 * t1 + _h22 * s2 * t2);
 
 					*ptr1 = val;
@@ -9261,10 +9527,10 @@ namespace KingOfMonsters {
 					double Suv = _ref->get__Gij(0, 0) * suu * _ref->get__Gij(0, 1) + _ref->get__Gij(0, 0) * suv * _ref->get__Gij(1, 1) + _ref->get__Gij(0, 1) * svu * _ref->get__Gij(0, 1) + _ref->get__Gij(0, 1) * svv * _ref->get__Gij(1, 1);
 					double Svv = _ref->get__Gij(1, 0) * suu * _ref->get__Gij(0, 1) + _ref->get__Gij(1, 0) * suv * _ref->get__Gij(1, 1) + _ref->get__Gij(1, 1) * svu * _ref->get__Gij(0, 1) + _ref->get__Gij(1, 1) * svv * _ref->get__Gij(1, 1);
 
-					double _h11 = Svv / sc;
-					double _h12 = -Suv / sc;
-					double _h21 = -Suv / sc;
-					double _h22 = Suu / sc;
+					double _h11 = globalratio * (Svv) / sc;
+					double _h12 = globalratio * (-Suv) / sc;
+					double _h21 = globalratio * (-Suv) / sc;
+					double _h22 = globalratio * (Suu) / sc;
 					val = (_h11 * s1 * t1 + _h12 * s1 * t2 + _h21 * s2 * t1 + _h22 * s2 * t2);
 
 					*ptr1 = val;
@@ -10302,6 +10568,7 @@ namespace KingOfMonsters {
 			double fvv = globalratio * (Huu) / sc + get__hij(1,1 );
 			double fvu = fuv;
 
+		
 			double Xu = 0, Xv = 0, Yu = 0, Yv = 0;
 
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -10324,10 +10591,9 @@ namespace KingOfMonsters {
 			double suv = ((euv + evu) - TR * _ref->get__gij(0, 1));
 			double svu = ((euv + evu) - TR * _ref->get__gij(1, 0));
 			double svv = (2 * evv - TR * _ref->get__gij(1, 1));
-
-			double Suu = globalratio * (suu) + get__Sij(0, 0);
-			double Suv = globalratio * (suv) + get__Sij(0, 1);
-			double Svv = globalratio * (svv) + get__Sij(1, 1);
+			double Suu = suu+get__Sij(0, 0);
+			double Suv = suv+get__Sij(0, 1);
+			double Svv = svv+get__Sij(1, 1);
 			double Svu = Suv;
 			double E11 = w1 * (v1 * v1) + w2 * (s1 * s1);
 			double E12 = w1 * (v1 * v2) + w2 * (s1 * s2);
@@ -10404,64 +10670,6 @@ namespace KingOfMonsters {
 			}
 
 		}
-		void align_mix22_phi(_memS* LR, double* ptr, double v1, double v2, double s1, double s2, double w1, double w2)
-		{
-
-			double Xu = 0, Xv = 0, Yu = 0, Yv = 0;
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				Xu += _ref->d1[0][s] * _ref->buf_u[s];
-				Xv += _ref->d1[1][s] * _ref->buf_u[s];
-				Yu += _ref->d1[0][s] * _ref->buf_v[s];
-				Yv += _ref->d1[1][s] * _ref->buf_v[s];
-			}
-			double euu = Xu * _ref->get__gi(0, 0) + Yu * _ref->get__gi(0, 1);
-			double euv = Xu * _ref->get__gi(1, 0) + Yu * _ref->get__gi(1, 1);
-			double evu = Xv * _ref->get__gi(0, 0) + Yv * _ref->get__gi(0, 1);
-			double evv = Xv * _ref->get__gi(1, 0) + Yv * _ref->get__gi(1, 1);
-
-
-
-			double TR = euu * _ref->get__Gij(0, 0) + euv * _ref->get__Gij(0, 1) + evu * _ref->get__Gij(1, 0) + evv * _ref->get__Gij(1, 1);
-
-			double suu = (2 * euu - TR * _ref->get__gij(0, 0));
-			double suv = ((euv + evu) - TR * _ref->get__gij(0, 1));
-			double svu = ((euv + evu) - TR * _ref->get__gij(1, 0));
-			double svv = (2 * evv - TR * _ref->get__gij(1, 1));
-
-			double Suu = globalratio * (suu) + get__Sij(0, 0);
-			double Suv = globalratio * (suv) + get__Sij(0, 1);
-			double Svv = globalratio * (svv) + get__Sij(1, 1);
-			double Svu = Suv;
-
-
-
-			double E11 = w1 * (v1 * v1) + w2 * (s1 * s1);
-			double E12 = w1 * (v1 * v2) + w2 * (s1 * s2);
-			double E21 = w1 * (v2 * v1) + w2 * (s2 * s1);
-			double E22 = w1 * (v2 * v2) + w2 * (s2 * s2);
-
-			double scale = 1  /*/ trEij*/ / _ref->_refDv;
-			double val = 0;
-			double* ptr1 = ptr;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				double fuu = _ref->__dh[0][s];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
-				double fuv = _ref->__dh[1][s];// (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
-				double fvv = _ref->__dh[3][s];// (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double fvu = fuv;
-
-
-				val = ((fuu)*E11 * Suv + (fuu)*E12 * Svv + (fuv)*E21 * Suv + (fuv)*E22 * Svv) * scale;
-				val -= ((fvu)*E11 * Suu + (fvu)*E12 * Svu + (fvv)*E21 * Suu + (fvv)*E22 * Svu) * scale;
-				
-				*ptr1 = val;
-				ptr1++;
-			}
-
-		}
-
 		void align_mix22_x(_memS* LR, double* ptr, double v1, double v2, double s1, double s2, double w1, double w2)
 		{
 			double xu = 0, xv = 0, yu = 0, yv = 0;
@@ -10504,24 +10712,23 @@ namespace KingOfMonsters {
 			double E22 = w1 * (v2 * v2) + w2 * (s2 * s2);
 
 			double scale = 1  /*/ trEij*/ / _ref->_refDv;
-			double val = 0;
 			double* ptr1 = ptr;
+			double val = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
+
 				double Xu = 0, Xv = 0, Yu = 0, Yv = 0;
 
-
-				Xu = _ref->d1[0][s];
-				Xv = _ref->d1[1][s];
-				//Yu = _ref->d1[0][s];
-				//Yv = _ref->d1[1][s];
-
+				
+					Xu = _ref->d1[0][s];
+					Xv = _ref->d1[1][s];
+					//Yu += _ref->d1[0][s];
+					//Yv += _ref->d1[1][s];
+				
 				double euu = Xu * _ref->get__gi(0, 0) + Yu * _ref->get__gi(0, 1);
 				double euv = Xu * _ref->get__gi(1, 0) + Yu * _ref->get__gi(1, 1);
 				double evu = Xv * _ref->get__gi(0, 0) + Yv * _ref->get__gi(0, 1);
 				double evv = Xv * _ref->get__gi(1, 0) + Yv * _ref->get__gi(1, 1);
-
-
 
 				double TR = euu * _ref->get__Gij(0, 0) + euv * _ref->get__Gij(0, 1) + evu * _ref->get__Gij(1, 0) + evv * _ref->get__Gij(1, 1);
 
@@ -10529,15 +10736,17 @@ namespace KingOfMonsters {
 				double suv = ((euv + evu) - TR * _ref->get__gij(0, 1));
 				double svu = ((euv + evu) - TR * _ref->get__gij(1, 0));
 				double svv = (2 * evv - TR * _ref->get__gij(1, 1));
-
-				double Suu = globalratio * (suu);
-				double Suv = globalratio * (suv);
-				double Svv = globalratio * (svv);
+		
+				double Suu = suu;
+				double Suv = suv;
+				double Svv = svv;
 				double Svu = Suv;
 
 
+				double scale = 1 / _ref->_refDv;
 				val = ((fuu)*E11 * Suv + (fuu)*E12 * Svv + (fuv)*E21 * Suv + (fuv)*E22 * Svv) * scale;
 				val -= ((fvu)*E11 * Suu + (fvu)*E12 * Svu + (fvv)*E21 * Suu + (fvv)*E22 * Svu) * scale;
+
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -10585,10 +10794,11 @@ namespace KingOfMonsters {
 			double E22 = w1 * (v2 * v2) + w2 * (s2 * s2);
 
 			double scale = 1  /*/ trEij*/ / _ref->_refDv;
-			double val = 0;
 			double* ptr1 = ptr;
+			double val = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
+
 				double Xu = 0, Xv = 0, Yu = 0, Yv = 0;
 
 
@@ -10602,8 +10812,6 @@ namespace KingOfMonsters {
 				double evu = Xv * _ref->get__gi(0, 0) + Yv * _ref->get__gi(0, 1);
 				double evv = Xv * _ref->get__gi(1, 0) + Yv * _ref->get__gi(1, 1);
 
-
-
 				double TR = euu * _ref->get__Gij(0, 0) + euv * _ref->get__Gij(0, 1) + evu * _ref->get__Gij(1, 0) + evv * _ref->get__Gij(1, 1);
 
 				double suu = (2 * euu - TR * _ref->get__gij(0, 0));
@@ -10611,22 +10819,82 @@ namespace KingOfMonsters {
 				double svu = ((euv + evu) - TR * _ref->get__gij(1, 0));
 				double svv = (2 * evv - TR * _ref->get__gij(1, 1));
 
-				double Suu = globalratio * (suu);
-				double Suv = globalratio * (suv);
-				double Svv = globalratio * (svv);
+				double Suu = suu;
+				double Suv = suv;
+				double Svv = svv;
 				double Svu = Suv;
 
 
+				double scale = 1 / _ref->_refDv;
 				val = ((fuu)*E11 * Suv + (fuu)*E12 * Svv + (fuv)*E21 * Suv + (fuv)*E22 * Svv) * scale;
 				val -= ((fvu)*E11 * Suu + (fvu)*E12 * Svu + (fvv)*E21 * Suu + (fvv)*E22 * Svu) * scale;
+
 				*ptr1 = val;
 				ptr1++;
 			}
 
 		}
-		void align_mix22_xi(_memS* LR, double* ptr, double v1, double v2, double s1, double s2, double w1, double w2)
+		void align_mix22_phi(_memS* LR, double* ptr, double v1, double v2, double s1, double s2, double w1, double w2)
 		{
 
+			
+			double Xu = 0, Xv = 0, Yu = 0, Yv = 0;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				Xu += _ref->d1[0][s] * _ref->buf_u[s];
+				Xv += _ref->d1[1][s] * _ref->buf_u[s];
+				Yu += _ref->d1[0][s] * _ref->buf_v[s];
+				Yv += _ref->d1[1][s] * _ref->buf_v[s];
+			}
+			double euu = Xu * _ref->get__gi(0, 0) + Yu * _ref->get__gi(0, 1);
+			double euv = Xu * _ref->get__gi(1, 0) + Yu * _ref->get__gi(1, 1);
+			double evu = Xv * _ref->get__gi(0, 0) + Yv * _ref->get__gi(0, 1);
+			double evv = Xv * _ref->get__gi(1, 0) + Yv * _ref->get__gi(1, 1);
+
+
+
+			double TR = euu * _ref->get__Gij(0, 0) + euv * _ref->get__Gij(0, 1) + evu * _ref->get__Gij(1, 0) + evv * _ref->get__Gij(1, 1);
+
+			double suu = (2 * euu - TR * _ref->get__gij(0, 0));
+			double suv = ((euv + evu) - TR * _ref->get__gij(0, 1));
+			double svu = ((euv + evu) - TR * _ref->get__gij(1, 0));
+			double svv = (2 * evv - TR * _ref->get__gij(1, 1));
+			double Suu = suu+get__Sij(0, 0);
+			double Suv = suv+get__Sij(0, 1);
+			double Svv = svv+get__Sij(1, 1);
+			double Svu = Suv;
+
+
+
+			double E11 = w1 * (v1 * v1) + w2 * (s1 * s1);
+			double E12 = w1 * (v1 * v2) + w2 * (s1 * s2);
+			double E21 = w1 * (v2 * v1) + w2 * (s2 * s1);
+			double E22 = w1 * (v2 * v2) + w2 * (s2 * s2);
+
+			double scale = 1  /*/ trEij*/ / _ref->_refDv;
+			double val = 0;
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double fuu = _ref->__dh[0][s];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+				double fuv = _ref->__dh[1][s];// (_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+				double fvv = _ref->__dh[3][s];// (_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+				double fvu = fuv;
+
+
+				val = ((fuu)*E11 * Suv + (fuu)*E12 * Svv + (fuv)*E21 * Suv + (fuv)*E22 * Svv) * scale;
+				val -= ((fvu)*E11 * Suu + (fvu)*E12 * Svu + (fvv)*E21 * Suu + (fvv)*E22 * Svu) * scale;
+				
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
+
+		
+		void align_mix22_xi(_memS* LR, double* ptr, double v1, double v2, double s1, double s2, double w1, double w2)
+		{
 
 			double Xu = 0, Xv = 0, Yu = 0, Yv = 0;
 
@@ -10651,9 +10919,9 @@ namespace KingOfMonsters {
 			double svu = ((euv + evu) - TR * _ref->get__gij(1, 0));
 			double svv = (2 * evv - TR * _ref->get__gij(1, 1));
 
-			double Suu = globalratio * (suu) + get__Sij(0, 0);
-			double Suv = globalratio * (suv) + get__Sij(0, 1);
-			double Svv = globalratio * (svv) + get__Sij(1, 1);
+			double Suu = suu+get__Sij(0, 0);
+			double Suv = suv+get__Sij(0, 1);
+			double Svv = svv+get__Sij(1, 1);
 			double Svu = Suv;
 
 
@@ -10733,9 +11001,9 @@ namespace KingOfMonsters {
 			double svu = ((euv + evu) - TR * _ref->get__gij(1, 0));
 			double svv = (2 * evv - TR * _ref->get__gij(1, 1));
 
-			double Suu = globalratio * (suu) + get__Sij(0, 0);
-			double Suv = globalratio * (suv) + get__Sij(0, 1);
-			double Svv = globalratio * (svv) + get__Sij(1, 1);
+			double Suu = suu+get__Sij(0, 0);
+			double Suv = suv+get__Sij(0, 1);
+			double Svv = svv+get__Sij(1, 1);
 			double Svu = Suv;
 
 
@@ -12075,250 +12343,7 @@ namespace KingOfMonsters {
 
 		}
 
-		double  elastic()
-		{
-			//double tr = _ref->get__gij(0, 0) * _ref->oG11 + 2 * _ref->get__gij(0, 1) * _ref->oG12 + _ref->get__gij(1, 1) * _ref->oG22;
-			return (_ref->get__gij(0, 0) * _ref->oG11 + 2*_ref->get__gij(0, 1) * _ref->oG12
-				+_ref->get__gij(1, 1) * _ref->oG22)-2;// / tr
-			;
-		}
-		void elastic_x(double* ptr)
-		{
-
-			double* ptr1 = ptr;
-			double val = 0;
-			//double tr = _ref->get__gij(0, 0) * _ref->oG11 + 2 * _ref->get__gij(0, 1) * _ref->oG12 + _ref->get__gij(1, 1) * _ref->oG22;
-
-			for (int s = 0; s < _nNode; s++)
-			{
-
-				//double _g11 = 2 * _ref->d1[0][s] * _ref->get__gi(0, 0);
-				//double _g12 = _ref->d1[0][s] * _ref->get__gi(1, 0)+ _ref->d1[1][s] * _ref->get__gi(0, 0);
-				//double _g22 = 2 * _ref->d1[1][s] * _ref->get__gi(1, 0);
-				//double _g21 = _g12;
-				double _g11 = __dsigma_11[0][s];
-				double _g12 = __dsigma_12[0][s];
-				double _g22 = __dsigma_22[0][s];
-				double _g21 = _g12;
-				double _tr = _g11 * _ref->oG11 + 2 * _g12 * _ref->oG12 + _g22 * _ref->oG22;
-				double val = _tr;
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
-		void elastic_y(double* ptr)
-		{
-
-			double* ptr1 = ptr;
-			double val = 0;
-			//double tr = _ref->get__gij(0, 0) * _ref->oG11 + 2 * _ref->get__gij(0, 1) * _ref->oG12 + _ref->get__gij(1, 1) * _ref->oG22;
-
-			for (int s = 0; s < _nNode; s++)
-			{
-
-				//double _g11 = 2 * _ref->d1[0][s] * _ref->get__gi(0, 0);
-				//double _g12 = _ref->d1[0][s] * _ref->get__gi(1, 0)+ _ref->d1[1][s] * _ref->get__gi(0, 0);
-				//double _g22 = 2 * _ref->d1[1][s] * _ref->get__gi(1, 0);
-				//double _g21 = _g12;
-				double _g11 = __dsigma_11[1][s];
-				double _g12 = __dsigma_12[1][s];
-				double _g22 = __dsigma_22[1][s];
-				double _g21 = _g12;
-				double _tr = _g11 * _ref->oG11 + 2 * _g12 * _ref->oG12 + _g22 * _ref->oG22;
-				val = _tr;
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
-		double  conformal_diagonal()
-		{
-			//double tr = _ref->get__gij(0, 0) * _ref->oG11 + 2 * _ref->get__gij(0, 1) * _ref->oG12 + _ref->get__gij(1, 1) * _ref->oG22;
-			return (_ref->get__gij(0, 0) * _ref->oG11 + _ref->get__gij(0, 1) * _ref->oG12
-				- _ref->get__gij(1, 0) * _ref->oG12 - _ref->get__gij(1, 1) * _ref->oG22);// / tr
-				;
-		}
-		double  conformal_adiagonal()
-		{
-			//double tr = _ref->get__gij(0, 0) * _ref->oG11 + 2 * _ref->get__gij(0, 1) * _ref->oG12 + _ref->get__gij(1, 1) * _ref->oG22;
-
-			return (_ref->get__gij(0, 0) * _ref->oG12 + _ref->get__gij(0, 1) * _ref->oG22);// / tr;
-				//+ _ref->get__gij(1, 0) * _ref->oG11 + _ref->get__gij(1, 1) * _ref->oG12;
-		}
-		double  conformal_adiagonal2()
-		{
-			//double tr = _ref->get__gij(0, 0) * _ref->oG11 + 2 * _ref->get__gij(0, 1) * _ref->oG12 + _ref->get__gij(1, 1) * _ref->oG22;
-
-			return (_ref->get__gij(1, 0) * _ref->oG11 + _ref->get__gij(1, 1) * _ref->oG12);// / tr;
-			//+ _ref->get__gij(1, 0) * _ref->oG11 + _ref->get__gij(1, 1) * _ref->oG12;
-		}
-		void conformal_diagonal_x(double* ptr)
-		{
-
-			double* ptr1 = ptr;
-			double val = 0;
-			//double tr = _ref->get__gij(0, 0) * _ref->oG11 + 2 * _ref->get__gij(0, 1) * _ref->oG12 + _ref->get__gij(1, 1) * _ref->oG22;
-
-			for (int s = 0; s < _nNode; s++)
-			{
-
-				//double _g11 = 2 * _ref->d1[0][s] * _ref->get__gi(0, 0);
-				//double _g12 = _ref->d1[0][s] * _ref->get__gi(1, 0)+ _ref->d1[1][s] * _ref->get__gi(0, 0);
-				//double _g22 = 2 * _ref->d1[1][s] * _ref->get__gi(1, 0);
-				//double _g21 = _g12;
-				double _g11 = __dsigma_11[0][s];
-				double _g12 = __dsigma_12[0][s];
-				double _g22 = __dsigma_22[0][s];
-				double _g21 = _g12;
-				double _tr = _g11 * _ref->oG11 + 2 * _g12 * _ref->oG12 + _g22 * _ref->oG22;
-				val = (_g11 * _ref->oG11 + _g12 * _ref->oG12
-					- _g21 * _ref->oG12 - _g22 * _ref->oG22);// / tr
-					//- (_ref->get__gij(0, 0) * _ref->oG11 + _ref->get__gij(0, 1) * _ref->oG12
-				//		- _ref->get__gij(1, 0) * _ref->oG12 - _ref->get__gij(1, 1) * _ref->oG22) / tr / tr * _tr;
-					;
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
-		void conformal_diagonal_y(double* ptr)
-		{
-
-			double* ptr1 = ptr;
-			double val = 0;
-			//double tr = _ref->get__gij(0, 0) * _ref->oG11 + 2 * _ref->get__gij(0, 1) * _ref->oG12 + _ref->get__gij(1, 1) * _ref->oG22;
-
-			for (int s = 0; s < _nNode; s++)
-			{
-
-				//double _g11 = 2 * _ref->d1[0][s] * _ref->get__gi(0, 0);
-				//double _g12 = _ref->d1[0][s] * _ref->get__gi(1, 0)+ _ref->d1[1][s] * _ref->get__gi(0, 0);
-				//double _g22 = 2 * _ref->d1[1][s] * _ref->get__gi(1, 0);
-				//double _g21 = _g12;
-				double _g11 = __dsigma_11[1][s];
-				double _g12 = __dsigma_12[1][s];
-				double _g22 = __dsigma_22[1][s];
-				double _g21 = _g12;
-				double _tr = _g11 * _ref->oG11 + 2 * _g12 * _ref->oG12 + _g22 * _ref->oG22;
-				val = (_g11 * _ref->oG11 + _g12 * _ref->oG12
-					- _g21 * _ref->oG12 - _g22 * _ref->oG22);// / tr
-					//- (_ref->get__gij(0, 0) * _ref->oG11 + _ref->get__gij(0, 1) * _ref->oG12
-					//	- _ref->get__gij(1, 0) * _ref->oG12 - _ref->get__gij(1, 1) * _ref->oG22) / tr / tr * _tr;
-				;
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
-		void conformal_adiagonal_x(double* ptr)
-		{
-
-			double* ptr1 = ptr;
-			double val = 0;
-			//double tr = _ref->get__gij(0, 0) * _ref->oG11 + 2 * _ref->get__gij(0, 1) * _ref->oG12 + _ref->get__gij(1, 1) * _ref->oG22;
-
-			for (int s = 0; s < _nNode; s++)
-			{
-				//double _g11 = 2 * _ref->d1[0][s] * _ref->get__gi(0, 0);
-				//double _g12 = _ref->d1[0][s] * _ref->get__gi(1, 0) + _ref->d1[1][s] * _ref->get__gi(0, 0);
-				//double _g22 = 2 * _ref->d1[1][s] * _ref->get__gi(1, 0);
-				//double _g21 = _g12;
-				double _g11 = __dsigma_11[0][s];
-				double _g12 = __dsigma_12[0][s];
-				double _g22 = __dsigma_22[0][s];
-				double _g21 = _g12;
-				double _tr = _g11 * _ref->oG11 + 2 * _g12 * _ref->oG12 + _g22 * _ref->oG22;
-
-				val = (_g11 * _ref->oG12 + _g12 * _ref->oG22);// / tr;
-				//val-=(_ref->get__gij(0, 0) * _ref->oG12 + _ref->get__gij(0, 1) * _ref->oG22) / tr/tr*_tr;
-
-
-				//	+ _g21 * _ref->oG11 + _g22 * _ref->oG12;
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
-		void conformal_adiagonal_y(double* ptr)
-		{
-
-			double* ptr1 = ptr;
-			double val = 0;
-			//double tr = _ref->get__gij(0, 0) * _ref->oG11 + 2 * _ref->get__gij(0, 1) * _ref->oG12 + _ref->get__gij(1, 1) * _ref->oG22;
-
-			for (int s = 0; s < _nNode; s++)
-			{
-				//double _g11 = 2 * _ref->d1[0][s] * _ref->get__gi(0, 0);
-				//double _g12 = _ref->d1[0][s] * _ref->get__gi(1, 0) + _ref->d1[1][s] * _ref->get__gi(0, 0);
-				//double _g22 = 2 * _ref->d1[1][s] * _ref->get__gi(1, 0);
-				//double _g21 = _g12;
-				double _g11 = __dsigma_11[1][s];
-				double _g12 = __dsigma_12[1][s];
-				double _g22 = __dsigma_22[1][s];
-				double _g21 = _g12;
-				double _tr = _g11 * _ref->oG11 + 2 * _g12 * _ref->oG12 + _g22 * _ref->oG22;
-
-				val = (_g11 * _ref->oG12 + _g12 * _ref->oG22);// / tr;
-				//val -= (_ref->get__gij(0, 0) * _ref->oG12 + _ref->get__gij(0, 1) * _ref->oG22) / tr / tr * _tr;
-
-
-				//	+ _g21 * _ref->oG11 + _g22 * _ref->oG12;
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
-		void conformal_adiagonal2_x(double* ptr)
-		{
-
-			double* ptr1 = ptr;
-			double val = 0;
-			//double tr = _ref->get__gij(0, 0) * _ref->oG11 + 2 * _ref->get__gij(0, 1) * _ref->oG12 + _ref->get__gij(1, 1) * _ref->oG22;
-
-			for (int s = 0; s < _nNode; s++)
-			{
-				//double _g11 = 2 * _ref->d1[0][s] * _ref->get__gi(0, 0);
-				//double _g12 = _ref->d1[0][s] * _ref->get__gi(1, 0) + _ref->d1[1][s] * _ref->get__gi(0, 0);
-				//double _g22 = 2 * _ref->d1[1][s] * _ref->get__gi(1, 0);
-				//double _g21 = _g12;
-				double _g11 = __dsigma_11[0][s];
-				double _g12 = __dsigma_12[0][s];
-				double _g22 = __dsigma_22[0][s];
-				double _g21 = _g12;
-				double _tr = _g11 * _ref->oG11 + 2 * _g12 * _ref->oG12 + _g22 * _ref->oG22;
-
-				val = (_g21 * _ref->oG11 + _g22 * _ref->oG12);// / tr;
-				//val -= (_ref->get__gij(1, 0) * _ref->oG11 + _ref->get__gij(1, 1) * _ref->oG12) / tr / tr * _tr;
-
-
-				//	+ _g21 * _ref->oG11 + _g22 * _ref->oG12;
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
-		void conformal_adiagonal2_y(double* ptr)
-		{
-
-			double* ptr1 = ptr;
-			double val = 0;
-			//double tr = _ref->get__gij(0, 0) * _ref->oG11 + 2 * _ref->get__gij(0, 1) * _ref->oG12 + _ref->get__gij(1, 1) * _ref->oG22;
-
-			for (int s = 0; s < _nNode; s++)
-			{
-				//double _g11 = 2 * _ref->d1[0][s] * _ref->get__gi(0, 0);
-				//double _g12 = _ref->d1[0][s] * _ref->get__gi(1, 0) + _ref->d1[1][s] * _ref->get__gi(0, 0);
-				//double _g22 = 2 * _ref->d1[1][s] * _ref->get__gi(1, 0);
-				//double _g21 = _g12;
-				double _g11 = __dsigma_11[1][s];
-				double _g12 = __dsigma_12[1][s];
-				double _g22 = __dsigma_22[1][s];
-				double _g21 = _g12;
-				//double _tr = _g11 * _ref->oG11 + 2 * _g12 * _ref->oG12 + _g22 * _ref->oG22;
-
-				val = (_g21 * _ref->oG11 + _g22 * _ref->oG12);// / tr;
-				//val -= (_ref->get__gij(1, 0) * _ref->oG11 + _ref->get__gij(1, 1) * _ref->oG12) / tr / tr * _tr;
-
-
-				//	+ _g21 * _ref->oG11 + _g22 * _ref->oG12;
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
+	
 
 		double __bodyF2(_memS* LR, double load, bool accurate_area)
 		{
@@ -12377,9 +12402,9 @@ namespace KingOfMonsters {
 			double svu = ((euv + evu) - TR * _ref->get__gij(1, 0));
 			double svv = (2 * evv - TR * _ref->get__gij(1, 1));
 
-			double Suu = globalratio * (suu) + get__Sij(0, 0);
-			double Suv = globalratio * (suv) + get__Sij(0, 1);
-			double Svv = globalratio * (svv) + get__Sij(1, 1);
+			double Suu =  suu+get__Sij(0, 0);
+			double Suv =  suv+get__Sij(0, 1);
+			double Svv =  svv+get__Sij(1, 1);
 
 			val = hvv * Svv + 2 * huv * Suv + huu * Suu;
 
@@ -12516,21 +12541,7 @@ namespace KingOfMonsters {
 
 				val = hvv * Svv + 2 * huv * Suv + huu * Suu;
 				//if (accurate_area)
-				/* {
-					double _g11 = 0, _g12 = 0, _g22 = 0;
-					for (int t = 0; t < _ref->_nNode; t++)
-					{
-						_g11 += 2 * (_ref->d1[0][s]) * (_ref->d1[0][t]) * _ref->buf_u[t];
-
-						_g12 += (_ref->d1[0][s]) * (_ref->d1[1][t]) * _ref->buf_u[t];
-						_g12 += (_ref->d1[1][s]) * (_ref->d1[0][t]) * _ref->buf_z[t];
-
-						_g22 += 2 * (_ref->d1[1][s]) * (_ref->d1[1][t]) * _ref->buf_u[t];
-					}
-
-					double ddv = 0.5 * (_g11 * this->get_Gij2(0, 0) + _g22 * this->get_Gij2(1, 1) + 2 * _g12 * this->get_Gij2(0, 1)) * this->dv;
-					val += -load * ddv / _ref->_refDv;
-				}*/
+				
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -12626,9 +12637,9 @@ namespace KingOfMonsters {
 			double svu = ((euv + evu) - TR * _ref->get__gij(1, 0));
 			double svv = (2 * evv - TR * _ref->get__gij(1, 1));
 
-			double Suu = globalratio * (suu) + get__Sij(0, 0);
-			double Suv = globalratio * (suv) + get__Sij(0, 1);
-			double Svv = globalratio * (svv) + get__Sij(1, 1);
+			double Suu = suu+ get__Sij(0, 0);
+			double Suv = suv+ get__Sij(0, 1);
+			double Svv = svv+ get__Sij(1, 1);
 
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
@@ -12672,9 +12683,10 @@ namespace KingOfMonsters {
 			double svu = ((euv + evu) - TR * _ref->get__gij(1, 0));
 			double svv = (2 * evv - TR * _ref->get__gij(1, 1));
 
-			double Suu = globalratio * (suu) + get__Sij(0, 0);
-			double Suv = globalratio * (suv) + get__Sij(0, 1);
-			double Svv = globalratio * (svv) + get__Sij(1, 1);
+			double Suu = suu+get__Sij(0, 0);
+			double Suv = suv+get__Sij(0, 1);
+			double Svv = svv+get__Sij(1, 1);
+
 
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
@@ -12717,7 +12729,6 @@ namespace KingOfMonsters {
 
 			double val = 0;
 			double* ptr1 = ptr;
-
 			double Xu = 0, Xv = 0, Yu = 0, Yv = 0;
 
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -12740,10 +12751,10 @@ namespace KingOfMonsters {
 			double suv = ((euv + evu) - TR * _ref->get__gij(0, 1));
 			double svu = ((euv + evu) - TR * _ref->get__gij(1, 0));
 			double svv = (2 * evv - TR * _ref->get__gij(1, 1));
+			double Suu = suu+get__Sij(0, 0);
+			double Suv = suv+get__Sij(0, 1);
+			double Svv = svv+get__Sij(1, 1);
 
-			double Suu = globalratio * (suu) + get__Sij(0, 0);
-			double Suv = globalratio * (suv) + get__Sij(0, 1);
-			double Svv = globalratio * (svv) + get__Sij(1, 1);
 
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
@@ -14270,6 +14281,13 @@ namespace KingOfMonsters {
 			__mem->oG11 = __mem->get__Gij(0, 0);
 			__mem->oG12 = __mem->get__Gij(0, 1);
 			__mem->oG22 = __mem->get__Gij(1, 1);
+			__mem->og11 = __mem->get__gij(0, 0);
+			__mem->og12 = __mem->get__gij(0, 1);
+			__mem->og22 = __mem->get__gij(1, 1);
+			memcpy(__mem->_ogi, __mem->_gi, sizeof(double) * 6);
+			memcpy(__mem->_oGi, __mem->_Gi, sizeof(double) * 6);
+			memcpy(__mem->oGammaijk, __mem->_Gammaijk, sizeof(double) * 8);
+
 		}
 		void memory(_memS_ref* __mem) {
 			if (__mem->__z < -1000) {
@@ -15108,11 +15126,15 @@ namespace KingOfMonsters {
 			__mem->guide_free3_eta(LR->__mem, __mem->__grad, t1, t2, s1, s2);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c1);
 		}
-		double guide_free4(memS^ LR, double t1, double t2)
+		double guide_free4(memS^ LR, double t1, double t2,bool add)
 		{
-			return __mem->guide_free4(LR->__mem, t1, t2);
+			return __mem->guide_free4(LR->__mem, t1, t2,add);
 		}
-		
+		void guide_free4_phi(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double t1, double t2, bool add)
+		{
+			__mem->guide_free4_phi(LR->__mem, __mem->__grad, t1, t2);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c1);
+		}
 		void guide_free4_xi(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double t1, double t2, bool add)
 		{
 			__mem->guide_free4_xi(LR->__mem, __mem->__grad, t1, t2);
@@ -15124,11 +15146,15 @@ namespace KingOfMonsters {
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c1);
 		}
 
-		double guide_free5(memS^ LR, double t1, double t2, double s1, double s2)
+		double guide_free5(memS^ LR, double t1, double t2, double s1, double s2,bool add)
 		{
-			return __mem->guide_free5(LR->__mem, t1, t2, s1, s2);
+			return __mem->guide_free5(LR->__mem, t1, t2, s1, s2,add);
 		}
-		
+		void guide_free5_phi(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double t1, double t2, double s1, double s2, bool add)
+		{
+			__mem->guide_free5_phi(LR->__mem, __mem->__grad, t1, t2, s1, s2);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c1);
+		}
 		void guide_free5_xi(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double t1, double t2, double s1, double s2, bool add)
 		{
 			__mem->guide_free5_xi(LR->__mem, __mem->__grad, t1, t2, s1, s2);
@@ -15439,16 +15465,7 @@ namespace KingOfMonsters {
 			__mem->align_mix22_z(LR->__mem, __mem->__grad, v1, v2, s1, s2, w1, w2);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
 		}
-		void align_mix22_x(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, double s1, double s2, double w1, double w2)
-		{
-			__mem->align_mix22_x(LR->__mem, __mem->__grad, v1, v2, s1, s2, w1, w2);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
-		}
-		void align_mix22_y(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, double s1, double s2, double w1, double w2)
-		{
-			__mem->align_mix22_y(LR->__mem, __mem->__grad, v1, v2, s1, s2, w1, w2);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
-		}
+		
 		void align_mix22_phi(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, double s1, double s2, double w1, double w2)
 		{
 			__mem->align_mix22_phi(LR->__mem, __mem->__grad, v1, v2, s1, s2, w1, w2);
@@ -15462,6 +15479,16 @@ namespace KingOfMonsters {
 		void align_mix22_eta(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, double s1, double s2, double w1, double w2)
 		{
 			__mem->align_mix22_eta(LR->__mem, __mem->__grad, v1, v2, s1, s2, w1, w2);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
+		}
+		void align_mix22_x(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, double s1, double s2, double w1, double w2)
+		{
+			__mem->align_mix22_x(LR->__mem, __mem->__grad, v1, v2, s1, s2, w1, w2);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
+		}
+		void align_mix22_y(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, double s1, double s2, double w1, double w2)
+		{
+			__mem->align_mix22_y(LR->__mem, __mem->__grad, v1, v2, s1, s2, w1, w2);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
 		}
 		double align_mix2(memS ^LR, double v1, double v2, double s1, double s2, double w1, double w2)
@@ -15639,65 +15666,7 @@ namespace KingOfMonsters {
 		{
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, __mem->__grad, sc, __mem->_nNode, c1, c2);
 		}
-		double elastic()
-		{
-			return __mem->elastic();
-		}
-		void  elastic_x(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
-		{
-			__mem->elastic_x(__mem->__grad);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
-		}
-		void  elastic_y(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
-		{
-			__mem->elastic_y(__mem->__grad);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
-		}
-		double conformal_diagonal()
-		{
-			return __mem ->conformal_diagonal();
-		}
-		void  conformal_diagonal_x(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
-		{
-			__mem->conformal_diagonal_x(__mem->__grad);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
-		}
-		void  conformal_diagonal_y(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
-		{
-			__mem->conformal_diagonal_y(__mem->__grad);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
-		}
-
-			double conformal_adiagonal()
-			{
-				return __mem->conformal_adiagonal();
-			}
-			void  conformal_adiagonal_x(mySparse ^ mat, int ii, myIntArray ^ index, double sc, double coeff)
-			{
-				__mem->conformal_adiagonal_x(__mem->__grad);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
-			}
-			void  conformal_adiagonal_y(mySparse ^ mat, int ii, myIntArray ^ index, double sc, double coeff)
-			{
-				__mem->conformal_adiagonal_y(__mem->__grad);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
-			}
-
-
-			double conformal_adiagonal2()
-			{
-				return __mem->conformal_adiagonal2();
-			}
-			void  conformal_adiagonal2_x(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
-			{
-				__mem->conformal_adiagonal2_x(__mem->__grad);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
-			}
-			void  conformal_adiagonal2_y(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
-			{
-				__mem->conformal_adiagonal2_y(__mem->__grad);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
-			}
+		
 			double smooth(memS^ LR)
 			{
 				return __mem->__smooth(LR->__mem);
@@ -15753,16 +15722,7 @@ namespace KingOfMonsters {
 				__mem->__bodyF2_z(LR->__mem, __mem->__grad, load, accurate);
 				mat->dat->addrow(ii, index->_arr, __mem->__grad, sc, __mem->_nNode, coeff);
 			}
-			void bodyF2_x(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
-			{
-				__mem->__bodyF2_x(LR->__mem, __mem->__grad);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0,sc, __mem->_nNode, false,coeff);
-			}
-			void bodyF2_y(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
-			{
-				__mem->__bodyF2_y(LR->__mem, __mem->__grad);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0,sc, __mem->_nNode, false,coeff);
-			}
+			
 			void bodyF2_phi(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
 			{
 				__mem->__bodyF2_phi(LR->__mem, __mem->__grad);
@@ -15779,74 +15739,113 @@ namespace KingOfMonsters {
 				mat->dat->addrow(ii, index->_arr, __mem->__grad,0, sc, __mem->_nNode, false,coeff);
 			}
 
-			double harmonic_1(memS^ LR)
+			void bodyF2_x(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
 			{
-				return __mem->harmonic_1(LR->__mem);
+				__mem->__bodyF2_x(LR->__mem, __mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
 			}
-			void harmonic_1_xi(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			void bodyF2_y(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
 			{
-				__mem->harmonic1_xi(LR->__mem, __mem->__grad);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad, sc, __mem->_nNode, coeff);
-			}
-			void harmonic_1_eta(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
-			{
-				__mem->harmonic_1_eta(LR->__mem, __mem->__grad);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc,__mem->_nNode,false, coeff);
-			}
-			double harmonic_2(memS^ LR)
-			{
-				return __mem->harmonic_2(LR->__mem);
-			}
-			void harmonic_2_xi(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
-			{
-				__mem->harmonic2_xi(LR->__mem, __mem->__grad);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad, sc, __mem->_nNode, coeff);
-			}
-			void harmonic_2_eta(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
-			{
-				__mem->harmonic_2_eta(LR->__mem, __mem->__grad);
+				__mem->__bodyF2_y(LR->__mem, __mem->__grad);
 				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
 			}
 
-			double div_free_x(memS^ LR)
+			double harmonic_x(memS^ LR)
 			{
-				return __mem->div_free_x(LR->__mem);
+				return __mem->harmonic_x(LR->__mem);
 			}
-			void div_free_x_xi(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			void harmonic_x_xi(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
 			{
-				__mem->div_free_x_xi(LR->__mem, __mem->__grad);
+				__mem->harmonic_x_xi(LR->__mem, __mem->__grad);
 				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode,true, coeff);
 			}
-			double div_free_y(memS^ LR)
+			double harmonic_y(memS^ LR)
 			{
-				return __mem->div_free_y(LR->__mem);
+				return __mem->harmonic_y(LR->__mem);
 			}
 			
-			void div_free_y_eta(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			void harmonic_y_eta(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
 			{
-				__mem->div_free_y_eta(LR->__mem, __mem->__grad);
+				__mem->harmonic_y_eta(LR->__mem, __mem->__grad);
 				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
+			}
+			double harmonic_X(memS^ LR)
+			{
+				return __mem->harmonic_X(LR->__mem);
+			}
+			void harmonic_X_u(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->harmonic_X_u(LR->__mem, __mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
+			}
+			double harmonic_Y(memS^ LR)
+			{
+				return __mem->harmonic_Y(LR->__mem);
 			}
 
-			double div_free_X(memS^ LR)
+			void harmonic_Y_v(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
 			{
-				return __mem->div_free_X(LR->__mem);
-			}
-			void div_free_X_x(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
-			{
-				__mem->div_free_X_x(LR->__mem, __mem->__grad);
+				__mem->harmonic_Y_v(LR->__mem, __mem->__grad);
 				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
 			}
-			double div_free_Y(memS^ LR)
+			double conformal_x(memS^ LR)
 			{
-				return __mem->div_free_Y(LR->__mem);
+				return __mem->conformal_x(LR->__mem);
+			}
+			void conformal_x_xi(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->conformal_x_xi(LR->__mem, __mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
+			}
+			void conformal_x_eta(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->conformal_x_eta(LR->__mem, __mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
+			}
+			double conformal_y(memS^ LR)
+			{
+				return __mem->conformal_y(LR->__mem);
+			}
+			void conformal_y_xi(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->conformal_y_xi(LR->__mem, __mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
+			}
+			void conformal_y_eta(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->conformal_y_eta(LR->__mem, __mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
 			}
 
-			void div_free_Y_y(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			double conformal_X(memS^ LR)
 			{
-				__mem->div_free_Y_y(LR->__mem, __mem->__grad);
+				return __mem->conformal_X(LR->__mem);
+			}
+			void conformal_X_x(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->conformal_X_x(LR->__mem, __mem->__grad);
 				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
 			}
+			void conformal_X_y(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->conformal_X_y(LR->__mem, __mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
+			}
+			double conformal_Y(memS^ LR)
+			{
+				return __mem->conformal_Y(LR->__mem);
+			}
+			void conformal_Y_x(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->conformal_Y_x(LR->__mem, __mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
+			}
+			void conformal_Y_y(memS^ LR, mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->conformal_Y_y(LR->__mem, __mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
+			}
+			
 		double bodyF(memS^ LR, double load, bool accurate) 
 		{			
 				return __mem->__bodyF(LR->__mem, load, accurate);
