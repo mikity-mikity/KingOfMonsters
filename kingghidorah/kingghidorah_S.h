@@ -11792,9 +11792,9 @@ namespace KingOfMonsters {
 				double _h12 = _ref->__dh[1][s];
 				double _h22 = _ref->__dh[3][s];
 				double _h21 = _h12;
-				double _H11 = H11 * _h11 * H11 + H11 * _h12 * H21 + H12 * _h21 * H11 + H12 * _h22 * H21;
-				double _H12= H11 * _h11 * H12 + H11 * _h12 * H22 + H12 * _h21 * H12 + H12 * _h22 * H22;
-				double _H22 = H21 * _h11 * H12 + H21 * _h12 * H22 + H22 * _h21 * H12 + H22 * _h22 * H22;
+				double _H11 = -(H11 * _h11 * H11 + H11 * _h12 * H21 + H12 * _h21 * H11 + H12 * _h22 * H21);
+				double _H12= -(H11 * _h11 * H12 + H11 * _h12 * H22 + H12 * _h21 * H12 + H12 * _h22 * H22);
+				double _H22 = -(H21 * _h11 * H12 + H21 * _h12 * H22 + H22 * _h21 * H12 + H22 * _h22 * H22);
 
 				double tr = duu * H11 + duv * H12 + dvu * H12 + dvv * H22;
 				double _tr=duu*_H11+ duv * _H12 + dvu * _H12 + dvv * _H22;
@@ -11821,8 +11821,8 @@ namespace KingOfMonsters {
 				double scale = 1 / _ref->_refDv;
 				val = ((fuu)*E11 * _Suv + (fuu)*E12 * _Svv + (fuv)*E21 * _Suv + (fuv)*E22 * _Svv) * scale;
 				val -= ((fvu)*E11 * _Suu + (fvu)*E12 * _Svu + (fvv)*E21 * _Suu + (fvv)*E22 * _Svu) * scale;
-				//val += ((_fuu)*E11 * Suv + (_fuu)*E12 * Svv + (_fuv)*E21 * Suv + (_fuv)*E22 * Svv) * scale;
-				//val -= ((_fvu)*E11 * Suu + (_fvu)*E12 * Svu + (_fvv)*E21 * Suu + (_fvv)*E22 * Svu) * scale;
+				val += ((_fuu)*E11 * Suv + (_fuu)*E12 * Svv + (_fuv)*E21 * Suv + (_fuv)*E22 * Svv) * scale;
+				val -= ((_fvu)*E11 * Suu + (_fvu)*E12 * Svu + (_fvv)*E21 * Suu + (_fvv)*E22 * Svu) * scale;
 
 				*ptr1 = val;
 				ptr1++;
