@@ -3666,36 +3666,67 @@ namespace KingOfMonsters {
 
 		}
 		inline double _Dc2(double a, double b, double v1,double v2) {
-			double t1 = v1 * _ref->get__gij(0, 1) + v2 * _ref->get__gij(1, 1);
-			double t2 = -v1 * _ref->get__gij(0, 0) - v2 * _ref->get__gij(1, 0);
-			double length = sqrt(t1 * t1 * _ref->get__gij(0, 0) + 2 * t1 * t2 * _ref->get__gij(0, 1) + t2 * t2 * _ref->get__gij(1, 1));
-			t1 /= length;
-			t2 /= length;
+			double length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + 2 * v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
+			v1 /= length;
+			v2 /= length;
 
 			double f1 = a * _ref->get__gi(0, 0) + b * _ref->get__gi(0, 1);
 			double f2 = a * _ref->get__gi(1, 0) + b * _ref->get__gi(1, 1);
-			return f1 * t1 + f2 * t2;
+			return f1 * v1 + f2 * v2;
+		}
+		void _Dc2_x(double *ptr,double a, double b, double v1, double v2) {
+			double length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + 2 * v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
+			v1 /= length;
+			v2 /= length;
+
+			
+			double* ptr1 = ptr;
+			double val = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _f1 = a * _ref->d1[0][s];// +b * _ref->d1[0][s];
+				double _f2 = a * _ref->d1[1][s];// +b * _ref->d1[1][s];
+				val = _f1 * v1 + _f2 * v2;
+				*ptr1 = val;
+				ptr1++;
+
+			}
+		}
+		void _Dc2_y(double* ptr, double a, double b, double v1, double v2) {
+			double length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + 2 * v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
+			v1 /= length;
+			v2 /= length;
+
+
+			double* ptr1 = ptr;
+			double val = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _f1 = b * _ref->d1[0][s];
+				double _f2 = b * _ref->d1[1][s];
+				val = _f1 * v1 + _f2 * v2;
+				*ptr1 = val;
+				ptr1++;
+
+			}
 		}
 
 		
 		inline double ___a2(double v1, double v2)
 		{
-			double t1 = v1 * _ref->get__gij(0, 1) + v2 * _ref->get__gij(1, 1);
-			double t2 = -v1 * _ref->get__gij(0, 0) - v2 * _ref->get__gij(1, 0);
-			double length = sqrt(t1 * t1 * _ref->get__gij(0, 0) + 2 * t1 * t2 * _ref->get__gij(0, 1) + t2 * t2 * _ref->get__gij(1, 1));
-			t1 /= length;
-			t2 /= length;
+			double length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + 2 * v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
+			v1 /= length;
+			v2 /= length;
 
-			return _ref->get__gi(0, 0) * t1 + _ref->get__gi(1, 0) * t2;
+			return _ref->get__gi(0, 0) * v1 + _ref->get__gi(1, 0) * v2;
 		}
 		inline double ___b2(double v1, double v2)
-		{			
-			double t1 = v1 * _ref->get__gij(0, 1) + v2 * _ref->get__gij(1, 1);
-			double t2 = -v1 * _ref->get__gij(0, 0) - v2 * _ref->get__gij(1, 0);
-			double length = sqrt(t1 * t1 * _ref->get__gij(0, 0) + 2 * t1 * t2 * _ref->get__gij(0, 1) + t2 * t2 * _ref->get__gij(1, 1));
-			t1 /= length;
-			t2 /= length;
-			return _ref->get__gi(0, 1) * t1 + _ref->get__gi(1, 1) * t2;
+		{
+			double length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + 2 * v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
+			v1 /= length;
+			v2 /= length;
+
+			return _ref->get__gi(0, 1) * v1 + _ref->get__gi(1, 1) * v2;
 		}
 
 		inline double __a(int l)
@@ -17138,6 +17169,17 @@ namespace KingOfMonsters {
 			return __mem->_Dc2(a, b, v1,v2);
 		}
 		
+
+		void _Dc2_x(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double a, double b, double v1, double v2, bool add)
+		{
+			__mem->_Dc2_x(__mem->__grad, a, b, v1, v2);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
+		}
+		void _Dc2_y(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double a, double b, double v1, double v2, bool add)
+		{
+			__mem->_Dc2_y(__mem->__grad, a, b, v1, v2);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
+		}
 		double get__a2(double v1, double v2) {
 			return __mem->___a2(v1,v2);
 		}
