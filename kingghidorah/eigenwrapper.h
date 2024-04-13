@@ -3,10 +3,9 @@
 //#define EIGEN_DONT_PARALLELIZE
 #ifdef _CPU
 #define EIGEN_USE_MKL_ALL
-#define EIGEN_USE_LAPACKE
+#define EIGEN_USE_LAPACK
 #include "eigen-3.4.0/Eigen/PardisoSupport"
 #endif
-#include "../include/mkl.h"
 #include "eigen-3.4.0/Eigen/Sparse"
 #include "eigen-3.4.0/Eigen/Dense"
 #include "eigen-3.4.0/Eigen/SparseQR"
@@ -28,8 +27,6 @@
 #include <stdio.h>
 #include <cusolverDn.h>
 #include <cusolverMg.h>
-#include <cusolverSp.h>
-#include <cusparse_v2.h>
 #include <cublas_v2.h>
 #include <chrono>
 #include <vector>
@@ -45,9 +42,8 @@ using std::vector;
 using std::string;
 #define EIGEN_DEFAULT_DENSE_INDEX_TYPE int64_t;
 //void kernel(double* A, double* work, int64_t N, cudaStream_t stream);
-void kernel(double* value, int64_t* row, int64_t* col, int64_t N, int64_t M, double* value2, int64_t* index, cudaStream_t stream);
+//void kernel(double* value, int64_t* row, int64_t* col, int64_t N, int64_t M, double* value2, int64_t* index, cudaStream_t stream);
 namespace KingOfMonsters {
-	
 	class cuda {
 	public:
 
@@ -59,8 +55,8 @@ namespace KingOfMonsters {
 		int _count = 0;
 		int _fastest = 0;
 		std::vector<std::vector<cusolverDnHandle_t>> solver_handle;
-		std::vector<std::vector<cusolverSpHandle_t>> solver_handleSp;
-		std::vector<std::vector<cusparseHandle_t>> cusparse_handle;
+		//std::vector<std::vector<cusolverSpHandle_t>> solver_handleSp;
+		//std::vector<std::vector<cusparseHandle_t>> cusparse_handle;
 
 		cublasHandle_t cublas_handle[MAXDEVICE];
 		double* __mgM[MAXDEVICE];
@@ -97,7 +93,7 @@ namespace KingOfMonsters {
 		cuda(int64_t N);
 		~cuda();
 		cusolverDnHandle_t& solver(int64_t ii, int64_t kk);
-		cusolverSpHandle_t& solverSp(int64_t ii, int64_t kk);
+		//cusolverSpHandle_t& solverSp(int64_t ii, int64_t kk);
 		cublasHandle_t& blas(int64_t ii);
 		//cusolverMgHandle_t mgsolver();
 		//double* L();
@@ -138,6 +134,7 @@ namespace KingOfMonsters {
 		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	public:
 		Eigen::VectorXd __v;
+		void plus_useindex(double *ptr, double sc, int64_t , int64_t *_arr);
 
 	};
 	class _myLLT {
@@ -191,6 +188,7 @@ namespace KingOfMonsters {
 		std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>> _mat;
 		Eigen::MatrixXd _dmat;
 		Eigen::MatrixXd _prevmat;
+
 		vector<Eigen::VectorXd> coeff;
 	private:
 		int64_t space = 0;
@@ -270,6 +268,7 @@ namespace KingOfMonsters {
 		void ofDat();
 		void freezecoeff();
 		std::string ofAtA(_mySparse* A, bool sparse);
+		void add(int64_t i, int64_t j, double val);
 		void add_usemap(int64_t i, int64_t j, double val);
 		void set_usemap(int64_t i, int64_t j, double val);
 		int find_location(int64_t i, int64_t j);
@@ -279,12 +278,11 @@ namespace KingOfMonsters {
 		std::string _ofAtA(_mySparse* A);
 		std::string _ofAtA_sparse(_mySparse* A);
 		//void ofAtB_gpu(_mySparse* B, bool sparse);
-		void ofAtB(_mySparse* B, bool sparse);
+		void ofAtB(_mySparse* B, bool sparse,bool AorB);
 		void _ofAtB(_mySparse* B, _mySparse* C);
-		//void _ofBtAB(_mySparse* B, Eigen::VectorXd* b, _mySparse* C, Eigen::VectorXd* ret);
 		void _ofBtAB(_mySparse* B, /*Eigen::VectorXd* b, */_mySparse* C/*, Eigen::VectorXd* ret*/);
+		void _ofCtAB(_mySparse* B, _mySparse* C, /*Eigen::VectorXd* b, */_mySparse* D/*, Eigen::VectorXd* ret*/);
 		void _ofBtAB(_mySparse* B, _mySparse* B2, /*Eigen::VectorXd* b, */_mySparse* C/*, Eigen::VectorXd* ret*/);
-
 		//void _ofBtAB2(_mySparse* B, _mySparse* C, _mySparse* Q, _mySparse* R, KingOfMonsters::cuda* cuda);
 		void _ofCBtAB(_mySparse* B, _mySparse* C, _mySparse* D);
 		void _ofCBtAB2(_mySparse* B, _mySparse* C, _mySparse* D, _mySparse* E);
@@ -303,10 +301,10 @@ namespace KingOfMonsters {
 		void setmat(const Eigen::MatrixXd& mat);
 		void setmiddlecolum(Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>& f, int64_t start, int64_t end);
 		void solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
-		void LSsolve(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, double,int mode);
+		void LSsolve(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, double, int mode);
 		void Project(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, double);
-		void _solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
-		std::string _solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering);
+		//void _solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
+		//Eigen::MatrixXd _solve0(_myLLT* LLT, _mySparse* mat);
 		std::string _solve0_lu_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering);
 		std::string _solve0_chol_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering);
 		void solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
@@ -318,10 +316,9 @@ namespace KingOfMonsters {
 		std::string _solveCG_sparse_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		std::string _solveLU_dense_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void turnDense();
-		Eigen::MatrixXd _solve0(_myLLT* LLT, _mySparse* rhs);
 		void _solve0_gpu(KingOfMonsters::cuda* cuda, _mySparse* rhs, _mySparse* ret);
 		int64_t _solveI(_mySparse* ret);
-		int64_t _solveI_dense(_mySparse* ret);
+		std::string _solveI_dense(_mySparse* ret);
 		std::string _solveI_gpu_sparse(KingOfMonsters::cuda* cuda, _mySparse* ret);
 		std::string _solveI_gpu(KingOfMonsters::cuda* cuda, _mySparse* ret);
 		std::string _solveI_cpu(_mySparse* ret);
@@ -331,6 +328,7 @@ namespace KingOfMonsters {
 		void plus(Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>* m);
 		//void _solveI_gpu_mg(KingOfMonsters::cuda* cuda, _mySparse* ret);
 		void __solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
+
 		Eigen::MatrixXd inv();
 		Eigen::MatrixXd solve0(_mySparse* rhs);
 		void minus(_mySparse* m);
@@ -354,4 +352,5 @@ namespace KingOfMonsters {
 		static double GN(Eigen::VectorXd* coeff, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int tt, KingOfMonsters::cuda* cuda);
 		static void write(Eigen::VectorXd* coeff, Eigen::VectorXd* phi0, Eigen::VectorXd* zz0, Eigen::VectorXd* phi, Eigen::VectorXd* zz, Eigen::MatrixXd* __U, Eigen::MatrixXd* __V, Eigen::MatrixXd* __W, std::vector<Eigen::SparseMatrix<double>*> _mats1, std::vector<Eigen::SparseMatrix<double>*> _mats2, std::vector<Eigen::SparseMatrix<double>*> _mats3, Eigen::VectorXd* _r1, Eigen::VectorXd* _r2, double dt, int tt);
 	};
+
 }

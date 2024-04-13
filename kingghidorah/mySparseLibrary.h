@@ -126,6 +126,10 @@ namespace KingOfMonsters {
 		void Zeros() {
 			this->_vec->_vec.setZero();
 		}
+		void scale(double sc)
+		{
+			this->_vec->_vec *= sc;
+		}
 		~mySparseVector()
 		{
 			if (_vec != 0)
@@ -173,12 +177,21 @@ namespace KingOfMonsters {
 			_new->_arr->__v = this->_arr->__v;
 			return _new;
 		}
-
+		void _plus(mySparseVector^ v, double sc)
+		{
+			this->_arr->__v += sc * v->_vec->_vec;
+		}
 		void plus_useindex(myDoubleArray^ vec, double sc, int N, array<int>^index)
 		{
+			pin_ptr<int> ptr = &index[0];
+			int* ptr1 = ptr;
+			double* ptr2 = vec->_arr->__v.data();
+
 			for (int i = 0; i < N; i++)
 			{
-				this->_arr->__v(index[i]) += sc * vec->_arr->__v(i);
+				this->_arr->__v(*ptr1) += sc * *ptr2;
+				ptr1++;
+				ptr2++;
 			}
 		}
 		void addResidual(myDoubleArray^ r, myDoubleArray^ ret)
@@ -233,6 +246,10 @@ namespace KingOfMonsters {
 		}
 		void plus(myDoubleArray^ a, double sc) {
 			_arr->__v += a->_arr->__v * sc;
+		}
+		void plus(myDoubleArray^ a, double sc, int S1, int S2, int L)
+		{
+			_arr->__v.middleRows(S1, L) += a->_arr->__v.middleRows(S2, L) * sc;
 		}
 		!myDoubleArray()
 		{
@@ -649,6 +666,15 @@ namespace KingOfMonsters {
 		{
 				this->dat->_mat[0] += m->dat->_mat[0]*sc;
 		}
+		void plusvvt(myDoubleArray^ v,double sc)
+		{
+			this->dat->_dmat += sc*v->_arr->__v * v->_arr->__v.transpose();
+		}
+		void _plusvvt(mySparseVector ^ v, double sc)
+		{
+			this->dat->_mat[0] += sc * v->_vec->_vec * v->_vec->_vec.transpose();
+		}
+		
 		void multiply(myDoubleArray^ v, myDoubleArray^ ret)
 		{
 			ret->_arr->__v = this->dat->_mat[0] * v->_arr->__v;
@@ -735,6 +761,22 @@ namespace KingOfMonsters {
 		{
 			this->dat->setzero(row);
 		}
+		void setOne(int N)
+		{
+			std::vector<Eigen::Triplet<double>> dat;
+			dat.resize(N * N);
+			for (int i = 0; i < N; i++)
+			{
+				for (int j = 0; j < N; j++)
+				{
+					dat.push_back(Eigen::Triplet<double>(i, j, 1));
+				}
+			}
+			this->dat->_mat[0].resize(N, N);
+			this->dat->_mat[0].setFromTriplets(dat.begin(), dat.end());
+		}
+		
+		
 		void ofStack(System::Collections::Generic::List<mySparse^> ^jacobians)
 		{
 			int M = this->dat->_mat[0].rows();
@@ -912,6 +954,13 @@ namespace KingOfMonsters {
 			dat->init(m->rows(), m->cols());
 			this->dat->OfDuplicate(m->dat);
 			this->dat->copycoefffrom(m->dat);
+		}
+		void ofvv(myDoubleArray^ v,double sc)
+		{
+			int n = v->_arr->__v.size();
+			this->dat->_dmat.resize(n, n);
+			
+			this->dat->_dmat = sc*(v->_arr->__v * v->_arr->__v.transpose());
 		}
 		double sum() {
 			if (this->dat->_mat[0].nonZeros() > 0)
@@ -1133,12 +1182,16 @@ namespace KingOfMonsters {
 			return ret;
 		}
 		System::String^ _ofAtA_sparse(mySparse^ m) {
+			//return ofAtA(m, true);
 			auto str = dat->_ofAtA_sparse(m->dat);
 			auto ret = gcnew System::String(str.c_str());
 			return ret;
 		}
+		void ofAtB(mySparse^ m, bool sparse,bool AorB) {
+			dat->ofAtB(m->dat, sparse,AorB);
+		}
 		void ofAtB(mySparse^ m, bool sparse) {
-			dat->ofAtB(m->dat, sparse);
+			dat->ofAtB(m->dat, sparse, false);
 		}
 		/*void ofAtB_gpu(mySparse^ m, bool sparse) {
 			dat->ofAtB_gpu(m->dat, sparse);
@@ -1156,6 +1209,21 @@ namespace KingOfMonsters {
 			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
 			//ptr = nullptr;
 			//return ret;
+		}
+		void _ofCtAB(mySparse^ A, mySparse^ B, mySparse^ C, myDoubleArray^ b, myDoubleArray^ ret)
+		{
+			A->dat->_ofCtAB(B->dat, C->dat, this->dat);
+		}
+		void _ofAssemble(mySparse^ TL, mySparse^ TR,mySparse^ BLt, mySparse^ BR)
+		{
+			this->dat->_dmat.resize(TL->dat->_dmat.rows()+BR->dat->_dmat.rows(), TL->dat->_dmat.cols() + BR->dat->_dmat.cols());
+			this->dat->_dmat.setZero();
+			this->dat->_dmat.topLeftCorner(TL->dat->_dmat.rows(), TL->dat->_dmat.cols()) = TL->dat->_dmat;
+			this->dat->_dmat.bottomRightCorner(BR->dat->_dmat.rows(), BR->dat->_dmat.cols()) = BR->dat->_dmat;
+			if (TR != nullptr) {
+				this->dat->_dmat.topRightCorner(TL->dat->_dmat.rows(), BR->dat->_dmat.cols()) = TR->dat->_dmat;
+				this->dat->_dmat.bottomLeftCorner(BR->dat->_dmat.rows(), TL->dat->_dmat.cols()) = BLt->dat->_dmat.transpose();
+			}
 		}
 		void _ofBtAB(mySparse^ A, mySparse^ B, mySparse^ B2, myDoubleArray^ b, myDoubleArray^ ret)
 		{
@@ -1254,6 +1322,10 @@ namespace KingOfMonsters {
 		{
 			this->dat->add_usemap(i, j, value);
 		}
+		void plus_sparse(Int64 i, Int64 j, double value)
+		{
+			this->dat->add(i, j, value);
+		}
 		void set_usemap(Int64 i, Int64 j, double value)
 		{
 			this->dat->set_usemap(i, j, value);
@@ -1318,6 +1390,12 @@ namespace KingOfMonsters {
 			this->dat->addrow(ii, _ptr, _dat, shift, sc, N, add, 1.0);
 			ptr = nullptr;
 			dat = nullptr;
+		}
+		void addrow(Int64 ii, myIntArray^ index, myDoubleArray^ data, Int64 shift, double sc, Int64 N, bool add,double coeff) {
+
+
+			this->dat->addrow(ii, index->_arr, data->_arr->__v.data(), shift, sc, N, add, coeff);
+	
 		}
 		void addrow(Int64 ii, myIntArray^ index, myDoubleArray^ data, double sc, Int64 N) {
 			//pin_ptr<Int64> ptr = &index[0];
@@ -1453,7 +1531,7 @@ namespace KingOfMonsters {
 			this->dat->_mat[0] = this->dat->_mat[0].topRows(L2);
 		}
 
-		System::String ^ _solve0_lu(myDoubleArray^ rhs, myDoubleArray^ ret, int ordering, bool meh) {
+		/*System::String^ _solve0_lu(myDoubleArray^ rhs, myDoubleArray^ ret, int ordering, bool meh) {
 			//pin_ptr<double> ptr = &rhs[0];
 			//dat->_mat[0].setIdentity();
 			if (meh) {
@@ -1500,7 +1578,7 @@ namespace KingOfMonsters {
 			if (_str == "")_str = "success";
 			System::Console::WriteLine(gcnew System::String(_str.c_str()));
 			return gcnew System::String(_str.c_str());
-		}
+		}*/
 		void _solve0_lu_cpu(myDoubleArray^ rhs, myDoubleArray^ ret, int ordering, bool meh,double nnn) {
 			mySparse^ m = nullptr;
 			myDoubleArray^ v = nullptr;
@@ -1618,7 +1696,7 @@ namespace KingOfMonsters {
 			//ptr = nullptr;
 			//return ret;
 		}
-		void _solve0(myDoubleArray^ rhs, myDoubleArray^ ret) {
+		/*void _solve0(myDoubleArray^ rhs, myDoubleArray^ ret) {
 			//pin_ptr<double> ptr = &rhs[0];
 
 			dat->_solve0(&rhs->_arr->__v, &ret->_arr->__v);
@@ -1628,7 +1706,7 @@ namespace KingOfMonsters {
 
 			//ptr = nullptr;
 			//return ret;
-		}
+		}*/
 		void __solve0(myDoubleArray^ rhs, myDoubleArray^ ret) {
 			//pin_ptr<double> ptr = &rhs[0];
 
@@ -1641,10 +1719,10 @@ namespace KingOfMonsters {
 			//return ret;
 		}
 
-		System::String^ _solve0_gpu(myCuda^ gpu, myDoubleArray^ rhs, myDoubleArray^ ret, Int64 device) {
+		System::String^ _solve_gpu(myCuda^ gpu, myDoubleArray^ rhs, myDoubleArray^ ret, Int64 device) {
 			//pin_ptr<double> ptr = &rhs[0];
 
-			auto ss = dat->_solve0_gpu(gpu->cuda(), &rhs->_arr->__v, &ret->_arr->__v, device);
+			auto ss = dat->_solveLU_gpu(gpu->cuda(), &rhs->_arr->__v, &ret->_arr->__v, device);
 			System::String^ ee = gcnew System::String(ss.c_str());
 			//array<double>^ ret = gcnew array<double>(_ret.rows());
 			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
@@ -1690,7 +1768,7 @@ namespace KingOfMonsters {
 		{
 			this->dat->turnDense();
 		}
-		mySparse^ solve0(mySparse^ rhs) {
+		/*mySparse^ solve0(mySparse^ rhs) {
 			Eigen::LLT<Eigen::MatrixXd>* _LLT = new Eigen::LLT<Eigen::MatrixXd>();
 			dat->computeLLT(_LLT);
 			myLLT^ LLT = gcnew myLLT();
@@ -1700,7 +1778,7 @@ namespace KingOfMonsters {
 			mySparse^ ret = gcnew mySparse(rhs->rows(), rhs->cols());
 
 			return ret;
-		}
+		}*/
 
 		void solve0_gpu(myCuda^ gpu, mySparse^ rhs, mySparse^ ret) {
 			this->dat->_solve0_gpu(gpu->cuda(), rhs->dat, ret->dat);
@@ -1708,11 +1786,13 @@ namespace KingOfMonsters {
 		Int64 solveI(mySparse^ ret) {
 			return this->dat->_solveI(ret->dat);
 		}
-		Int64 solveI_dense(mySparse^ ret) {
-			return this->dat->_solveI_dense(ret->dat);
+		System::String^ solveI_dense(mySparse^ ret) {
+			auto _ss = this->dat->_solveI_dense(ret->dat);
+			auto ss = gcnew System::String(_ss.c_str());
+			return ss;
 		}
 		System::String^ solveI_gpu(myCuda^ gpu, mySparse^ ret) {
-			auto _ss = this->dat->_solveI_gpu(gpu->cuda(), ret->dat);
+			auto _ss = this->dat->_solveI_gpu_single(gpu->cuda(), ret->dat);
 			auto ss = gcnew System::String(_ss.c_str());
 
 			return ss;
@@ -1889,6 +1969,10 @@ namespace KingOfMonsters {
 		}
 		void addsmallidentity(double salt, bool sparse, bool dense,int m) {
 			this->dat->addsmallidentity(salt, sparse, dense,m);
+		}
+		void addsmallones(double salt)
+		{
+			this->dat->_dmat += salt * Eigen::MatrixXd::Ones(this->dat->_dmat.rows(), this->dat->_dmat.cols());
 		}
 		void Clear() {
 			this->dat->Clear();
