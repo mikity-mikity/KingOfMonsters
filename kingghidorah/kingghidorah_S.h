@@ -3330,6 +3330,70 @@ namespace KingOfMonsters {
 			return (f_u * v1 + f_v * v2);// val;
 
 		}
+		double _SLOPE2_xi(double v1, double v2) {
+			double length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + 2 * v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
+			v1 /= length;
+			v2 /= length;
+			double f_u = 0, f_v = 0;
+			for (int i = 0; i < _nNode; i++)
+			{
+				f_u += _ref->d1[0][i] * _ref->buf_xi[i];
+				f_v += _ref->d1[1][i] * _ref->buf_xi[i];
+			}
+			//double f_U = f_u * _ref->get__Gij(0, 0) + f_v * _ref->get__Gij(1, 0);
+			//double f_V = f_u * _ref->get__Gij(0, 1) + f_v * _ref->get__Gij(1, 1);
+
+			return (f_u * v1 + f_v * v2);// val;
+
+		}
+		double _SLOPE2_eta(double v1, double v2) {
+			double length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + 2 * v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
+			v1 /= length;
+			v2 /= length;
+			double f_u = 0, f_v = 0;
+			for (int i = 0; i < _nNode; i++)
+			{
+				f_u += _ref->d1[0][i] * _ref->buf_eta[i];
+				f_v += _ref->d1[1][i] * _ref->buf_eta[i];
+			}
+			//double f_U = f_u * _ref->get__Gij(0, 0) + f_v * _ref->get__Gij(1, 0);
+			//double f_V = f_u * _ref->get__Gij(0, 1) + f_v * _ref->get__Gij(1, 1);
+
+			return (f_u * v1 + f_v * v2);// val;
+
+		}
+		double _SLOPE2_u(double v1, double v2) {
+			double length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + 2 * v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
+			v1 /= length;
+			v2 /= length;
+			double f_u = 0, f_v = 0;
+			for (int i = 0; i < _nNode; i++)
+			{
+				f_u += _ref->d1[0][i] * _ref->buf_u[i];
+				f_v += _ref->d1[1][i] * _ref->buf_u[i];
+			}
+			//double f_U = f_u * _ref->get__Gij(0, 0) + f_v * _ref->get__Gij(1, 0);
+			//double f_V = f_u * _ref->get__Gij(0, 1) + f_v * _ref->get__Gij(1, 1);
+
+			return (f_u * v1 + f_v * v2);// val;
+
+		}
+		double _SLOPE2_v(double v1, double v2) {
+			double length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + 2 * v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
+			v1 /= length;
+			v2 /= length;
+			double f_u = 0, f_v = 0;
+			for (int i = 0; i < _nNode; i++)
+			{
+				f_u += _ref->d1[0][i] * _ref->buf_v[i];
+				f_v += _ref->d1[1][i] * _ref->buf_v[i];
+			}
+			//double f_U = f_u * _ref->get__Gij(0, 0) + f_v * _ref->get__Gij(1, 0);
+			//double f_V = f_u * _ref->get__Gij(0, 1) + f_v * _ref->get__Gij(1, 1);
+
+			return (f_u * v1 + f_v * v2);// val;
+
+		}
 		void _SLOPE2(double* ptr, double v1, double v2)
 		{
 			double length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + 2 * v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
@@ -7951,59 +8015,7 @@ namespace KingOfMonsters {
 			}
 
 		}
-		double ortho(double t1, double t2, double w1, double w2)
-		{
-			double val = 0;
-
-			val = (_ref->get__gij(0, 0) * w1 * t1 + _ref->get__gij(0, 1) * w1 * t2 + _ref->get__gij(1, 0) * w2 * t1 + _ref->get__gij(1, 1) * w2 * t2);
-
-			return val;
-		}
-
-		void ortho_x(double* ptr, double t1, double t2, double w1, double w2)
-		{
-			double val = 0;
-
-			double* ptr1 = ptr;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				double _g11 = 0, _g12 = 0, _g22 = 0,_g21=0;
-				
-					_g11 = 2 * (_ref->d1[0][s] * _ref->get__gi(0, 0));
-					_g12 = (_ref->d1[0][s] * _ref->get__gi(1, 0)) + (_ref->d1[1][s] * _ref->get__gi(0, 0));
-					_g22 = 2 * (_ref->d1[1][s] * _ref->get__gi(1, 0));
-			
-					_g21 = _g12;
-				val = (_g11 * w1 * t1 + _g12 * w1 * t2 + _g21 * w2 * t1 + _g22 * w2 * t2);
-
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
-		void ortho_y(double* ptr, double t1, double t2, double w1, double w2)
-		{
-			double val = 0;
-			double* ptr1 = ptr;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				//double _e11 = 0, _e12 = 0, _e22 = 0;
-				//double _g11 = 2 * (_ref->d1[0][s] * _ref->get__gi(0, 1));
-				//double _g12 = (_ref->d1[0][s] * _ref->get__gi(1, 1)) + (_ref->d1[1][s] * _ref->get__gi(0, 1));
-				//double _g22 = 2 * (_ref->d1[1][s] * _ref->get__gi(1, 1));
-				//double _g21 = _g12;
-				double _g11 = 0, _g12 = 0, _g22 = 0, _g21 = 0;
-				
-					_g11 = 2 * (_ref->d1[0][s] * _ref->get__gi(0, 1));
-					_g12 = (_ref->d1[0][s] * _ref->get__gi(1, 1)) + (_ref->d1[1][s] * _ref->get__gi(0, 1));
-					_g22 = 2 * (_ref->d1[1][s] * _ref->get__gi(1, 1));
-			
-				_g21 = _g12;
-
-				val = (_g11 * w1 * t1 + _g12 * w1 * t2 + _g21 * w2 * t1 + _g22 * w2 * t2);
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
+		
 		double guide1_2(double t1, double t2,double w1,double w2, bool accurate)
 		{
 			double val = 0;
@@ -15423,21 +15435,7 @@ namespace KingOfMonsters {
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
 		}
 
-		double ortho(double v1, double v2, double s1, double s2)
-		{
-			return __mem->ortho(v1, v2, s1, s2);
-		}
-
-		void ortho_x(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, double s1, double s2,int shift,bool add)
-		{
-			__mem->ortho_x(__mem->__grad, v1, v2, s1, s2);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad-shift, shift, sc, __mem->_nNode,add, c1);
-		}
-		void ortho_y(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, double s1, double s2, int shift, bool add)
-		{
-			__mem->ortho_y(__mem->__grad, v1, v2, s1, s2);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad-shift, shift, sc, __mem->_nNode, add, c1);
-		}
+		
 
 		double guide1_2(double v1, double v2, double s1, double s2, bool accurate)
 		{
@@ -16922,7 +16920,22 @@ namespace KingOfMonsters {
 		{
 			return __mem->_SLOPE2_z(v1, v2);
 		}
-	
+		double _SLOPE2_xi(double v1, double v2)
+		{
+			return __mem->_SLOPE2_xi(v1, v2);
+		}
+		double _SLOPE2_eta(double v1, double v2)
+		{
+			return __mem->_SLOPE2_eta(v1, v2);
+		}
+		double _SLOPE2_u(double v1, double v2)
+		{
+			return __mem->_SLOPE2_u(v1, v2);
+		}
+		double _SLOPE2_v(double v1, double v2)
+		{
+			return __mem->_SLOPE2_v(v1, v2);
+		}
 		void _SLOPE2(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double v1, double v2,int shift, bool add)
 		{
 			__mem->_SLOPE2(__mem->__grad, v1, v2);
