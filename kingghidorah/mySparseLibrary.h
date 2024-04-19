@@ -153,6 +153,7 @@ namespace KingOfMonsters {
 		_myDoubleArray* _arr = 0;
 		Int64 _N = 0;
 	public:
+		
 		void assemble(myDoubleArray^ v, myDoubleArray^ w)
 		{
 			this->_arr->__v.resize(v->_arr->__v.rows() + w->_arr->__v.rows());
@@ -1132,17 +1133,65 @@ namespace KingOfMonsters {
 			return (Eigen::MatrixXd::Identity(A->dat->_dmat.rows(), A->dat->_dmat.cols()) - A->dat->_dmat * this->dat->_dmat).sum();
 
 		}
+		void transform(mySparse^ K,myPermutation^ p, long M,long L)
+		{
+			int NN = this->dat->_mat[0].cols();
+			int N = NN - M;
+			auto perm = p->p->perm;
+			auto pt = p->p->perm.transpose();
+			Eigen::MatrixXd mm=perm* (this->dat->_mat[0])* pt;
+			Eigen::MatrixXd D = mm.bottomRightCorner(N, N);
+
+			Eigen::MatrixXd Dc = D.bottomRightCorner(L, L);
+			Eigen::MatrixXd Df = D.bottomLeftCorner(L, N - L);
+			Dc += Eigen::MatrixXd::Identity(L, L) * 0.0000000000000000001;
+			Eigen::MatrixXd E1=-Dc.inverse()* Df;
+
+			Eigen::MatrixXd E(N, N - L);
+			E.topRows(N - L) = Eigen::MatrixXd::Identity(N - L, N - L);
+			E.bottomRows(L) = E1;
+			//E.bottomRows(L).setZero();
+
+			K->dat->_dmat.resize(NN,NN-L);
+			K->dat->_dmat.setZero();
+			K->dat->_dmat.topLeftCorner(M, M) = Eigen::MatrixXd::Identity(M,M);
+			K->dat->_dmat.bottomRightCorner(N, N - L) = E;
+	
+		}
+		void AtBA(mySparse^ E)
+		{
+			this->dat->_dmat = E->dat->_dmat.transpose() * this->dat->_mat[0] * E->dat->_dmat;
+		}
+		void AtB(myDoubleArray^ b)
+		{
+			b->_arr->__v = this->dat->_dmat.transpose() * b->_arr->__v;
+		}
+		void AB(myDoubleArray^ b)
+		{
+			b->_arr->__v = this->dat->_dmat * b->_arr->__v;
+		}
 		void _permute(myPermutation^ p, bool sparse, bool dense)
 		{
 			dat->_permute(p->p->perm, sparse, dense);
+		}
+		void __permute(myPermutation^ p)
+		{
+			//dat->_permute(p->p->perm, sparse, dense);
+			dat->_dmat = p->p->perm * dat->_dmat * p->p->perm.transpose();
 		}
 		void _permuteCols(myPermutation^ p, bool sparse, bool dense)
 		{
 			dat->_permuteCols(p->p->perm, sparse, dense);
 		}
-		void _shrink(Int64 M, Int64 N,bool sparse,bool dense)
+		void _shrink(Int64 M, Int64 N, bool sparse, bool dense)
 		{
-			dat->_shrink(M, N,sparse,dense);
+			dat->_shrink(M, N, sparse, dense);
+		}
+		void __shrink(Int64 M, Int64 N)
+		{
+
+			dat->_dmat.conservativeResize(M, N);
+			//dat->_shrink(M, N, sparse, dense);
 		}
 		void _permute(myPermutation^ p, myPermutation^ q)
 		{
