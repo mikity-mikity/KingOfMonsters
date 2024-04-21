@@ -49,6 +49,7 @@ namespace KingOfMonsters {
 			l2i = solve.eigenvalues()(1).imag();
 
 		}
+		
 		Eigen::MatrixXd& get()
 		{
 			return *mat;
@@ -78,6 +79,7 @@ namespace KingOfMonsters {
 		int cols() {
 			return mat->cols();
 		}
+		
 		denseMatrix(int n, int m)
 		{
 			if (mat != 0)del();
@@ -151,9 +153,16 @@ namespace KingOfMonsters {
 	public:
 		//double* _arr = 0;
 		_myDoubleArray* _arr = 0;
-		Int64 _N = 0;
+		//Int64 _N = 0;
 	public:
-		
+		void AtB(denseMatrix^ M)
+		{
+			this->_arr->__v = M->get().transpose() * this->_arr->__v;
+		}
+		void AB(denseMatrix^ M)
+		{
+			this->_arr->__v = M->get() * this->_arr->__v;
+		}
 		void assemble(myDoubleArray^ v, myDoubleArray^ w)
 		{
 			this->_arr->__v.resize(v->_arr->__v.rows() + w->_arr->__v.rows());
@@ -226,7 +235,7 @@ namespace KingOfMonsters {
 		{
 			_arr = new _myDoubleArray();
 			//_arr = new double[N];
-			_N = N;
+			
 			_arr->__v.resize(N);
 			_arr->__v.setZero();
 		}
@@ -235,7 +244,7 @@ namespace KingOfMonsters {
 			return _arr;
 		}*/
 		inline Int64 size() {
-			return _N;
+			return _arr->__v.size();
 		}
 		void copyfrom(myDoubleArray^ arr, Int64 N)
 		{
@@ -259,7 +268,7 @@ namespace KingOfMonsters {
 				delete _arr;
 			}
 			_arr = 0;
-			_N = 0;
+			
 		}
 		~myDoubleArray()
 		{
@@ -267,7 +276,7 @@ namespace KingOfMonsters {
 				delete _arr;
 			}
 			_arr = 0;
-			_N = 0;
+			
 		}
 		void ofJoin(myDoubleArray^ a, myDoubleArray^ b)
 		{
@@ -304,6 +313,7 @@ namespace KingOfMonsters {
 		{	
  			//Eigen::VectorXd v(N);
 			//v.setZero();
+			int _N = size();
 			if (_N < N)
 			{
 				//v.middleRows(0, _N) = this->_arr->__v;
@@ -322,7 +332,7 @@ namespace KingOfMonsters {
 			{
 				_arr->__v.middleRows(_N, N - _N).setZero();
 			}*/
-			_N = N;
+			
 		}
 		void split(int N,myDoubleArray ^ ret)
 		{
@@ -331,7 +341,7 @@ namespace KingOfMonsters {
 		}
 		void reset(Int64 N)
 		{
-			_N = N;
+			int _N = N;
 			_arr->__v.resize(_N);
 			_arr->__v.setZero();
 		}
@@ -604,6 +614,10 @@ namespace KingOfMonsters {
 		{
 			return this->p->perm.size();
 		}
+		int at(int i)
+		{
+			return this->p->perm.indices()(i);
+		}
 	};
 	
 	public ref class mySparse {
@@ -627,6 +641,26 @@ namespace KingOfMonsters {
 				if (count > 40)break;
 			}
 			return str;
+		}
+		void assemble(denseMatrix^ ML,myPermutation^ mXY,mySparse^ EE,myPermutation^ mZ,int C) {
+			Eigen::MatrixXd D(mZ->p->perm.size(), EE->dat->_dmat.cols());
+			D.setZero();
+			D.leftCols(mZ->p->perm.size()).setIdentity();
+			Eigen::MatrixXd D2(C,mZ->p->perm.size());
+			D2.setZero();
+			D2.leftCols(C).setIdentity();
+
+			this->dat->_dmat=D2*mZ->p->perm*D*EE->dat->_dmat.transpose()*mXY->p->perm* ML->get();
+
+			/*rhsX.AB(ML);A
+			mXY.perm(rhsX);
+			EE.AtB(rhsX);
+			rhsX.resize(_HRC + nBC);
+			mZ.perm(rhsX);
+			rhsX.resize(L1Z);
+			*/
+			
+
 		}
 		mySparse^ AtA() {
 			mySparse^ newMat = gcnew mySparse();
@@ -1133,35 +1167,84 @@ namespace KingOfMonsters {
 			return (Eigen::MatrixXd::Identity(A->dat->_dmat.rows(), A->dat->_dmat.cols()) - A->dat->_dmat * this->dat->_dmat).sum();
 
 		}
-		void transform(mySparse^ K,myPermutation^ p, long M,long L)
+		void transform(mySparse^ K,myPermutation^ p,denseMatrix^ ML,long L, long M,long S)
 		{
-			int NN = this->dat->_mat[0].cols();
-			int N = NN - M;
+			//L:HRC,M:nBC,S:nSymm
+			int L2 = L * 2;
+			int L3 = L * 3;
+			int N = L2-S-M;//free variables
 			auto perm = p->p->perm;
 			auto pt = p->p->perm.transpose();
-			Eigen::MatrixXd mm=perm* (this->dat->_mat[0])* pt;
-			Eigen::MatrixXd D = mm.bottomRightCorner(N, N);
+			Eigen::MatrixXd D = perm * ML->get()* this->dat->_mat[0] * (ML->get()).transpose()* pt;//
+			Eigen::MatrixXd D2 = D.bottomRightCorner(L2-S, L2-S);
+			//Eigen::MatrixXd G=(ML->get()* pt).rightCols(L2);
 
-			Eigen::MatrixXd Dc = D.bottomRightCorner(L, L);
-			Eigen::MatrixXd Df = D.bottomLeftCorner(L, N - L);
-			Dc += Eigen::MatrixXd::Identity(L, L) * 0.0000000000000000001;
-			Eigen::MatrixXd E1=-Dc.inverse()* Df;
 
-			Eigen::MatrixXd E(N, N - L);
-			E.topRows(N - L) = Eigen::MatrixXd::Identity(N - L, N - L);
-			E.bottomRows(L) = E1;
+
+		/*	Eigen::MatrixXd D2(L2 + S, L2 + S);
+			D2.setZero();
+			D2.topLeftCorner(M, M) = D.topLeftCorner(M, M);
+			D2.bottomRightCorner(N, N) = D.bottomRightCorner(N, N);
+			
+			D2.middleRows(M, S).leftCols(M) = G.leftCols(M);//nSymm,L
+			D2.middleRows(M, S).rightCols(N) = G.rightCols(N);//nSymm,L
+			D2.middleCols(M, S).topRows(M) = (G.leftCols(M)).transpose();//nSymm,L
+			D2.middleCols(M, S).bottomRows(N) = (G.rightCols(N)).transpose();//nSymm,L
+			*/
+
+
+			//D.setIdentity();
+			Eigen::MatrixXd Dc = D2.bottomRightCorner(N, N);
+			Eigen::MatrixXd Df = D2.bottomLeftCorner(N, M);
+			Dc += Eigen::MatrixXd::Identity(N, N) * 0.0000000000000000001;
+			Eigen::MatrixXd E1 = -Dc.inverse()* Df;//N->M
+
+			Eigen::MatrixXd E(M+N, M);
+			E.setZero();
+			E.topRows(M) = Eigen::MatrixXd::Identity(M, M);
+			E.bottomRows(N) = E1;
 			//E.bottomRows(L).setZero();
 
-			K->dat->_dmat.resize(NN,NN-L);
+			K->dat->_dmat.resize(M+N+L,M+L);
 			K->dat->_dmat.setZero();
-			K->dat->_dmat.topLeftCorner(M, M) = Eigen::MatrixXd::Identity(M,M);
-			K->dat->_dmat.bottomRightCorner(N, N - L) = E;
+			K->dat->_dmat.topLeftCorner(L, L) = Eigen::MatrixXd::Identity(L,L);
+			K->dat->_dmat.bottomRightCorner(M+N, M) = E;
 	
 		}
-		void AtBA(mySparse^ E)
+		void _AtBA(denseMatrix^ E)
+		{
+			this->dat->_dmat = E->get().transpose() * this->dat->_mat[0] * E->get();
+		}
+		void _AtBA(mySparse^ E)
 		{
 			this->dat->_dmat = E->dat->_dmat.transpose() * this->dat->_mat[0] * E->dat->_dmat;
 		}
+		void _ABAt(denseMatrix^ E)
+		{
+			this->dat->_dmat = E->get() * this->dat->_mat[0] * E->get().transpose();
+		}
+		void _ABAt(mySparse^ E)
+		{
+			this->dat->_dmat = E->dat->_dmat * this->dat->_mat[0] * E->dat->_dmat.transpose();
+		}
+
+		void AtBA(denseMatrix^ E)
+		{
+			this->dat->_dmat = E->get().transpose() * this->dat->_dmat * E->get();
+		}
+		void AtBA(mySparse^ E)
+		{
+			this->dat->_dmat = E->dat->_dmat.transpose() * this->dat->_dmat * E->dat->_dmat;
+		}
+		void ABAt(denseMatrix^ E)
+		{
+			this->dat->_dmat = E->get() * this->dat->_dmat * E->get().transpose();
+		}
+		void ABAt(mySparse^ E)
+		{
+			this->dat->_dmat = E->dat->_dmat * this->dat->_dmat * E->dat->_dmat.transpose();
+		}
+
 		void AtB(myDoubleArray^ b)
 		{
 			b->_arr->__v = this->dat->_dmat.transpose() * b->_arr->__v;
@@ -1319,6 +1402,11 @@ namespace KingOfMonsters {
 		{
 			this->dat->_dmat.resize(this->dat->_mat[0].rows(), this->dat->_mat[0].cols());
 			this->dat->_dmat.setZero();
+		}
+		void makedense()
+		{
+			this->dat->_dmat.resize(this->dat->_mat[0].rows(), this->dat->_mat[0].cols());
+			this->dat->_dmat = this->dat->_mat[0];
 		}
 		void makePattern()
 		{
