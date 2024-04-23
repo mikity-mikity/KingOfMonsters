@@ -1270,6 +1270,12 @@ namespace KingOfMonsters {
 		{
 			dat->_shrink(M, N, sparse, dense);
 		}
+		void split(Int64 S)
+		{
+			Int64 C = this->dat->_dmat.cols();
+			this->dat->_dmat.topRightCorner(C - S, C - S).setZero();
+			this->dat->_dmat.bottomLeftCorner(C - S, C - S).setZero();
+		}
 		void __shrink(Int64 M, Int64 N)
 		{
 
