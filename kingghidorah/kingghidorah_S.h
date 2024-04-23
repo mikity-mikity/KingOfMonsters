@@ -6808,7 +6808,7 @@ namespace KingOfMonsters {
 			double length = sqrt(v1 * v1 * _ref->og11 + 2 * v1 * v2 * _ref->og12 + v2 * v2 * _ref->og22);
 			v1 /= length;
 			v2 /= length;
-			length = sqrt(w1 * w1 * _ref->og11 + 2 * (v2 * w1 + v1 * w2) * _ref->og12 + w2 * w2 * _ref->og22);
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * (w1  * w2) * _ref->og12 + w2 * w2 * _ref->og22);
 			w1 /= length;
 			w2 /= length;
 
