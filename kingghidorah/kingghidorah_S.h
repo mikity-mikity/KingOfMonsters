@@ -3303,13 +3303,11 @@ namespace KingOfMonsters {
 				ptr1++;
 			}
 		}
-		inline double _SLOPE_symm2(double w1, double w2, double s1, double s2) {
+		inline double _SLOPE_symm2(double w1, double w2) {
 			double length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
 			w1 /= length;
 			w2 /= length;
-			length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
-			s1 /= length;
-			s2 /= length;
+			
 			double xi_u = 0, xi_v = 0;
 			double eta_u = 0, eta_v = 0;
 			for (int i = 0; i < _nNode; i++)
@@ -3319,22 +3317,21 @@ namespace KingOfMonsters {
 				eta_u += _ref->d1[0][i] * _ref->buf_v[i];
 				eta_v += _ref->d1[1][i] * _ref->buf_v[i];
 			}
-			double duu = xi_u * _ref->get__gi(0, 0) + eta_u * _ref->get__gi(0, 1);
-			double duv = xi_u * _ref->get__gi(1, 0) + eta_u * _ref->get__gi(1, 1);
-			double dvu = xi_v * _ref->get__gi(0, 0) + eta_v * _ref->get__gi(0, 1);
-			double dvv = xi_v * _ref->get__gi(1, 0) + eta_v * _ref->get__gi(1, 1);
+			double x0 = _ref->_ogi[0] * w1 + _ref->_ogi[3] * w2;
+			double y0 = _ref->_ogi[1] * w1 + _ref->_ogi[4] * w2;
+
+			double X = xi_u * w1 + xi_v * w2;
+			double Y = eta_u * w1 + eta_v * w2;
 
 
-			double val = duu * w1 * s1 + duv * w1 * s2 + dvu * w2 * s1 + dvv * s2 * s2;
+			double val = X * y0 - Y * x0;
 			return val;
 		}
-		void _SLOPE_symm2_u(double* ptr, double w1, double w2, double s1, double s2) {
+		void _SLOPE_symm2_u(double* ptr, double w1, double w2) {
 			double length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
 			w1 /= length;
 			w2 /= length;
-			length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
-			s1 /= length;
-			s2 /= length;
+			
 
 			double* ptr1 = ptr;
 
@@ -3347,6 +3344,9 @@ namespace KingOfMonsters {
 				eta_u += _ref->d1[0][i] * _ref->buf_v[i];
 				eta_v += _ref->d1[1][i] * _ref->buf_v[i];
 			}
+
+			double x0 = _ref->_ogi[0] * w1 + _ref->_ogi[3] * w2;
+			double y0 = _ref->_ogi[1] * w1 + _ref->_ogi[4] * w2;
 			for (int s = 0; s < _nNode; s++)
 			{
 				double _xi_u = 0, _xi_v = 0;
@@ -3357,30 +3357,21 @@ namespace KingOfMonsters {
 				_eta_u = 0;// _ref->d1[0][i] * _ref->buf_eta[i];
 				_eta_v = 0;// _ref->d1[1][i] * _ref->buf_eta[i];
 
-				double duu = _xi_u * _ref->get__gi(0, 0) + _eta_u * _ref->get__gi(0, 1);
-				double duv = _xi_u * _ref->get__gi(1, 0) + _eta_u * _ref->get__gi(1, 1);
-				double dvu = _xi_v * _ref->get__gi(0, 0) + _eta_v * _ref->get__gi(0, 1);
-				double dvv = _xi_v * _ref->get__gi(1, 0) + _eta_v * _ref->get__gi(1, 1);
 
-				duu += xi_u * _ref->d1[0][s];
-				duv += xi_u * _ref->d1[1][s];
-				dvu += xi_v * _ref->d1[0][s];
-				dvv += xi_v * _ref->d1[1][s];
+				double X = _xi_u * w1 + _xi_v * w2;
+				double Y = _eta_u * w1 + _eta_v * w2;
 
 
-				double val = duu * w1 * s1 + duv * w1 * s2 + dvu * w2 * s1 + dvv * s2 * s2;
-				*ptr1 = val;
+				double val = X * y0 - Y * x0;
 				ptr1++;
 			}
 
 		}
-		void _SLOPE_symm2_v(double* ptr, double w1, double w2, double s1, double s2) {
+		void _SLOPE_symm2_v(double* ptr, double w1, double w2) {
 			double length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
 			w1 /= length;
 			w2 /= length; 
-			length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
-			s1 /= length;
-			s2 /= length;
+			
 			double* ptr1 = ptr;
 			double xi_u = 0, xi_v = 0;
 			double eta_u = 0, eta_v = 0;
@@ -3392,7 +3383,8 @@ namespace KingOfMonsters {
 				eta_v += _ref->d1[1][i] * _ref->buf_v[i];
 			}
 
-
+			double x0 = _ref->_ogi[0] * w1 + _ref->_ogi[3] * w2;
+			double y0 = _ref->_ogi[1] * w1 + _ref->_ogi[4] * w2;
 			for (int s = 0; s < _nNode; s++)
 			{
 				double _xi_u = 0, _xi_v = 0;
@@ -3403,18 +3395,11 @@ namespace KingOfMonsters {
 				_eta_u = _ref->d1[0][s];
 				_eta_v = _ref->d1[1][s];
 
-				double duu = _xi_u * _ref->get__gi(0, 0) + _eta_u * _ref->get__gi(0, 1);
-				double duv = _xi_u * _ref->get__gi(1, 0) + _eta_u * _ref->get__gi(1, 1);
-				double dvu = _xi_v * _ref->get__gi(0, 0) + _eta_v * _ref->get__gi(0, 1);
-				double dvv = _xi_v * _ref->get__gi(1, 0) + _eta_v * _ref->get__gi(1, 1);
-
-				duu += eta_u * _ref->d1[0][s];
-				duv += eta_u * _ref->d1[1][s];
-				dvu += eta_v * _ref->d1[0][s];
-				dvv += eta_v * _ref->d1[1][s];
+				double X = _xi_u * w1 + _xi_v * w2;
+				double Y = _eta_u * w1 + _eta_v * w2;
 
 
-				double val = duu * w1 * s1 + duv * w1 * s2 + dvu * w2 * s1 + dvv * s2 * s2;
+				double val = X * y0 - Y * x0;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -17351,17 +17336,17 @@ namespace KingOfMonsters {
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
 		}
 
-		double  _SLOPE_symm2(double w1, double w2, double s1, double s2) {
-			return __mem->_SLOPE_symm2(w1, w2, s1, s2);
+		double  _SLOPE_symm2(double w1, double w2) {
+			return __mem->_SLOPE_symm2(w1, w2);
 		}
-		void _SLOPE_symm2_u(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double w1, double w2, double s1, double s2) {
-			__mem->_SLOPE_symm2_u(__mem->__grad, w1, w2, s1, s2);
+		void _SLOPE_symm2_u(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double w1, double w2) {
+			__mem->_SLOPE_symm2_u(__mem->__grad, w1, w2);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
 		}
 
 
-		void _SLOPE_symm2_v(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double w1, double w2, double s1, double s2) {
-			__mem->_SLOPE_symm2_v(__mem->__grad, w1, w2, s1, s2);
+		void _SLOPE_symm2_v(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double w1, double w2) {
+			__mem->_SLOPE_symm2_v(__mem->__grad, w1, w2);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
 		}
 		void _SLOPE_phi_x(myDoubleArray^ arr, double dcdt1, double dcdt2, double sc) {
