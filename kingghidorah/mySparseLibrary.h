@@ -1196,7 +1196,7 @@ namespace KingOfMonsters {
 			//D.setIdentity();
 			Eigen::MatrixXd Dc = D2.bottomRightCorner(N, N);
 			Eigen::MatrixXd Df = D2.bottomLeftCorner(N, M);
-			Dc += Eigen::MatrixXd::Identity(N, N) * 0.0000000000000000001;
+			Dc += Eigen::MatrixXd::Identity(N, N) * 0.0000000000001;
 			Eigen::MatrixXd E1 = -Dc.inverse()* Df;//N->M
 
 			Eigen::MatrixXd E(M+N, M);
