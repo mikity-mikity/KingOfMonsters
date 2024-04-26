@@ -1167,48 +1167,43 @@ namespace KingOfMonsters {
 			return (Eigen::MatrixXd::Identity(A->dat->_dmat.rows(), A->dat->_dmat.cols()) - A->dat->_dmat * this->dat->_dmat).sum();
 
 		}
-		void transform(mySparse^ K,myPermutation^ p,denseMatrix^ ML,long L, long M,long S)
+		void transform(mySparse^ K,double salt,myPermutation^ p,denseMatrix^ ML,long L, long M,long S)
 		{
+		
 			//L:HRC,M:nBC,S:nSymm
 			int L2 = L * 2;
 			int L3 = L * 3;
 			int N = L2-S-M;//free variables
-			auto perm = p->p->perm;
-			auto pt = p->p->perm.transpose();
-			Eigen::MatrixXd D = perm * ML->get()* this->dat->_mat[0] * (ML->get()).transpose()* pt;//
-			Eigen::MatrixXd D2 = D.bottomRightCorner(L2-S, L2-S);
-			//Eigen::MatrixXd G=(ML->get()* pt).rightCols(L2);
+			if (N == 0)
+			{
+				K->dat->_dmat.resize(M + L, M + L);
+				K->dat->_dmat = Eigen::MatrixXd::Identity(M+L, M+L);
+			}else{
+				auto perm = p->p->perm;
+				auto pt = p->p->perm.transpose();
+				Eigen::MatrixXd D = perm * ML->get() * this->dat->_mat[0] * (ML->get()).transpose() * pt;//
+				Eigen::MatrixXd D2 = D.bottomRightCorner(L2 - S, L2 - S);
+				Eigen::MatrixXd Dc = D2.bottomRightCorner(N, N);
+				Eigen::MatrixXd Df = D2.bottomLeftCorner(N, M);
+				Dc += Eigen::MatrixXd::Identity(N, N) * salt;
+			//	Eigen::FullPivHouseholderQR<Eigen::MatrixXd> qr(Dc);
+				Eigen::MatrixXd E1 = -Dc.inverse() * Df;//N->M
 
+				Eigen::MatrixXd E(M + N, M);
+				E.setZero();
+				E.topRows(M) = Eigen::MatrixXd::Identity(M, M);
+				E.bottomRows(N) = E1;
+				//E.bottomRows(L).setZero();
 
+				K->dat->_dmat.resize(M + N + L, M + L);
+				K->dat->_dmat.setZero();
+				K->dat->_dmat.topLeftCorner(L, L) = Eigen::MatrixXd::Identity(L, L);
+				K->dat->_dmat.bottomRightCorner(M + N, M) = E;
+				
+				
+				
 
-		/*	Eigen::MatrixXd D2(L2 + S, L2 + S);
-			D2.setZero();
-			D2.topLeftCorner(M, M) = D.topLeftCorner(M, M);
-			D2.bottomRightCorner(N, N) = D.bottomRightCorner(N, N);
-			
-			D2.middleRows(M, S).leftCols(M) = G.leftCols(M);//nSymm,L
-			D2.middleRows(M, S).rightCols(N) = G.rightCols(N);//nSymm,L
-			D2.middleCols(M, S).topRows(M) = (G.leftCols(M)).transpose();//nSymm,L
-			D2.middleCols(M, S).bottomRows(N) = (G.rightCols(N)).transpose();//nSymm,L
-			*/
-
-
-			//D.setIdentity();
-			Eigen::MatrixXd Dc = D2.bottomRightCorner(N, N);
-			Eigen::MatrixXd Df = D2.bottomLeftCorner(N, M);
-			Dc += Eigen::MatrixXd::Identity(N, N) * 0.0000000000000000001;
-			Eigen::MatrixXd E1 = -Dc.inverse()* Df;//N->M
-
-			Eigen::MatrixXd E(M+N, M);
-			E.setZero();
-			E.topRows(M) = Eigen::MatrixXd::Identity(M, M);
-			E.bottomRows(N) = E1;
-			//E.bottomRows(L).setZero();
-
-			K->dat->_dmat.resize(M+N+L,M+L);
-			K->dat->_dmat.setZero();
-			K->dat->_dmat.topLeftCorner(L, L) = Eigen::MatrixXd::Identity(L,L);
-			K->dat->_dmat.bottomRightCorner(M+N, M) = E;
+			}
 	
 		}
 		void _AtBA(denseMatrix^ E)
