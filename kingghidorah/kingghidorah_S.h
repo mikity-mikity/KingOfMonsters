@@ -5808,9 +5808,7 @@ namespace KingOfMonsters {
 
 			double g211 = g121, g212 = g122;
 			double val = 0;
-			double S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
-			double S2 = _ref->get__gij(0, 1) * s1 + _ref->get__gij(1, 1) * s2;
-
+			
 			double A1 = (g111 * v1 * w1 + g121 * (v1 * w2 + v2 * w1) + g221 * v2 * w2);
 			double A2 = (g112 * v1 * w1 + g122 * (v1 * w2 + v2 * w1) + g222 * v2 * w2);
 			double B1 = (_ref->oGammaijk[0] * v1 * w1 + _ref->oGammaijk[2] * (v1 * w2 + v2 * w1) + _ref->oGammaijk[6] * v2 * w2);
@@ -5832,8 +5830,6 @@ namespace KingOfMonsters {
 			s1 /= length;
 			s2 /= length;
 
-			double S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
-			double S2 = _ref->get__gij(0, 1) * s1 + _ref->get__gij(1, 1) * s2;
 			double B1 = (_ref->oGammaijk[0] * v1 * w1 + _ref->oGammaijk[2] * (v1 * w2 + v2 * w1) + _ref->oGammaijk[6] * v2 * w2);
 			double B2 = (_ref->oGammaijk[1] * v1 * w1 + _ref->oGammaijk[3] * (v1 * w2 + v2 * w1) + _ref->oGammaijk[7] * v2 * w2);
 
@@ -5870,9 +5866,7 @@ namespace KingOfMonsters {
 			s1 /= length;
 			s2 /= length;
 
-			double S1 = _ref->get__gij(0, 0) * s1 + _ref->get__gij(0, 1) * s2;
-			double S2 = _ref->get__gij(0, 1) * s1 + _ref->get__gij(1, 1) * s2;
-
+			
 			double B1 = (_ref->oGammaijk[0] * v1 * w1 + _ref->oGammaijk[2] * (v1 * w2 + v2 * w1) + _ref->oGammaijk[6] * v2 * w2);
 			double B2 = (_ref->oGammaijk[1] * v1 * w1 + _ref->oGammaijk[3] * (v1 * w2 + v2 * w1) + _ref->oGammaijk[7] * v2 * w2);
 
@@ -7077,7 +7071,7 @@ namespace KingOfMonsters {
 			}
 		}
 		double ortho2(double v1, double v2, double w1, double w2)
-		{
+		{		
 			double length = sqrt(v1 * v1 * _ref->og11 + 2 * v1 * v2 * _ref->og12 + v2 * v2 * _ref->og22);
 			v1 /= length;
 			v2 /= length;
