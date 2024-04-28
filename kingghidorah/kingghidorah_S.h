@@ -5708,19 +5708,19 @@ namespace KingOfMonsters {
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				double g111 = _ref->__dh[0][s] * _ref->get__Gi(0, 0);
-				double g112 = _ref->__dh[0][s] * _ref->get__Gi(1, 0);
-				double g121 = _ref->__dh[1][s] * _ref->get__Gi(0, 0);
-				double g122 = _ref->__dh[1][s] * _ref->get__Gi(1, 0);
-				double g221 = _ref->__dh[3][s] * _ref->get__Gi(0, 0);
-				double g222 = _ref->__dh[3][s] * _ref->get__Gi(1, 0);
+				double _g111 = _ref->__dh[0][s] * _ref->get__Gi(0, 0);
+				double _g112 = _ref->__dh[0][s] * _ref->get__Gi(1, 0);
+				double _g121 = _ref->__dh[1][s] * _ref->get__Gi(0, 0);
+				double _g122 = _ref->__dh[1][s] * _ref->get__Gi(1, 0);
+				double _g221 = _ref->__dh[3][s] * _ref->get__Gi(0, 0);
+				double _g222 = _ref->__dh[3][s] * _ref->get__Gi(1, 0);
 
 				double _g11 = 2*_ref->get__gi(0, 0) * _ref->d1[0][s];
 				double _g12 = _ref->get__gi(0, 0) * _ref->d1[1][s]+ _ref->get__gi(1, 0) * _ref->d1[0][s];
 				double _g22 = 2 * _ref->get__gi(1, 0) * _ref->d1[1][s];
 
-				double _A1 = (g111 * v1 * w1 + g121 * (v1 * w2 + v2 * w1) + g221 * v2 * w2);
-				double _A2 = (g112 * v1 * w1 + g122 * (v1 * w2 + v2 * w1) + g222 * v2 * w2);
+				double _A1 = (_g111 * v1 * w1 + _g121 * (v1 * w2 + v2 * w1) + _g221 * v2 * w2);
+				double _A2 = (_g112 * v1 * w1 + _g122 * (v1 * w2 + v2 * w1) + _g222 * v2 * w2);
 
 				double _S1 = _g11 * s1 + _g12 * s2;
 				double _S2 = _g12 * s1 + _g22 * s2;
@@ -5763,19 +5763,19 @@ namespace KingOfMonsters {
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				double g111 = _ref->__dh[0][s] * _ref->get__Gi(0, 1);
-				double g112 = _ref->__dh[0][s] * _ref->get__Gi(1, 1);
-				double g121 = _ref->__dh[1][s] * _ref->get__Gi(0, 1);
-				double g122 = _ref->__dh[1][s] * _ref->get__Gi(1, 1);
-				double g221 = _ref->__dh[3][s] * _ref->get__Gi(0, 1);
-				double g222 = _ref->__dh[3][s] * _ref->get__Gi(1, 1);
+				double _g111 = _ref->__dh[0][s] * _ref->get__Gi(0, 1);
+				double _g112 = _ref->__dh[0][s] * _ref->get__Gi(1, 1);
+				double _g121 = _ref->__dh[1][s] * _ref->get__Gi(0, 1);
+				double _g122 = _ref->__dh[1][s] * _ref->get__Gi(1, 1);
+				double _g221 = _ref->__dh[3][s] * _ref->get__Gi(0, 1);
+				double _g222 = _ref->__dh[3][s] * _ref->get__Gi(1, 1);
 
 				double _g11 = 2 * _ref->get__gi(0, 1) * _ref->d1[0][s];
 				double _g12 = _ref->get__gi(0, 1) * _ref->d1[1][s] + _ref->get__gi(1, 1) * _ref->d1[0][s];
 				double _g22 = 2 * _ref->get__gi(1, 1) * _ref->d1[1][s];
 
-				double _A1 = (g111 * v1 * w1 + g121 * (v1 * w2 + v2 * w1) + g221 * v2 * w2);
-				double _A2 = (g112 * v1 * w1 + g122 * (v1 * w2 + v2 * w1) + g222 * v2 * w2);
+				double _A1 = (_g111 * v1 * w1 + _g121 * (v1 * w2 + v2 * w1) + _g221 * v2 * w2);
+				double _A2 = (_g112 * v1 * w1 + _g122 * (v1 * w2 + v2 * w1) + _g222 * v2 * w2);
 
 				double _S1 = _g11 * s1 + _g12 * s2;
 				double _S2 = _g12 * s1 + _g22 * s2;
