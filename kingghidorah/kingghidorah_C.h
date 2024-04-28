@@ -4,6 +4,8 @@
 using namespace System;
 #include <cstring>
 using std::vector;
+#include "mySparseLibrary.h"
+#include "kingghidorah_S.h"
 namespace KingOfMonsters {
 	public class _memC_ref {
 	public:
@@ -642,8 +644,8 @@ namespace KingOfMonsters {
 			double vy = this->get_gt2(1);
 			double wx = other->get_gt2(0);
 			double wy = other->get_gt2(1);
-			double lv = _ref->_refDv;
-			double lw = other->_ref->_refDv;
+			double lv = _dv;
+				double lw = other->_dv;
 			double val = (vx * wx + vy * wy) /(lv*lw);
 			return val;
 		}
@@ -708,7 +710,7 @@ namespace KingOfMonsters {
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				double _wx = d1[s];
+				double _wx = other->d1[s];
 				double _wy = 0;
 				double _gtt = 2 * other->d1[s] * other->get_gt2(0);
 				double _gamma = 0.5 * _gtt * other->get_Gtt2() * sqrt(other->get_gtt2());
@@ -731,7 +733,7 @@ namespace KingOfMonsters {
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				double _wx = 0;
-				double _wy = d1[s];
+				double _wy = other->d1[s];
 				double _gtt = 2 * other->d1[s] * other->get_gt2(1);
 				double _gamma = 0.5 * _gtt * other->get_Gtt2() * sqrt(other->get_gtt2());
 				double val = (vx * _wx + vy * _wy) / (lv * lw);

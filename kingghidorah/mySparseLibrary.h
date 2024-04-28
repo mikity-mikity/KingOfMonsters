@@ -1268,8 +1268,15 @@ namespace KingOfMonsters {
 		void split(Int64 S)
 		{
 			Int64 C = this->dat->_dmat.cols();
-			this->dat->_dmat.topRightCorner(C - S, C - S).setZero();
-			this->dat->_dmat.bottomLeftCorner(C - S, C - S).setZero();
+			this->dat->_dmat.topRightCorner(S, C - S).setZero();
+			this->dat->_dmat.bottomLeftCorner(C - S, S).setZero();
+		}
+		void split2(Int64 S)
+		{
+			Int64 C = this->dat->_dmat.cols();
+			this->dat->_dmat.topRightCorner(S, C - S).setZero();
+			this->dat->_dmat.bottomLeftCorner(C - S, S).setZero();
+			this->dat->_dmat.bottomRightCorner(C - S, C - S).setZero();
 		}
 		void __shrink(Int64 M, Int64 N)
 		{
