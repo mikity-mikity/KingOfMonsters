@@ -130,7 +130,9 @@ namespace KingOfMonsters {
 		double Gij[1];
 		double Gij2[1];
 		double bij[3];
+		double bij2[3];
 		double Gammaijk[1];
+		double Gammaijk2[1];
 		double _ss[4];
 		double _Sij[1];
 		double N[3], H[3];
@@ -426,7 +428,8 @@ namespace KingOfMonsters {
 				ptr2++;
 				fy += *ptr * *ptr2;
 				ptr2++;
-				fz += *ptr * *ptr2;
+				//fz += *ptr * *ptr2;
+				fz += *ptr * _ref->buf_z[i];
 				ptr2++;
 				ptr++;
 			}
@@ -476,15 +479,20 @@ namespace KingOfMonsters {
 				ptr2++;
 				fy += *ptr * *ptr2;
 				ptr2++;
-				fz += *ptr * *ptr2;
+				//fz += *ptr * *ptr2;
+				fz += *ptr * _ref->buf_z[i];
 				ptr2++;
 				ptr++;
 			}
 			bij[0] = fx;
 			bij[1] = fy;
 			bij[2] = fz;
+			bij2[0] = fx;
+			bij2[1] = fy;
+			bij2[2] = 0;
 			ptr = bij;
-			Gammaijk[0] = bij[0] * get_Gt(0) + bij[1] * get_Gt(1) +bij[2] * get_Gt(2);
+			Gammaijk[0] = bij[0] * get_Gt(0) + bij[1] * get_Gt(1) + bij[2] * get_Gt(2);
+			Gammaijk2[0] = bij2[0] * get_Gt2(0) + bij2[1] * get_Gt2(1);
 			double gx = get_gt(0);
 			double gy = get_gt(1);
 			double gz = get_gt(2);
@@ -640,70 +648,129 @@ namespace KingOfMonsters {
 
 		double angle(_memC* other)
 		{
-			double vx = this->get_gt2(0);
-			double vy = this->get_gt2(1);
-			double wx = other->get_gt2(0);
-			double wy = other->get_gt2(1);
+			double vx = this->get_gt(0);
+			double vy = this->get_gt(1);
+			double vz = 0;// this->get_gt2(2);
+			double wx = other->get_gt(0);
+			double wy = other->get_gt(1);
+			double wz = 0;// other->get_gt2(2);
 			double lv = _dv;
-				double lw = other->_dv;
-			double val = (vx * wx + vy * wy) /(lv*lw);
+			double lw = other->_dv;
+			
+			double val = (vx * wx + vy * wy+vz*wz) /(lv*lw);
 			return val;
 		}
-		void angle_u1(_memC* other,double *ptr)
+		/*void angle_z1(_memC* other, double* ptr)
 		{
-
-			double vx = this->get_gt2(0);
-			double vy = this->get_gt2(1);
-			double wx = other->get_gt2(0);
-			double wy = other->get_gt2(1);
+			double vx = this->get_gt(0);
+			double vy = this->get_gt(1);
+			double vz = 0;// this->get_gt2(2);
+			double wx = other->get_gt(0);
+			double wy = other->get_gt(1);
+			double wz = 0;// other->get_gt2(2);
 			double lv = _dv;
 			double lw = other->_dv;
-
-			double* ptr1 = ptr;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				double _vx = d1[s];
-				double _vy = 0;
-				double _gtt =2*d1[s] * this->get_gt2(0);
-				double _gamma = 0.5 * _gtt *get_Gtt2() * sqrt(get_gtt2());
-				double val = (_vx * wx + _vy * wy) / (lv * lw);
-					val += -(vx * wx + vy * wy) /(lv * lv * lw) * _gamma;
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
-		void angle_v1(_memC* other, double* ptr)
-		{
-
-			double vx = this->get_gt2(0);
-			double vy = this->get_gt2(1);
-			double wx = other->get_gt2(0);
-			double wy = other->get_gt2(1);
-			double lv = _dv;
-			double lw = other->_dv;
+			
 
 
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				double _vx = 0;
-				double _vy = d1[s];
-				double _gtt = 2 * d1[s] * this->get_gt2(1);
+				double _vy = 0;
+				double _vz = d1[s];
+				double _gtt = 2 * d1[s] * this->get_gt2(2);
 				double _gamma = 0.5 * _gtt * get_Gtt2() * sqrt(get_gtt2());
-				double val = (_vx * wx + _vy * wy) / (lv * lw);
-				val += -(vx * wx + vy * wy) / (lv * lv * lw) * _gamma;
+				double val = (_vx * wx + _vy * wy +_vz*wz) / (lv * lw);
+				val += -(vx * wx + vy * wy+vz*wz) / (lv * lv * lw) * _gamma;
 				*ptr1 = val;
 				ptr1++;
 			}
-				
-		}
+		}*/
+		void angle_u1(_memC* other,double *ptr)
+		{
+			double vx = this->get_gt(0);
+			double vy = this->get_gt(1);
+			double vz = 0;// this->get_gt2(2);
+			double wx = other->get_gt(0);
+			double wy = other->get_gt(1);
+			double wz = 0;// other->get_gt2(2);
+			double lv = _dv;
+			double lw = other->_dv;
 
+
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _vx = d1[s];
+				double _vy = 0;
+				double _vz = 0;
+				double _gtt = 2 * d1[s] * this->get_gt(0);
+				double _gamma = 0.5 * _gtt * get_Gtt() * sqrt(get_gtt());
+				double val = (_vx * wx + _vy * wy + _vz * wz) / (lv * lw);
+				val += -(vx * wx + vy * wy + vz * wz) / (lv * lv * lw) * _gamma;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		void angle_v1(_memC* other, double* ptr)
+		{
+			double vx = this->get_gt(0);
+			double vy = this->get_gt(1);
+			double vz = 0;// this->get_gt2(2);
+			double wx = other->get_gt(0);
+			double wy = other->get_gt(1);
+			double wz = 0;// other->get_gt2(2);
+			double lv = _dv;
+			double lw = other->_dv;
+
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _vx = 0;
+				double _vy = d1[s];
+				double _vz = 0;
+				double _gtt = 2 * d1[s] * this->get_gt(1);
+				double _gamma = 0.5 * _gtt * get_Gtt() * sqrt(get_gtt());
+				double val = (_vx * wx + _vy * wy + _vz * wz) / (lv * lw);
+				val += -(vx * wx + vy * wy + vz * wz) / (lv * lv * lw) * _gamma;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		/*void angle_z2(_memC* other, double* ptr)
+		{
+			double vx = this->get_gt(0);
+			double vy = this->get_gt(1);
+			double vz = 0;// this->get_gt2(2);
+			double wx = other->get_gt(0);
+			double wy = other->get_gt(1);
+			double wz = 0;// other->get_gt2(2);
+			double lv = _dv;
+			double lw = other->_dv;
+
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _wx = 0;
+				double _wy = 0;
+				double _wz = other->d1[s];
+				double _gtt = 2 * other->d1[s] * other->get_gt(2);
+				double _gamma = 0.5 * _gtt * other->get_Gtt() * sqrt(other->get_gtt());
+				double val = (vx * _wx + vy * _wy + vz * _wz) / (lv * lw);
+				val += -(vx * wx + vy * wy + vz * wz) / (lv * lw * lw) * _gamma;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}*/
 		void angle_u2(_memC* other, double* ptr)
 		{
-			double vx = this->get_gt2(0);
-			double vy = this->get_gt2(1);
-			double wx = other->get_gt2(0);
-			double wy = other->get_gt2(1);
+			double vx = this->get_gt(0);
+			double vy = this->get_gt(1);
+			double vz = 0;// this->get_gt2(2);
+			double wx = other->get_gt(0);
+			double wy = other->get_gt(1);
+			double wz = 0;// other->get_gt2(2);
 			double lv = _dv;
 			double lw = other->_dv;
 
@@ -712,20 +779,25 @@ namespace KingOfMonsters {
 			{
 				double _wx = other->d1[s];
 				double _wy = 0;
-				double _gtt = 2 * other->d1[s] * other->get_gt2(0);
-				double _gamma = 0.5 * _gtt * other->get_Gtt2() * sqrt(other->get_gtt2());
-				double val = (vx * _wx + vy * _wy) / (lv * lw);
-				val += -(vx * wx + vy * wy) / (lv * lw * lw) * _gamma;
+				double _wz = 0;
+				double _gtt = 2 * other->d1[s] * other->get_gt(0);
+				double _gamma = 0.5 * _gtt * other->get_Gtt() * sqrt(other->get_gtt());
+				double val = (vx * _wx + vy * _wy + vz * _wz) / (lv * lw);
+				val += -(vx * wx + vy * wy + vz * wz) / (lv * lw * lw) * _gamma;
 				*ptr1 = val;
 				ptr1++;
 			}
 		}
+
+
 		void angle_v2(_memC* other, double* ptr)
 		{
-			double vx = this->get_gt2(0);
-			double vy = this->get_gt2(1);
-			double wx = other->get_gt2(0);
-			double wy = other->get_gt2(1);
+			double vx = this->get_gt(0);
+			double vy = this->get_gt(1);
+			double vz = 0;// this->get_gt2(2);
+			double wx = other->get_gt(0);
+			double wy = other->get_gt(1);
+			double wz = 0;// other->get_gt2(2);
 			double lv = _dv;
 			double lw = other->_dv;
 
@@ -734,10 +806,11 @@ namespace KingOfMonsters {
 			{
 				double _wx = 0;
 				double _wy = other->d1[s];
-				double _gtt = 2 * other->d1[s] * other->get_gt2(1);
-				double _gamma = 0.5 * _gtt * other->get_Gtt2() * sqrt(other->get_gtt2());
-				double val = (vx * _wx + vy * _wy) / (lv * lw);
-				val += -(vx * wx + vy * wy) / (lv * lw * lw) * _gamma;
+				double _wz = 0;
+				double _gtt = 2 * other->d1[s] * other->get_gt(1);
+				double _gamma = 0.5 * _gtt * other->get_Gtt() * sqrt(other->get_gtt());
+				double val = (vx * _wx + vy * _wy + vz * _wz) / (lv * lw);
+				val += -(vx * wx + vy * wy + vz * wz) / (lv * lw * lw) * _gamma;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -1277,12 +1350,12 @@ namespace KingOfMonsters {
 
 			__mem->refDv = dv;
 			__mem->_refDv = _dv;
-			std::memcpy(__mem->_gi, gi, sizeof(double) * 3);
+			std::memcpy(__mem->_gi, gi2, sizeof(double) * 3);
 			std::memcpy(__mem->_Gi, Gi2, sizeof(double) * 3);
-			std::memcpy(__mem->_gij, gij, sizeof(double) * 1);
+			std::memcpy(__mem->_gij, gij2, sizeof(double) * 1);
 			std::memcpy(__mem->_Gij, Gij2, sizeof(double) * 1);
-			std::memcpy(__mem->_bij, bij, sizeof(double) * 3);
-			std::memcpy(__mem->_Gammaijk, Gammaijk, sizeof(double) * 1);
+			std::memcpy(__mem->_bij, bij2, sizeof(double) * 3);
+			std::memcpy(__mem->_Gammaijk, Gammaijk2, sizeof(double) * 1);
 			std::memcpy(__mem->_Sij, _Sij, sizeof(double) * 1);
 		}
 	};
@@ -1531,6 +1604,11 @@ namespace KingOfMonsters {
 		{
 			return this->__mem->angle(other->__mem);
 		}
+		/*void angle_z1(mySparse^ mat, memC^ other, myIntArray^ index, int ii, double sc, double coeff, Int64 shift)
+		{
+			this->__mem->angle_z1(other->__mem, this->__mem->__grad);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_ref->_nNode, true, coeff);
+		}*/
 		void angle_u1(mySparse^ mat, memC^ other, myIntArray^ index, int ii, double sc, double coeff,Int64 shift)
 		{
 			this->__mem->angle_u1(other->__mem, this->__mem->__grad);
@@ -1541,6 +1619,11 @@ namespace KingOfMonsters {
 			this->__mem->angle_v1(other->__mem, this->__mem->__grad);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_ref->_nNode, false, coeff);
 		}
+		/*void angle_z2(mySparse^ mat, memC^ other, myIntArray^ index, int ii, double sc, double coeff, Int64 shift)
+		{
+			this->__mem->angle_z2(other->__mem, this->__mem->__grad);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_ref->_nNode, false, coeff);
+		}*/
 		void angle_u2(mySparse^ mat, memC^ other, myIntArray^ index, int ii, double sc, double coeff, Int64 shift)
 		{
 			this->__mem->angle_u2(other->__mem, this->__mem->__grad);
