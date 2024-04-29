@@ -5718,15 +5718,15 @@ namespace KingOfMonsters {
 				double _lengthS = 0.5 / lengthS * (s1 * s1 * _g11 + 2 * s1 * s2 * _g12 + s2 * s2 * _g22);
 				double _V1 = -v1 / lengthV / lengthV * _lengthV;
 				double _V2 = -v2 / lengthV / lengthV * _lengthV;
-				double _W1 = -v1 / lengthW / lengthW * _lengthW;
-				double _W2 = -v2 / lengthW / lengthW * _lengthW;
-				double _S1 = -v1 / lengthS / lengthS * _lengthS;
-				double _S2 = -v2 / lengthS / lengthS * _lengthS;
+				double _W1 = -w1 / lengthW / lengthW * _lengthW;
+				double _W2 = -w2 / lengthW / lengthW * _lengthW;
+				double _S1 = -s1 / lengthS / lengthS * _lengthS;
+				double _S2 = -s2 / lengthS / lengthS * _lengthS;
 
 				double _A1 = (_g111 * V1 * W1 + _g121 * (V1 * W2 + V2 * W1) + _g221 * V2 * W2);
 				double _A2 = (_g112 * V1 * W1 + _g122 * (V1 * W2 + V2 * W1) + _g222 * V2 * W2);
-				_A1 += g111 * (_V1 * W1 + V1 * _W1) + g121 * (_V1 * W1 + v1 * _W2 + _V2 * W1 + V2 * _W2) + g221 * (_V2 * W2 + V2 * _W2);
-				_A2 += g112 * (_V1 * W1 + V1 * _W1) + g122 * (_V1 * W1 + v1 * _W2 + _V2 * W1 + V2 * _W2) + g222 * (_V2 * W2 + V2 * _W2);
+				_A1 += g111 * (_V1 * W1 + V1 * _W1) + g121 * (_V1 * W2 + V1 * _W2 + _V2 * W1 + V2 * _W1) + g221 * (_V2 * W2 + V2 * _W2);
+				_A2 += g112 * (_V1 * W1 + V1 * _W1) + g122 * (_V1 * W2 + V1 * _W2 + _V2 * W1 + V2 * _W1) + g222 * (_V2 * W2 + V2 * _W2);
 				double _SS1 = _g11 * S1 + _g12 * S2;
 				double _SS2 = _g12 * S1 + _g22 * S2;
 
@@ -5787,15 +5787,15 @@ namespace KingOfMonsters {
 				double _lengthS = 0.5 / lengthS * (s1 * s1 * _g11 + 2 * s1 * s2 * _g12 + s2 * s2 * _g22);
 				double _V1 = -v1 / lengthV / lengthV * _lengthV;
 				double _V2 = -v2 / lengthV / lengthV * _lengthV;
-				double _W1 = -v1 / lengthW / lengthW * _lengthW;
-				double _W2 = -v2 / lengthW / lengthW * _lengthW;
-				double _S1 = -v1 / lengthS / lengthS * _lengthS;
-				double _S2 = -v2 / lengthS / lengthS * _lengthS;
+				double _W1 = -w1 / lengthW / lengthW * _lengthW;
+				double _W2 = -w2 / lengthW / lengthW * _lengthW;
+				double _S1 = -s1 / lengthS / lengthS * _lengthS;
+				double _S2 = -s2 / lengthS / lengthS * _lengthS;
 
 				double _A1 = (_g111 * V1 * W1 + _g121 * (V1 * W2 + V2 * W1) + _g221 * V2 * W2);
 				double _A2 = (_g112 * V1 * W1 + _g122 * (V1 * W2 + V2 * W1) + _g222 * V2 * W2);
-				_A1 += g111 * (_V1 * W1 + V1 * _W1) + g121 * (_V1 * W1 + v1 * _W2 + _V2 * W1 + V2 * _W2) + g221 * (_V2 * W2 + V2 * _W2);
-				_A2 += g112 * (_V1 * W1 + V1 * _W1) + g122 * (_V1 * W1 + v1 * _W2 + _V2 * W1 + V2 * _W2) + g222 * (_V2 * W2 + V2 * _W2);
+				_A1 += g111 * (_V1 * W1 + V1 * _W1) + g121 * (_V1 * W2 + V1 * _W2 + _V2 * W1 + V2 * _W1) + g221 * (_V2 * W2 + V2 * _W2);
+				_A2 += g112 * (_V1 * W1 + V1 * _W1) + g122 * (_V1 * W2 + V1 * _W2 + _V2 * W1 + V2 * _W1) + g222 * (_V2 * W2 + V2 * _W2);
 				double _SS1 = _g11 * S1 + _g12 * S2;
 				double _SS2 = _g12 * S1 + _g22 * S2;
 
@@ -7149,18 +7149,13 @@ namespace KingOfMonsters {
 				g2y += _ref->d1[1][t] * _ref->node[t * 3 + 1];
 
 			}
-			b11 = g1x * _ref->_ogi[0] + g1y * _ref->_ogi[1];
-			b12 = g1x * _ref->_ogi[3] + g1y * _ref->_ogi[4];
-			b21 = g2x * _ref->_ogi[0] + g2y * _ref->_ogi[1];
-			b22 = g2x * _ref->_ogi[3] + g2y * _ref->_ogi[4];
+			b11 = g1x * g1x + g1y * g1y;
+			b12 = g1x * g2x + g1y * g2y;
+			b21 = b12;
+			b22 = g2x * g2x + g2y * g2y;
 
-			double B11 = b11 * 2;
-			double B12 = b12 + b21;
-			double B22 = b22 * 2;
-			double B21 = B12;
 	
-	
-			double val = B11 * v1 * w1 + B12 * v1 * w2 + B21 * v2 * w1 + B22 * v2 * w2;
+			double val = b11 * v1 * w1 + b12 * v1 * w2 + b21 * v2 * w1 + b22 * v2 * w2;
 			return val;
 		}
 		void ortho2_x(double* ptr, double v1, double v2, double w1, double w2)
@@ -7177,16 +7172,12 @@ namespace KingOfMonsters {
 		
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				double _b11 = _ref->d1[0][s] * _ref->_ogi[0];// +g1y * _ref->_ogi[1];
-				double _b12 = _ref->d1[0][s] * _ref->_ogi[3];// +g1y * _ref->_ogi[3];
-				double _b21 = _ref->d1[1][s] * _ref->_ogi[0];// + g2y * _ref->_ogi[1];
-				double _b22 = _ref->d1[1][s] * _ref->_ogi[3];// + g2y * _ref->_ogi[3];
-				double _B11 = _b11 * 2;
-				double _B12 = _b12 + _b21;
-				double _B22 = _b22 * 2;
-				double _B21 = _B12;
+				double _b11 = 2*_ref->d1[0][s] * _ref->get__gi(0,0);// +g1y * _ref->_ogi[1];
+				double _b12 = _ref->d1[0][s] * _ref->get__gi(1, 0)+ _ref->d1[1][s] * _ref->get__gi(0, 0);// +g1y * _ref->_ogi[3];
+				double _b21 = _b12;// + g2y * _ref->_ogi[1];
+				double _b22 = 2*_ref->d1[1][s] * _ref->get__gi(1, 0);// + g2y * _ref->_ogi[3];
 
-				double val = _B11 * v1 * w1 + _B12 * v1 * w2 + _B21 * v2 * w1 + _B22 * v2 * w2;
+				double val = _b11 * v1 * w1 + _b12 * v1 * w2 + _b21 * v2 * w1 + _b22 * v2 * w2;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -7205,16 +7196,12 @@ namespace KingOfMonsters {
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				double _b11 = _ref->d1[0][s] * _ref->_ogi[1];// +g1y * _ref->_ogi[1];
-				double _b12 = _ref->d1[0][s] * _ref->_ogi[4];// +g1y * _ref->_ogi[3];
-				double _b21 = _ref->d1[1][s] * _ref->_ogi[1];// + g2y * _ref->_ogi[1];
-				double _b22 = _ref->d1[1][s] * _ref->_ogi[4];// + g2y * _ref->_ogi[3];
-				double _B11 = _b11 * 2;
-				double _B12 = _b12 + _b21;
-				double _B22 = _b22 * 2;
-				double _B21 = _B12;
+				double _b11 = 2*_ref->d1[0][s] * _ref->get__gi(0, 1);// +g1y * _ref->_ogi[1];
+				double _b12 = _ref->d1[0][s] * _ref->get__gi(1, 1)+ _ref->d1[1][s] * _ref->get__gi(0, 1);// +g1y * _ref->_ogi[3];
+				double _b21 = _b12;// + g2y * _ref->_ogi[1];
+				double _b22 = 2*_ref->d1[1][s] * _ref->get__gi(1, 1);// + g2y * _ref->_ogi[3];
 
-				double val = _B11 * v1 * w1 + _B12 * v1 * w2 + _B21 * v2 * w1 + _B22 * v2 * w2;
+				double val = _b11 * v1 * w1 + _b12 * v1 * w2 + _b21 * v2 * w1 + _b22 * v2 * w2;
 				*ptr1 = val;
 				ptr1++;
 			}
