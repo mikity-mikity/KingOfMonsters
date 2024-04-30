@@ -648,12 +648,12 @@ namespace KingOfMonsters {
 
 		double angle(_memC* other)
 		{
-			double vx = this->get_gt(0);
-			double vy = this->get_gt(1);
-			double vz = 0;// this->get_gt2(2);
-			double wx = other->get_gt(0);
-			double wy = other->get_gt(1);
-			double wz = 0;// other->get_gt2(2);
+			double vx = this->get_gt2(0);
+			double vy = this->get_gt2(1);
+			double vz = this->get_gt2(2);
+			double wx = other->get_gt2(0);
+			double wy = other->get_gt2(1);
+			double wz = other->get_gt2(2);
 			double lv = _dv;
 			double lw = other->_dv;
 			
@@ -689,11 +689,11 @@ namespace KingOfMonsters {
 		}*/
 		void angle_u1(_memC* other,double *ptr)
 		{
-			double vx = this->get_gt(0);
-			double vy = this->get_gt(1);
+			double vx = this->get_gt2(0);
+			double vy = this->get_gt2(1);
 			double vz = 0;// this->get_gt2(2);
-			double wx = other->get_gt(0);
-			double wy = other->get_gt(1);
+			double wx = other->get_gt2(0);
+			double wy = other->get_gt2(1);
 			double wz = 0;// other->get_gt2(2);
 			double lv = _dv;
 			double lw = other->_dv;
@@ -705,8 +705,8 @@ namespace KingOfMonsters {
 				double _vx = d1[s];
 				double _vy = 0;
 				double _vz = 0;
-				double _gtt = 2 * d1[s] * this->get_gt(0);
-				double _gamma = 0.5 * _gtt * get_Gtt() * sqrt(get_gtt());
+				double _gtt = 2 * d1[s] * this->get_gt2(0);
+				double _gamma = 0.5 * _gtt * get_Gtt2() * sqrt(get_gtt2());
 				double val = (_vx * wx + _vy * wy + _vz * wz) / (lv * lw);
 				val += -(vx * wx + vy * wy + vz * wz) / (lv * lv * lw) * _gamma;
 				*ptr1 = val;
@@ -715,11 +715,11 @@ namespace KingOfMonsters {
 		}
 		void angle_v1(_memC* other, double* ptr)
 		{
-			double vx = this->get_gt(0);
-			double vy = this->get_gt(1);
+			double vx = this->get_gt2(0);
+			double vy = this->get_gt2(1);
 			double vz = 0;// this->get_gt2(2);
-			double wx = other->get_gt(0);
-			double wy = other->get_gt(1);
+			double wx = other->get_gt2(0);
+			double wy = other->get_gt2(1);
 			double wz = 0;// other->get_gt2(2);
 			double lv = _dv;
 			double lw = other->_dv;
@@ -730,8 +730,8 @@ namespace KingOfMonsters {
 				double _vx = 0;
 				double _vy = d1[s];
 				double _vz = 0;
-				double _gtt = 2 * d1[s] * this->get_gt(1);
-				double _gamma = 0.5 * _gtt * get_Gtt() * sqrt(get_gtt());
+				double _gtt = 2 * d1[s] * this->get_gt2(1);
+				double _gamma = 0.5 * _gtt * get_Gtt2() * sqrt(get_gtt2());
 				double val = (_vx * wx + _vy * wy + _vz * wz) / (lv * lw);
 				val += -(vx * wx + vy * wy + vz * wz) / (lv * lv * lw) * _gamma;
 				*ptr1 = val;
@@ -765,11 +765,11 @@ namespace KingOfMonsters {
 		}*/
 		void angle_u2(_memC* other, double* ptr)
 		{
-			double vx = this->get_gt(0);
-			double vy = this->get_gt(1);
+			double vx = this->get_gt2(0);
+			double vy = this->get_gt2(1);
 			double vz = 0;// this->get_gt2(2);
-			double wx = other->get_gt(0);
-			double wy = other->get_gt(1);
+			double wx = other->get_gt2(0);
+			double wy = other->get_gt2(1);
 			double wz = 0;// other->get_gt2(2);
 			double lv = _dv;
 			double lw = other->_dv;
@@ -780,8 +780,8 @@ namespace KingOfMonsters {
 				double _wx = other->d1[s];
 				double _wy = 0;
 				double _wz = 0;
-				double _gtt = 2 * other->d1[s] * other->get_gt(0);
-				double _gamma = 0.5 * _gtt * other->get_Gtt() * sqrt(other->get_gtt());
+				double _gtt = 2 * other->d1[s] * other->get_gt2(0);
+				double _gamma = 0.5 * _gtt * other->get_Gtt2() * sqrt(other->get_gtt2());
 				double val = (vx * _wx + vy * _wy + vz * _wz) / (lv * lw);
 				val += -(vx * wx + vy * wy + vz * wz) / (lv * lw * lw) * _gamma;
 				*ptr1 = val;
@@ -792,11 +792,11 @@ namespace KingOfMonsters {
 
 		void angle_v2(_memC* other, double* ptr)
 		{
-			double vx = this->get_gt(0);
-			double vy = this->get_gt(1);
+			double vx = this->get_gt2(0);
+			double vy = this->get_gt2(1);
 			double vz = 0;// this->get_gt2(2);
-			double wx = other->get_gt(0);
-			double wy = other->get_gt(1);
+			double wx = other->get_gt2(0);
+			double wy = other->get_gt2(1);
 			double wz = 0;// other->get_gt2(2);
 			double lv = _dv;
 			double lw = other->_dv;
@@ -807,8 +807,8 @@ namespace KingOfMonsters {
 				double _wx = 0;
 				double _wy = other->d1[s];
 				double _wz = 0;
-				double _gtt = 2 * other->d1[s] * other->get_gt(1);
-				double _gamma = 0.5 * _gtt * other->get_Gtt() * sqrt(other->get_gtt());
+				double _gtt = 2 * other->d1[s] * other->get_gt2(1);
+				double _gamma = 0.5 * _gtt * other->get_Gtt2() * sqrt(other->get_gtt2());
 				double val = (vx * _wx + vy * _wy + vz * _wz) / (lv * lw);
 				val += -(vx * wx + vy * wy + vz * wz) / (lv * lw * lw) * _gamma;
 				*ptr1 = val;
