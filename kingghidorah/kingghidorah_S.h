@@ -4082,20 +4082,7 @@ namespace KingOfMonsters {
 			return _K_phi[l];// val;
 		}
 
-		void laplacian(_mySparse* mat, int64_t* index, double sc)
-		{
-			for (int i = 0; i < _nNode; i++)
-			{
-				int I = index[i];
-				for (int j = 0; j < _nNode; j++)
-				{
-					int J = index[j];
-					int e = i * _nNode + j;
-					double val = 0.5 * (_ref->get__Gij(0, 0) * _ref->B[0][e] + 2 * _ref->get__Gij(0, 1) * _ref->B[1][e] + _ref->get__Gij(1, 1) * _ref->B[3][e]);
-					mat->adddat(I, J, val * sc);
-				}
-			}
-		}
+
 		//stress function
 		double F(int i, int j) {
 			int e = i * _nNode + j;
@@ -4913,7 +4900,6 @@ namespace KingOfMonsters {
 				+ _ref->_Sij[3] * bij11;
 
 		}
-		
 		//body force term reference
 		double G(int i) {
 			return _ref->d0[i] * _ref->refDv;
@@ -16319,10 +16305,7 @@ namespace KingOfMonsters {
 				__mem->D_phi_z(mat->dat, index->_arr, N, map->_arr, sc);
 		}
 
-		void laplacian(mySparse^ mat, myIntArray^ index, double sc)
-		{
-			__mem->laplacian(mat->dat, index->_arr, sc);
-		}
+		
 		
 		double guideBC( double v1,double v2,bool accurate)
 		{
@@ -17229,21 +17212,6 @@ namespace KingOfMonsters {
 			void fair2_v(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, double w1, double w2, double s1, double s2)
 			{
 				__mem->fair2_v(__mem->__grad, v1, v2, w1, w2, s1, s2);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
-			}
-			double fair3(double v1, double v2)
-			{
-
-				return __mem->fair3(v1, v2);
-			}
-			void fair3_u(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2)
-			{
-				__mem->fair3_u(__mem->__grad, v1, v2);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad, sc, __mem->_nNode, c1);
-			}
-			void fair3_v(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2)
-			{
-				__mem->fair3_v(__mem->__grad, v1, v2);
 				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
 			}
 		double st2(double t1,double t2,double n1,double n2)
