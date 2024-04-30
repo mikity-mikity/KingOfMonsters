@@ -645,48 +645,15 @@ namespace KingOfMonsters {
 			return m[0];
 		}
 	public:
-		double __length()
-		{
-			return _dv;
-		}
-		void __length_u(double* ptr)
-		{
-			double* ptr1 = ptr;
-			double val = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				double _g11 = 2 * (d1[s] * get_gt2(0));
-				
 
-				val = 0.5 * (_g11 * get_Gtt2()) * _dv;
-				*ptr1 = val;
-				ptr1++;
-			}
-
-		}
-		void __length_v(double* ptr)
-		{
-			double* ptr1 = ptr;
-			double val = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				double _g11 = 2 * (d1[s] * get_gt2(1));
-
-
-				val = 0.5 * (_g11 * get_Gtt2()) * _dv;
-				*ptr1 = val;
-				ptr1++;
-			}
-
-		}
 		double angle(_memC* other)
 		{
 			double vx = this->get_gt2(0);
 			double vy = this->get_gt2(1);
-			double vz = 0;// this->get_gt2(2);
+			double vz = this->get_gt2(2);
 			double wx = other->get_gt2(0);
 			double wy = other->get_gt2(1);
-			double wz = 0;// other->get_gt2(2);
+			double wz = other->get_gt2(2);
 			double lv = _dv;
 			double lw = other->_dv;
 			
@@ -1632,20 +1599,6 @@ namespace KingOfMonsters {
 		}
 		void L(double val1) {
 			__mem->set_L(val1);
-		}
-		double length()
-		{
-			return __mem->__length();
-		}
-		void length_u(mySparse^ mat, myIntArray^ index, int ii, double sc, double coeff)
-		{
-			this->__mem->__length_u(this->__mem->__grad);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad , 0, sc, __mem->_ref->_nNode, true, coeff);
-		}
-		void length_v(mySparse^ mat, myIntArray^ index, int ii, double sc, double coeff)
-		{
-			this->__mem->__length_v(this->__mem->__grad);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_ref->_nNode, false, coeff);
 		}
 		double angle(memC^ other)
 		{
