@@ -96,12 +96,12 @@ namespace KingOfMonsters {
 		double** d1 = 0; //2
 		double** d2 = 0; //4
 		double** d2_star = 0;  //4
-		double** d3 = 0;
+		//double** d3 = 0;
 		double** B = 0; //4
 		double** tt0 = 0, ** hh0 = 0;//2
 		double** tt1 = 0, ** hh1 = 0; //4
 		double** tt2 = 0, ** hh2 = 0;//8
-		double** tt3 = 0, ** hh3 = 0;//8
+		//double** tt3 = 0, ** hh3 = 0;//8
 
 	public:
 		bool initialized = false;
@@ -238,7 +238,7 @@ namespace KingOfMonsters {
 			d1 = 0;
 			d2 = 0;
 			d2_star = 0;
-			d3 = 0;
+			//d3 = 0;
 			/*d1[0] = 0;
 			d1[1] = 0;
 			d2[0] = 0;
@@ -264,8 +264,8 @@ namespace KingOfMonsters {
 			hh1 = 0;
 			tt2 = 0;
 			hh2 = 0;
-			tt3 = 0;
-			hh3 = 0;
+			//tt3 = 0;
+			//hh3 = 0;
 
 		}
 		~_memS_ref() {
@@ -332,7 +332,7 @@ namespace KingOfMonsters {
 					delete[] d2_star;
 					d2_star = 0;
 				}
-				if (d3 != 0)
+				/*if (d3 != 0)
 				{
 					delete[] d3[0];
 					delete[] d3[1];
@@ -343,7 +343,7 @@ namespace KingOfMonsters {
 					delete[] d3[6];
 					delete[] d3[7];
 					delete[] d3;
-				}
+				}*/
 				if (B != 0) {
 					delete[] B[0];
 					delete[] B[1];
@@ -403,7 +403,7 @@ namespace KingOfMonsters {
 					delete[] hh2;
 					hh2 = 0;
 
-					delete[] tt3[0];
+					/*delete[] tt3[0];
 					delete[] tt3[1];
 					delete[] tt3[2];
 					delete[] tt3[3];
@@ -439,7 +439,7 @@ namespace KingOfMonsters {
 					delete[] hh3[14];
 					delete[] hh3[15];
 					delete[] hh3;
-					hh3 = 0;
+					hh3 = 0;*/
 				}
 			}
 
@@ -481,7 +481,7 @@ namespace KingOfMonsters {
 					d2_star[2] = new double[nNode];
 					d2_star[3] = new double[nNode];
 
-					d3 = new double* [8];
+					/*d3 = new double* [8];
 					d3[0] = new double[nNode];
 					d3[1] = new double[nNode];
 					d3[2] = new double[nNode];
@@ -489,7 +489,7 @@ namespace KingOfMonsters {
 					d3[4] = new double[nNode];
 					d3[5] = new double[nNode];
 					d3[6] = new double[nNode];
-					d3[7] = new double[nNode];
+					d3[7] = new double[nNode];*/
 
 					B = new double* [4];
 					B[0] = new double[nNode * nNode];
@@ -535,7 +535,7 @@ namespace KingOfMonsters {
 					hh2[6] = new double[uDim];
 					hh2[7] = new double[vDim];
 
-					tt3 = new double* [16];
+					/*tt3 = new double* [16];
 					tt3[0] = new double[uDim];
 					tt3[1] = new double[vDim];
 					tt3[2] = new double[uDim];
@@ -568,7 +568,7 @@ namespace KingOfMonsters {
 					hh3[12] = new double[uDim];
 					hh3[13] = new double[vDim];
 					hh3[14] = new double[uDim];
-					hh3[15] = new double[vDim];
+					hh3[15] = new double[vDim];*/
 
 
 					M[0] = new double* [uDim];
@@ -689,7 +689,7 @@ namespace KingOfMonsters {
 		const int star2[4]{ 1,-1,-1,1 };
 		const int _star[4]{ 3,1,2,0 };
 		double* B[4];
-		double* tt0[2], * hh0[2], * tt1[4], * hh1[4], * tt2[8], * hh2[8], * tt3[16], * hh3[16];
+		double* tt0[2], * hh0[2], * tt1[4], * hh1[4], * tt2[8], * hh2[8];// , * tt3[16], * hh3[16];
 		///////shared memory//////
 
 		double* gradN[3]{ 0,0,0 };
@@ -816,12 +816,12 @@ namespace KingOfMonsters {
 		inline double& get_hh2(const int& i, const int& j, const int& k, const int& s) {
 			return _ref->hh2[(((i << 1) + j) << 1) + k][s];
 		}
-		inline double& get_hh3(const int& i, const int& j, const int& k, const int& l, const int& s) {
+		/*inline double& get_hh3(const int& i, const int& j, const int& k, const int& l, const int& s) {
 			return _ref->hh3[(((((i << 1) + j) << 1) + k)<<1)+l][s];
 		}
 		inline double& get_tt3(const int& i, const int& j, const int& k, const int& l, const int& s) {
 			return _ref->tt3[(((((i << 1) + j) << 1) + k)<<1)+l][s];
-		}
+		}*/
 
 	public:
 		inline double _pow(const double& f, const int& k) {
@@ -903,7 +903,7 @@ namespace KingOfMonsters {
 			}
 			return val;
 		}
-		double __hh3(int s, int n, int m, int j, int k) {
+		/*double __hh3(int s, int n, int m, int j, int k) {
 			double t = lo[j];//j:coordinate, k:which term in (x^3+x^2+x^1+1)
 			if (j != m && j != n&&j!=s)
 			{
@@ -933,15 +933,15 @@ namespace KingOfMonsters {
 
 			}
 			return 0;
-		}
-		double __tt3(int s, int n, int m, int j, int k) {
+		}*/
+		/*double __tt3(int s, int n, int m, int j, int k) {
 			double val = 0;
 			for (int l = 0; l < dim[j]; l++)
 			{
 				val += get_hh3(s,n, m, j, l) * _ref->M[j][l][k];
 			}
 			return val;
-		}
+		}*/
 		double _shape(int k)
 		{
 			//shape function
@@ -974,16 +974,16 @@ namespace KingOfMonsters {
 			}
 			return D;
 		}
-		double _H(int m, int n, int s, int k)
+		/*double _H(int m, int n, int s, int k)
 		{
 			//third derivatives
 			double H = 1.0;
 			for (int j = 0; j < 2; j++)
 			{
-				H *= get_tt3(m, n, s, j, _ref->dd[k][j]);
+				H *= get_tt3(m, n, s,j, _ref->dd[k][j]);
 			}
 			return H;
-		}
+		}*/
 		double _B(int i, int j, int u, int v) {
 			//対称化
 			double val = _ref->d1[i][u] * _ref->d1[j][v];
@@ -1085,7 +1085,7 @@ namespace KingOfMonsters {
 				hh2[5] = 0;
 				hh2[6] = 0;
 				hh2[7] = 0;
-				tt3[0] = 0;
+				/*tt3[0] = 0;
 				tt3[1] = 0;
 				tt3[2] = 0;
 				tt3[3] = 0;
@@ -1116,7 +1116,7 @@ namespace KingOfMonsters {
 				hh3[12] = 0;
 				hh3[13] = 0;
 				hh3[14] = 0;
-				hh3[15] = 0;
+				hh3[15] = 0;*/
 			}
 
 		}
@@ -1283,7 +1283,7 @@ namespace KingOfMonsters {
 			double* g1j = _ref->d1[0];
 			double* g2j = _ref->d1[1];
 			memset(eij, 0, sizeof(double) * 4);
-
+	
 			memset(__dsigma_11[0], 0, sizeof(double) * _nNode);
 			memset(__dsigma_11[1], 0, sizeof(double) * _nNode);
 
@@ -1384,7 +1384,7 @@ namespace KingOfMonsters {
 					etaj++;
 					nuj++;
 				}
-
+			
 				g1i++;
 				g2i++;
 				xii++;
@@ -1392,15 +1392,15 @@ namespace KingOfMonsters {
 				nui++;
 			}
 			eij[2] = eij[1];
+		
 
-
-
+	
 			Eij[0] = eij[3] * sc;
 			Eij[3] = eij[0] * sc;
 			Eij[1] = -eij[1] * sc;
 			Eij[2] = -eij[1] * sc;
-
-
+		
+			
 		}
 	
 		void update2(string __mode) {
@@ -1473,7 +1473,7 @@ namespace KingOfMonsters {
 						}
 					}
 				}
-				ptr = _ref->hh3;
+				/*ptr = _ref->hh3;
 				for (auto const& s : ___ee)
 				{
 					for (auto const& n : ___ee)
@@ -1483,7 +1483,7 @@ namespace KingOfMonsters {
 							for (auto const& j : ___ee)
 							{
 								for (int k = 0; k < dim[j]; k++) {
-									*(*ptr + k) = __hh3(s, n, m, j, k);
+									*(*ptr + k) = __hh3(s,n, m, j, k);
 									//hh2[(n * 2 + m) * 2 + j][k] = __hh2(n, m, j, k);
 								}
 								ptr++;
@@ -1508,7 +1508,7 @@ namespace KingOfMonsters {
 							}
 						}
 					}
-				}
+				}*/
 
 				double* ptr2;
 				ptr2 = _ref->d0;
@@ -1553,22 +1553,7 @@ namespace KingOfMonsters {
 						ptr++;
 					}
 				}
-				ptr = _ref->d3;
-				for (auto const& i : ___ee) {
-					for (auto const& ii : ___ee) {
-						for (auto const& iii : ___ee) {
-							ptr2 = *ptr;
-							for (int j = 0; j < _nNode; j++) {
-								//d2[i * 2 + ii][j] = _D(i, ii, j);
-								//*ptr2 = _ref->buf_W[j] * _D(i, ii, j) / _ref->w;
-								*ptr2 = _H(i, ii, iii, j);
-								ptr2++;
-							}
-							ptr++;
-						}
-					}
-				}
-			
+
 			
 				ptr = _ref->B;
 				for (auto const& i : ___ee) {
@@ -5658,210 +5643,6 @@ namespace KingOfMonsters {
 				ptr1++;
 			}
 		}
-		double fair3(double v1, double v2)
-		{
-			double length = v1 * v1 * _ref->get__gij(0, 0) + 2 * v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1);
-			v1 /= length;
-			v2 /= length;
-
-			double gttt = this->get_gammaijk(0, 0, 0) * v1 * v1 * v1 + this->get_gammaijk(0, 0, 1) * v1 * v1 * v2 +
-				2 * (this->get_gammaijk(0, 1, 0) * v1 * v2 * v1 + this->get_gammaijk(0, 1, 1) * v1 * v2 * v2) +
-				this->get_gammaijk(1, 1, 0) * v2 * v2 * v1 + this->get_gammaijk(1, 1, 1) * v2 * v2 * v2;
-			double u111 = 0, u112 = 0, u121 = 0, u122 = 0, u221 = 0, u222 = 0;
-			double v111 = 0, v112 = 0, v121 = 0, v122 = 0, v221 = 0, v222 = 0;
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				u111 += _ref->d3[0][s] * _ref->buf_u[s];
-				u112 += _ref->d3[1][s] * _ref->buf_u[s];
-				u121 += _ref->d3[2][s] * _ref->buf_u[s];
-				u122 += _ref->d3[3][s] * _ref->buf_u[s];
-				u222 += _ref->d3[6][s] * _ref->buf_u[s];
-				u222 += _ref->d3[7][s] * _ref->buf_u[s];
-				v111 += _ref->d3[0][s] * _ref->buf_v[s];
-				v112 += _ref->d3[1][s] * _ref->buf_v[s];
-				v121 += _ref->d3[2][s] * _ref->buf_v[s];
-				v122 += _ref->d3[3][s] * _ref->buf_v[s];
-				v222 += _ref->d3[6][s] * _ref->buf_v[s];
-				v222 += _ref->d3[7][s] * _ref->buf_v[s];
-			}
-			double u211 = u121, u212 = u122;
-			double v211 = v121, v212 = v122;
-
-			double ut = _ref->get__gi(0, 0) * v1 + _ref->get__gi(1, 0) * v2;
-			double vt = _ref->get__gi(0, 1) * v1 + _ref->get__gi(1, 1) * v2;
-
-			double omegatttt = (u111 * v1 * v1 * v1 + u112 * v1 * v1 * v2 + 2 * (u121 * v1 * v2 * v1 + u122 * v1 * v2 * v2) +
-				u221 * v2 * v2 * v1 + u222 * v2 * v2 * v2) * ut +
-				(v111 * v1 * v1 * v1 + v112 * v1 * v1 * v2 + 2 * (v121 * v1 * v2 * v1 + v122 * v1 * v2 * v2) +
-					v221 * v2 * v2 * v1 + v222 * v2 * v2 * v2) * vt;
-
-			return 2 * omegatttt - gttt * gttt;
-		}
-
-		void fair3_u(double* ptr, double v1, double v2)
-		{
-			double length = v1 * v1 * _ref->get__gij(0, 0) + 2 * v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1);
-			v1 /= length;
-			v2 /= length;
-
-			double gttt = this->get_gammaijk(0, 0, 0) * v1 * v1 * v1 + this->get_gammaijk(0, 0, 1) * v1 * v1 * v2 +
-				2 * (this->get_gammaijk(0, 1, 0) * v1 * v2 * v1 + this->get_gammaijk(0, 1, 1) * v1 * v2 * v2) +
-				this->get_gammaijk(1, 1, 0) * v2 * v2 * v1 + this->get_gammaijk(1, 1, 1) * v2 * v2 * v2;
-			double u111 = 0, u112 = 0, u121 = 0, u122 = 0, u221 = 0, u222 = 0;
-			double v111 = 0, v112 = 0, v121 = 0, v122 = 0, v221 = 0, v222 = 0;
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				u111 += _ref->d3[0][s] * _ref->buf_u[s];
-				u112 += _ref->d3[1][s] * _ref->buf_u[s];
-				u121 += _ref->d3[2][s] * _ref->buf_u[s];
-				u122 += _ref->d3[3][s] * _ref->buf_u[s];
-				u222 += _ref->d3[6][s] * _ref->buf_u[s];
-				u222 += _ref->d3[7][s] * _ref->buf_u[s];
-				v111 += _ref->d3[0][s] * _ref->buf_v[s];
-				v112 += _ref->d3[1][s] * _ref->buf_v[s];
-				v121 += _ref->d3[2][s] * _ref->buf_v[s];
-				v122 += _ref->d3[3][s] * _ref->buf_v[s];
-				v222 += _ref->d3[6][s] * _ref->buf_v[s];
-				v222 += _ref->d3[7][s] * _ref->buf_v[s];
-			}
-			double u211 = u121, u212 = u122;
-			double v211 = v121, v212 = v122;
-
-			double ut = _ref->get__gi(0, 0) * v1 + _ref->get__gi(1, 0) * v2;
-			double vt = _ref->get__gi(0, 1) * v1 + _ref->get__gi(1, 1) * v2;
-
-
-			double* ptr1 = ptr;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-
-				double _u111 = _ref->d3[0][s];
-				double _u112 = _ref->d3[1][s];
-				double _u121 = _ref->d3[2][s];
-				double _u122 = _ref->d3[3][s];
-				double _u221 = _ref->d3[6][s];
-				double _u222 = _ref->d3[7][s];
-				double _v111 = 0;//_ref->d3[0][s] * _ref->buf_v[s];
-				double _v112 = 0;//_ref->d3[1][s] * _ref->buf_v[s];
-				double _v121 = 0;//_ref->d3[2][s] * _ref->buf_v[s];
-				double _v122 = 0;//_ref->d3[3][s] * _ref->buf_v[s];
-				double _v221 = 0;//_ref->d3[6][s] * _ref->buf_v[s];
-				double _v222 = 0;// _ref->d3[7][s] * _ref->buf_v[s];
-
-				double _gamma111 = _ref->__dh[0][s] * _ref->get__gi(0, 0);
-				double _gamma112 = _ref->__dh[0][s] * _ref->get__gi(1, 0);
-				double _gamma121 = _ref->__dh[1][s] * _ref->get__gi(0, 0);
-				double _gamma122 = _ref->__dh[1][s] * _ref->get__gi(1, 0);
-				double _gamma221 = _ref->__dh[3][s] * _ref->get__gi(0, 0);
-				double _gamma222 = _ref->__dh[3][s] * _ref->get__gi(1, 0);
-
-				double _gttt = _gamma111 * v1 * v1 * v1 + _gamma112 * v1 * v1 * v2 +
-					2 * (_gamma121 * v1 * v2 * v1 + _gamma122 * v1 * v2 * v2) +
-					_gamma221 * v2 * v2 * v1 + _gamma222 * v2 * v2 * v2;
-
-
-				double _ut = _ref->d1[0][s] * v1 + _ref->d1[1][s] * v2;
-				double _vt = 0;// _ref->get__gi(0, 1)* v1 + _ref->get__gi(1, 1) * v2;
-
-				double _omegatttt = (_u111 * v1 * v1 * v1 + _u112 * v1 * v1 * v2 + 2 * (_u121 * v1 * v2 * v1 + _u122 * v1 * v2 * v2) +
-					_u221 * v2 * v2 * v1 + _u222 * v2 * v2 * v2) * ut +
-					(_v111 * v1 * v1 * v1 + _v112 * v1 * v1 * v2 + 2 * (_v121 * v1 * v2 * v1 + _v122 * v1 * v2 * v2) +
-						_v221 * v2 * v2 * v1 + _v222 * v2 * v2 * v2) * vt;
-				_omegatttt += (u111 * v1 * v1 * v1 + u112 * v1 * v1 * v2 + 2 * (u121 * v1 * v2 * v1 + u122 * v1 * v2 * v2) +
-					u221 * v2 * v2 * v1 + u222 * v2 * v2 * v2) * _ut +
-					(v111 * v1 * v1 * v1 + v112 * v1 * v1 * v2 + 2 * (v121 * v1 * v2 * v1 + v122 * v1 * v2 * v2) +
-						v221 * v2 * v2 * v1 + v222 * v2 * v2 * v2) * _vt;
-
-
-				double val = 2 * _omegatttt - 2 * _gttt * gttt;
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
-		void fair3_v(double* ptr, double v1, double v2)
-		{
-			double length = v1 * v1 * _ref->get__gij(0, 0) + 2 * v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1);
-			v1 /= length;
-			v2 /= length;
-
-			double gttt = this->get_gammaijk(0, 0, 0) * v1 * v1 * v1 + this->get_gammaijk(0, 0, 1) * v1 * v1 * v2 +
-				2 * (this->get_gammaijk(0, 1, 0) * v1 * v2 * v1 + this->get_gammaijk(0, 1, 1) * v1 * v2 * v2) +
-				this->get_gammaijk(1, 1, 0) * v2 * v2 * v1 + this->get_gammaijk(1, 1, 1) * v2 * v2 * v2;
-			double u111 = 0, u112 = 0, u121 = 0, u122 = 0, u221 = 0, u222 = 0;
-			double v111 = 0, v112 = 0, v121 = 0, v122 = 0, v221 = 0, v222 = 0;
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				u111 += _ref->d3[0][s] * _ref->buf_u[s];
-				u112 += _ref->d3[1][s] * _ref->buf_u[s];
-				u121 += _ref->d3[2][s] * _ref->buf_u[s];
-				u122 += _ref->d3[3][s] * _ref->buf_u[s];
-				u222 += _ref->d3[6][s] * _ref->buf_u[s];
-				u222 += _ref->d3[7][s] * _ref->buf_u[s];
-				v111 += _ref->d3[0][s] * _ref->buf_v[s];
-				v112 += _ref->d3[1][s] * _ref->buf_v[s];
-				v121 += _ref->d3[2][s] * _ref->buf_v[s];
-				v122 += _ref->d3[3][s] * _ref->buf_v[s];
-				v222 += _ref->d3[6][s] * _ref->buf_v[s];
-				v222 += _ref->d3[7][s] * _ref->buf_v[s];
-			}
-			double u211 = u121, u212 = u122;
-			double v211 = v121, v212 = v122;
-
-			double ut = _ref->get__gi(0, 0) * v1 + _ref->get__gi(1, 0) * v2;
-			double vt = _ref->get__gi(0, 1) * v1 + _ref->get__gi(1, 1) * v2;
-
-
-			double* ptr1 = ptr;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-
-				double _u111 = 0;// _ref->d3[0][s];
-				double _u112 = 0;//_ref->d3[1][s];
-				double _u121 = 0;//_ref->d3[2][s];
-				double _u122 = 0;//_ref->d3[3][s];
-				double _u221 = 0;//_ref->d3[6][s];
-				double _u222 = 0;//_ref->d3[7][s];
-				double _v111 = _ref->d3[0][s];// *_ref->buf_v[s];
-				double _v112 = _ref->d3[1][s];// * _ref->buf_v[s];
-				double _v121 = _ref->d3[2][s];// * _ref->buf_v[s];
-				double _v122 = _ref->d3[3][s];// * _ref->buf_v[s];
-				double _v221 = _ref->d3[6][s];// * _ref->buf_v[s];
-				double _v222 = _ref->d3[7][s];// * _ref->buf_v[s];
-
-				double _gamma111 = _ref->__dh[0][s] * _ref->get__gi(0, 1);
-				double _gamma112 = _ref->__dh[0][s] * _ref->get__gi(1, 1);
-				double _gamma121 = _ref->__dh[1][s] * _ref->get__gi(0, 1);
-				double _gamma122 = _ref->__dh[1][s] * _ref->get__gi(1, 1);
-				double _gamma221 = _ref->__dh[3][s] * _ref->get__gi(0, 1);
-				double _gamma222 = _ref->__dh[3][s] * _ref->get__gi(1, 1);
-
-				double _gttt = _gamma111 * v1 * v1 * v1 + _gamma112 * v1 * v1 * v2 +
-					2 * (_gamma121 * v1 * v2 * v1 + _gamma122 * v1 * v2 * v2) +
-					_gamma221 * v2 * v2 * v1 + _gamma222 * v2 * v2 * v2;
-
-
-				double _ut = 0;// _ref->d1[0][s] * v1 + _ref->d1[1][s] * v2;
-				double _vt = _ref->d1[0][s] * v1 + _ref->d1[1][s] * v2;
-
-				double _omegatttt = (_u111 * v1 * v1 * v1 + _u112 * v1 * v1 * v2 + 2 * (_u121 * v1 * v2 * v1 + _u122 * v1 * v2 * v2) +
-					_u221 * v2 * v2 * v1 + _u222 * v2 * v2 * v2) * ut +
-					(_v111 * v1 * v1 * v1 + _v112 * v1 * v1 * v2 + 2 * (_v121 * v1 * v2 * v1 + _v122 * v1 * v2 * v2) +
-						_v221 * v2 * v2 * v1 + _v222 * v2 * v2 * v2) * vt;
-				_omegatttt += (u111 * v1 * v1 * v1 + u112 * v1 * v1 * v2 + 2 * (u121 * v1 * v2 * v1 + u122 * v1 * v2 * v2) +
-					u221 * v2 * v2 * v1 + u222 * v2 * v2 * v2) * _ut +
-					(v111 * v1 * v1 * v1 + v112 * v1 * v1 * v2 + 2 * (v121 * v1 * v2 * v1 + v122 * v1 * v2 * v2) +
-						v221 * v2 * v2 * v1 + v222 * v2 * v2 * v2) * _vt;
-
-
-				double val = 2 * _omegatttt - 2 * _gttt * gttt;
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
-
 		double fair(double v1, double v2, double w1, double w2,double s1,double s2)
 		{
 			double length = sqrt(v1 * v1 * _ref->og11 + 2 * v1 * v2 * _ref->og12 + v2 * v2 * _ref->og22);
