@@ -1568,8 +1568,8 @@ namespace KingOfMonsters {
 						}
 					}
 				}
-
-
+			
+			
 				ptr = _ref->B;
 				for (auto const& i : ___ee) {
 					for (auto const& ii : ___ee) {
@@ -1628,9 +1628,9 @@ namespace KingOfMonsters {
 
 
 			if (__mode == "SIMPLE")return;
+			
 
-
-
+			
 			//covariant base vectors
 			if (mode == "U" || mode == "SLOPE")
 			{
@@ -1687,7 +1687,7 @@ namespace KingOfMonsters {
 				gi2[3] = gi[3];
 				gi2[4] = gi[4];
 				gi2[5] = gi[5];
-
+				
 				_inv2(gij, Gij2);
 				double Fx = 0, Fy = 0, Fz = 0;
 				Fx += get_gi2(0, 0) * Gij2[0] + get_gi2(1, 0) * Gij2[1];
@@ -1755,7 +1755,7 @@ namespace KingOfMonsters {
 			}
 			//contravatiant base vectors
 			double Fx = 0, Fy = 0, Fz = 0;
-
+			
 			Fx = 0, Fy = 0, Fz = 0;
 			Fx += get_gi(0, 0) * Gij[0] + get_gi(1, 0) * Gij[1];
 			Fy += get_gi(0, 1) * Gij[0] + get_gi(1, 1) * Gij[1];
@@ -1771,7 +1771,7 @@ namespace KingOfMonsters {
 			Gi[4] = Fy;
 			Gi[5] = Fz;
 
-
+			
 			double gx = get_gi(0, 0);
 			double gy = get_gi(0, 1);
 			double gz = get_gi(0, 2);
@@ -1788,12 +1788,12 @@ namespace KingOfMonsters {
 			N[0] = Nx;
 			N[1] = Ny;
 			N[2] = Nz;
+			
 
-
-
+			
 			if (mode == "SLOPE")
 			{
-				//	if (!_ref->initialized)
+			//	if (!_ref->initialized)
 				{
 					double** ptr = _ref->d2;
 					for (auto const& j : ___ee) {
@@ -1849,7 +1849,7 @@ namespace KingOfMonsters {
 			}
 			else {
 
-				//	if (!_ref->initialized)
+			//	if (!_ref->initialized)
 				{
 					double** ptr = _ref->d2;
 					for (auto const& j : ___ee) {
@@ -1910,13 +1910,13 @@ namespace KingOfMonsters {
 
 
 
-
+			
 
 			/*if (mode == "U")*/ {
 
 				double* ptr4;
-
-
+		
+			
 
 
 				double val = 0;
@@ -1925,12 +1925,12 @@ namespace KingOfMonsters {
 				double* pptr = 0;
 				double* pptr1 = &_ref->buf_z[0];
 				double* pptr2 = &_ref->d0[0];
-
+			
 				static const int sss[4]{ 0,1,2,3 };
-
+				
 				//if (!_ref->initialized || RAM == SAVE)
 				{
-
+					
 
 
 					for (int i = 0; i < _nNode; i++)
@@ -1941,7 +1941,7 @@ namespace KingOfMonsters {
 						_ref->__dh[3][i] = _ref->d2[3][i] - Gammaijk[6] * _ref->d1[0][i] - Gammaijk[7] * _ref->d1[1][i];
 
 					}
-
+					
 
 				}
 				/*for (int i = 0; i < _nNode; i++)
@@ -1954,8 +1954,8 @@ namespace KingOfMonsters {
 					}
 				}*/
 
-
-				{
+				
+				 {
 					memset(__Sij, 0, sizeof(double) * 4);
 					memset(__hij, 0, sizeof(double) * 4);
 					double __h11 = 0, __h12 = 0, __h22 = 0;
@@ -1990,12 +1990,12 @@ namespace KingOfMonsters {
 					__hij[2] = __h12;
 					__hij[3] = __h22;
 				}
-
-
+				
+				
 			}
 			_ref->initialized = true;
 			if (mode == "SLOPE") {
-
+				
 				/*for (int i = 0; i < _nNode; i++) {
 					for (auto const& l : ___ee) {
 						__grad_C_z[l * _nNode + i] = this->__F4_z(l, i);
