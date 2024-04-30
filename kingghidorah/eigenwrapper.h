@@ -134,8 +134,7 @@ namespace KingOfMonsters {
 		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	public:
 		Eigen::VectorXd __v;
-		void plus_useindex(double *ptr, double sc, int64_t , int64_t *_arr);
-
+		void plus_useindex(double* ptr, double sc, int64_t N, int64_t* index);
 	};
 	class _myLLT {
 	public:
@@ -268,8 +267,9 @@ namespace KingOfMonsters {
 		void ofDat();
 		void freezecoeff();
 		std::string ofAtA(_mySparse* A, bool sparse);
-		void add(int64_t i, int64_t j, double val);
+
 		void add_usemap(int64_t i, int64_t j, double val);
+		void add(int64_t i, int64_t j, double val);
 		void set_usemap(int64_t i, int64_t j, double val);
 		int find_location(int64_t i, int64_t j);
 		void add_uselocation(int64_t location, double val);
@@ -278,7 +278,7 @@ namespace KingOfMonsters {
 		std::string _ofAtA(_mySparse* A);
 		std::string _ofAtA_sparse(_mySparse* A);
 		//void ofAtB_gpu(_mySparse* B, bool sparse);
-		void ofAtB(_mySparse* B, bool sparse,bool AorB);
+		void ofAtB(_mySparse* B, bool sparse, bool AorB);
 		void _ofAtB(_mySparse* B, _mySparse* C);
 		void _ofBtAB(_mySparse* B, /*Eigen::VectorXd* b, */_mySparse* C/*, Eigen::VectorXd* ret*/);
 		void _ofCtAB(_mySparse* B, _mySparse* C, /*Eigen::VectorXd* b, */_mySparse* D/*, Eigen::VectorXd* ret*/);
