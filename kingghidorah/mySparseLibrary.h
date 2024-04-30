@@ -1192,8 +1192,8 @@ namespace KingOfMonsters {
 				Eigen::MatrixXd E(M + N, M);
 				E.setZero();
 				E.topRows(M) = Eigen::MatrixXd::Identity(M, M);
-				E.bottomRows(N) = E1;
-				//E.bottomRows(N).setZero();
+				//E.bottomRows(N) = E1;
+				E.bottomRows(N).setZero();
 
 				K->dat->_dmat.resize(M + N + L, M + L);
 				K->dat->_dmat.setZero();
