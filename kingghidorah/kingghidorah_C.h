@@ -1,9 +1,11 @@
 ﻿#pragma once
 #include <cmath>
+
 #include<vector>
 using namespace System;
 #include <cstring>
 using std::vector;
+
 #include "mySparseLibrary.h"
 #include "kingghidorah_S.h"
 namespace KingOfMonsters {
@@ -678,6 +680,62 @@ namespace KingOfMonsters {
 				ptr1++;
 			}
 
+		}
+		double gammattt()
+		{
+
+			double val = 0;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				val += d2[s] * _ref->node[s * 2 + 0] * get_gt2(0) +
+					d2[s] * _ref->node[s * 2 + 1] * get_gt2(1);
+			}
+			double scale =1.0/(sqrt(get_gtt2()) *get_gtt2());
+			return val*scale;
+		}
+		void gammattt_u(double* ptr)
+		{
+			double sx = 0;
+			double sy = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				sx+= d2[s] * _ref->node[s * 2 + 0];
+				sy += d2[s] * _ref->node[s * 2 + 1];
+			}
+			double* ptr1 = ptr;
+			double scale = 1.0 / (sqrt(get_gtt2()) * get_gtt2());
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _scale = -1.5 /(sqrt(get_gtt2()* get_gtt2() *get_gtt2())) * (2*d1[s]*get_gt2(0));
+				double val = d2[s] * get_gt2(0)*scale
+					+ sx * d1[s]*scale;
+				val += (sx * get_gt2(0) + sy * get_gt2(1)) * _scale;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		void gammattt_v(double* ptr)
+		{
+
+			double sx = 0;
+			double sy = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				sx += d2[s] * _ref->node[s * 2 + 0];
+				sy += d2[s] * _ref->node[s * 2 + 1];
+			}
+			double* ptr1 = ptr;
+			double scale = 1.0 / (sqrt(get_gtt2()) * get_gtt2());
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _scale = -1.5 / (sqrt(get_gtt2() * get_gtt2() * get_gtt2())) * (2 * d1[s] * get_gt2(1));
+				double val = d2[s] * get_gt2(1) * scale
+					+ sy * d1[s] * scale;
+				val += (sx * get_gt2(0)+sy*get_gt2(1)) * _scale;
+				*ptr1 = val;
+				ptr1++;
+			}
 		}
 		double angle(_memC* other)
 		{
@@ -1645,6 +1703,20 @@ namespace KingOfMonsters {
 		void length_v(mySparse^ mat, myIntArray^ index, int ii, double sc, double coeff)
 		{
 			this->__mem->__length_v(this->__mem->__grad);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_ref->_nNode, false, coeff);
+		}
+		double gammattt()
+		{
+			return this->__mem->gammattt();
+		}		
+		void gammattt_u(mySparse^ mat, int ii, myIntArray^ index,  double sc, double coeff, Int64 shift)
+		{
+			this->__mem->gammattt_u( this->__mem->__grad);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad , 0,sc, __mem->_ref->_nNode, true, coeff);
+		}
+		void gammattt_v(mySparse^ mat, int ii, myIntArray^ index,  double sc, double coeff, Int64 shift)
+		{
+			this->__mem->gammattt_v(this->__mem->__grad);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_ref->_nNode, false, coeff);
 		}
 		double angle(memC^ other)
