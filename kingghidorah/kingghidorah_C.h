@@ -17,8 +17,9 @@ namespace KingOfMonsters {
 		double* def = 0;
 		double* buf_z = 0;
 		double* buf_phi = 0;
-		//double* buf_b = 0;
-		//double* buf_D = 0;
+		double* buf_xi = 0;
+		double* buf_eta = 0;
+		double* buf_nu = 0;
 		double* buf_W = 0;
 
 		double _gi[3];
@@ -30,6 +31,8 @@ namespace KingOfMonsters {
 		double _Gammaijk[1];
 		const double _up[3]{ 0,0,1 };
 	public:
+		double _lv;
+		double _vec[2];
 		double refDv,_refDv;
 		double _x, _y, _z,__z,w;
 		inline void set_z(double z) {
@@ -41,15 +44,25 @@ namespace KingOfMonsters {
 		inline void set_buffer(double* buf)
 		{
 			node = buf;
-			def = &buf[2000];
-			buf_z = &buf[4000];
-			buf_phi = &buf[6000];
-			//buf_b = &buf[8000];
-			//buf_D = &buf[10000];
-			buf_W = &buf[8000];
+			def = &buf[1000];
+			buf_z = &buf[2000];
+			buf_phi = &buf[3000];
+			buf_xi = &buf[4000];
+			buf_eta = &buf[5000];
+			buf_nu = &buf[6000];
+			buf_W = &buf[7000];
 		}
 		inline void set_node(int i, int s, double val) {
 			node[i * 3 + s] = val;
+		}
+		inline void set_buf_xi(int i, double val) {
+			buf_xi[i] = val;
+		}
+		inline void set_buf_eta(int i, double val) {
+			buf_eta[i] = val;
+		}
+		inline void set_buf_nu(int i, double val) {
+			buf_nu[i] = val;
 		}
 		inline void set_buf_z(int i, double val) {
 			buf_z[i] = val;
@@ -737,6 +750,63 @@ namespace KingOfMonsters {
 				ptr1++;
 			}
 		}
+		void memoryangle()
+		{
+			double vx = 0, vy = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				vx += d1[s] * _ref->buf_xi[s];
+				vy += d1[s] * _ref->buf_eta[s];
+			}
+			double lv = sqrt(vx * vx + vy * vy);
+			_ref->_lv = lv;
+			_ref->_vec[0] = vx / lv;
+			_ref->_vec[1] = vy / lv;
+
+
+		}
+		double angle2()
+		{
+			double vx = 0, vy = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				vx += d1[s] * _ref->buf_xi[s];
+				vy += d1[s] * _ref->buf_eta[s];
+			}
+			
+			
+			double val = ((vx / _ref->_lv -_ref->_vec[0]) * _ref->_vec[1] + (vy / _ref->_lv - _ref->_vec[1]) * (-_ref->_vec[0]));
+			return val;
+		}
+		void angle2_xi( double* ptr)
+		{
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _vx = d1[s];// *_ref->buf_xi[s];
+				double _vy = 0;// d1[s];// *_ref->buf_eta[s];
+			
+				double val = ((_vx / _ref->_lv - _ref->_vec[0]) * _ref->_vec[1] + (_vy / _ref->_lv - _ref->_vec[1]) * (-_ref->_vec[0]));
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		void angle2_eta( double* ptr)
+		{
+
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _vx = 0;//// *_ref->buf_xi[s];
+				double _vy = d1[s];// d1[s];// *_ref->buf_eta[s];
+
+				double val = ((_vx / _ref->_lv - _ref->_vec[0]) * _ref->_vec[1] + (_vy / _ref->_lv - _ref->_vec[1]) * (-_ref->_vec[0]));
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+
+	
 		double angle(_memC* other)
 		{
 			double vx = this->get_gt2(0);
@@ -751,6 +821,7 @@ namespace KingOfMonsters {
 			double val = (vx * wx + vy * wy+vz*wz) /(lv*lw);
 			return val;
 		}
+
 		/*void angle_z1(_memC* other, double* ptr)
 		{
 			double vx = this->get_gt(0);
@@ -1497,6 +1568,28 @@ namespace KingOfMonsters {
 				}
 			}
 		}
+		void update_xi_eta_nu(int nNode, KingOfMonsters::myDoubleArray^ xi, KingOfMonsters::myDoubleArray^ eta, KingOfMonsters::myDoubleArray^ nu) {
+			if (xi != nullptr)
+			{
+				for (int i = 0; i < nNode; i++) {
+					__mem->set_buf_xi(i, (xi->_arr->__v)(i));
+				}
+			}
+			if (eta != nullptr)
+			{
+				for (int i = 0; i < nNode; i++) {
+					int e = i;
+					__mem->set_buf_eta(i, (eta->_arr->__v)(e));
+				}
+			}
+			if (nu != nullptr)
+			{
+				for (int i = 0; i < nNode; i++) {
+					int e = i;
+					__mem->set_buf_nu(i, (nu->_arr->__v)(e));
+				}
+			}
+		}
 		void update3(int nNode, KingOfMonsters::myDoubleArray^ node, KingOfMonsters::myDoubleArray^ weights, array<double>^ def,bool ignorez) {
 			if (node != nullptr) {
 				for (int i = 0; i < nNode; i++) {
@@ -1718,6 +1811,24 @@ namespace KingOfMonsters {
 		{
 			this->__mem->gammattt_v(this->__mem->__grad);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_ref->_nNode, false, coeff);
+		}
+		double angle2()
+		{
+			return this->__mem->angle2();
+		}
+		void angle2_xi(mySparse^ mat, myIntArray^ index, int ii, double sc, double coeff, Int64 shift,bool add)
+		{
+			this->__mem->angle2_xi( this->__mem->__grad);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_ref->_nNode, add, coeff);
+		}
+		void angle2_eta(mySparse^ mat,  myIntArray^ index, int ii, double sc, double coeff, Int64 shift,bool add)
+		{
+			this->__mem->angle2_eta( this->__mem->__grad);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_ref->_nNode, add, coeff);
+		}
+		void memoryangle()
+		{
+			__mem->memoryangle();
 		}
 		double angle(memC^ other)
 		{
