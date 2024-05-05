@@ -641,6 +641,7 @@ namespace KingOfMonsters {
 			}
 			return str;
 		}
+
 		void assemble(denseMatrix^ ML,myPermutation^ mXY,mySparse^ EE,myPermutation^ mZ,int C) {
 			Eigen::MatrixXd D(mZ->p->perm.size(), EE->dat->_dmat.cols());
 			D.setZero();
@@ -649,8 +650,10 @@ namespace KingOfMonsters {
 			D2.setZero();
 			D2.leftCols(C).setIdentity();
 
-			this->dat->_dmat=D2*mZ->p->perm*D*EE->dat->_dmat.transpose()*mXY->p->perm* ML->get();
-
+		
+			{
+				this->dat->_dmat = D2 * mZ->p->perm * D * EE->dat->_dmat.transpose() * mXY->p->perm * ML->get();
+			}
 			/*rhsX.AB(ML);A
 			mXY.perm(rhsX);
 			EE.AtB(rhsX);
@@ -724,6 +727,12 @@ namespace KingOfMonsters {
 		void leftmultiply(myDoubleArray^ v, myDoubleArray^ ret)
 		{
 			ret->_arr->__v = v->_arr->__v.transpose() * this->dat->_mat[0];
+		}
+		void ofIdentity(int N)
+		{
+			this->dat->_dmat.resize(N, N);
+
+			this->dat->_dmat = Eigen::MatrixXd::Identity(N, N);
 		}
 		void ofAtAsimple(mySparse^ m,bool sparse)
 		{
@@ -1173,11 +1182,13 @@ namespace KingOfMonsters {
 			int L2 = L * 2;
 			int L3 = L * 3;
 			int N = L2-S-M;//free variables
-			if (N == 0)
+			if (N == 0)//zero free variables
 			{
 				K->dat->_dmat.resize(M + L, M + L);
 				K->dat->_dmat = Eigen::MatrixXd::Identity(M+L, M+L);
-			}else{
+			}
+			else
+			{
 				auto perm = p->p->perm;
 				auto pt = p->p->perm.transpose();
 				Eigen::MatrixXd D = perm * ML->get() * this->dat->_mat[0] * (ML->get()).transpose() * pt;//
@@ -1238,7 +1249,10 @@ namespace KingOfMonsters {
 		{
 			this->dat->_dmat = E->dat->_dmat * this->dat->_dmat * E->dat->_dmat.transpose();
 		}
-
+		void ABCt(mySparse^ E, mySparse^ D)
+		{
+			this->dat->_dmat = E->dat->_dmat* this->dat->_dmat * D->dat->_dmat.transpose();
+		}
 		void AtB(myDoubleArray^ b)
 		{
 			b->_arr->__v = this->dat->_dmat.transpose() * b->_arr->__v;
@@ -1344,6 +1358,19 @@ namespace KingOfMonsters {
 			//pin_ptr<double> ptr = &b[0];
 
 			A->dat->_ofBtAB(B->dat, this->dat);
+			//array<double>^ ret = gcnew array<double>(_ret.rows());
+			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
+			//ptr = nullptr;
+			//return ret;
+		}
+		void ofBtAB(mySparse^ A, mySparse^ B, myDoubleArray^ b, myDoubleArray^ ret)
+		{
+			//pin_ptr<double> ptr = &b[0];
+
+			//A->dat->_ofBtAB(B->dat, this->dat);
+			 
+			this->dat->_dmat=B->dat->_dmat.transpose()* A->dat->_dmat* B->dat->_dmat;
+
 			//array<double>^ ret = gcnew array<double>(_ret.rows());
 			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
 			//ptr = nullptr;
