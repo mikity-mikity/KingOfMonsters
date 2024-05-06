@@ -703,9 +703,13 @@ namespace KingOfMonsters {
 		{
 				this->dat->_mat[0] += m->dat->_mat[0]*sc;
 		}
-		void plusvvt(myDoubleArray^ v,double sc)
+		void plusvvt(myDoubleArray^ v, double sc)
 		{
-			this->dat->_dmat += sc*v->_arr->__v * v->_arr->__v.transpose();
+			this->dat->_dmat += sc * v->_arr->__v * v->_arr->__v.transpose();
+		}
+		void pluswvt(myDoubleArray^ w, myDoubleArray^ v, double sc)
+		{
+			this->dat->_dmat += sc * w->_arr->__v * v->_arr->__v.transpose();
 		}
 		void _plusvvt(mySparseVector ^ v, double sc)
 		{
