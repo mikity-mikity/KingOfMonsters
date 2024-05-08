@@ -641,7 +641,28 @@ namespace KingOfMonsters {
 			}
 			return str;
 		}
+		void assemble2( mySparse^ EE, myPermutation^ mZ, int C) {
+			Eigen::MatrixXd D(mZ->p->perm.size(), EE->dat->_dmat.cols());
+			D.setZero();
+			D.leftCols(mZ->p->perm.size()).setIdentity();
+			Eigen::MatrixXd D2(C, mZ->p->perm.size());
+			D2.setZero();
+			D2.leftCols(C).setIdentity();
 
+
+			{
+				this->dat->_dmat = D2 * mZ->p->perm * D * EE->dat->_dmat.transpose() ;
+			}
+			/*rhsX.AB(ML);A
+			mXY.perm(rhsX);
+			EE.AtB(rhsX);
+			rhsX.resize(_HRC + nBC);
+			mZ.perm(rhsX);
+			rhsX.resize(L1Z);
+			*/
+
+
+		}
 		void assemble(denseMatrix^ ML,myPermutation^ mXY,mySparse^ EE,myPermutation^ mZ,int C) {
 			Eigen::MatrixXd D(mZ->p->perm.size(), EE->dat->_dmat.cols());
 			D.setZero();

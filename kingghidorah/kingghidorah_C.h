@@ -33,7 +33,7 @@ namespace KingOfMonsters {
 	public:
 		double _lv;
 		double _vec[2];
-		double refDv,_refDv;
+		double refDv,_refDv,odv;
 		double _x, _y, _z,__z,w;
 		inline void set_z(double z) {
 			this->_z = z;
@@ -704,8 +704,8 @@ namespace KingOfMonsters {
 				val += d2[s] * _ref->node[s * 2 + 0] * get_gt2(0) +
 					d2[s] * _ref->node[s * 2 + 1] * get_gt2(1);
 			}
-			double scale =1.0/(sqrt(get_gtt2()) *get_gtt2());
-			return val*scale;
+		
+			return val;
 		}
 		void gammattt_u(double* ptr)
 		{
@@ -717,13 +717,13 @@ namespace KingOfMonsters {
 				sy += d2[s] * _ref->node[s * 2 + 1];
 			}
 			double* ptr1 = ptr;
-			double scale = 1.0 / (sqrt(get_gtt2()) * get_gtt2());
+		
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				double _scale = -1.5 /(sqrt(get_gtt2()* get_gtt2() *get_gtt2())) * (2*d1[s]*get_gt2(0));
-				double val = d2[s] * get_gt2(0)*scale
-					+ sx * d1[s]*scale;
-				val += (sx * get_gt2(0) + sy * get_gt2(1)) * _scale;
+				
+				double val = d2[s] * get_gt2(0)
+					+ sx * d1[s];
+				
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -739,13 +739,92 @@ namespace KingOfMonsters {
 				sy += d2[s] * _ref->node[s * 2 + 1];
 			}
 			double* ptr1 = ptr;
-			double scale = 1.0 / (sqrt(get_gtt2()) * get_gtt2());
+		
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				double _scale = -1.5 / (sqrt(get_gtt2() * get_gtt2() * get_gtt2())) * (2 * d1[s] * get_gt2(1));
-				double val = d2[s] * get_gt2(1) * scale
-					+ sy * d1[s] * scale;
-				val += (sx * get_gt2(0)+sy*get_gt2(1)) * _scale;
+			
+				double val = d2[s] * get_gt2(1) 
+					+ sy * d1[s] ;
+			
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		double gammattt2()
+		{
+
+			double val = 0;
+
+			double vx = 0, vy = 0;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+
+				vx += d1[s] * _ref->buf_xi[s];
+				vy += d1[s] * _ref->buf_eta[s];
+			}
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				val += d2[s] * _ref->buf_xi[s * 2 + 0] * vx +
+					d2[s] * _ref->buf_eta[s * 2 + 1] * vy;
+			}
+	
+			return val;
+		}
+		void gammattt2_xi(double* ptr)
+		{
+			double vx = 0, vy = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+
+				vx += d1[s] * _ref->buf_xi[s];
+				vy += d1[s] * _ref->buf_eta[s];
+			}
+
+			double sx = 0;
+			double sy = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				sx += d2[s] * _ref->buf_xi[s];
+				sy += d2[s] * _ref->buf_eta[s];
+			}
+			double* ptr1 = ptr;
+		
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+			
+				double val = d2[s] * vx
+					+ sx * d1[s];
+			
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		void gammattt2_eta(double* ptr)
+		{
+			double vx = 0, vy = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+
+				vx += d1[s] * _ref->buf_xi[s];
+				vy += d1[s] * _ref->buf_eta[s];
+			}
+			double sx = 0;
+			double sy = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				sx += d2[s] * _ref->node[s * 2 + 0];
+				sy += d2[s] * _ref->node[s * 2 + 1];
+			}
+			double* ptr1 = ptr;
+		
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				
+				double val = d2[s] * vy
+					+ sy * d1[s] ;
+			
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -764,6 +843,10 @@ namespace KingOfMonsters {
 			_ref->_vec[1] = vy / lv;
 
 
+		}
+		void memory2()
+		{
+			_ref->odv = _ref->_refDv;
 		}
 		double angle2()
 		{
@@ -809,7 +892,11 @@ namespace KingOfMonsters {
 	
 		double angle(_memC* other)
 		{
-			double vx = this->get_gt2(0);
+
+		
+			
+
+		double vx = this->get_gt2(0);
 			double vy = this->get_gt2(1);
 			double vz = 0;// this->get_gt2(2);
 			double wx = other->get_gt2(0);
@@ -817,7 +904,7 @@ namespace KingOfMonsters {
 			double wz = 0;// other->get_gt2(2);
 			double lv = _dv;
 			double lw = other->_dv;
-			
+
 			double val = (vx * wx + vy * wy+vz*wz) /(lv*lw);
 			return val;
 		}
@@ -1812,6 +1899,20 @@ namespace KingOfMonsters {
 			this->__mem->gammattt_v(this->__mem->__grad);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_ref->_nNode, false, coeff);
 		}
+		double gammattt2()
+		{
+			return this->__mem->gammattt2();
+		}
+		void gammattt2_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, Int64 shift)
+		{
+			this->__mem->gammattt2_xi(this->__mem->__grad);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_ref->_nNode, true, coeff);
+		}
+		void gammattt2_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, Int64 shift)
+		{
+			this->__mem->gammattt2_eta(this->__mem->__grad);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_ref->_nNode, false, coeff);
+		}
 		double angle2()
 		{
 			return this->__mem->angle2();
@@ -1829,6 +1930,9 @@ namespace KingOfMonsters {
 		void memoryangle()
 		{
 			__mem->memoryangle();
+		}void memory2()
+		{
+			__mem->memory2();
 		}
 		double angle(memC^ other)
 		{
