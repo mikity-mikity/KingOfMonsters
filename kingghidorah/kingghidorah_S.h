@@ -8105,10 +8105,10 @@ namespace KingOfMonsters {
 
 
 
-				xuu = _ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s];
-				xuv = _ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s];
-				xvu = _ref->d2[2][s] - _ref->_Gammaijk[4] * _ref->d1[0][s] - _ref->_Gammaijk[5] * _ref->d1[1][s];
-				xvv = _ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s];
+				xuu = _ref->__dh[0][s];// _ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s];
+				xuv = _ref->__dh[1][s];//_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s];
+				xvu = _ref->__dh[2][s];//_ref->d2[2][s] - _ref->_Gammaijk[4] * _ref->d1[0][s] - _ref->_Gammaijk[5] * _ref->d1[1][s];
+				xvv = _ref->__dh[3][s];//_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s];
 
 				//yuu += _ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s]  - _ref->_Gammaijk[1] * _ref->d1[1][s] ;
 				//yuv += _ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s]  - _ref->_Gammaijk[3] * _ref->d1[1][s] ;
@@ -8517,10 +8517,10 @@ namespace KingOfMonsters {
 				//xvu = _ref->d2[2][s] - _ref->_Gammaijk[4] * _ref->d1[0][s] - _ref->_Gammaijk[5] * _ref->d1[1][s];
 				//xvv = _ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s];
 
-				yuu = _ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s]  - _ref->_Gammaijk[1] * _ref->d1[1][s] ;
-				yuv = _ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s]  - _ref->_Gammaijk[3] * _ref->d1[1][s] ;
-				yvu = _ref->d2[2][s] - _ref->_Gammaijk[4] * _ref->d1[0][s]  - _ref->_Gammaijk[5] * _ref->d1[1][s] ;
-				yvv = _ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s]  - _ref->_Gammaijk[7] * _ref->d1[1][s] ;
+				yuu = _ref->__dh[0][s];//_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s]  - _ref->_Gammaijk[1] * _ref->d1[1][s] ;
+				yuv = _ref->__dh[1][s];//_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s]  - _ref->_Gammaijk[3] * _ref->d1[1][s] ;
+				yvu = _ref->__dh[2][s];//_ref->d2[2][s] - _ref->_Gammaijk[4] * _ref->d1[0][s]  - _ref->_Gammaijk[5] * _ref->d1[1][s] ;
+				yvv = _ref->__dh[3][s];//_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s]  - _ref->_Gammaijk[7] * _ref->d1[1][s] ;
 
 				double syuu = 0, syuv = 0, syvu = 0, syvv = 0;
 				syuu = yuu;// -_ref->_Gammaijk[0] * xu - _ref->_Gammaijk[1] * xv;
@@ -11058,7 +11058,7 @@ namespace KingOfMonsters {
 				}
 
 			}
-			double guide_free4(double t1, double t2,double s1,double s2, double globalratio)
+			double guide_free4(double t1, double t2,double s1,double s2, double globalratio,bool add,int mode)
 			{
 				double length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
 				t1 /= length;
@@ -11089,22 +11089,37 @@ namespace KingOfMonsters {
 				double svv = (2 * dvv - tr * _ref->get__gij(1, 1));
 
 
-				double huu = -globalratio * suu +get__hij(0, 0);
-				double huv = -globalratio * suv + get__hij(0, 1);
-				double hvu = -globalratio * suv + get__hij(0, 1);
-				double hvv = -globalratio * svv + get__hij(1, 1);
+				double huu = -globalratio * suu;
+				double huv = -globalratio * suv;
+				double hvu = -globalratio * suv;
+				double hvv = -globalratio * svv;
 
+				if (add)
+				{
+					huu += get__hij(0, 0);
+					huv += get__hij(0, 1);
+					hvu += get__hij(0, 1);
+					hvv += get__hij(1, 1);
+				}
 
-
-				val = (huu * t1 * t1 + huv * t1 * t2 + hvu * t2 * t1 + hvv * t2 * t2);
-				val -= (huu * t1 * s1 + huv * t1 * s2 + hvu * t2 * s1 + hvv * t2 * s2);
-
+				if (mode == 0)
+				{
+					val = (huu * t1 * t1 + huv * t1 * t2 + hvu * t2 * t1 + hvv * t2 * t2);
+				}
+				if (mode == 1)
+				{
+					val = (huu * t1 * s1 + huv * t1 * s2 + hvu * t2 * s1 + hvv * t2 * s2);
+				}
+				if (mode == 2)
+				{
+					val = (huu * s1 * s1 + huv * s1 * s2 + hvu * s2 * s1 + hvv * s2 * s2);
+				}
 
 
 				return val;
 			}
 
-			void guide_free4_phi(double* ptr, double t1, double t2, double s1, double s2, double globalratio)
+			void guide_free4_phi(double* ptr, double t1, double t2, double s1, double s2, double globalratio,int mode)
 			{
 				double val = 0;
 				double length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
@@ -11120,15 +11135,26 @@ namespace KingOfMonsters {
 					double _h12 = _ref->__dh[1][s];
 					double _h21 = _ref->__dh[1][s];
 					double _h22 = _ref->__dh[3][s];
-					val = (_h11 * t1 * t1 + _h12 * t1 * t2 + _h21 * t2 * t1 + _h22 * t2 * t2);
-					val -= (_h11 * t1 * s1 + _h12 * t1 * s2 + _h21 * t2 * s1 + _h22 * t2 * s2);
+					if (mode == 0)
+					{
+						val = (_h11 * t1 * t1 + _h12 * t1 * t2 + _h21 * t2 * t1 + _h22 * t2 * t2);
+					}
+					if (mode == 1)
+					{
+						val = (_h11 * t1 * s1 + _h12 * t1 * s2 + _h21 * t2 * s1 + _h22 * t2 * s2);
+					}
+					if (mode == 2)
+					{
+						val = (_h11 * s1 * s1 + _h12 * s1 * s2 + _h21 * s2 * s1 + _h22 * s2 * s2);
+					}
+
 
 					*ptr1 = val;
 					ptr1++;
 				}
 
 			}
-			void guide_free4_xi(double* ptr, double t1, double t2, double s1, double s2, double globalratio)
+			void guide_free4_xi(double* ptr, double t1, double t2, double s1, double s2, double globalratio,int mode)
 			{
 				double val = 0;
 				double length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
@@ -11163,8 +11189,18 @@ namespace KingOfMonsters {
 					double _h12 = -globalratio * suv;
 					double _h21 = -globalratio * suv;
 					double _h22 = -globalratio * svv;
-					val = (_h11 * t1 * t1 + _h12 * t1 * t2 + _h21 * t2 * t1 + _h22 * t2 * t2);
-					val -= (_h11 * t1 * s1 + _h12 * t1 * s2 + _h21 * t2 * s1 + _h22 * t2 * s2);
+					if (mode == 0)
+					{
+						val = (_h11 * t1 * t1 + _h12 * t1 * t2 + _h21 * t2 * t1 + _h22 * t2 * t2);
+					}
+					if (mode == 1)
+					{
+						val = (_h11 * t1 * s1 + _h12 * t1 * s2 + _h21 * t2 * s1 + _h22 * t2 * s2);
+					}
+					if (mode == 2)
+					{
+						val = (_h11 * s1 * s1 + _h12 * s1 * s2 + _h21 * s2 * s1 + _h22 * s2 * s2);
+					}
 
 					*ptr1 = val;
 					ptr1++;
@@ -11172,7 +11208,7 @@ namespace KingOfMonsters {
 
 			}
 
-			void guide_free4_eta(double* ptr, double t1, double t2, double s1, double s2, double globalratio)
+			void guide_free4_eta(double* ptr, double t1, double t2, double s1, double s2, double globalratio,int mode)
 			{
 				double length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
 				t1 /= length;
@@ -11208,8 +11244,18 @@ namespace KingOfMonsters {
 					double _h12 = -globalratio * suv;
 					double _h21 = -globalratio * suv;
 					double _h22 = -globalratio * svv;
-					val = (_h11 * t1 * t1 + _h12 * t1 * t2 + _h21 * t2 * t1 + _h22 * t2 * t2);
-					val -= (_h11 * t1 * s1 + _h12 * t1 * s2 + _h21 * t2 * s1 + _h22 * t2 * s2);
+					if (mode == 0)
+					{
+						val = (_h11 * t1 * t1 + _h12 * t1 * t2 + _h21 * t2 * t1 + _h22 * t2 * t2);
+					}
+					if (mode == 1)
+					{
+						val = (_h11 * t1 * s1 + _h12 * t1 * s2 + _h21 * t2 * s1 + _h22 * t2 * s2);
+					}
+					if (mode == 2)
+					{
+						val = (_h11 * s1 * s1 + _h12 * s1 * s2 + _h21 * s2 * s1 + _h22 * s2 * s2);
+					}
 
 					*ptr1 = val;
 					ptr1++;
@@ -18686,23 +18732,23 @@ if(add)
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c);
 		}
 
-		double guide_free4(double v1, double v2, double s1, double s2, double globalratio)
+		double guide_free4(double v1, double v2, double s1, double s2, double globalratio,bool add,int mode)
 		{
-			return __mem->guide_free4(v1, v2, s1, s2, globalratio);
+			return __mem->guide_free4(v1, v2, s1, s2, globalratio,add,mode);
 		}
-		void guide_free4_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, double s1, double s2, bool add, double globalratio)
+		void guide_free4_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, double s1, double s2, bool add, double globalratio,int mode)
 		{
-			__mem->guide_free4_phi(__mem->__grad, v1, v2, s1, s2, globalratio);
+			__mem->guide_free4_phi(__mem->__grad, v1, v2, s1, s2, globalratio,mode);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c);
 		}
-		void guide_free4_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, double s1, double s2, bool add, double globalratio)
+		void guide_free4_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, double s1, double s2, bool add, double globalratio, int mode)
 		{
-			__mem->guide_free4_xi(__mem->__grad, v1, v2, s1, s2, globalratio);
+			__mem->guide_free4_xi(__mem->__grad, v1, v2, s1, s2, globalratio,mode);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c);
 		}
-		void guide_free4_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, double s1, double s2, bool add, double globalratio)
+		void guide_free4_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, double s1, double s2, bool add, double globalratio, int mode)
 		{
-			__mem->guide_free4_eta(__mem->__grad, v1, v2, s1, s2, globalratio);
+			__mem->guide_free4_eta(__mem->__grad, v1, v2, s1, s2, globalratio,mode);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c);
 		}
 		void guide_free4_u(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, double s1, double s2, bool add, double globalratio)
@@ -20454,7 +20500,12 @@ if(add)
 		void d0(myDoubleArray^ arr)
 		{
 			memcpy(arr->_arr->__v.data(), this->__mem->_ref->d0, sizeof(double) * __mem->_ref->_nNode);
+
 		}
+			void d0(myDoubleArray ^ arr,int shift)
+			{
+				memcpy(arr->_arr->__v.data()+shift, this->__mem->_ref->d0, sizeof(double) * __mem->_ref->_nNode);
+			}
 		void F(mySparse^ mat, myIntArray^ index, double sc) {
 			__mem->F(mat->dat, index->data(), sc);
 		}
