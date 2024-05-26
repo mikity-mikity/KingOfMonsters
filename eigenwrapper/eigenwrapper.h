@@ -337,6 +337,7 @@ namespace KingOfMonsters {
 		void addsmallidentity(double salt, bool sparse, bool dense);
 		void begin_construct();
 		void end_construct(int64_t c);
+		void end_construct2();
 		int64_t numBlocks();
 		void _plus(int64_t i, int64_t j, double val);
 		static std::string _testopenmp();

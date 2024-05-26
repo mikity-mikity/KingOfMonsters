@@ -175,6 +175,39 @@ namespace KingOfMonsters {
 			w->_arr->__v = this->_arr->__v.bottomRows(this->_arr->__v.rows()-N);
 
 		}
+		void extend(int L1, int L2, int mode)
+
+		{
+			if (mode == 0)
+			{
+				this->_arr->__v.conservativeResize(L2);
+				this->_arr->__v.bottomRows(L2 - L1).setZero();
+			}
+			else {
+				Eigen::VectorXd v;
+				v = this->_arr->__v;
+				this->_arr->__v.conservativeResize(L2);
+				this->_arr->__v.bottomRows(L2 - L1) = v;
+				this->_arr->__v.topRows(L1).setZero();
+			}
+		}
+		void split(int split, int mode)
+		{
+			if (mode == 0)
+			{
+				Eigen::VectorXd v;
+				v = this->_arr->__v.topRows(split);
+
+				this->_arr->__v = v;
+			}
+			else
+			{
+				Eigen::VectorXd v;
+				v = this->_arr->__v.bottomRows(this->_arr->__v.rows() - split);
+				this->_arr->__v = v;
+			}
+
+		}
 		void transpose()
 		{
 			this->_arr->__v.transposeInPlace();
@@ -1200,6 +1233,21 @@ namespace KingOfMonsters {
 			return (Eigen::MatrixXd::Identity(A->dat->_dmat.rows(), A->dat->_dmat.cols()) - A->dat->_dmat * this->dat->_dmat).sum();
 
 		}
+		void split(int split, mySparse^ m1, mySparse^ m2)
+		{
+			m1->dat->_dmat = this->dat->_dmat.topLeftCorner(split, split);
+			m2->dat->_dmat = this->dat->_dmat.bottomRightCorner(this->dat->_dmat.rows()-split, this->dat->_dmat.cols() - split);
+		}
+
+		void assemble3(mySparse^ m1, mySparse^ m2)
+		{
+			this->dat->_dmat.resize(m1->dat->_dmat.rows() + m2->dat->_dmat.rows(), m1->dat->_dmat.cols() + m2->dat->_dmat.cols());
+			this->dat->_dmat.setZero();
+			int split = m1->dat->_dmat.rows();
+			this->dat->_dmat.topLeftCorner(split, split) = m1->dat->_dmat;
+			this->dat->_dmat.bottomRightCorner(this->dat->_dmat.rows() - split, this->dat->_dmat.cols() - split)=m2->dat->_dmat;
+
+		}
 		void transform(mySparse^ K,double salt,myPermutation^ p,denseMatrix^ ML,long L, long M,long S)
 		{
 		
@@ -1462,10 +1510,76 @@ namespace KingOfMonsters {
 			this->dat->_dmat.resize(this->dat->_mat[0].rows(), this->dat->_mat[0].cols());
 			this->dat->_dmat.setZero();
 		}
+		
+		void mask(int split, int mode)
+		{
+			Eigen::MatrixXd m;
+			if (mode == 1)
+			{
+				 m= this->dat->_dmat.bottomRightCorner(this->dat->_dmat.rows() - split, this->dat->_dmat.cols() - split);
+				this->dat->_dmat =m;
+				
+			}
+			if (mode == 0)
+			{
+				m= this->dat->_dmat.topLeftCorner(split, split);
+				this->dat->_dmat = m;
+			
+
+			}
+		}
+		void mask2(int split, int mode)
+		{
+			if (mode == 1)
+			{
+				Eigen::MatrixXd m;
+				m = this->dat->_dmat.bottomRows(this->dat->_dmat.rows() - split);
+				this->dat->_dmat = m;
+
+			}
+			if (mode == 0)
+			{
+				Eigen::MatrixXd m;
+				m = this->dat->_dmat.topRows(split);
+				this->dat->_dmat = m;
+
+
+			}
+		}
 		void makedense()
 		{
 			this->dat->_dmat.resize(this->dat->_mat[0].rows(), this->dat->_mat[0].cols());
 			this->dat->_dmat = this->dat->_mat[0];
+		}
+		void flattendense()
+		{
+			this->dat->_dmat.resize(this->dat->_mat[0].rows(), this->dat->_mat[0].cols());
+			this->dat->_dmat = this->dat->_mat[0];
+			for (int i = 1; i < this->dat->_mat.size(); i++)
+			{
+				this->dat->_dmat += this->dat->_mat[i];
+			}
+		}
+
+		void flatten_sparsetodense()
+		{
+			int N = 0;
+			for (int i = 0; i < this->dat->_mat.size(); i++)
+			{
+				N += this->dat->_mat[i].rows();
+			}
+
+			this->dat->_dmat.resize(N, this->dat->_mat[0].cols());
+			int c = 0;
+			for (int i = 0; i < this->dat->_mat.size(); i++)
+			{
+				this->dat->_dmat.middleRows(c,c+this->dat->_mat[i].rows()) = this->dat->_mat[i];
+			}
+		}
+		void executeQR()
+		{
+			Eigen::HouseholderQR<Eigen::MatrixXd> qr;
+			qr.compute(this->dat->_dmat);
 		}
 		void makePattern()
 		{
@@ -2036,6 +2150,10 @@ namespace KingOfMonsters {
 		{
 			dat->end_construct(c);
 		}
+		void end_construct2()
+		{
+			dat->end_construct2();
+		}
 		Int64 num_elem(Int64 ii)
 		{
 			return dat->num_elem(ii);
@@ -2119,11 +2237,13 @@ namespace KingOfMonsters {
 		void plus(mySparse^ m, double a, bool dense, bool sparse) {
 			this->dat->plus(m->dat, a, dense, sparse);
 		}
-		void plus_dense(mySparse^ m, double a) {
+		void plus_dense(mySparse^ m, double a,bool transpose) {
 			int _mt;
 			int n = Eigen::nbThreads();
-			Eigen::setNbThreads(1);
-			Eigen::initParallel();
+			//Eigen::setNbThreads(1);
+			//Eigen::initParallel();
+			auto mm = m->dat->_dmat;
+			if (transpose)mm = m->dat->_dmat.transpose();
 #pragma omp parallel
 			{
 #pragma omp single
@@ -2132,11 +2252,11 @@ namespace KingOfMonsters {
 #pragma omp parallel for
 			for (int nn = 0; nn < _mt; nn++)
 			{
-				int S = (m->dat->_dmat.cols() * nn) / _mt;
-				int E = (m->dat->_dmat.cols() * (nn+1)) / _mt;
-				this->dat->_dmat.middleCols(S,E-S) += a * m->dat->_dmat.middleCols(S,E-S);
+				int S = (mm.cols() * nn) / _mt;
+				int E = (mm.cols() * (nn+1)) / _mt;
+				this->dat->_dmat.middleCols(S,E-S) += a * mm.middleCols(S,E-S);
 			}
-			Eigen::setNbThreads(0);
+			//Eigen::setNbThreads(0);
 
 		}
 
@@ -2964,6 +3084,7 @@ namespace KingOfMonsters {
 			_dat->sqrsc = sqrt(sc);
 
 		}
+
 		void init(int I, System::Collections::Generic::List<int>^ star)
 		{
 			this->_dat->indices.push_back(I);

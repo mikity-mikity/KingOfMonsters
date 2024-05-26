@@ -1827,7 +1827,18 @@ void KingOfMonsters::_mySparse::end_construct(int64_t cc)
 		_mat[ii].resize(_coeff[ii].size(), cc);
 	}
 }
-
+void KingOfMonsters::_mySparse::end_construct2()
+{
+	_nt = _dat_count;
+	
+	_mat.resize(_nt);
+	coeff.resize(_nt);
+#pragma omp parallel for schedule(dynamic,4) num_threads(_mt)
+	for (int64_t ii = 1; ii < _nt; ii++)
+	{
+		_mat[ii].resize(_mat[0].rows(),_mat[0].cols());
+	}
+}
 void KingOfMonsters::_mySparse::addmat(_mySparse* mat)
 {
 	_dat_count++;
