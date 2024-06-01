@@ -1254,7 +1254,7 @@ namespace KingOfMonsters {
 			//L:HRC,M:nBC,S:nSymm
 			int L2 = L * 2;
 			int L3 = L * 3;
-			int N = L2-S-M;//free variables
+			int N = L-S-M;//free variables
 			if (N == 0)//zero free variables
 			{
 				K->dat->_dmat.resize(M + L, M + L);
