@@ -1248,17 +1248,17 @@ namespace KingOfMonsters {
 			this->dat->_dmat.bottomRightCorner(this->dat->_dmat.rows() - split, this->dat->_dmat.cols() - split)=m2->dat->_dmat;
 
 		}
-		void transform(mySparse^ K,double salt,myPermutation^ p,denseMatrix^ ML,long L, long M,long S)
+		void transform(mySparse^ K,double salt,myPermutation^ p,denseMatrix^ ML,long L, long M,long S,int sc1,int sc2)
 		{
 		
 			//L:HRC,M:nBC,S:nSymm
-			int L2 = L * 2;
-			int L3 = L * 3;
-			int N = L-S-M;//free variables
-			if (N == 0)//zero free variables
+			int L1 = L * sc1;
+			int L2 = L * sc2;
+			int N = L2-S-M;//free variables
+			if (N == 0 ||sc2==0)//zero free variables
 			{
-				K->dat->_dmat.resize(M + L, M + L);
-				K->dat->_dmat = Eigen::MatrixXd::Identity(M+L, M+L);
+				K->dat->_dmat.resize(M + L1, M + L1);
+				K->dat->_dmat = Eigen::MatrixXd::Identity(M+L1, M+L1);
 			}
 			else
 			{
@@ -1278,14 +1278,10 @@ namespace KingOfMonsters {
 				E.bottomRows(N) = E1;
 				//E.bottomRows(N).setZero();
 
-				K->dat->_dmat.resize(M + N + L, M + L);
+				K->dat->_dmat.resize(M + N + L1, M + L1);
 				K->dat->_dmat.setZero();
-				K->dat->_dmat.topLeftCorner(L, L) = Eigen::MatrixXd::Identity(L, L);
+				K->dat->_dmat.topLeftCorner(L1, L1) = Eigen::MatrixXd::Identity(L1, L1);
 				K->dat->_dmat.bottomRightCorner(M + N, M) = E;
-				
-				
-				
-
 			}
 	
 		}
