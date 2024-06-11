@@ -732,10 +732,10 @@ KingOfMonsters::cuda::cuda(int64_t N) {
 		}
 	}
 
-	//for (int i = 0; i < MAXDEVICE; i++)
-	//{
-	//	cublas_handle[i] = 0;
-	//}
+	for (int i = 0; i < MAXDEVICE; i++)
+	{
+		cublas_handle[i] = 0;
+	}
 	for (int ii = 0; ii < count(); ii++)
 	{
 		cudaSetDevice(ii);
@@ -752,7 +752,7 @@ KingOfMonsters::cuda::cuda(int64_t N) {
 		for (int j = 0; j < STREAMCOUNT; j++)
 			status = cusolverDnCreate(&solver_handle[ii][j]);
 
-		//auto status2 = cublasCreate(&cublas_handle[ii]);
+		auto status2 = cublasCreate(&cublas_handle[ii]);
 
 		if (status == cusolverStatus_t::CUSOLVER_STATUS_SUCCESS)
 		{
@@ -766,17 +766,17 @@ KingOfMonsters::cuda::cuda(int64_t N) {
 				solver_handle[ii][j] = 0;
 			return;
 		}
-		//if (status2 == cublasStatus_t::CUBLAS_STATUS_SUCCESS)
+		if (status2 == cublasStatus_t::CUBLAS_STATUS_SUCCESS)
 		{
 			initialized = true;
 			failed = false;
 		}
-		//else {
-		//	initialized = false;
-		//	failed = true;
-			//cublas_handle[ii] = 0;
-		//	return;
-		//}
+		else {
+			initialized = false;
+			failed = true;
+			cublas_handle[ii] = 0;
+		return;
+		}
 	}
 	//cusparseCreate(&sp_handle);
 	if (!initialized || failed)return;
@@ -1030,11 +1030,11 @@ void KingOfMonsters::cuda::dispose() {
 			//		solver_handleSp[i][j] = 0;
 			//	}
 			}
-			//if (cublas_handle != 0)
-			//{
-			//	cublasDestroy(cublas_handle[i]);
-			//}
-			//cublas_handle[i] = 0;
+			if (cublas_handle != 0)
+			{
+				cublasDestroy(cublas_handle[i]);
+			}
+			cublas_handle[i] = 0;
 		}
 		/*if (mg_solver != 0)
 		{
@@ -1173,9 +1173,9 @@ cusolverDnHandle_t& KingOfMonsters::cuda::solver(int64_t ii, int64_t kk) {
 //cusolverSpHandle_t& KingOfMonsters::cuda::solverSp(int64_t ii, int64_t kk) {
 //	return solver_handleSp[ii][kk];
 //}
-//cublasHandle_t& KingOfMonsters::cuda::blas(int64_t ii) {
-//	return cublas_handle[ii];
-//}
+cublasHandle_t& KingOfMonsters::cuda::blas(int64_t ii) {
+ 	return cublas_handle[ii];
+}
 int& KingOfMonsters::cuda::count() {
 	return _count;
 }

@@ -183,6 +183,7 @@ namespace KingOfMonsters {
 	public:
 		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	public:
+		double* gpumat = 0;
 		vector<vector<double>> _coeff;
 		std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>> _mat;
 		Eigen::MatrixXd _dmat;
@@ -267,7 +268,7 @@ namespace KingOfMonsters {
 		void ofDat();
 		void freezecoeff();
 		std::string ofAtA(_mySparse* A, bool sparse);
-		
+
 		void add_usemap(int64_t i, int64_t j, double val);
 		void add(int64_t i, int64_t j, double val);
 		void set_usemap(int64_t i, int64_t j, double val);
@@ -278,7 +279,7 @@ namespace KingOfMonsters {
 		std::string _ofAtA(_mySparse* A);
 		std::string _ofAtA_sparse(_mySparse* A);
 		//void ofAtB_gpu(_mySparse* B, bool sparse);
-		void ofAtB(_mySparse* B, bool sparse,bool AorB);
+		void ofAtB(_mySparse* B, bool sparse, bool AorB);
 		void _ofAtB(_mySparse* B, _mySparse* C);
 		void _ofBtAB(_mySparse* B, /*Eigen::VectorXd* b, */_mySparse* C/*, Eigen::VectorXd* ret*/);
 		void _ofCtAB(_mySparse* B, _mySparse* C, /*Eigen::VectorXd* b, */_mySparse* D/*, Eigen::VectorXd* ret*/);
@@ -301,7 +302,7 @@ namespace KingOfMonsters {
 		void setmat(const Eigen::MatrixXd& mat);
 		void setmiddlecolum(Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>& f, int64_t start, int64_t end);
 		void solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
-		void LSsolve(Eigen::VectorXd* rhs, Eigen::VectorXd* ret,double,int mode);
+		void LSsolve(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, double, int mode);
 		void Project(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, double);
 		//void _solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		//Eigen::MatrixXd _solve0(_myLLT* LLT, _mySparse* mat);
@@ -328,7 +329,7 @@ namespace KingOfMonsters {
 		void plus(Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>* m);
 		//void _solveI_gpu_mg(KingOfMonsters::cuda* cuda, _mySparse* ret);
 		void __solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
-		
+
 		Eigen::MatrixXd inv();
 		Eigen::MatrixXd solve0(_mySparse* rhs);
 		void minus(_mySparse* m);

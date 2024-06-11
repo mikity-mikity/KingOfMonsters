@@ -183,6 +183,7 @@ namespace KingOfMonsters {
 	public:
 		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	public:
+		double* gpumat = 0;
 		vector<vector<double>> _coeff;
 		std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>> _mat;
 		Eigen::MatrixXd _dmat;

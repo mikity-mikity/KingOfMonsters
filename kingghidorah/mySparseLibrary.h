@@ -17,7 +17,9 @@ namespace KingOfMonsters {
 	public ref class denseMatrix {
 	private:
 		Eigen::MatrixXd* mat = 0;
+		
 	public:
+		double* gpumat = 0;
 		void genEigen(denseMatrix ^a,denseMatrix ^ b, [Runtime::InteropServices::Out]double%  l1, [Runtime::InteropServices::Out]double% l1i,[Runtime::InteropServices::Out]double% l2, [Runtime::InteropServices::Out]double% l2i){
 			Eigen::GeneralizedEigenSolver<Eigen::MatrixXd> solve(* (a->mat), * (b->mat), true);
 			
@@ -48,7 +50,16 @@ namespace KingOfMonsters {
 			l2i = solve.eigenvalues()(1).imag();
 
 		}
-		
+		void toGPU()
+		{
+			if (gpumat == 0)
+			{
+				double* ptr =0;
+				cudaMalloc(&ptr, sizeof(double) * this->mat->rows() * this->mat->cols());
+				gpumat = ptr;
+			}		
+			cudaMemcpy(gpumat, this->mat->data(), sizeof(double) * this->mat->rows() * this->mat->cols(), cudaMemcpyHostToDevice);
+		}
 		Eigen::MatrixXd& get()
 		{
 			return *mat;
@@ -105,6 +116,11 @@ namespace KingOfMonsters {
 				delete mat;
 			}
 			mat = 0;
+			if (gpumat != 0)
+			{
+				cudaFree(gpumat);
+			}
+			gpumat = 0;
 		}
 	};
 	public ref class mySparseVector {
@@ -652,9 +668,18 @@ namespace KingOfMonsters {
 		}
 	};
 	
-	public ref class mySparse {
+	public ref class mySparse{
 	public:
 		_mySparse* dat = 0;
+		
+		void toGpu()
+		{
+			if (dat->gpumat == 0)
+			{
+				cudaMalloc(&dat->gpumat, sizeof(double) * this->dat->_dmat.rows() * this->dat->_dmat.cols());
+			}
+			cudaMemcpy(dat->gpumat, this->dat->_dmat.data(), sizeof(double) * this->dat->_dmat.rows() * this->dat->_dmat.cols(), cudaMemcpyHostToDevice);
+		}
 		System::String^ tostring()
 		{
 			System::String^ str = gcnew System::String("");
@@ -791,6 +816,12 @@ namespace KingOfMonsters {
 			this->dat->_dmat.resize(N, N);
 
 			this->dat->_dmat = Eigen::MatrixXd::Identity(N, N);
+		}
+		void ofIdentity(int N,int M)
+		{
+			this->dat->_dmat.resize(M, M);
+			this->dat->_dmat.setZero();
+			this->dat->_dmat.topLeftCorner(N,N) = Eigen::MatrixXd::Identity(N, N);
 		}
 		void ofAtAsimple(mySparse^ m,bool sparse)
 		{
@@ -1038,9 +1069,11 @@ namespace KingOfMonsters {
 			this->dat->_mat[0].setFromTriplets(dat.begin(), dat.end());
 		}
 		mySparse() {
+			
 			dat = 0;
 			dat = new _mySparse();
 			dat->init(0, 0);
+			dat->gpumat = 0;
 		}
 		mySparse(Int64 n, Int64 m)
 		{
@@ -1055,6 +1088,14 @@ namespace KingOfMonsters {
 			dat->init(m->rows(), m->cols());
 			this->dat->OfDuplicate(m->dat);
 			this->dat->copycoefffrom(m->dat);
+		}
+		void release()
+		{
+			if (dat->gpumat != 0)
+			{
+				cudaFree(dat->gpumat);
+				dat->gpumat = 0;
+			}
 		}
 		void ofvv(myDoubleArray^ v,double sc)
 		{
@@ -1117,15 +1158,19 @@ namespace KingOfMonsters {
 		}
 		~mySparse()
 		{
+			release();
 			if (dat != 0)
 				delete(dat);
 			dat = 0;
+			
 		}
 		!mySparse()
 		{
+			release();
 			if (dat != 0)
 				delete(dat);
 			dat = 0;
+			
 		}
 
 		void ofDat()
@@ -1287,7 +1332,10 @@ namespace KingOfMonsters {
 		}
 		void _AtBA(denseMatrix^ E)
 		{
+			
 			this->dat->_dmat = E->get().transpose() * this->dat->_mat[0] * E->get();
+		
+	
 		}
 		void _AtBA(mySparse^ E)
 		{
@@ -1302,25 +1350,166 @@ namespace KingOfMonsters {
 			this->dat->_dmat = E->dat->_dmat * this->dat->_mat[0] * E->dat->_dmat.transpose();
 		}
 
-		void AtBA(denseMatrix^ E)
+		void AtBA(denseMatrix^ E, myCuda^ cuda)
 		{
-			this->dat->_dmat = E->get().transpose() * this->dat->_dmat * E->get();
+			int device = cuda->fastest();
+			
+			if(this->dat->gpumat==0 || E->gpumat == 0)
+				this->dat->_dmat = E->get().transpose() * this->dat->_dmat * E->get();
+			else {
+				double a = 1;
+				double b = 0;
+				auto cublas = cuda->cuda()->blas(device);
+				double* result = cuda->cuda()->work_M(cuda->fastest());
+				cublasDgemm(cublas,
+					CUBLAS_OP_T, CUBLAS_OP_N,
+					E->get().cols(), this->dat->_dmat.cols(), E->get().rows(),
+					&a,
+					E->gpumat, E->get().rows(),
+					this->dat->gpumat, this->dat->_dmat.rows(),
+					&b,
+					result, E->get().cols());
+
+				cublasDgemm(cublas,
+					CUBLAS_OP_N, CUBLAS_OP_N,
+					E->get().cols(),  E->get().cols(), this->dat->_dmat.cols(),
+					&a,
+					result, E->get().cols(),
+					E->gpumat, E->get().rows(),
+					&b,
+					this->dat->gpumat, E->get().cols());
+				this->dat->_dmat.resize(E->get().cols(), E->get().cols());
+				cudaMemcpy(this->dat->_dmat.data(), this->dat->gpumat, sizeof(double) * E->get().cols() * E->get().cols(),cudaMemcpyDeviceToHost);
+			}
 		}
-		void AtBA(mySparse^ E)
+		void AtBA(mySparse^ E, myCuda^ cuda)
 		{
-			this->dat->_dmat = E->dat->_dmat.transpose() * this->dat->_dmat * E->dat->_dmat;
+			int device = cuda->fastest();
+
+			if (this->dat->gpumat == 0 || E->dat->gpumat == 0)
+				this->dat->_dmat = E->dat->_dmat.transpose() * this->dat->_dmat * E->dat->_dmat;
+			else {
+				double a = 1;
+				double b = 0;
+				auto cublas = cuda->cuda()->blas(device);
+				double* result = cuda->cuda()->work_M(cuda->fastest());
+				cublasDgemm(cublas,
+					CUBLAS_OP_T, CUBLAS_OP_N,
+					E->dat->_dmat.cols(), this->dat->_dmat.cols(), E->dat->_dmat.rows(),
+					&a,
+					E->dat->gpumat, E->dat->_dmat.rows(),
+					this->dat->gpumat, this->dat->_dmat.rows(),
+					&b,
+					result, E->dat->_dmat.cols());
+
+				cublasDgemm(cublas,
+					CUBLAS_OP_N, CUBLAS_OP_N,
+					E->dat->_dmat.cols(), E->dat->_dmat.cols(), this->dat->_dmat.cols(),
+					&a,
+					result, E->dat->_dmat.cols(),
+					E->dat->gpumat, E->dat->_dmat.rows(),
+					&b,
+					this->dat->gpumat, E->dat->_dmat.cols());
+				this->dat->_dmat.resize(E->dat->_dmat.cols(), E->dat->_dmat.cols());
+				cudaMemcpy(this->dat->_dmat.data(), this->dat->gpumat, sizeof(double) * E->dat->_dmat.cols() * E->dat->_dmat.cols(), cudaMemcpyDeviceToHost);
+			}
 		}
-		void ABAt(denseMatrix^ E)
+		void ABAt(denseMatrix^ E, myCuda^ cuda)
 		{
-			this->dat->_dmat = E->get() * this->dat->_dmat * E->get().transpose();
+			int device = cuda->fastest();
+
+			if (this->dat->gpumat == 0 || E->gpumat == 0)
+				this->dat->_dmat = E->get() * this->dat->_dmat * E->get().transpose();
+			else {
+				double a = 1;
+				double b = 0;
+				auto cublas = cuda->cuda()->blas(device);
+				double* result = cuda->cuda()->work_M(cuda->fastest());
+				cublasDgemm(cublas,
+					CUBLAS_OP_N, CUBLAS_OP_N,
+					E->get().rows(), this->dat->_dmat.cols(), E->get().cols(),
+					&a,
+					E->gpumat, E->get().rows(),
+					this->dat->gpumat, this->dat->_dmat.rows(),
+					&b,
+					result, E->get().rows());
+
+				cublasDgemm(cublas,
+					CUBLAS_OP_N, CUBLAS_OP_T,
+					E->get().rows(), E->get().rows(), this->dat->_dmat.cols(),
+					&a,
+					result, E->get().rows(),
+					E->gpumat, E->get().rows(),
+					&b,
+					this->dat->gpumat, E->get().rows());
+				this->dat->_dmat.resize(E->get().rows(), E->get().rows());
+				cudaMemcpy(this->dat->_dmat.data(), this->dat->gpumat, sizeof(double) * E->get().rows() * E->get().rows(), cudaMemcpyDeviceToHost);
+			}
 		}
-		void ABAt(mySparse^ E)
+		void ABAt(mySparse^ E, myCuda^ cuda)
 		{
-			this->dat->_dmat = E->dat->_dmat * this->dat->_dmat * E->dat->_dmat.transpose();
+			int device = cuda->fastest();
+
+			if (this->dat->gpumat == 0 || E->dat->gpumat == 0)
+				this->dat->_dmat = E->dat->_dmat * this->dat->_dmat * E->dat->_dmat.transpose();
+			else {
+				double a = 1;
+				double b = 0;
+				auto cublas = cuda->cuda()->blas(device);
+				double* result = cuda->cuda()->work_M(cuda->fastest());
+				cublasDgemm(cublas,
+					CUBLAS_OP_N, CUBLAS_OP_N,
+					E->dat->_dmat.rows(), this->dat->_dmat.cols(), E->dat->_dmat.cols(),
+					&a,
+					E->dat->gpumat, E->dat->_dmat.rows(),
+					this->dat->gpumat, this->dat->_dmat.rows(),
+					&b,
+					result, E->dat->_dmat.rows());
+
+				cublasDgemm(cublas,
+					CUBLAS_OP_N, CUBLAS_OP_T,
+					E->dat->_dmat.rows(), E->dat->_dmat.rows(), this->dat->_dmat.cols(),
+					&a,
+					result, E->dat->_dmat.rows(),
+					E->dat->gpumat, E->dat->_dmat.rows(),
+					&b,
+					this->dat->gpumat, E->dat->_dmat.rows());
+				this->dat->_dmat.resize(E->dat->_dmat.rows(), E->dat->_dmat.rows());
+
+				cudaMemcpy(this->dat->_dmat.data(), this->dat->gpumat, sizeof(double) * E->dat->_dmat.rows() * E->dat->_dmat.rows(), cudaMemcpyDeviceToHost);
+			}
 		}
-		void ABCt(mySparse^ E, mySparse^ D)
-		{
-			this->dat->_dmat = E->dat->_dmat* this->dat->_dmat * D->dat->_dmat.transpose();
+		void ABCt(mySparse^ E, mySparse^ D, myCuda^ cuda)
+		{			
+			int device = cuda->fastest();
+
+			if (this->dat->gpumat == 0 || E->dat->gpumat == 0)
+				this->dat->_dmat = E->dat->_dmat * this->dat->_dmat * D->dat->_dmat.transpose();
+			else {
+				double a = 1;
+				double b = 0;
+				auto cublas = cuda->cuda()->blas(device);
+				double* result = cuda->cuda()->work_M(cuda->fastest());
+				cublasDgemm(cublas,
+					CUBLAS_OP_N, CUBLAS_OP_N,
+					E->dat->_dmat.rows(), this->dat->_dmat.cols(), E->dat->_dmat.cols(),
+					&a,
+					E->dat->gpumat, E->dat->_dmat.rows(),
+					this->dat->gpumat, this->dat->_dmat.rows(),
+					&b,
+					result, E->dat->_dmat.rows());
+
+				cublasDgemm(cublas,
+					CUBLAS_OP_N, CUBLAS_OP_T,
+					E->dat->_dmat.rows(), D->dat->_dmat.rows(), this->dat->_dmat.cols(),
+					&a,
+					result, E->dat->_dmat.rows(),
+					D->dat->gpumat, D->dat->_dmat.rows(),
+					&b,
+					this->dat->gpumat, E->dat->_dmat.rows());
+				this->dat->_dmat.resize(E->dat->_dmat.rows(), D->dat->_dmat.rows());
+				cudaMemcpy(this->dat->_dmat.data(), this->dat->gpumat, sizeof(double) * E->dat->_dmat.rows() * D->dat->_dmat.rows(), cudaMemcpyDeviceToHost);
+			}
 		}
 		void AtB(myDoubleArray^ b)
 		{
