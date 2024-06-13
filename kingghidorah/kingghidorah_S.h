@@ -8617,7 +8617,7 @@ namespace KingOfMonsters {
 
 			}
 		
-			double val = Xuu * _ref->get__Gij(0,0) + 2 * Xuv * _ref->get__Gij(0, 1) + Xvv * _ref->get__Gij(1, 1);
+			double val = Xuu * _ref->oG11 + 2 * Xuv * _ref->oG12 + Xvv * _ref->oG22;
 			return val;
 		}
 
@@ -8642,7 +8642,7 @@ namespace KingOfMonsters {
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 			
-				double _g11 = 0, _g12 = 0, _g21 = 0, _g22 = 0;
+				/*double _g11 = 0, _g12 = 0, _g21 = 0, _g22 = 0;
 
 				_g11 = 2 * _ref->d1[0][s] * _ref->get__gi(0, 0);
 				_g12 = _ref->d1[0][s] * _ref->get__gi(1,0) + _ref->d1[1][s] * _ref->get__gi(0, 0);
@@ -8652,77 +8652,27 @@ namespace KingOfMonsters {
 				double _G11 = -(_ref->get__Gij(0, 0) * _g11 * _ref->get__Gij(0, 0) + _ref->get__Gij(0, 1) * _g21 * _ref->get__Gij(0, 0) + _ref->get__Gij(0, 0) * _g12 * _ref->get__Gij(1, 0) + _ref->get__Gij(0, 1) * _g22 * _ref->get__Gij(1, 0));
 				double _G12 = -(_ref->get__Gij(0, 0) * _g11 * _ref->get__Gij(0, 1) + _ref->get__Gij(0, 1) * _g21 * _ref->get__Gij(0, 1) + _ref->get__Gij(0, 0) * _g12 * _ref->get__Gij(1, 1) + _ref->get__Gij(0, 1) * _g22 * _ref->get__Gij(1, 1));
 				double _G22 = -(_ref->get__Gij(1, 0) * _g11 * _ref->get__Gij(0, 1) + _ref->get__Gij(1, 1) * _g21 * _ref->get__Gij(0, 1) + _ref->get__Gij(1, 0) * _g12 * _ref->get__Gij(1, 1) + _ref->get__Gij(1, 1) * _g22 * _ref->get__Gij(1, 1));
-				double _G21 = _G12;
+				double _G21 = _G12;*/
 
-				double _Gamma111 = _ref->__dh[0][s] * _ref->get__Gi(0, 0);
+				/*double _Gamma111 = _ref->__dh[0][s] * _ref->get__Gi(0, 0);
 				double _Gamma112 = _ref->__dh[0][s] * _ref->get__Gi(1, 0);
 				double _Gamma121 = _ref->__dh[1][s] * _ref->get__Gi(0, 0);
 				double _Gamma122 = _ref->__dh[1][s] * _ref->get__Gi(1, 0);
 				double _Gamma221 = _ref->__dh[3][s] * _ref->get__Gi(0, 0);
-				double _Gamma222 = _ref->__dh[3][s] * _ref->get__Gi(1, 0);
+				double _Gamma222 = _ref->__dh[3][s] * _ref->get__Gi(1, 0);*/
 				double _Xuu = 0, _Xuv = 0, _Xvu = 0, _Xvv = 0;
-				_Xuu = _ref->__dh[0][s] - _Gamma111 * Xu - _Gamma112 * Xv;
-				_Xuv = _ref->__dh[1][s] - _Gamma121 * Xu - _Gamma122 * Xv;
-				_Xvv = _ref->__dh[3][s] - _Gamma221 * Xu - _Gamma222 * Xv;
+				_Xuu = _ref->__dh[0][s];// -_Gamma111 * Xu - _Gamma112 * Xv;
+				_Xuv = _ref->__dh[1][s];// -_Gamma121 * Xu - _Gamma122 * Xv;
+				_Xvv = _ref->__dh[3][s];// -_Gamma221 * Xu - _Gamma222 * Xv;
 			
-				double val = _Xuu * _ref->get__Gij(0,0) + 2 * _Xuv * _ref->get__Gij(0, 1) + _Xvv * _ref->get__Gij(1, 1);
-				val += Xuu * _G11 + 2 * Xuv * _G12 + Xvv * _G22;
+				double val = _Xuu * _ref->oG11 + 2 * _Xuv * _ref->oG12 + _Xvv * _ref->oG22;
+				//val += Xuu * _G11 + 2 * Xuv * _G12 + Xvv * _G22;
 
 				*ptr1 = val;
 				ptr1++;
 			}
 		}
 
-		void harmonic_X_v(double* ptr)
-		{
-			double Xuu = 0, Xuv = 0, Xvu = 0, Xvv = 0;
-
-			double Xu = 0, Xv = 0;
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				Xu += _ref->d1[0][s] * _ref->buf_u[s];
-				Xv += _ref->d1[1][s] * _ref->buf_u[s];
-				Xuu += _ref->__dh[0][s] * (_ref->buf_u[s]);
-				Xuv += _ref->__dh[1][s] * (_ref->buf_u[s]);
-				Xvu += _ref->__dh[2][s] * (_ref->buf_u[s]);
-				Xvv += _ref->__dh[3][s] * (_ref->buf_u[s]);
-
-			}
-			double* ptr1 = ptr;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-
-				double _g11 = 0, _g12 = 0, _g21 = 0, _g22 = 0;
-
-				_g11 = 2 * _ref->d1[0][s] * _ref->get__gi(0, 1);
-				_g12 = _ref->d1[0][s] * _ref->get__gi(1, 1) + _ref->d1[1][s] * _ref->get__gi(0, 1);
-				_g22 = 2 * _ref->d1[1][s] * _ref->get__gi(1, 1);
-				_g21 = _g12;
-
-				double _G11 = -(_ref->get__Gij(0, 0) * _g11 * _ref->get__Gij(0, 0) + _ref->get__Gij(0, 1) * _g21 * _ref->get__Gij(0, 0) + _ref->get__Gij(0, 0) * _g12 * _ref->get__Gij(1, 0) + _ref->get__Gij(0, 1) * _g22 * _ref->get__Gij(1, 0));
-				double _G12 = -(_ref->get__Gij(0, 0) * _g11 * _ref->get__Gij(0, 1) + _ref->get__Gij(0, 1) * _g21 * _ref->get__Gij(0, 1) + _ref->get__Gij(0, 0) * _g12 * _ref->get__Gij(1, 1) + _ref->get__Gij(0, 1) * _g22 * _ref->get__Gij(1, 1));
-				double _G22 = -(_ref->get__Gij(1, 0) * _g11 * _ref->get__Gij(0, 1) + _ref->get__Gij(1, 1) * _g21 * _ref->get__Gij(0, 1) + _ref->get__Gij(1, 0) * _g12 * _ref->get__Gij(1, 1) + _ref->get__Gij(1, 1) * _g22 * _ref->get__Gij(1, 1));
-				double _G21 = _G12;
-
-				double _Gamma111 = _ref->__dh[0][s] * _ref->get__Gi(0, 1);
-				double _Gamma112 = _ref->__dh[0][s] * _ref->get__Gi(1, 1);
-				double _Gamma121 = _ref->__dh[1][s] * _ref->get__Gi(0, 1);
-				double _Gamma122 = _ref->__dh[1][s] * _ref->get__Gi(1, 1);
-				double _Gamma221 = _ref->__dh[3][s] * _ref->get__Gi(0, 1);
-				double _Gamma222 = _ref->__dh[3][s] * _ref->get__Gi(1, 1);
-				double _Xuu = 0, _Xuv = 0, _Xvu = 0, _Xvv = 0;
-				_Xuu = - _Gamma111 * Xu - _Gamma112 * Xv;
-				_Xuv =  - _Gamma121 * Xu - _Gamma122 * Xv;
-				_Xvv = - _Gamma221 * Xu - _Gamma222 * Xv;
-
-				double val = _Xuu * _ref->get__Gij(0, 0) + 2 * _Xuv * _ref->get__Gij(0, 1) + _Xvv * _ref->get__Gij(1, 1);
-				val += Xuu * _G11 + 2 * Xuv * _G12 + Xvv * _G22;
-
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
 		double harmonic_Y()
 		{
 
@@ -8739,61 +8689,12 @@ namespace KingOfMonsters {
 
 			}
 
-			double val = Xuu * _ref->get__Gij(0, 0) + 2 * Xuv * _ref->get__Gij(0, 1) + Xvv * _ref->get__Gij(1, 1);
+			double val = Xuu * _ref->oG11 + 2 * Xuv * _ref->oG12 + Xvv * _ref->oG22;
 			return val;
 		}
 
 
-		void harmonic_Y_u(double* ptr)
-		{
-			double Xuu = 0, Xuv = 0, Xvu = 0, Xvv = 0;
-
-			double Xu = 0, Xv = 0;
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				Xu += _ref->d1[0][s] * _ref->buf_v[s];
-				Xv += _ref->d1[1][s] * _ref->buf_v[s];
-				Xuu += _ref->__dh[0][s] * (_ref->buf_v[s]);
-				Xuv += _ref->__dh[1][s] * (_ref->buf_v[s]);
-				Xvu += _ref->__dh[2][s] * (_ref->buf_v[s]);
-				Xvv += _ref->__dh[3][s] * (_ref->buf_v[s]);
-
-			}
-			double* ptr1 = ptr;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-
-				double _g11 = 0, _g12 = 0, _g21 = 0, _g22 = 0;
-
-				_g11 = 2 * _ref->d1[0][s] * _ref->get__gi(0, 0);
-				_g12 = _ref->d1[0][s] * _ref->get__gi(1, 0) + _ref->d1[1][s] * _ref->get__gi(0, 0);
-				_g22 = 2 * _ref->d1[1][s] * _ref->get__gi(1, 0);
-				_g21 = _g12;
-
-				double _G11 = -(_ref->get__Gij(0, 0) * _g11 * _ref->get__Gij(0, 0) + _ref->get__Gij(0, 1) * _g21 * _ref->get__Gij(0, 0) + _ref->get__Gij(0, 0) * _g12 * _ref->get__Gij(1, 0) + _ref->get__Gij(0, 1) * _g22 * _ref->get__Gij(1, 0));
-				double _G12 = -(_ref->get__Gij(0, 0) * _g11 * _ref->get__Gij(0, 1) + _ref->get__Gij(0, 1) * _g21 * _ref->get__Gij(0, 1) + _ref->get__Gij(0, 0) * _g12 * _ref->get__Gij(1, 1) + _ref->get__Gij(0, 1) * _g22 * _ref->get__Gij(1, 1));
-				double _G22 = -(_ref->get__Gij(1, 0) * _g11 * _ref->get__Gij(0, 1) + _ref->get__Gij(1, 1) * _g21 * _ref->get__Gij(0, 1) + _ref->get__Gij(1, 0) * _g12 * _ref->get__Gij(1, 1) + _ref->get__Gij(1, 1) * _g22 * _ref->get__Gij(1, 1));
-				double _G21 = _G12;
-
-				double _Gamma111 = _ref->__dh[0][s] * _ref->get__Gi(0, 0);
-				double _Gamma112 = _ref->__dh[0][s] * _ref->get__Gi(1, 0);
-				double _Gamma121 = _ref->__dh[1][s] * _ref->get__Gi(0, 0);
-				double _Gamma122 = _ref->__dh[1][s] * _ref->get__Gi(1, 0);
-				double _Gamma221 = _ref->__dh[3][s] * _ref->get__Gi(0, 0);
-				double _Gamma222 = _ref->__dh[3][s] * _ref->get__Gi(1, 0);
-				double _Xuu = 0, _Xuv = 0, _Xvu = 0, _Xvv = 0;
-				_Xuu =  - _Gamma111 * Xu - _Gamma112 * Xv;
-				_Xuv =  - _Gamma121 * Xu - _Gamma122 * Xv;
-				_Xvv =  - _Gamma221 * Xu - _Gamma222 * Xv;
-
-				double val = _Xuu * _ref->get__Gij(0, 0) + 2 * _Xuv * _ref->get__Gij(0, 1) + _Xvv * _ref->get__Gij(1, 1);
-				val += Xuu * _G11 + 2 * Xuv * _G12 + Xvv * _G22;
-
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
+		
 
 		void harmonic_Y_v(double* ptr)
 		{
@@ -8815,31 +8716,14 @@ namespace KingOfMonsters {
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 
-				double _g11 = 0, _g12 = 0, _g21 = 0, _g22 = 0;
-
-				_g11 = 2 * _ref->d1[0][s] * _ref->get__gi(0, 1);
-				_g12 = _ref->d1[0][s] * _ref->get__gi(1, 1) + _ref->d1[1][s] * _ref->get__gi(0, 1);
-				_g22 = 2 * _ref->d1[1][s] * _ref->get__gi(1, 1);
-				_g21 = _g12;
-
-				double _G11 = -(_ref->get__Gij(0, 0) * _g11 * _ref->get__Gij(0, 0) + _ref->get__Gij(0, 1) * _g21 * _ref->get__Gij(0, 0) + _ref->get__Gij(0, 0) * _g12 * _ref->get__Gij(1, 0) + _ref->get__Gij(0, 1) * _g22 * _ref->get__Gij(1, 0));
-				double _G12 = -(_ref->get__Gij(0, 0) * _g11 * _ref->get__Gij(0, 1) + _ref->get__Gij(0, 1) * _g21 * _ref->get__Gij(0, 1) + _ref->get__Gij(0, 0) * _g12 * _ref->get__Gij(1, 1) + _ref->get__Gij(0, 1) * _g22 * _ref->get__Gij(1, 1));
-				double _G22 = -(_ref->get__Gij(1, 0) * _g11 * _ref->get__Gij(0, 1) + _ref->get__Gij(1, 1) * _g21 * _ref->get__Gij(0, 1) + _ref->get__Gij(1, 0) * _g12 * _ref->get__Gij(1, 1) + _ref->get__Gij(1, 1) * _g22 * _ref->get__Gij(1, 1));
-				double _G21 = _G12;
-
-				double _Gamma111 = _ref->__dh[0][s] * _ref->get__Gi(0, 1);
-				double _Gamma112 = _ref->__dh[0][s] * _ref->get__Gi(1, 1);
-				double _Gamma121 = _ref->__dh[1][s] * _ref->get__Gi(0, 1);
-				double _Gamma122 = _ref->__dh[1][s] * _ref->get__Gi(1, 1);
-				double _Gamma221 = _ref->__dh[3][s] * _ref->get__Gi(0, 1);
-				double _Gamma222 = _ref->__dh[3][s] * _ref->get__Gi(1, 1);
+				
 				double _Xuu = 0, _Xuv = 0, _Xvu = 0, _Xvv = 0;
-				_Xuu = _ref->__dh[0][s] -_Gamma111 * Xu - _Gamma112 * Xv;
-				_Xuv = _ref->__dh[1][s] -_Gamma121 * Xu - _Gamma122 * Xv;
-				_Xvv = _ref->__dh[3][s] -_Gamma221 * Xu - _Gamma222 * Xv;
+				_Xuu = _ref->__dh[0][s];// -_Gamma111 * Xu - _Gamma112 * Xv;
+				_Xuv = _ref->__dh[1][s];// -_Gamma121 * Xu - _Gamma122 * Xv;
+				_Xvv = _ref->__dh[3][s];// -_Gamma221 * Xu - _Gamma222 * Xv;
 
-				double val = _Xuu * _ref->get__Gij(0, 0) + 2 * _Xuv * _ref->get__Gij(0, 1) + _Xvv * _ref->get__Gij(1, 1);
-				val += Xuu * _G11 + 2 * Xuv * _G12 + Xvv * _G22;
+				double val = _Xuu * _ref->oG11 + 2 * _Xuv * _ref->oG12 + _Xvv * _ref->oG22;
+				//val += Xuu * _G11 + 2 * Xuv * _G12 + Xvv * _G22;
 
 				*ptr1 = val;
 				ptr1++;
@@ -22880,26 +22764,17 @@ if(add)
 				__mem->harmonic_X_u( __mem->__grad);
 				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
 			}
-			void harmonic_X_v(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
-			{
-				__mem->harmonic_X_v(__mem->__grad);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
-			}
-
+			
 			double harmonic_Y()
 			{
 				return __mem->harmonic_Y();
 			}
 			
-			void harmonic_Y_u(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
-			{
-				__mem->harmonic_Y_u(__mem->__grad);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
-			}
+			
 			void harmonic_Y_v(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
 			{
 				__mem->harmonic_Y_v( __mem->__grad);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
 			}
 			
 			double rot_free()
