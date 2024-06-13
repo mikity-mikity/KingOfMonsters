@@ -20470,23 +20470,39 @@ if(add)
 		}
 		void memory2(_memS_ref* __mem)
 		{
-			__mem->oG11 = __mem->get__Gij(0, 0);
-			__mem->oG12 = __mem->get__Gij(0, 1);
-			__mem->oG22 = __mem->get__Gij(1, 1);
-			__mem->og11 = __mem->get__gij(0, 0);
-			__mem->og12 = __mem->get__gij(0, 1);
-			__mem->og22 = __mem->get__gij(1, 1);
-			__mem->osc = sc;
-			__mem->orefDv = __mem->_refDv;
+			if (mode == "U")
+			{
+
+				__mem->oG11 = get_Gij(0, 0);
+				__mem->oG12 = get_Gij(0, 1);
+				__mem->oG22 = get_Gij(1, 1);
+				__mem->og11 = get_gij(0, 0);
+				__mem->og12 = get_gij(0, 1);
+				__mem->og22 = get_gij(1, 1);
+				memcpy(__mem->_ogi, gi, sizeof(double) * 6);
+				memcpy(__mem->_oGi,Gi, sizeof(double) * 6);
+			}
+			else {
+				__mem->oG11 = get_Gij2(0, 0);
+				__mem->oG12 = get_Gij2(0, 1);
+				__mem->oG22 = get_Gij2(1, 1);
+				__mem->og11 = get_gij2(0, 0);
+				__mem->og12 = get_gij2(0, 1);
+				__mem->og22 = get_gij2(1, 1);
+				memcpy(__mem->_ogi, gi2, sizeof(double) * 6);
+				memcpy(__mem->_oGi, Gi2, sizeof(double) * 6);
+			}
+			memcpy(__mem->oGammaijk, Gammaijk, sizeof(double) * 8);
+		    __mem->osc = sc;
+			__mem->orefDv = _dv;
 			__mem->oX = this->x;
 			__mem->oY = this->y;
 			__mem->xi_1 = xi_1;
 			__mem->xi_2 = xi_2;
 			__mem->eta_1 = eta_1;
 			__mem->eta_2 = eta_2;
-			memcpy(__mem->_ogi, __mem->_gi, sizeof(double) * 6);
-			memcpy(__mem->_oGi, __mem->_Gi, sizeof(double) * 6);
-			memcpy(__mem->oGammaijk, __mem->_Gammaijk, sizeof(double) * 8);
+
+			
 
 		}
 		void memory(_memS_ref* __mem) {
@@ -20512,20 +20528,28 @@ if(add)
 			__mem->eta_2 = eta_2;
 
 			std::memcpy(__mem->_Sij, _Sij, sizeof(double) * 4);
-			std::memcpy(__mem->_gi, gi, sizeof(double) * 6);
+			
 			if (mode == "SLOPE")
 			{
 				std::memcpy(__mem->_Gi, Gi2, sizeof(double) * 6);
 				std::memcpy(__mem->_Gij, Gij2, sizeof(double) * 4);
 				std::memcpy(__mem->_gij, gij2, sizeof(double) * 4);
+				std::memcpy(__mem->_gi, gi2, sizeof(double) * 6);
 				__mem->_gi[2] = 0;
 				__mem->_gi[5] = 0;
+				__mem->_Gi[2] = 0;
+				__mem->_Gi[5] = 0;
 
 			}
 			else {
 				std::memcpy(__mem->_gij, gij, sizeof(double) * 4);
 				std::memcpy(__mem->_Gi, Gi, sizeof(double) * 6);
 				std::memcpy(__mem->_Gij, Gij, sizeof(double) * 4);
+				std::memcpy(__mem->_gi, gi, sizeof(double) * 6);
+				__mem->_gi[2] = 0;
+				__mem->_gi[5] = 0;
+				__mem->_Gi[2] = 0;
+				__mem->_Gi[5] = 0;
 			}
 			//std::memset(__mem->_gij, 0, sizeof(double) * 4);
 			//std::memset(__mem->_Gij, 0, sizeof(double) * 4);
