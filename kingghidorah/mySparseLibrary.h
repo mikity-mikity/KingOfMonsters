@@ -1361,6 +1361,7 @@ namespace KingOfMonsters {
 				double b = 0;
 				auto cublas = cuda->cuda()->blas(device);
 				double* result = cuda->cuda()->work_M(cuda->fastest());
+				//cudaMemset(result, 0, sizeof(double) * E->get().cols() * this->dat->_dmat.cols());
 				cublasDgemm(cublas,
 					CUBLAS_OP_T, CUBLAS_OP_N,
 					E->get().cols(), this->dat->_dmat.cols(), E->get().rows(),
