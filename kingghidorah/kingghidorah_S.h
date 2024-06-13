@@ -6568,13 +6568,13 @@ namespace KingOfMonsters {
 		}
 		double sx(double v1, double v2)
 		{
-			double sx = v1 * _ref->get__gi(0, 0) + v2 * _ref->get__gi(1, 0);
+			double sx = v1 * get_gi(0,0) + v2 * get_gi(1, 0);
 			return sx;
 		}
 		double sy(double v1, double v2)
 		{
 
-			double sy = v1 * _ref->get__gi(0, 1) + v2 * _ref->get__gi(1, 1);
+			double sy = v1 * get_gi(0, 1) + v2 * get_gi(1, 1);
 			return sy;
 		}
 		double symm_sigma(double sx,double sy,double __xi, double __eta)
