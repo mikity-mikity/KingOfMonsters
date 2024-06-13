@@ -8924,6 +8924,84 @@ namespace KingOfMonsters {
 				ptr1++;
 			}
 		}
+		double DIV_free()
+		{
+
+
+			double xu = 0, xv = 0, yu = 0, yv = 0;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				xu += _ref->d1[0][s] * _ref->buf_u[s];
+				xv += _ref->d1[1][s] * _ref->buf_u[s];
+				yu += _ref->d1[0][s] * _ref->buf_v[s];
+				yv += _ref->d1[1][s] * _ref->buf_v[s];
+			}
+			double xx = xu * _ref->_oGi[0] + xv * _ref->_oGi[3];
+			double xy = xu * _ref->_oGi[1] + xv * _ref->_oGi[4];
+			double yx = yu * _ref->_oGi[0] + yv * _ref->_oGi[3];
+			double yy = yu * _ref->_oGi[1] + yv * _ref->_oGi[4];
+
+			return xx + yy;
+		}
+
+
+
+		void DIV_free_u(double* ptr)
+		{
+
+			double xuu = 0, xuv = 0, xvu = 0, xvv = 0;
+			double* ptr1 = ptr;
+
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+
+				xu = _ref->d1[0][s];
+				xv = _ref->d1[1][s];
+				//yu = _ref->d1[0][s];
+				//yv = _ref->d1[1][s];
+
+				double xx = xu * _ref->_oGi[0] + xv * _ref->_oGi[3];
+				double xy = xu * _ref->_oGi[1] + xv * _ref->_oGi[4];
+				double yx = yu * _ref->_oGi[0] + yv * _ref->_oGi[3];
+				double yy = yu * _ref->_oGi[1] + yv * _ref->_oGi[4];
+
+				double val = xx + yy;
+
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		void DIV_free_v(double* ptr)
+		{
+
+			double xuu = 0, xuv = 0, xvu = 0, xvv = 0;
+			double* ptr1 = ptr;
+
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+
+				//xu = _ref->d1[0][s];
+				//xv = _ref->d1[1][s];
+				yu = _ref->d1[0][s];
+				yv = _ref->d1[1][s];
+				double xx = xu * _ref->_oGi[0] + xv * _ref->_oGi[3];
+				double xy = xu * _ref->_oGi[1] + xv * _ref->_oGi[4];
+				double yx = yu * _ref->_oGi[0] + yv * _ref->_oGi[3];
+				double yy = yu * _ref->_oGi[1] + yv * _ref->_oGi[4];
+
+				double val = xx + yy;
+
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
 		double conformal_x()
 		{
 
@@ -22836,6 +22914,20 @@ if(add)
 			void rot_free_v(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
 			{
 				__mem->rot_free_v(__mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
+			}
+			double DIV_free()
+			{
+				return __mem->DIV_free();
+			}
+			void DIV_free_u(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->DIV_free_u(__mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
+			}
+			void DIV_free_v(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->DIV_free_v(__mem->__grad);
 				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
 			}
 			double conformal_x()
