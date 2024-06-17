@@ -1711,11 +1711,17 @@ namespace KingOfMonsters {
 				_inv2(gij, Gij);
 			}
 			else {
+				gi2[0] = gi[0];
+				gi2[1] = gi[1];
+				gi2[2] = 0;
+				gi2[3] = gi[3];
+				gi2[4] = gi[4];
+				gi2[5] = 0;
 
-				gij2[0] = gi[0] * gi[0] + gi[1] * gi[1];
-				gij2[1] = gi[0] * gi[3] + gi[1] * gi[4];
+				gij2[0] = gi2[0] * gi2[0] + gi2[1] * gi2[1];
+				gij2[1] = gi2[0] * gi2[3] + gi2[1] * gi2[4];
 				gij2[2] = gij2[1];
-				gij2[3] = gi[3] * gi[3] + gi[4] * gi[4];
+				gij2[3] = gi2[3] * gi2[3] + gi2[4] * gi2[4];
 				_dv = sqrt(_det2(gij2));
 				_inv2(gij2, Gij2);
 				double Fx = 0, Fy = 0;
