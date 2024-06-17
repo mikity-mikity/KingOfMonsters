@@ -18648,7 +18648,7 @@ if(add)
 				u += _ref->d0[s] * _ref->buf_u[s];
 				v += _ref->d0[s] * _ref->buf_v[s];
 			}
-			double val = u * _x - v * _y;
+			double val = u * _x + v * _y;
 
 			return val;
 		}
@@ -18667,7 +18667,7 @@ if(add)
 				double u = _ref->d0[s];
 				double v = 0;// v1* gi[1] + v2 * gi[4];
 
-				val = u * _x - v * _y;
+				val = u * _x + v * _y;
 
 				*ptr1 = val;
 				ptr1++;
@@ -18688,7 +18688,7 @@ if(add)
 				double u = 0;
 				double v = _ref->d0[s];// v1* gi[1] + v2 * gi[4];
 
-				val = u * _x - v * _y;
+				val = u * _x + v * _y;
 
 				*ptr1 = val;
 				ptr1++;
