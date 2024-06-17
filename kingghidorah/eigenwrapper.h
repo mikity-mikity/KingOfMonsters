@@ -184,6 +184,7 @@ namespace KingOfMonsters {
 		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	public:
 		double* gpumat = 0;
+		int gpusize = 0;
 		vector<vector<double>> _coeff;
 		std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>> _mat;
 		Eigen::MatrixXd _dmat;
@@ -281,7 +282,7 @@ namespace KingOfMonsters {
 		//void ofAtB_gpu(_mySparse* B, bool sparse);
 		void ofAtB(_mySparse* B, bool sparse, bool AorB);
 		void _ofAtB(_mySparse* B, _mySparse* C);
-		void _ofBtAB(_mySparse* B, /*Eigen::VectorXd* b, */_mySparse* C/*, Eigen::VectorXd* ret*/);
+		void _ofBtAB(_mySparse* B, _mySparse* C, Eigen::VectorXd* b, Eigen::VectorXd* ret);
 		void _ofCtAB(_mySparse* B, _mySparse* C, /*Eigen::VectorXd* b, */_mySparse* D/*, Eigen::VectorXd* ret*/);
 		void _ofBtAB(_mySparse* B, _mySparse* B2, /*Eigen::VectorXd* b, */_mySparse* C/*, Eigen::VectorXd* ret*/);
 		//void _ofBtAB2(_mySparse* B, _mySparse* C, _mySparse* Q, _mySparse* R, KingOfMonsters::cuda* cuda);

@@ -1693,7 +1693,7 @@ void KingOfMonsters::_mySparse::Clear() {
 void KingOfMonsters::_mySparse::init(int64_t n, int64_t m)
 {
 	this->_nt = 1;
-
+	
 	resize(n, m);
 }
 int64_t KingOfMonsters::_mySparse::resize(int64_t n, int64_t m) {
@@ -2371,7 +2371,7 @@ void KingOfMonsters::_mySparse::_ofAtB(_mySparse* B, _mySparse* C)
 }*/
 
 
-void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B,/* Eigen::VectorXd* b, */_mySparse* C/*, Eigen::VectorXd* ret*/)
+void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B,_mySparse* C,Eigen::VectorXd* b, Eigen::VectorXd* ret)
 {
 	Eigen::MatrixXd D;
 
@@ -2406,8 +2406,8 @@ void KingOfMonsters::_mySparse::_ofBtAB(_mySparse* B,/* Eigen::VectorXd* b, */_m
 		C->_dmat.middleCols(_S, _E - _S).noalias() = D * right.middleCols(_S, _E - _S);
 	}
 
-
-	//*ret = D.transpose() * *b;
+	if(b!=0 && ret !=0)
+		*ret = D.transpose() * *b;
 }
 void KingOfMonsters::_mySparse::_ofCtAB(_mySparse* B, _mySparse* C/* Eigen::VectorXd* b, */,_mySparse* D/*, Eigen::VectorXd* ret*/)
 {
@@ -3634,7 +3634,6 @@ std::string KingOfMonsters::_mySparse::_solveI_dense(_mySparse * ret)
 	//Eigen::SparseLU<Eigen::SparseMatrix<double,Eigen::ColMajor>> llt;
 	//Eigen::FullPivLU<
 }
-
 void initidentiy(KingOfMonsters::cuda* cuda, int64_t N,bool mp) {
 	double _a = 0;
 	double _b = 1;
