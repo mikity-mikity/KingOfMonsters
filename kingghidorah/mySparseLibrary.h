@@ -170,11 +170,6 @@ namespace KingOfMonsters {
 		_myDoubleArray* _arr = 0;
 		//Int64 _N = 0;
 	public:
-		double lambda(myDoubleArray ^v)
-		{
-			double lambda = v->_arr->__v.dot(this->_arr->__v) / (this->_arr->__v.dot(this->_arr->__v));
-			return lambda;
-		}
 		void AtB(denseMatrix^ M)
 		{
 			this->_arr->__v = M->get().transpose() * this->_arr->__v;
@@ -196,7 +191,6 @@ namespace KingOfMonsters {
 			w->_arr->__v = this->_arr->__v.bottomRows(this->_arr->__v.rows()-N);
 
 		}
-		
 		void extend(int L1, int L2, int mode)
 
 		{
@@ -677,43 +671,14 @@ namespace KingOfMonsters {
 	public ref class mySparse{
 	public:
 		_mySparse* dat = 0;
-		void ofIM(mySparse^ m)
-		{
-			this->dat->_dmat.resize(m->dat->_dmat.rows(), m->dat->_dmat.cols());
-			this->dat->_dmat.setIdentity();
-			this->dat->_dmat -= m->dat->_dmat;
-		}
-		void pseudoinverse(myDoubleArray^ v)
-		{
-			Eigen::MatrixXd tmp = Eigen::MatrixXd::Identity(v->_arr->__v.size(), v->_arr->__v.size())-v->_arr->__v*(1.0/(v->_arr->__v.transpose() * v->_arr->__v))* v->_arr->__v.transpose();
-			this->dat->_dmat = tmp;
-		}
 		
 		void toGpu()
 		{
 			if (dat->gpumat == 0)
 			{
 				cudaMalloc(&dat->gpumat, sizeof(double) * this->dat->_dmat.rows() * this->dat->_dmat.cols());
-				dat->gpusize = this->dat->_dmat.rows() * this->dat->_dmat.cols();
-			}
-			if (dat->gpusize < this->dat->_dmat.rows() * this->dat->_dmat.cols())
-			{
-				cudaFree(dat->gpumat);
-				cudaMalloc(&dat->gpumat, sizeof(double) * this->dat->_dmat.rows() * this->dat->_dmat.cols());
-				dat->gpusize = this->dat->_dmat.rows() * this->dat->_dmat.cols();
 			}
 			cudaMemcpy(dat->gpumat, this->dat->_dmat.data(), sizeof(double) * this->dat->_dmat.rows() * this->dat->_dmat.cols(), cudaMemcpyHostToDevice);
-		}
-		void extend2(int N)
-		{
-			Eigen::MatrixXd tmp(N,N);
-			tmp.setZero();
-			tmp.bottomRightCorner(this->dat->_dmat.rows(),this->dat->_dmat.cols()) = this->dat->_dmat;
-			
-		}
-		void bottomRows(mySparse^ res,int N)
-		{
-			res->dat->_dmat = this->dat->_dmat.bottomRows(N);
 		}
 		System::String^ tostring()
 		{
@@ -845,10 +810,6 @@ namespace KingOfMonsters {
 		void leftmultiply(myDoubleArray^ v, myDoubleArray^ ret)
 		{
 			ret->_arr->__v = v->_arr->__v.transpose() * this->dat->_mat[0];
-		}
-		void _leftmultiply(myDoubleArray^ v, myDoubleArray^ ret)
-		{
-			ret->_arr->__v = v->_arr->__v.transpose() * this->dat->_dmat;
 		}
 		void ofIdentity(int N)
 		{
@@ -1111,25 +1072,19 @@ namespace KingOfMonsters {
 			
 			dat = 0;
 			dat = new _mySparse();
-			dat->gpumat = 0;
-			dat->gpusize = 0;
 			dat->init(0, 0);
-	
+			dat->gpumat = 0;
 		}
 		mySparse(Int64 n, Int64 m)
 		{
 			dat = 0;
 			dat = new _mySparse();
-			dat->gpumat = 0;
-			dat->gpusize = 0;
 			dat->init(n, m);
 		}
 		mySparse(mySparse^ m)
 		{
 			dat = 0;
 			dat = new _mySparse();
-			dat->gpumat = 0;
-			dat->gpusize = 0;
 			dat->init(m->rows(), m->cols());
 			this->dat->OfDuplicate(m->dat);
 			this->dat->copycoefffrom(m->dat);
@@ -1168,11 +1123,6 @@ namespace KingOfMonsters {
 		{
 			dat->init(m->rows(), m->cols());
 			this->dat->_OfDuplicate(m->dat);
-		}
-		
-		void ofDuplicate_dense(mySparse^ m)
-		{
-			this->dat->_dmat = m->dat->_dmat;
 		}
 		void ofAplusB(double alpha, mySparse^ A, double beta, mySparse^ B)
 		{
@@ -1343,10 +1293,6 @@ namespace KingOfMonsters {
 			this->dat->_dmat.bottomRightCorner(this->dat->_dmat.rows() - split, this->dat->_dmat.cols() - split)=m2->dat->_dmat;
 
 		}
-		void resizedense(int n, int m)
-		{
-			this->dat->_dmat.resize(n, m);
-		}
 		void transform(mySparse^ K,double salt,myPermutation^ p,denseMatrix^ ML,long L, long M,long S,int sc1,int sc2)
 		{
 		
@@ -1403,54 +1349,7 @@ namespace KingOfMonsters {
 		{
 			this->dat->_dmat = E->dat->_dmat * this->dat->_mat[0] * E->dat->_dmat.transpose();
 		}
-		
-		System::String^ AtBA(mySparse^ B, mySparse^ A, myCuda^ cuda, myDoubleArray^ b, myDoubleArray^ ret)
-		{
-			System::String^ sss = gcnew System::String("");
-			int device = cuda->fastest();
 
-			if (this->dat->gpumat == 0 || A->dat->gpumat == 0 || B->dat->gpumat == 0)
-			{
-				this->dat->_dmat = A->dat->_dmat.transpose() * B->dat->_dmat * A->dat->_dmat;
-			
-
-			}
-			else {
-				double a = 1;
-				double b = 0;
-				auto cublas = cuda->cuda()->blas(device);
-				double* result = cuda->cuda()->work_M(cuda->fastest());
-		
-				auto err=cublasDgemm(cublas,
-					CUBLAS_OP_T, CUBLAS_OP_N,
-					A->dat->_dmat.cols(), B->dat->_dmat.cols(), A->dat->_dmat.rows(),
-					&a,
-					A->dat->gpumat, A->dat->_dmat.rows(),
-					B->dat->gpumat, B->dat->_dmat.rows(),
-					&b,
-					result, A->dat->_dmat.cols());
-				sss += "dgemm:" + ((int)err).ToString();
-				err=cublasDgemm(cublas,
-					CUBLAS_OP_N, CUBLAS_OP_N,
-					A->dat->_dmat.cols(), A->dat->_dmat.cols(), B->dat->_dmat.cols(),
-					&a,
-					result, A->dat->_dmat.cols(),
-					B->dat->gpumat, B->dat->_dmat.rows(),
-					&b,
-					this->dat->gpumat, A->dat->_dmat.cols());
-				sss += "dgemm:" + ((int)err).ToString();
-				this->dat->_dmat.resize(A->dat->_dmat.cols(), A->dat->_dmat.cols());
-				cudaMemcpy(this->dat->_dmat.data(), this->dat->gpumat, sizeof(double) * A->dat->_dmat.cols() * A->dat->_dmat.cols(), cudaMemcpyDeviceToHost);
-			}
-			if (b != nullptr && ret != nullptr)
-			{
-				double tmp1 = A->dat->_dmat.sum();
-				double tmp2 = B->dat->_dmat.sum();
-				double tmp3 = this->dat->_dmat.sum();
-				ret->_arr->__v = this->dat->_dmat * b->_arr->__v;
-			}
-			return sss;
-		}
 		void AtBA(denseMatrix^ E, myCuda^ cuda)
 		{
 			int device = cuda->fastest();
@@ -1462,7 +1361,6 @@ namespace KingOfMonsters {
 				double b = 0;
 				auto cublas = cuda->cuda()->blas(device);
 				double* result = cuda->cuda()->work_M(cuda->fastest());
-				//cudaMemset(result, 0, sizeof(double) * E->get().cols() * this->dat->_dmat.cols());
 				cublasDgemm(cublas,
 					CUBLAS_OP_T, CUBLAS_OP_N,
 					E->get().cols(), this->dat->_dmat.cols(), E->get().rows(),
@@ -1495,7 +1393,7 @@ namespace KingOfMonsters {
 				double b = 0;
 				auto cublas = cuda->cuda()->blas(device);
 				double* result = cuda->cuda()->work_M(cuda->fastest());
-				auto err=cublasDgemm(cublas,
+				cublasDgemm(cublas,
 					CUBLAS_OP_T, CUBLAS_OP_N,
 					E->dat->_dmat.cols(), this->dat->_dmat.cols(), E->dat->_dmat.rows(),
 					&a,
@@ -1504,7 +1402,7 @@ namespace KingOfMonsters {
 					&b,
 					result, E->dat->_dmat.cols());
 
-				auto err2=cublasDgemm(cublas,
+				cublasDgemm(cublas,
 					CUBLAS_OP_N, CUBLAS_OP_N,
 					E->dat->_dmat.cols(), E->dat->_dmat.cols(), this->dat->_dmat.cols(),
 					&a,
@@ -1579,30 +1477,6 @@ namespace KingOfMonsters {
 				this->dat->_dmat.resize(E->dat->_dmat.rows(), E->dat->_dmat.rows());
 
 				cudaMemcpy(this->dat->_dmat.data(), this->dat->gpumat, sizeof(double) * E->dat->_dmat.rows() * E->dat->_dmat.rows(), cudaMemcpyDeviceToHost);
-			}
-		}
-		void AB(mySparse^ E, myCuda^ cuda)
-		{
-			int device = cuda->fastest();
-
-			if (this->dat->gpumat == 0 || E->dat->gpumat == 0)
-				this->dat->_dmat = E->dat->_dmat * this->dat->_dmat ;
-			else {
-				double a = 1;
-				double b = 0;
-				auto cublas = cuda->cuda()->blas(device);
-				double* result = cuda->cuda()->work_M(cuda->fastest());
-				cublasDgemm(cublas,
-					CUBLAS_OP_N, CUBLAS_OP_N,
-					E->dat->_dmat.rows(), this->dat->_dmat.cols(), E->dat->_dmat.cols(),
-					&a,
-					E->dat->gpumat, E->dat->_dmat.rows(),
-					this->dat->gpumat, this->dat->_dmat.rows(),
-					&b,
-					result, E->dat->_dmat.rows());
-
-
-				cudaMemcpy(this->dat->_dmat.data(), result, sizeof(double) * E->dat->_dmat.rows() * this->dat->_dmat.cols(), cudaMemcpyDeviceToHost);
 			}
 		}
 		void ABCt(mySparse^ E, mySparse^ D, myCuda^ cuda)
@@ -1740,14 +1614,8 @@ namespace KingOfMonsters {
 		void _ofBtAB(mySparse^ A, mySparse^ B, myDoubleArray^ b, myDoubleArray^ ret)
 		{
 			//pin_ptr<double> ptr = &b[0];
-			if (b != nullptr && ret != nullptr)
-			{
-				A->dat->_ofBtAB(B->dat, this->dat, &b->_arr->__v, &ret->_arr->__v);
-			}
-			else {
-				A->dat->_ofBtAB(B->dat, this->dat, 0,0);
 
-			}
+			A->dat->_ofBtAB(B->dat, this->dat);
 			//array<double>^ ret = gcnew array<double>(_ret.rows());
 			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
 			//ptr = nullptr;
@@ -1760,11 +1628,7 @@ namespace KingOfMonsters {
 			//A->dat->_ofBtAB(B->dat, this->dat);
 			 
 			this->dat->_dmat=B->dat->_dmat.transpose()* A->dat->_dmat* B->dat->_dmat;
-			
-			if (b != nullptr && ret != nullptr)
-			{
-				ret->_arr->__v = this->dat->_dmat * b->_arr->__v;
-			}
+
 			//array<double>^ ret = gcnew array<double>(_ret.rows());
 			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
 			//ptr = nullptr;
@@ -2601,12 +2465,7 @@ namespace KingOfMonsters {
 			Eigen::setNbThreads(0);
 
 		}
-		void ofAtA2(mySparse^ m)
-
-		{
-			this->dat->_dmat = m->dat->_dmat.transpose() * m->dat->_dmat;
-		}
-			void addsmallidentity(double salt, bool sparse, bool dense) {
+		void addsmallidentity(double salt, bool sparse, bool dense) {
 			this->dat->addsmallidentity(salt, sparse, dense);
 		}
 		void addsmallidentity(double salt, bool sparse, bool dense,int m) {
