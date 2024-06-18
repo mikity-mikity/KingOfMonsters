@@ -18560,15 +18560,15 @@ if(add)
 			v2 /= length;
 			double _x = v1 * _ref->_ogi[0] + v2 * _ref->_ogi[3];
 			double _y = v1 * _ref->_ogi[1] + v2 * _ref->_ogi[4];
-			double u = 0;
-			double v = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
+			//double u = v1*_ref->get__gi(0,0)+ v2 * _ref->get__gi(1, 0);
+			//double v = v1 * _ref->get__gi(0, 1) + v2 * _ref->get__gi(1, 1);
+			/*for (int s = 0; s < _ref->_nNode; s++)
 			{
 
 				u += _ref->d0[s] * _ref->buf_u[s];
 				v += _ref->d0[s] * _ref->buf_v[s];
-			}
-			double val = u * _x + v * _y;
+			}*/
+			double val = u * _y - v * _x;
 
 			return val;
 		}
@@ -18584,10 +18584,10 @@ if(add)
 
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				double u = _ref->d0[s];
+				double u = v1*_ref->d1[0][s]+v2*_ref->d1[1][s];
 				double v = 0;// v1* gi[1] + v2 * gi[4];
 
-				val = u * _x + v * _y;
+				val = u * _y - v * _x;
 
 				*ptr1 = val;
 				ptr1++;
@@ -18606,9 +18606,9 @@ if(add)
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				double u = 0;
-				double v = _ref->d0[s];// v1* gi[1] + v2 * gi[4];
+				double v = v1 * _ref->d1[0][s] + v2 * _ref->d1[1][s];
 
-				val = u * _x + v * _y;
+				val = u * _y - v * _x;
 
 				*ptr1 = val;
 				ptr1++;
