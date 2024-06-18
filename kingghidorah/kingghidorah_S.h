@@ -8016,153 +8016,9 @@ namespace KingOfMonsters {
 				ptr1++;
 			}
 		}
-		double ortho3(double s1, double s2, double w1, double w2)
-		{
-			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
-			s1 /= length;
-			s2 /= length;
-			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
-			w1 /= length;
-			w2 /= length;
-			double u1=0, u2=0, v1=0, v2 = 0;
-
-			for (int s = 0; s < _ref->_nNode; s++) 
-			{
-				u1 += _ref->d1[0][s] * _ref->buf_xi[s];
-				u2 += _ref->d1[1][s] * _ref->buf_xi[s];
-				v1 += _ref->d1[0][s] * _ref->buf_eta[s];
-				v2 += _ref->d1[1][s] * _ref->buf_eta[s];
-			}
-			double b11 = _ref->_ogi[0] * u1 + _ref->_ogi[1] * v1;
-			double b12 = _ref->_ogi[0] * u2 + _ref->_ogi[1] * v2;
-			double b21 = _ref->_ogi[3] * u1 + _ref->_ogi[4] * v1;
-			double b22 = _ref->_ogi[3] * u2 + _ref->_ogi[4] * v2;
-			double B11 = b11, B12 = 0.5 * (b12 + b21), B22 = b22;
-			double val = B11 * s1 * w1 + B12 * (s1 * w2+s2 * w1) + B22 * s2 * w2;
-			return val;
-		}
-		void ortho3_xi(double* ptr, double s1, double s2, double w1, double w2)
-		{
-			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
-			s1 /= length;
-			s2 /= length;
-			length = sqrt(w1 * w1 * _ref->og11 + 2 * (w1 * w2) * _ref->og12 + w2 * w2 * _ref->og22);
-			w1 /= length;
-			w2 /= length;
-
-			double val = 0;
-			double* ptr1 = ptr;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				double _b11 = _ref->_ogi[0] * _ref->d1[0][s];
-				double _b12 = _ref->_ogi[0] * _ref->d1[1][s];
-				double _b21 = _ref->_ogi[3] * _ref->d1[0][s];
-				double _b22 = _ref->_ogi[3] * _ref->d1[1][s];
-				double _B11 = _b11, _B12 = 0.5 * (_b12 + _b21), _B22 = _b22;
-				double val = _B11 * s1 * w1 + _B12 * (s1 * w2 + s2 * w1) + _B22 * s2 * w2;
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
-		void ortho3_eta(double* ptr, double s1, double s2, double w1, double w2)
-		{
-			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
-			s1 /= length;
-			s2 /= length;
-			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
-			w1 /= length;
-			w2 /= length;
-
-			double val = 0;
-			double* ptr1 = ptr;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				double _b11 = _ref->_ogi[1] * _ref->d1[0][s];
-				double _b12 = _ref->_ogi[1] * _ref->d1[1][s];
-				double _b21 = _ref->_ogi[4] * _ref->d1[0][s];
-				double _b22 = _ref->_ogi[4] * _ref->d1[1][s];
-
-				double _B11 = _b11, _B12 = 0.5 * (_b12 + _b21), _B22 = _b22;
-				double val = _B11 * s1 * w1 + _B12 * (s1 * w2 + s2 * w1) + _B22 * s2 * w2;
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
-		double ortho4(double s1, double s2, double w1, double w2)
-		{
-			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
-			s1 /= length;
-			s2 /= length;
-			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
-			w1 /= length;
-			w2 /= length;
-			double u1 = 0, u2 = 0, v1 = 0, v2 = 0;
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				u1 += _ref->d1[0][s] * _ref->buf_xi[s];
-				u2 += _ref->d1[1][s] * _ref->buf_xi[s];
-				v1 += _ref->d1[0][s] * _ref->buf_eta[s];
-				v2 += _ref->d1[1][s] * _ref->buf_eta[s];
-			}
-			double b11 = _ref->_ogi[0] * u1 + _ref->_ogi[1] * v1;
-			double b12 = _ref->_ogi[0] * u2 + _ref->_ogi[1] * v2;
-			double b21 = _ref->_ogi[3] * u1 + _ref->_ogi[4] * v1;
-			double b22 = _ref->_ogi[3] * u2 + _ref->_ogi[4] * v2;
-			double B11 = b11, B12 = 0.5 * (b12 + b21), B22 = b22;
-			double val = B11 * (w1 * w1) + 2 * B12 * (w1 * w2) + B22 * w2 * w2;
-			val -= B11 * (s1 * s1) + 2 * B12 * (s1 * s2) + B22 * s2 * s2;
-
-			return val;
-		}
-		void ortho4_xi(double* ptr, double s1, double s2, double w1, double w2)
-		{
-			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
-			s1 /= length;
-			s2 /= length;
-			length = sqrt(w1 * w1 * _ref->og11 + 2 * (w1 * w2) * _ref->og12 + w2 * w2 * _ref->og22);
-			w1 /= length;
-			w2 /= length;
-
-			double val = 0;
-			double* ptr1 = ptr;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				double _b11 = _ref->_ogi[0] * _ref->d1[0][s];
-				double _b12 = _ref->_ogi[0] * _ref->d1[1][s];
-				double _b21 = _ref->_ogi[3] * _ref->d1[0][s];
-				double _b22 = _ref->_ogi[3] * _ref->d1[1][s];
-				double _B11 = _b11, _B12 = 0.5 * (_b12 + _b21), _B22 = _b22;
-				double val = _B11 * (w1 * w1) + 2 * _B12 * (w1 * w2) + _B22 * w2 * w2;
-				val -= _B11 * (s1 * s1) + 2 * _B12 * (s1 * s2) + _B22 * s2 * s2;
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
-		void ortho4_eta(double* ptr, double s1, double s2, double w1, double w2)
-		{
-			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
-			s1 /= length;
-			s2 /= length;
-			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
-			w1 /= length;
-			w2 /= length;
-
-			double val = 0;
-			double* ptr1 = ptr;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				double _b11 = _ref->_ogi[1] * _ref->d1[0][s];
-				double _b12 = _ref->_ogi[1] * _ref->d1[1][s];
-				double _b21 = _ref->_ogi[4] * _ref->d1[0][s];
-				double _b22 = _ref->_ogi[4] * _ref->d1[1][s];
-				double _B11 = _b11, _B12 = 0.5 * (_b12 + _b21), _B22 = _b22;
-				double val = _B11 * (w1 * w1) + 2 * _B12 * (w1 * w2) + _B22 * w2 * w2;
-				val -= _B11 * (s1 * s1) + 2 * _B12 * (s1 * s2) + _B22 * s2 * s2;
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
+		
+		
+		
 		double ortho(double v1, double v2, double w1, double w2)
 		{
 			double length = sqrt(v1 * v1 * _ref->og11 + 2 * v1 * v2 * _ref->og12 + v2 * v2 * _ref->og22);
@@ -8327,7 +8183,65 @@ namespace KingOfMonsters {
 				ptr1++;
 			}
 		}
-		
+		double ortho3(double v1, double v2, double w1, double w2)
+		{
+			double length = sqrt(v1 * v1 * _ref->og11 + 2 * v1 * v2 * _ref->og12 + v2 * v2 * _ref->og22);
+			v1 /= length;
+			v2 /= length;
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length;
+			w2 /= length;
+
+			double val = get_gij(0,0) * v1 * w1 + get_gij(0, 1) * v1 * w2 + get_gij(1, 0) * v2 * w1 + get_gij(1, 1) * v2 * w2;
+			return val;
+		}
+		void ortho3_x(double* ptr, double v1, double v2, double w1, double w2)
+		{
+			double length = sqrt(v1 * v1 * _ref->og11 + 2 * v1 * v2 * _ref->og12 + v2 * v2 * _ref->og22);
+			v1 /= length;
+			v2 /= length;
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * (w1 * w2) * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length;
+			w2 /= length;
+
+			double val = 0;
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _g11 = 2*get_gi(0,0) * _ref->d1[0][s];
+				double _g12 = get_gi(0, 0) * _ref->d1[1][s]+ get_gi(1, 0) * _ref->d1[0][s];
+				double _g22 = 2*get_gi(1, 0) * _ref->d1[1][s];
+
+				double _g21 = _g12;
+				double val = _g11 * v1 * w1 + _g12 * v1 * w2 + _g21 * v2 * w1 + _g22 * v2 * w2;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		void ortho3_y(double* ptr, double v1, double v2, double w1, double w2)
+		{
+			double length = sqrt(v1 * v1 * _ref->og11 + 2 * v1 * v2 * _ref->og12 + v2 * v2 * _ref->og22);
+			v1 /= length;
+			v2 /= length;
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * (w1 * w2) * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length;
+			w2 /= length;
+
+			double val = 0;
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _g11 = 2 * get_gi(0, 1) * _ref->d1[0][s];
+				double _g12 = get_gi(0, 1) * _ref->d1[1][s] + get_gi(1, 1) * _ref->d1[0][s];
+				double _g22 = 2 * get_gi(1, 1) * _ref->d1[1][s];
+
+				double _g21 = _g12;
+				double val = _g11 * v1 * w1 + _g12 * v1 * w2 + _g21 * v2 * w1 + _g22 * v2 * w2;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+
 		
 
 		double curl_free()
@@ -18789,6 +18703,82 @@ if(add)
 				ptr1++;
 			}
 		}
+
+		double Gamma111(double s1, double s2, double t1, double t2)
+		{
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
+			double val = 0;
+			val = Gammaijk[0] * s1 * s1 * s1 + Gammaijk[1] * s1 * s1 * s2 + 2 * (Gammaijk[2] * s1 * s2 * s1 + Gammaijk[3] * s1 * s2 * s2) + Gammaijk[6] * s2 * s2 * s1 + Gammaijk[7] * s2 * s2 * s2;
+			val -= _ref->oGammaijk[0] * s1 * s1 * s1 + _ref->oGammaijk[1] * s1 * s1 * s2 + 2 * (_ref->oGammaijk[2] * s1 * s2 * s1 + _ref->oGammaijk[3] * s1 * s2 * s2) + _ref->oGammaijk[6] * s2 * s2 * s1 + _ref->oGammaijk[7] * s2 * s2 * s2;
+
+
+
+			return val;
+		}
+		void Gamma111_u(double* ptr, double s1, double s2, double t1, double t2)
+		{
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
+			
+
+			double* ptr1 = ptr;
+			double val = 0;
+
+
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _Gamma111 = _ref->__dh[0][s] * _ref->get__Gi(0, 0);
+				double _Gamma112 = _ref->__dh[0][s] * _ref->get__Gi(1, 0);
+				double _Gamma121 = _ref->__dh[1][s] * _ref->get__Gi(0, 0);
+				double _Gamma122 = _ref->__dh[1][s] * _ref->get__Gi(1, 0);
+				double _Gamma221 = _ref->__dh[3][s] * _ref->get__Gi(0, 0);
+				double _Gamma222 = _ref->__dh[3][s] * _ref->get__Gi(1, 0);
+				double _Gamma211 = _Gamma121;
+				double _Gamma212 = _Gamma122;
+
+
+				val = _Gamma111 * s1 * s1 * s1 + _Gamma112 * s1 * s1 * s2 + 2 * (_Gamma121 * s1 * s2 * s1 + _Gamma122 * s1 * s2 * s2) + _Gamma221 * s2 * s2 * s1 + _Gamma222 * s2 * s2 * s2;
+
+
+
+
+				*ptr1 = val;
+				ptr1++;
+			}
+		}void Gamma111_v(double* ptr, double s1, double s2, double t1, double t2)
+		{
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
+			
+
+			double* ptr1 = ptr;
+			double val = 0;
+
+
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _Gamma111 = _ref->__dh[0][s] * _ref->get__Gi(0, 1);
+				double _Gamma112 = _ref->__dh[0][s] * _ref->get__Gi(1, 1);
+				double _Gamma121 = _ref->__dh[1][s] * _ref->get__Gi(0, 1);
+				double _Gamma122 = _ref->__dh[1][s] * _ref->get__Gi(1, 1);
+				double _Gamma221 = _ref->__dh[3][s] * _ref->get__Gi(0, 1);
+				double _Gamma222 = _ref->__dh[3][s] * _ref->get__Gi(1, 1);
+				double _Gamma211 = _Gamma121;
+				double _Gamma212 = _Gamma122;
+
+
+				val = _Gamma111 * s1 * s1 * s1 + _Gamma112 * s1 * s1 * s2 + 2 * (_Gamma121 * s1 * s2 * s1 + _Gamma122 * s1 * s2 * s2) + _Gamma221 * s2 * s2 * s1 + _Gamma222 * s2 * s2 * s2;
+
+
+
+
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
 		double __bodyU(double load, bool accurate_area)
 		{
 			double val = 0;
@@ -22860,6 +22850,20 @@ if(add)
 				__mem->Gamma112_v(__mem->__grad, s1, s2, t1, t2);
 				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
 			}
+			double Gamma111(double s1, double s2, double t1, double t2)
+			{
+				return __mem->Gamma111(s1, s2, t1, t2);
+			}
+			void Gamma111_u(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, bool add)
+			{
+				__mem->Gamma111_u(__mem->__grad, s1, s2, t1, t2);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
+			}
+			void Gamma111_v(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, bool add)
+			{
+				__mem->Gamma111_v(__mem->__grad, s1, s2, t1, t2);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
+			}
 			double  bodyU(double load, bool accurate)
 			{
 				return __mem->__bodyU(load, accurate);
@@ -22944,6 +22948,23 @@ if(add)
 				__mem->ortho_y(__mem->__grad, v1, v2, w1, w2);
 				mat->dat->addrow(ii, index->_arr, __mem->__grad-shift, shift, sc, __mem->_nNode, false, coeff);
 			}
+
+			double ortho3(double v1, double v2, double w1, double w2)
+			{
+				return __mem->ortho3(v1, v2, w1, w2);
+			}
+
+			void ortho3_u(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double v1, double v2, double w1, double w2, int shift)
+			{
+				__mem->ortho3_x(__mem->__grad, v1, v2, w1, w2);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_nNode, true, coeff);
+			}
+			void ortho3_v(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double v1, double v2, double w1, double w2, int shift)
+			{
+				__mem->ortho3_y(__mem->__grad, v1, v2, w1, w2);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_nNode, false, coeff);
+			}
+
 			double ortho2(double v1, double v2, double w1, double w2)
 			{
 				return __mem->ortho2(v1, v2, w1, w2);
@@ -22961,39 +22982,7 @@ if(add)
 				mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_nNode, false, coeff);
 			}
 
-			double ortho3(double v1,double v2,double w1,double w2)
-			{
-				return __mem->ortho3(v1,v2,w1,w2);
-			}
-
-
-			void ortho3_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double v1, double v2, double w1, double w2,int shift)
-			{
-				__mem->ortho3_xi(__mem->__grad, v1, v2,w1,w2);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad-shift, shift, sc, __mem->_nNode, true, coeff);
-			}
-			void ortho3_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double v1, double v2, double w1, double w2, int shift)
-			{
-				__mem->ortho3_eta(__mem->__grad, v1, v2,w1,w2);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad-shift, shift, sc, __mem->_nNode, false, coeff);
-			}
 			
-			double ortho4(double v1, double v2, double w1, double w2)
-			{
-				return __mem->ortho4(v1, v2, w1, w2);
-			}
-
-			void ortho4_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double v1, double v2, double w1, double w2, int shift)
-			{
-				__mem->ortho4_xi(__mem->__grad, v1, v2, w1, w2);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_nNode, true, coeff);
-			}
-			void ortho4_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double v1, double v2, double w1, double w2, int shift)
-			{
-				__mem->ortho4_eta(__mem->__grad, v1, v2, w1, w2);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_nNode, false, coeff);
-			}
-		
 			double curl_free()
 			{
 				return __mem->curl_free();
