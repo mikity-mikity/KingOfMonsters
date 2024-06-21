@@ -18622,13 +18622,11 @@ if(add)
 		{
 			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
 			s1 /= length; s2 /= length;
-			double det = _ref->og11 * _ref->og22 - _ref->og12 * _ref->og12;
-			t1 = s2*det;
-			t2 = -s1 * det;
+			
 			double val = 0;
 
-			val = Gammaijk[0] * s1 * s1 * t1 + Gammaijk[1] * s1 * s1 * t2 + 2 * (Gammaijk[2] * s1 * s2 * t1 + Gammaijk[3] * s1 * s2 * t2) + Gammaijk[6] * s2 * s2 * t1 + Gammaijk[7] * s2 * s2 * t2;
-			val -= _ref->oGammaijk[0] * s1 * s1 * t1 + _ref->oGammaijk[1] * s1 * s1 * t2 + 2 * (_ref->oGammaijk[2] * s1 * s2 * t1 + _ref->oGammaijk[3] * s1 * s2 * t2) + _ref->oGammaijk[6] * s2 * s2 * t1 + _ref->oGammaijk[7] * s2 * s2 * t2;
+			val = Gammaijk[1] * s1 * s1 + 2 * (Gammaijk[3] * s1 * s2 ) +Gammaijk[7] * s2 * s2 ;
+			val -= _ref->oGammaijk[1] * s1 * s1 + 2 * (_ref->oGammaijk[3] * s1 * s2 ) +  _ref->oGammaijk[7] * s2 * s2 ;
 
 			
 
@@ -18638,9 +18636,7 @@ if(add)
 		{
 			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
 			s1 /= length; s2 /= length;
-			double det = _ref->og11 * _ref->og22 - _ref->og12 * _ref->og12;
-			t1 = s2 * det;
-			t2 = -s1 * det;
+			
 
 
 
@@ -18651,17 +18647,17 @@ if(add)
 
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				double _Gamma111 = _ref->__dh[0][s] * _ref->get__Gi(0, 0);
+				
 				double _Gamma112 = _ref->__dh[0][s] * _ref->get__Gi(1, 0);
-				double _Gamma121 = _ref->__dh[1][s] * _ref->get__Gi(0, 0);
+				
 				double _Gamma122 = _ref->__dh[1][s] * _ref->get__Gi(1, 0);
-				double _Gamma221 = _ref->__dh[3][s] * _ref->get__Gi(0, 0);
+				
 				double _Gamma222 = _ref->__dh[3][s] * _ref->get__Gi(1, 0);
-				double _Gamma211 = _Gamma121;
+				
 				double _Gamma212 = _Gamma122;
 
 
-				val = _Gamma111 * s1 * s1 * t1 + _Gamma112 * s1 * s1 * t2 + 2 * (_Gamma121 * s1 * s2 * t1 + _Gamma122 * s1 * s2 * t2) + _Gamma221 * s2 * s2 * t1 + _Gamma222 * s2 * s2 * t2;
+				val = _Gamma112 * s1 * s1  + 2 * ( _Gamma122 * s1 * s2 ) +_Gamma222 * s2 * s2;
 
 
 
@@ -18686,17 +18682,17 @@ if(add)
 
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				double _Gamma111 = _ref->__dh[0][s] * _ref->get__Gi(0, 1);
+				
 				double _Gamma112 = _ref->__dh[0][s] * _ref->get__Gi(1, 1);
-				double _Gamma121 = _ref->__dh[1][s] * _ref->get__Gi(0, 1);
+				
 				double _Gamma122 = _ref->__dh[1][s] * _ref->get__Gi(1, 1);
-				double _Gamma221 = _ref->__dh[3][s] * _ref->get__Gi(0, 1);
+				
 				double _Gamma222 = _ref->__dh[3][s] * _ref->get__Gi(1, 1);
-				double _Gamma211 = _Gamma121;
+				
 				double _Gamma212 = _Gamma122;
 
 
-				val = _Gamma111 * s1 * s1 * t1 + _Gamma112 * s1 * s1 * t2 + 2 * (_Gamma121 * s1 * s2 * t1 + _Gamma122 * s1 * s2 * t2) + _Gamma221 * s2 * s2 * t1 + _Gamma222 * s2 * s2 * t2;
+				val =  _Gamma112 * s1 * s1  + 2 * ( _Gamma122 * s1 * s2 ) +  _Gamma222 * s2 * s2 ;
 
 
 
@@ -19210,13 +19206,11 @@ if(add)
 		{
 			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
 			s1 /= length; s2 /= length;
-			double det = _ref->og11 * _ref->og22 - _ref->og12 * _ref->og12;
-			t1 = s1 *_ref->og11+ s2 * _ref->og12;
-			t2 = s1 * _ref->og12 + s2 * _ref->og22;
+
 			double val = 0;
 
-			val = Gammaijk[0] * s1 * s1 * t1 + Gammaijk[1] * s1 * s1 * t2 + 2 * (Gammaijk[2] * s1 * s2 * t1 + Gammaijk[3] * s1 * s2 * t2) + Gammaijk[6] * s2 * s2 * t1 + Gammaijk[7] * s2 * s2 * t2;
-			val -= _ref->oGammaijk[0] * s1 * s1 * t1 + _ref->oGammaijk[1] * s1 * s1 * t2 + 2 * (_ref->oGammaijk[2] * s1 * s2 * t1 + _ref->oGammaijk[3] * s1 * s2 * t2) + _ref->oGammaijk[6] * s2 * s2 * t1 + _ref->oGammaijk[7] * s2 * s2 * t2;
+			val = Gammaijk[0] * s1 * s1 + 2 * (Gammaijk[2] * s1 * s2) + Gammaijk[6] * s2 * s2;
+			val -= _ref->oGammaijk[0] * s1 * s1 + 2 * (_ref->oGammaijk[2] * s1 * s2) + _ref->oGammaijk[6] * s2 * s2;
 
 
 
@@ -19226,8 +19220,7 @@ if(add)
 		{
 			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
 			s1 /= length; s2 /= length;
-			t1 = s1 * _ref->og11 + s2 * _ref->og12;
-			t2 = s1 * _ref->og12 + s2 * _ref->og22;
+
 
 
 
@@ -19238,17 +19231,17 @@ if(add)
 
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
+
 				double _Gamma111 = _ref->__dh[0][s] * _ref->get__Gi(0, 0);
-				double _Gamma112 = _ref->__dh[0][s] * _ref->get__Gi(1, 0);
+
 				double _Gamma121 = _ref->__dh[1][s] * _ref->get__Gi(0, 0);
-				double _Gamma122 = _ref->__dh[1][s] * _ref->get__Gi(1, 0);
+
 				double _Gamma221 = _ref->__dh[3][s] * _ref->get__Gi(0, 0);
-				double _Gamma222 = _ref->__dh[3][s] * _ref->get__Gi(1, 0);
+
 				double _Gamma211 = _Gamma121;
-				double _Gamma212 = _Gamma122;
 
 
-				val = _Gamma111 * s1 * s1 * t1 + _Gamma112 * s1 * s1 * t2 + 2 * (_Gamma121 * s1 * s2 * t1 + _Gamma122 * s1 * s2 * t2) + _Gamma221 * s2 * s2 * t1 + _Gamma222 * s2 * s2 * t2;
+				val = _Gamma111 * s1 * s1 + 2 * (_Gamma121 * s1 * s2) + _Gamma221 * s2 * s2;
 
 
 
@@ -19261,8 +19254,8 @@ if(add)
 			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
 			s1 /= length; s2 /= length;
 			double det = _ref->og11 * _ref->og22 - _ref->og12 * _ref->og12;
-			t1 = s1 * _ref->og11 + s2 * _ref->og12;
-			t2 = s1 * _ref->og12 + s2 * _ref->og22;
+			t1 = s2 * det;
+			t2 = -s1 * det;
 
 
 
@@ -19273,17 +19266,17 @@ if(add)
 
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
+
 				double _Gamma111 = _ref->__dh[0][s] * _ref->get__Gi(0, 1);
-				double _Gamma112 = _ref->__dh[0][s] * _ref->get__Gi(1, 1);
+
 				double _Gamma121 = _ref->__dh[1][s] * _ref->get__Gi(0, 1);
-				double _Gamma122 = _ref->__dh[1][s] * _ref->get__Gi(1, 1);
+
 				double _Gamma221 = _ref->__dh[3][s] * _ref->get__Gi(0, 1);
-				double _Gamma222 = _ref->__dh[3][s] * _ref->get__Gi(1, 1);
+
 				double _Gamma211 = _Gamma121;
-				double _Gamma212 = _Gamma122;
 
 
-				val = _Gamma111 * s1 * s1 * t1 + _Gamma112 * s1 * s1 * t2 + 2 * (_Gamma121 * s1 * s2 * t1 + _Gamma122 * s1 * s2 * t2) + _Gamma221 * s2 * s2 * t1 + _Gamma222 * s2 * s2 * t2;
+				val = _Gamma111 * s1 * s1 + 2 * (_Gamma121 * s1 * s2) + _Gamma221 * s2 * s2;
 
 
 
