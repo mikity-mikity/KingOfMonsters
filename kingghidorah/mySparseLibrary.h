@@ -1384,6 +1384,28 @@ namespace KingOfMonsters {
 			}
 	
 		}
+		void transform2(mySparse^ K, double salt, myPermutation^ p, denseMatrix^ ML, long L, long M, long S, int sc1, int sc2)
+		{
+
+			//L:HRC,M:nBC,S:nSymm
+			int L1 = L * sc1;
+			int L2 = L * sc2;
+			int N = L2 - S - M;//free variables
+			/*if (N == 0 || sc2 == 0)//zero free variables
+			{
+				K->dat->_dmat.resize(M + L1, M + L1);
+				K->dat->_dmat = Eigen::MatrixXd::Identity(M + L1, M + L1);
+			}
+			else*/
+			{
+				auto perm = p->p->perm;
+				auto pt = p->p->perm.transpose();
+				Eigen::MatrixXd D = perm * ML->get() * this->dat->_dmat * (ML->get()).transpose() * pt;//
+				
+				K->dat->_dmat = D;
+			}
+
+		}
 		void _AtBA(denseMatrix^ E)
 		{
 			
