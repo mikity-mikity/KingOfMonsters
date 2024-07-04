@@ -3736,7 +3736,7 @@ ret->_dmat = this->_dmat.inverse();
 	//Eigen::MatrixXd id(N, N);
 	//id.setIdentity();
 	//cudaMemcpy(gpu_rhs, id.data(), sizeof(double) * N * N, cudaMemcpyHostToDevice);
-	nn = 100;
+	
 
 	
 		err2 = cusolverDnXgetrs(solver, params,cublasOperation_t::CUBLAS_OP_N, N, N, cudaDataType::CUDA_R_64F, gpu_matrix, N,ipiv, cudaDataType::CUDA_R_64F, gpu_rhs, N, devInfo_on_gpu);
@@ -3758,6 +3758,8 @@ ret->_dmat = this->_dmat.inverse();
 	return sss.str();
 #endif
 }
+
+
 std::string KingOfMonsters::_mySparse::_solveI_gpu_omp(KingOfMonsters::cuda* cuda, _mySparse* ret)
 {
 	std::stringstream sss;

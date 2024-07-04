@@ -1466,9 +1466,6 @@ namespace KingOfMonsters {
 			}
 			if (b != nullptr && ret != nullptr)
 			{
-				double tmp1 = A->dat->_dmat.sum();
-				double tmp2 = B->dat->_dmat.sum();
-				double tmp3 = this->dat->_dmat.sum();
 				ret->_arr->__v = this->dat->_dmat * b->_arr->__v;
 			}
 			return sss;
