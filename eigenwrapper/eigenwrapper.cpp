@@ -3673,8 +3673,101 @@ ret->_dmat = this->_dmat.inverse();
 	sss << "cpu_mode";
 	return sss.str();
 #else
+    this->_freeze();
+	int64_t N = _dmat.cols();// __c;
+	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 
-	this->_freeze();
+	//ret->__r = N;
+	//ret->__c = N;
+	ret->_dmat.resize(N, N);
+	//ret->_dmat = this->_dmat.inverse();
+	//sss << "solveI:cpuMode:" << "residual=" << ((ret->_dmat * this->_dmat - Eigen::MatrixXd::Identity(N, N)).trace());
+
+	if (!cuda->valid())return "";
+	int64_t nn = cuda->count();
+	initidentiy(cuda, N,false);
+	//Eigen::Map<Eigen::MatrixXd> ret_dmat(ret->___dmat, N, N);
+	//ret->_dmat.setZero(N, N);
+	//ret->_tmp.setZero(N, N);
+
+
+
+
+	auto solver = cuda->solver(cuda->fastest(), 0);
+
+	cudaSetDevice(cuda->fastest());
+	//auto stream = streams[cuda->fastest()];
+	double* gpu_matrix = cuda->work_M(cuda->fastest());
+	cudaMemcpy(gpu_matrix, _dmat.data(), N * N * sizeof(double), cudaMemcpyHostToDevice);
+	int* devInfo_on_gpu = cuda->info(cuda->fastest());
+
+	size_t work_size = 0;
+	size_t work_size_host = 0;
+	cusolverDnParams_t params;
+	cusolverDnCreateParams(&params);
+	cusolverDnSetAdvOptions(params, cusolverDnFunction_t::CUSOLVERDN_GETRF, cusolverAlgMode_t::CUSOLVER_ALG_1);
+	// --- CUDA CHOLESKY initialization
+	auto err2 = cusolverDnXpotrf_bufferSize(solver, params,cublasFillMode_t::CUBLAS_FILL_MODE_UPPER, N, cudaDataType::CUDA_R_64F, gpu_matrix, N, cudaDataType::CUDA_R_64F, &work_size, &work_size_host);
+	//ss << "," << err2;
+	// --- CUDA POTRF execution
+	double* work = cuda->work(work_size, cuda->fastest());
+	double* work_host;
+	if (work_size_host == 0)
+	{
+		work_host = 0;
+	}
+	else {
+		work_host = (double*)malloc(sizeof(double) * work_size_host);
+	}
+
+	cudaMemset(work, 0, work_size * sizeof(double));
+	//cusolverDnSetStream(solver, stream);
+	//int64_t* ipiv;
+	//cudaMalloc(&ipiv, sizeof(int64_t) * N);
+	auto err=cusolverDnXpotrf(solver, params,cublasFillMode_t::CUBLAS_FILL_MODE_UPPER, N, cudaDataType::CUDA_R_64F, gpu_matrix, N, cudaDataType::CUDA_R_64F, work, work_size, work_host, work_size_host, devInfo_on_gpu);
+
+
+	int devInfo_on_cpu = 0;
+
+	//double* gpu_rhs = cuda->work_C(cuda->fastest());
+
+
+	//Eigen::MatrixXd id(N, N);
+	//id.setIdentity();
+	//cudaMemcpy(gpu_rhs, id.data(), sizeof(double) * N * N, cudaMemcpyHostToDevice);
+
+	err = cusolverDnXtrtri_bufferSize( solver,cublasFillMode_t::CUBLAS_FILL_MODE_UPPER,cublasDiagType_t::CUBLAS_DIAG_NON_UNIT, N, cudaDataType::CUDA_R_64F, gpu_matrix, N,  &work_size,  & work_size_host);
+
+
+	err2 = cusolverDnXtrtri(solver,cublasFillMode_t::CUBLAS_FILL_MODE_UPPER,cublasDiagType_t::CUBLAS_DIAG_NON_UNIT , N, cudaDataType::CUDA_R_64F, gpu_matrix, N,work,work_size,  work_host,work_size_host,  devInfo_on_gpu);
+
+	auto cublas = cuda->blas(cuda->fastest());
+	double* result = cuda->work_M(cuda->fastest());
+	cudaMemset(result, 0, sizeof(double) * N * N);
+	double alpha = 1.0;
+	auto err3 = cublasDtrmm(cublas,
+		cublasSideMode_t::CUBLAS_SIDE_LEFT,cublasFillMode_t::CUBLAS_FILL_MODE_UPPER, CUBLAS_OP_T,cublasDiagType_t::CUBLAS_DIAG_NON_UNIT,
+		N,N,&alpha,
+		gpu_matrix,N,
+		gpu_matrix,N,
+		result,N );
+
+
+		cudaMemcpy(ret->_dmat.data(), result, N * N * sizeof(double), cudaMemcpyDeviceToHost);
+
+	//cudaFree(ipiv);
+	if (work_size_host == 0)
+	{
+	}
+	else {
+		free(work_host);
+	}
+	cusolverDnDestroyParams(params);
+	cudaDeviceSynchronize();
+
+	sss <<"solveI"<<"residual=" << (( this->_dmat* ret->_dmat -Eigen::MatrixXd::Identity(N,N)).trace());
+	return sss.str();
+	/*this->_freeze();
 	int64_t N = _dmat.cols();// __c;
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 
@@ -3755,7 +3848,7 @@ ret->_dmat = this->_dmat.inverse();
 	cudaDeviceSynchronize();
 
 	sss <<"solveI"<<"residual=" << (( this->_dmat* ret->_dmat -Eigen::MatrixXd::Identity(N,N)).trace());
-	return sss.str();
+	return sss.str();*/
 #endif
 }
 
