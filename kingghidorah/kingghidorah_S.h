@@ -19161,22 +19161,18 @@ if(add)
 		}*/
 		double Gamma11z(double s1, double s2, double t1, double t2)
 		{
+
+			
+
 			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
 			s1 /= length; s2 /= length;
 			
 			length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
 			t1 /= length; t2 /= length;
 
-			double n1 = t1 * _ref->og11 + t2 * _ref->og12;
-			double n2 = t1 * _ref->og12 + t2 * _ref->og22;
+			double n1 = t1 * _ref->get__gij(0, 0) + t2 * _ref->get__gij(0, 1);
+			double n2 = t1 * _ref->get__gij(0, 1) + t2 * _ref->get__gij(1, 1);
 
-			//length = sqrt(n1 * n1 * _ref->oG11 + 2 * n1 * n2 * _ref->oG12 + n2 * n2 * _ref->oG22);
-			//n1 /= length; n2 /= length;
-			/*double S1 = s1 * _ref->og11 + s2 * _ref->og12;
-			double S2 = s1 * _ref->og12 + s2 * _ref->og22;
-
-			length = sqrt(S1 * S1 * _ref->oG11 + 2 * S1 * S2 * _ref->oG12 + S2 * S2 * _ref->oG22);
-			S1 /= length; S2 /= length;*/
 
 			double Suu = 0, Suv = 0, Svv = 0,Su=0,Sv=0;
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -19191,9 +19187,9 @@ if(add)
 
 			double val = 0;
 			double Gammassn = (_ref->oGammaijk[0] * s1 * s1 * n1 + _ref->oGammaijk[1] * s1 * s1 * n2 + 2 * (_ref->oGammaijk[2] * s1 * s2 * n1 + _ref->oGammaijk[3] * s1 * s2 * n2) +
-				_ref->oGammaijk[6] * s2 * s2 * n1 + _ref->oGammaijk[7] * s2 * s2 * n2);
+		    	_ref->oGammaijk[6] * s2 * s2 * n1 + _ref->oGammaijk[7] * s2 * s2 * n2);
 			//double Gammassn = (Gammaijk[0] * s1 * s1 * n1 + Gammaijk[1] * s1 * s1 * n2 + 2 * (Gammaijk[2] * s1 * s2 * n1 + Gammaijk[3] * s1 * s2 * n2) +
-		//		Gammaijk[6] * s2 * s2 * n1 + Gammaijk[7] * s2 * s2 * n2);
+			//	Gammaijk[6] * s2 * s2 * n1 + Gammaijk[7] * s2 * s2 * n2);
 
 		val = (Suu * s1 * s1 +2* Suv * (s1 * s2) + Svv * s2 * s2);
 			val -= (Su * t1 + Sv * t2) * Gammassn;
@@ -19204,25 +19200,29 @@ if(add)
 
 		void Gamma11z_z(double* ptr, double s1, double s2, double t1, double t2)
 		{
+
 			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
 			s1 /= length; s2 /= length;
 
 			length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
 			t1 /= length; t2 /= length;
 
-			double n1 = t1 * _ref->og11 + t2 * _ref->og12;
-			double n2 = t1 * _ref->og12 + t2 * _ref->og22;
+			double n1 = t1 * _ref->get__gij(0, 0) + t2 * _ref->get__gij(0, 1);
+			double n2 = t1 * _ref->get__gij(0, 1) + t2 * _ref->get__gij(1, 1);
 
-			//length = sqrt(n1 * n1 * _ref->oG11 + 2 * n1 * n2 * _ref->oG12 + n2 * n2 * _ref->oG22);
-			//n1 /= length; n2 /= length;
+	
 		
 
 			double* ptr1 = ptr;
 			double val = 0;
 
 
-			double Gammassn = (_ref->oGammaijk[0] * s1 * s1 * n1 + _ref->oGammaijk[1] * s1 * s1 * n2 + 2 * (_ref->oGammaijk[2] * s1 * s2 * n1 + _ref->oGammaijk[3] * s1 * s2 * n2) +
+		     double Gammassn = (_ref->oGammaijk[0] * s1 * s1 * n1 + _ref->oGammaijk[1] * s1 * s1 * n2 + 2 * (_ref->oGammaijk[2] * s1 * s2 * n1 + _ref->oGammaijk[3] * s1 * s2 * n2) +
 				_ref->oGammaijk[6] * s2 * s2 * n1 + _ref->oGammaijk[7] * s2 * s2 * n2);
+			//double Gammassn = (Gammaijk[0] * s1 * s1 * n1 + Gammaijk[1] * s1 * s1 * n2 + 2 * (Gammaijk[2] * s1 * s2 * n1 + Gammaijk[3] * s1 * s2 * n2) +
+			//	Gammaijk[6] * s2 * s2 * n1 + Gammaijk[7] * s2 * s2 * n2);
+
+
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				double _Suu = _ref->___dh[0][s];// _ref->d2[0][s];// -_ref->oGammaijk[0] * _ref->d1[0][s] - _ref->oGammaijk[1] * _ref->d1[1][s];
@@ -19245,12 +19245,124 @@ if(add)
 		}
 	
 		
+		void Gamma11z_u(double* ptr, double s1, double s2, double t1, double t2)
+		{
 
-		double free_edge(double s1, double s2)
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
+
+			length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
+			t1 /= length; t2 /= length;
+
+			double n1 = t1 * _ref->get__gij(0, 0) + t2 * _ref->get__gij(0, 1);
+			double n2 = t1 * _ref->get__gij(0, 1) + t2 * _ref->get__gij(1, 1);
+
+
+
+
+			double* ptr1 = ptr;
+			double val = 0;
+
+
+			//double Gammassn = (_ref->oGammaijk[0] * s1 * s1 * n1 + _ref->oGammaijk[1] * s1 * s1 * n2 + 2 * (_ref->oGammaijk[2] * s1 * s2 * n1 + _ref->oGammaijk[3] * s1 * s2 * n2) +
+			//	_ref->oGammaijk[6] * s2 * s2 * n1 + _ref->oGammaijk[7] * s2 * s2 * n2);
+			double Gammassn = (Gammaijk[0] * s1 * s1 * n1 + Gammaijk[1] * s1 * s1 * n2 + 2 * (Gammaijk[2] * s1 * s2 * n1 + Gammaijk[3] * s1 * s2 * n2) +
+				Gammaijk[6] * s2 * s2 * n1 + Gammaijk[7] * s2 * s2 * n2);
+			double S1 = 0, S2 = 0;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				S1 += _ref->d1[0][s] * _ref->buf_z[s];
+				S2 += _ref->d1[1][s] * _ref->buf_z[s];
+			}
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _Gamma111 = _ref->__dh[0][s] * _ref->get__Gi(0, 0);
+				double _Gamma112 = _ref->__dh[0][s] * _ref->get__Gi(1, 0);
+				double _Gamma121 = _ref->__dh[1][s] * _ref->get__Gi(0, 0);
+				double _Gamma122 = _ref->__dh[1][s] * _ref->get__Gi(1, 0);
+				double _Gamma221 = _ref->__dh[3][s] * _ref->get__Gi(0, 0);
+				double _Gamma222 = _ref->__dh[3][s] * _ref->get__Gi(1, 0);
+				double _Gamma211 = _Gamma121;
+				double _Gamma212 = _Gamma122;
+
+				double _Suu = -(_Gamma111 * S1 + _Gamma112 * S2);
+				double _Suv = -(_Gamma121 * S1 + _Gamma122 * S2);
+				double _Svv = -(_Gamma221 * S1 + _Gamma222 * S2);
+				//double _Gammassn = (_Gamma111 * s1 * s1 * n1 +_Gamma112 * s1 * s1 * n2 + 2 * (_Gamma121 * s1 * s2 * n1 +_Gamma122 * s1 * s2 * n2) +
+				//	_Gamma221 * s2 * s2 * n1 + _Gamma222 * s2 * s2 * n2);
+
+				val = (_Suu * s1 * s1 + 2 * _Suv * (s1 * s2) + _Svv * s2 * s2);
+				//val -= (S1 * t1 + S2 * t2) * _Gammassn;
+
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+
+		void Gamma11z_v(double* ptr, double s1, double s2, double t1, double t2)
+		{
+
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
+
+			length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
+			t1 /= length; t2 /= length;
+
+			double n1 = t1 * _ref->get__gij(0, 0) + t2 * _ref->get__gij(0, 1);
+			double n2 = t1 * _ref->get__gij(0, 1) + t2 * _ref->get__gij(1, 1);
+
+
+
+
+			double* ptr1 = ptr;
+			double val = 0;
+
+
+			//double Gammassn = (_ref->oGammaijk[0] * s1 * s1 * n1 + _ref->oGammaijk[1] * s1 * s1 * n2 + 2 * (_ref->oGammaijk[2] * s1 * s2 * n1 + _ref->oGammaijk[3] * s1 * s2 * n2) +
+			//	_ref->oGammaijk[6] * s2 * s2 * n1 + _ref->oGammaijk[7] * s2 * s2 * n2);
+			double Gammassn = (Gammaijk[0] * s1 * s1 * n1 + Gammaijk[1] * s1 * s1 * n2 + 2 * (Gammaijk[2] * s1 * s2 * n1 + Gammaijk[3] * s1 * s2 * n2) +
+				Gammaijk[6] * s2 * s2 * n1 + Gammaijk[7] * s2 * s2 * n2);
+			double S1 = 0, S2 = 0;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				S1 += _ref->d1[0][s] * _ref->buf_z[s];
+				S2 += _ref->d1[1][s] * _ref->buf_z[s];
+			}
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _Gamma111 = _ref->__dh[0][s] * _ref->get__Gi(0, 1);
+				double _Gamma112 = _ref->__dh[0][s] * _ref->get__Gi(1, 1);
+				double _Gamma121 = _ref->__dh[1][s] * _ref->get__Gi(0, 1);
+				double _Gamma122 = _ref->__dh[1][s] * _ref->get__Gi(1, 1);
+				double _Gamma221 = _ref->__dh[3][s] * _ref->get__Gi(0, 1);
+				double _Gamma222 = _ref->__dh[3][s] * _ref->get__Gi(1, 1);
+				double _Gamma211 = _Gamma121;
+				double _Gamma212 = _Gamma122;
+
+				double _Suu = -(_Gamma111 * S1 + _Gamma112 * S2);
+				double _Suv = -(_Gamma121 * S1 + _Gamma122 * S2);
+				double _Svv = -(_Gamma221 * S1 + _Gamma222 * S2);
+				//double _Gammassn = (_Gamma111 * s1 * s1 * n1 + _Gamma112 * s1 * s1 * n2 + 2 * (_Gamma121 * s1 * s2 * n1 + _Gamma122 * s1 * s2 * n2) +
+				//	_Gamma221 * s2 * s2 * n1 + _Gamma222 * s2 * s2 * n2);
+
+				val = (_Suu * s1 * s1 + 2 * _Suv * (s1 * s2) + _Svv * s2 * s2);
+				//val -= (S1 * t1 + S2 * t2) * _Gammassn;
+
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		double free_edge(double s1, double s2,double w1,double w2)
 		{
 			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
 			s1 /= length; s2 /= length;
-			
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length; w2 /= length;
+
 			double xu = 0, xv = 0, yu = 0, yv = 0;
 
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -19277,14 +19389,15 @@ if(add)
 			huv += get___hij(0, 1);
 			hvv += get___hij(1, 1);
 			hvu = huv;
-			return huu * s1 * s1 + huv * (s1 * s2 + s2 * s1) + hvv * s2 * s2;
+			return huu * s1 * w1 + huv * (s1 * w2 + s2 * w1) + hvv * s2 * w2;
 
 		}
-		void free_edge_phi(double* ptr, double s1, double s2)
+		void free_edge_phi(double* ptr, double s1, double s2,double w1,double w2)
 		{
 			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
 			s1 /= length; s2 /= length;
-			
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length; w2 /= length;
 			
 			double* ptr1 = ptr;
 			double val = 0;
@@ -19295,16 +19408,17 @@ if(add)
 				double _h22 = _ref->___dh[3][s];
 
 
-				double val = _h11 * s1 * s1 + _h12 * (s1 * s2 + s2 * s1) + _h22 * s2 * s2;
+				double val = _h11 * s1 * w1 + _h12 * (s1 * w2 + s2 * w1) + _h22 * s2 * w2;
 				*ptr1 = val;
 				ptr1++;
 			}
 		}
-		void free_edge_xi(double *ptr,double s1, double s2)
+		void free_edge_xi(double *ptr,double s1, double s2,double w1,double w2)
 		{
 			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
 			s1 /= length; s2 /= length;
-			
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length; w2 /= length;
 		
 			double* ptr1 = ptr;
 			double val = 0;
@@ -19330,16 +19444,17 @@ if(add)
 				double _h22 = (2 * _dvv) - _tr * _ref->og22;
 
 
-				double val=_h11 * s1 * s1 + _h12 * (s1 * s2 + s2 * s1) + _h22 * s2 * s2;
+				double val=_h11 * s1 * w1 + _h12 * (s1 * w2 + s2 * w2) + _h22 * s2 * w2;
 				*ptr1 = val;
 				ptr1++;
 			}
 		}
-		void free_edge_eta(double* ptr, double s1, double s2)
+		void free_edge_eta(double* ptr, double s1, double s2,double w1,double w2)
 		{
 			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
 			s1 /= length; s2 /= length;
-			
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length; w2 /= length;
 			
 			double* ptr1 = ptr;
 			double val = 0;
@@ -19365,7 +19480,7 @@ if(add)
 				double _h22 = (2 * _dvv) - _tr * _ref->og22;
 
 
-				double val = _h11 * s1 * s1 + _h12 * (s1 * s2 + s2 * s1) + _h22 * s2 * s2;
+				double val = _h11 * s1 * w1 + _h12 * (s1 * w2 + s2 * w1) + _h22 * s2 * w2;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -19747,9 +19862,9 @@ if(add)
 
 
 			
-			double Suu = get___Sij(0, 0);
-			double Suv = get___Sij(0, 1);
-			double Svv = get___Sij(1, 1);
+			double Suu = get__Sij(0, 0);
+			double Suv = get__Sij(0, 1);
+			double Svv = get__Sij(1, 1);
 
 
 			double Svu = Suv;
@@ -19777,9 +19892,9 @@ if(add)
 			double val = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				double _S11 = _ref->___dh[0][s];
-				double _S12 = _ref->___dh[1][s];
-				double _S22 = _ref->___dh[3][s];
+				double _S11 = _ref->__dh[0][s];
+				double _S12 = _ref->__dh[1][s];
+				double _S22 = _ref->__dh[3][s];
 
 
 				double val = _S11 * t1 * w1 + _S12 * (t1 * w2 + t2 * w1) + _S22 * t2 * w2;
@@ -19787,12 +19902,110 @@ if(add)
 				ptr1++;
 			}
 		}
-		
-		double Gamma11s(double s1,double s2)
+
+		void free_edge5_u(double* ptr, double v1, double v2, double s1, double s2, double t1, double t2)
+		{
+			double E11 = (v1 * v1) + (s1 * s1);
+			double E12 = (v1 * v2) + (s1 * s2);
+			double E21 = (v2 * v1) + (s2 * s1);
+			double E22 = (v2 * v2) + (s2 * s2);
+
+			double e11 = E22, e22 = E11, e12 = -E12, e21 = -E12;
+			double w1 = e12 * t1 + e22 * t2;
+			double w2 = -(e11 * t1 + e12 * t2);
+
+			double length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
+			t1 /= length; t2 /= length;
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length; w2 /= length;
+
+			double S1 = 0, S2 = 0;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				S1 += _ref->d1[0][s] * _ref->buf_z[s];
+				S2 += _ref->d1[1][s] * _ref->buf_z[s];
+			}
+			double* ptr1 = ptr;
+			double val = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _Gamma111 = _ref->__dh[0][s] * _ref->get__Gi(0, 0);
+				double _Gamma112 = _ref->__dh[0][s] * _ref->get__Gi(1, 0);
+				double _Gamma121 = _ref->__dh[1][s] * _ref->get__Gi(0, 0);
+				double _Gamma122 = _ref->__dh[1][s] * _ref->get__Gi(1, 0);
+				double _Gamma221 = _ref->__dh[3][s] * _ref->get__Gi(0, 0);
+				double _Gamma222 = _ref->__dh[3][s] * _ref->get__Gi(1, 0);
+				double _Gamma211 = _Gamma121;
+				double _Gamma212 = _Gamma122;
+
+
+				double _S11 = (-_Gamma111 * S1 - _Gamma112 * S2);
+				double _S12 = (-_Gamma121 * S1 - _Gamma122 * S2);
+				double _S22 = (-_Gamma221 * S1 - _Gamma222 * S2);
+				double _S21 = _S12;
+
+
+				double val = _S11 * t1 * w1 + _S12 * (t1 * w2 + t2 * w1) + _S22 * t2 * w2;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		void free_edge5_v(double* ptr, double v1, double v2, double s1, double s2, double t1, double t2)
+		{
+			double E11 = (v1 * v1) + (s1 * s1);
+			double E12 = (v1 * v2) + (s1 * s2);
+			double E21 = (v2 * v1) + (s2 * s1);
+			double E22 = (v2 * v2) + (s2 * s2);
+
+			double e11 = E22, e22 = E11, e12 = -E12, e21 = -E12;
+			double w1 = e12 * t1 + e22 * t2;
+			double w2 = -(e11 * t1 + e12 * t2);
+
+			double length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
+			t1 /= length; t2 /= length;
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length; w2 /= length;
+
+			double S1 = 0, S2 = 0;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				S1 += _ref->d1[0][s] * _ref->buf_z[s];
+				S2 += _ref->d1[1][s] * _ref->buf_z[s];
+			}
+			double* ptr1 = ptr;
+			double val = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _Gamma111 = _ref->__dh[0][s] * _ref->get__Gi(0, 1);
+				double _Gamma112 = _ref->__dh[0][s] * _ref->get__Gi(1, 1);
+				double _Gamma121 = _ref->__dh[1][s] * _ref->get__Gi(0, 1);
+				double _Gamma122 = _ref->__dh[1][s] * _ref->get__Gi(1, 1);
+				double _Gamma221 = _ref->__dh[3][s] * _ref->get__Gi(0, 1);
+				double _Gamma222 = _ref->__dh[3][s] * _ref->get__Gi(1, 1);
+				double _Gamma211 = _Gamma121;
+				double _Gamma212 = _Gamma122;
+
+
+				double _S11 = (-_Gamma111 * S1 - _Gamma112 * S2);
+				double _S12 = (-_Gamma121 * S1 - _Gamma122 * S2);
+				double _S22 = (-_Gamma221 * S1 - _Gamma222 * S2);
+				double _S21 = _S12;
+
+
+				double val = _S11 * t1 * w1 + _S12 * (t1 * w2 + t2 * w1) + _S22 * t2 * w2;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		double Gamma11s(double s1,double s2,double w1,double w2)
 		{
 			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
 			s1 /= length; s2 /= length;
-			
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length; w2 /= length;
+
 			//double newlength = sqrt(s1 * s1 * _ref->get__gij(0,0) + 2 * s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
 			//double iJ = length / newlength;
 			double val = 0;
@@ -19806,9 +20019,9 @@ if(add)
 				Suv += _ref->___dh[1][s] * _ref->node[s * 3 + 0];
 				Svv += _ref->___dh[3][s] * _ref->node[s * 3 + 0]; 
 			}
-			double Huu = s1 * s1; double Huv = s1* s2; double Hvv = s2 * s2;
+			double Huu = s1 * w1; double Huv = s1 * w2; double Hvu = s2 * w1; double Hvv = s2 * s2;
 		
-			val = (Hvv * Svv + 2 * Huv * Suv + Huu * Suu);// *iJ;
+			val = (Hvv * Svv + Huv * Suv +Hvu*Suv + Huu * Suu);// *iJ;
 
 
 			return val;
@@ -19816,16 +20029,17 @@ if(add)
 		}
 		
 
-		void Gamma11s_u(double* ptr, double s1, double s2)
+		void Gamma11s_u(double* ptr, double s1, double s2, double w1, double w2)
 		{
 			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
 			s1 /= length; s2 /= length;
-			double newlength = sqrt(s1 * s1 * _ref->get__gij(0, 0) + 2 * s1 * s2 * _ref->get__gij(0, 1) + s2 * s2 * _ref->get__gij(1, 1));
-			double iJ = length / newlength;
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length; w2 /= length;
 			double val = 0;
 			double h11 = 0, h12 = 0, h22 = 0;
 		
-			double Huu = s1 * s1; double Huv= s1* s2; double Hvv = s2 * s2;
+			double Huu = s1 * w1; double Huv = s1 * w2; double Hvu = s2 * w1; double Hvv = s2 * s2;
+
 			double Suu = 0, Suv = 0, Svv = 0;
 
 		
@@ -19838,7 +20052,7 @@ if(add)
 				double _Suu = _ref->___dh[0][s];// _ref->d2[0][s] - _ref->oGammaijk[0] * _ref->d1[0][s] - _ref->oGammaijk[1] * _ref->d1[1][s];
 				double _Suv = _ref->___dh[1][s];//_ref->d2[1][s]  - _ref->oGammaijk[2] * _ref->d1[0][s] - _ref->oGammaijk[3] * _ref->d1[1][s];
 				double _Svv = _ref->___dh[3][s];//_ref->d2[3][s]  - _ref->oGammaijk[6] * _ref->d1[0][s] - _ref->oGammaijk[7] * _ref->d1[1][s];
-				val = (_Suu * Huu + 2 * _Suv * Huv + _Svv * Hvv);// *iJ;
+				val = (_Suu * Huu + _Suv * Huv +_Suv*Hvu+ _Svv * Hvv);// *iJ;
 
 				
 
@@ -19851,15 +20065,18 @@ if(add)
 
 	
 
-		double Gamma11t(double s1, double s2)
+		double Gamma11t(double s1, double s2, double w1, double w2)
 		{
 			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
 			s1 /= length; s2 /= length;
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length; w2 /= length;
 			
 			double val = 0;
 			
 
-			double Huu = s1 * s1; double Huv = s1 * s2; double Hvv = s2 * s2;
+			double Huu = s1 * w1; double Huv = s1 * w2; double Hvu = s2 * w1; double Hvv = s2 * s2;
+
 			double Suu = 0, Suv = 0, Svv = 0;
 
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -19869,7 +20086,7 @@ if(add)
 				Svv += _ref->___dh[3][s] * _ref->node[s * 3 + 1]; //_ref->d2[3][s] * _ref->buf_u[s] - _ref->oGammaijk[6] * _ref->d1[0][s] * _ref->buf_u[s] - _ref->oGammaijk[7] * _ref->d1[1][s] * _ref->buf_u[s];
 			}
 		
-			val = (Hvv * Svv + 2 * Huv * Suv + Huu * Suu);// *iJ;
+			val = (Hvv * Svv +  Huv * Suv+Hvu*Suv + Huu * Suu);// *iJ;
 
 
 			return val;
@@ -19877,15 +20094,18 @@ if(add)
 		}
 		
 		
-		void Gamma11t_v(double* ptr, double s1, double s2)
+		void Gamma11t_v(double* ptr, double s1, double s2, double w1, double w2)
 		{
 			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
 			s1 /= length; s2 /= length;
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length; w2 /= length;
 			
 			double val = 0;
 
 			
-			double Huu = s1 * s1; double Huv = s1 * s2; double Hvv = s2 * s2;
+			double Huu = s1 * w1; double Huv = s1 * w2; double Hvu = s2 * w1; double Hvv = s2 * s2;
+
 			double Suu = 0, Suv = 0, Svv = 0;
 
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -19903,7 +20123,7 @@ if(add)
 				double _Suu = _ref->___dh[0][s];// _ref->d2[0][s] - _ref->oGammaijk[0] * _ref->d1[0][s] - _ref->oGammaijk[1] * _ref->d1[1][s];
 				double _Suv = _ref->___dh[1][s];//_ref->d2[1][s]  - _ref->oGammaijk[2] * _ref->d1[0][s] - _ref->oGammaijk[3] * _ref->d1[1][s];
 				double _Svv = _ref->___dh[3][s];//_ref->d2[3][s]  - _ref->oGammaijk[6] * _ref->d1[0][s] - _ref->oGammaijk[7] * _ref->d1[1][s];
-				val = (_Suu * Huu + 2 * _Suv * Huv + _Svv * Hvv);// *iJ;
+				val = (_Suu * Huu + _Suv * Huv +_Suv*Hvu+ _Svv * Hvv);// *iJ;
 
 			
 
@@ -19913,7 +20133,113 @@ if(add)
 			}
 
 		}
-		double Gamma11N(double s1, double s2,double w1,double w2)
+		double GammattN(double s1, double s2, double w1, double w2)
+		{
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
+
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length; w2 /= length;
+
+			double val = 0;
+
+
+			double Huu = s1 * s1; double Huv = s1 * s2; double Hvu = s2 * s1; double Hvv = s2 * s2;
+			double Xuu = 0, Xuv = 0, Xvv = 0;
+			double Yuu = 0, Yuv = 0, Yvv = 0;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				Xuu += _ref->___dh[0][s] * _ref->node[s * 3 + 0]; // _ref->d2[0][s] * _ref->buf_u[s] - _ref->oGammaijk[0] * _ref->d1[0][s] * _ref->buf_u[s] - _ref->oGammaijk[1] * _ref->d1[1][s] * _ref->buf_u[s];
+				Xuv += _ref->___dh[1][s] * _ref->node[s * 3 + 0]; //_ref->d2[1][s] * _ref->buf_u[s] - _ref->oGammaijk[2] * _ref->d1[0][s] * _ref->buf_u[s] - _ref->oGammaijk[3] * _ref->d1[1][s] * _ref->buf_u[s];
+				Xvv += _ref->___dh[3][s] * _ref->node[s * 3 + 0]; //_ref->d2[3][s] * _ref->buf_u[s] - _ref->oGammaijk[6] * _ref->d1[0][s] * _ref->buf_u[s] - _ref->oGammaijk[7] * _ref->d1[1][s] * _ref->buf_u[s];
+				Yuu += _ref->___dh[0][s] * _ref->node[s * 3 + 1]; // _ref->d2[0][s] * _ref->buf_u[s] - _ref->oGammaijk[0] * _ref->d1[0][s] * _ref->buf_u[s] - _ref->oGammaijk[1] * _ref->d1[1][s] * _ref->buf_u[s];
+				Yuv += _ref->___dh[1][s] * _ref->node[s * 3 + 1]; //_ref->d2[1][s] * _ref->buf_u[s] - _ref->oGammaijk[2] * _ref->d1[0][s] * _ref->buf_u[s] - _ref->oGammaijk[3] * _ref->d1[1][s] * _ref->buf_u[s];
+				Yvv += _ref->___dh[3][s] * _ref->node[s * 3 + 1]; //_ref->d2[3][s] * _ref->buf_u[s] - _ref->oGammaijk[6] * _ref->d1[0][s] * _ref->buf_u[s] - _ref->oGammaijk[7] * _ref->d1[1][s] * _ref->buf_u[s];
+			}
+
+			double Nx = _ref->_ogi[0] * w1 + _ref->_ogi[3] * w2;
+			double Ny = _ref->_ogi[1] * w1 + _ref->_ogi[4] * w2;
+			val = (Hvv * Xvv + Huv * Xuv + Hvu * Xuv + Huu * Xuu) * Nx;// *iJ;
+			val += (Hvv * Yvv + Huv * Yuv + Hvu * Yuv + Huu * Yuu) * Ny;// *iJ;
+
+
+			return val;
+
+		}
+
+
+		void GammattN_u(double* ptr, double s1, double s2, double w1, double w2)
+		{
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
+
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length; w2 /= length;
+
+			double val = 0;
+
+
+			double Huu = s1 * s1; double Huv = s1 * s2; double Hvu = s2 * s1; double Hvv = s2 * s2;
+			double Suu = 0, Suv = 0, Svv = 0;
+
+
+			double Nx = _ref->_ogi[0] * w1 + _ref->_ogi[3] * w2;
+			double Ny = _ref->_ogi[1] * w1 + _ref->_ogi[4] * w2;
+			double* ptr1 = ptr;
+			//double iJ = _ref->orefDv / _dv;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+
+				double _Xuu = _ref->___dh[0][s];// _ref->d2[0][s] - _ref->oGammaijk[0] * _ref->d1[0][s] - _ref->oGammaijk[1] * _ref->d1[1][s];
+				double _Xuv = _ref->___dh[1][s];//_ref->d2[1][s]  - _ref->oGammaijk[2] * _ref->d1[0][s] - _ref->oGammaijk[3] * _ref->d1[1][s];
+				double _Xvv = _ref->___dh[3][s];//_ref->d2[3][s]  - _ref->oGammaijk[6] * _ref->d1[0][s] - _ref->oGammaijk[7] * _ref->d1[1][s];
+				val = (_Xuu * Huu + _Xuv * Huv + _Xuv * Hvu + _Xvv * Hvv) * Nx;// *iJ;
+
+
+
+
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
+		void GammattN_v(double* ptr, double s1, double s2, double w1, double w2)
+		{
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
+
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length; w2 /= length;
+
+			double val = 0;
+
+
+			double Huu = s1 * s1; double Huv = s1 * s2; double Hvu = s2 * s1; double Hvv = s2 * s2;
+			double Suu = 0, Suv = 0, Svv = 0;
+
+
+			double Nx = _ref->_ogi[0] * w1 + _ref->_ogi[3] * w2;
+			double Ny = _ref->_ogi[1] * w1 + _ref->_ogi[4] * w2;
+			double* ptr1 = ptr;
+			//double iJ = _ref->orefDv / _dv;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+
+				double _Yuu = _ref->___dh[0][s];// _ref->d2[0][s] - _ref->oGammaijk[0] * _ref->d1[0][s] - _ref->oGammaijk[1] * _ref->d1[1][s];
+				double _Yuv = _ref->___dh[1][s];//_ref->d2[1][s]  - _ref->oGammaijk[2] * _ref->d1[0][s] - _ref->oGammaijk[3] * _ref->d1[1][s];
+				double _Yvv = _ref->___dh[3][s];//_ref->d2[3][s]  - _ref->oGammaijk[6] * _ref->d1[0][s] - _ref->oGammaijk[7] * _ref->d1[1][s];
+				val = (_Yuu * Huu + _Yuv * Huv + _Yuv * Hvu + _Yvv * Hvv) * Ny;// *iJ;
+
+
+
+
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
+		double GammatnN(double s1, double s2,double w1,double w2)
 		{
 			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
 			s1 /= length; s2 /= length;
@@ -19949,7 +20275,7 @@ if(add)
 		}
 
 
-		void Gamma11N_u(double* ptr, double s1, double s2,double w1,double w2)
+		void GammatnN_u(double* ptr, double s1, double s2,double w1,double w2)
 		{
 			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
 			s1 /= length; s2 /= length;
@@ -19984,7 +20310,7 @@ if(add)
 			}
 
 		}
-		void Gamma11N_v(double* ptr, double s1, double s2, double w1, double w2)
+		void GammatnN_v(double* ptr, double s1, double s2, double w1, double w2)
 		{
 			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
 			s1 /= length; s2 /= length;
@@ -20011,6 +20337,470 @@ if(add)
 				double _Yvv = _ref->___dh[3][s];//_ref->d2[3][s]  - _ref->oGammaijk[6] * _ref->d1[0][s] - _ref->oGammaijk[7] * _ref->d1[1][s];
 				val = (_Yuu * Huu + _Yuv * Huv + _Yuv * Hvu + _Yvv * Hvv) * Ny;// *iJ;
 
+
+
+
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
+
+
+		double compati(double s1, double s2, double w1, double w2)
+		{
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length; w2 /= length;
+
+		
+
+			double val = 0;
+
+			double H1 = 0, H2 = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				H1 += _ref->d1[0][s] * _ref->buf_phi[s];
+				H2 += _ref->d1[1][s] * _ref->buf_phi[s];
+			}
+
+			val = (Gammaijk[0] - _ref->oGammaijk[0]) * s1 * w1 * H1 + (Gammaijk[1] - _ref->oGammaijk[1]) * s1 * w1 * H2 +
+				(Gammaijk[2] - _ref->oGammaijk[2]) * s1 * w2 * H1 + (Gammaijk[3] - _ref->oGammaijk[3]) * s1 * w2 * H2 +
+				(Gammaijk[4] - _ref->oGammaijk[4]) * s2 * w1 * H1 + (Gammaijk[5] - _ref->oGammaijk[5]) * s2 * w1 * H2 +
+				(Gammaijk[6] - _ref->oGammaijk[6]) * s2 * w2 * H1 + (Gammaijk[7] - _ref->oGammaijk[7]) * s2 * w2 * H2;
+			return val;
+
+		}
+
+
+		void compati_phi(double* ptr, double s1, double s2, double w1, double w2)
+		{
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length; w2 /= length;
+			double val = 0;
+
+			double* ptr1 = ptr;
+			//double iJ = _ref->orefDv / _dv;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+
+				double _H1 = _ref->d1[0][s];
+				double _H2 = _ref->d1[1][s];
+
+				val = (Gammaijk[0] - _ref->oGammaijk[0]) * s1 * w1 * _H1 + (Gammaijk[1] - _ref->oGammaijk[1]) * s1 * w1 * _H2 +
+					(Gammaijk[2] - _ref->oGammaijk[2]) * s1 * w2 * _H1 + (Gammaijk[3] - _ref->oGammaijk[3]) * s1 * w2 * _H2 +
+					(Gammaijk[4] - _ref->oGammaijk[4]) * s2 * w1 * _H1 + (Gammaijk[5] - _ref->oGammaijk[5]) * s2 * w1 * _H2 +
+					(Gammaijk[6] - _ref->oGammaijk[6]) * s2 * w2 * _H1 + (Gammaijk[7] - _ref->oGammaijk[7]) * s2 * w2 * _H2;
+
+
+
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
+
+		void compati_u(double* ptr, double s1, double s2, double w1, double w2)
+		{
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length; w2 /= length;
+			double val = 0;
+			double H1 = 0, H2 = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				H1 += _ref->d1[0][s] * _ref->buf_phi[s];
+				H2 += _ref->d1[1][s] * _ref->buf_phi[s];
+
+			}
+
+
+
+			double* ptr1 = ptr;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+
+
+				double _Gamma111 = _ref->__dh[0][s] * _ref->get__Gi(0, 0);
+				double _Gamma112 = _ref->__dh[0][s] * _ref->get__Gi(1, 0);
+				double _Gamma121 = _ref->__dh[1][s] * _ref->get__Gi(0, 0);
+				double _Gamma122 = _ref->__dh[1][s] * _ref->get__Gi(1, 0);
+				double _Gamma221 = _ref->__dh[3][s] * _ref->get__Gi(0, 0);
+				double _Gamma222 = _ref->__dh[3][s] * _ref->get__Gi(1, 0);
+				double _Gamma211 = _Gamma121;
+				double _Gamma212 = _Gamma122;
+
+
+
+				val = (_Gamma111)*s1 * w1 * H1 + (_Gamma112)*s1 * w1 * H2 +
+					(_Gamma121)*s1 * w2 * H1 + (_Gamma122)*s1 * w2 * H2 +
+					(_Gamma211)*s2 * w1 * H1 + (_Gamma212)*s2 * w1 * H2 +
+					(_Gamma221)*s2 * w2 * H1 + (_Gamma222)*s2 * w2 * H2;
+
+
+
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
+		void compati_v(double* ptr, double s1, double s2, double w1, double w2)
+		{
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length; w2 /= length;
+			double val = 0;
+			double H1 = 0, H2 = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				H1 += _ref->d1[0][s] * _ref->buf_phi[s];
+				H2 += _ref->d1[1][s] * _ref->buf_phi[s];
+
+			}
+
+
+
+			double* ptr1 = ptr;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+
+
+				double _Gamma111 = _ref->__dh[0][s] * _ref->get__Gi(0, 1);
+				double _Gamma112 = _ref->__dh[0][s] * _ref->get__Gi(1, 1);
+				double _Gamma121 = _ref->__dh[1][s] * _ref->get__Gi(0, 1);
+				double _Gamma122 = _ref->__dh[1][s] * _ref->get__Gi(1, 1);
+				double _Gamma221 = _ref->__dh[3][s] * _ref->get__Gi(0, 1);
+				double _Gamma222 = _ref->__dh[3][s] * _ref->get__Gi(1, 1);
+				double _Gamma211 = _Gamma121;
+				double _Gamma212 = _Gamma122;
+
+
+
+				val = (_Gamma111)*s1 * w1 * H1 + (_Gamma112)*s1 * w1 * H2 +
+					(_Gamma121)*s1 * w2 * H1 + (_Gamma122)*s1 * w2 * H2 +
+					(_Gamma211)*s2 * w1 * H1 + (_Gamma212)*s2 * w1 * H2 +
+					(_Gamma221)*s2 * w2 * H1 + (_Gamma222)*s2 * w2 * H2;
+
+
+
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		double compati2(double s1, double s2, double w1, double w2)
+		{
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length; w2 /= length;
+			double xu = 0, xv = 0, yu = 0, yv = 0;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				xu += _ref->d1[0][s] * _ref->buf_xi[s];
+				xv += _ref->d1[1][s] * _ref->buf_xi[s];
+				yu += _ref->d1[0][s] * _ref->buf_eta[s];
+				yv += _ref->d1[1][s] * _ref->buf_eta[s];
+			}
+			double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
+			double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
+			double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
+			double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
+
+
+			double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
+
+			double huu = (2 * duu) - tr * _ref->og11;
+			double huv = (duv + dvu) - tr * _ref->og12;
+
+			double hvv = (2 * dvv) - tr * _ref->og22;
+
+			double hvu = huv;
+
+			double H1 = huu * w1 + huv * w2;
+			double H2 = hvu * w1 + hvv * w2;
+			double V1 = huu * s1 + huv * s2;
+			double V2 = hvu * s1 + hvv * s2;
+
+			double val = 0;
+
+
+			val = (Gammaijk[0] - _ref->oGammaijk[0]) * s1 * s1 * H1 + (Gammaijk[1] - _ref->oGammaijk[1]) * s1 * s1 * H2 +
+				(Gammaijk[2] - _ref->oGammaijk[2]) * s1 * s2 * H1 + (Gammaijk[3] - _ref->oGammaijk[3]) * s1 * s2 * H2 +
+				(Gammaijk[4] - _ref->oGammaijk[4]) * s2 * s1 * H1 + (Gammaijk[5] - _ref->oGammaijk[5]) * s2 * s1 * H2 +
+				(Gammaijk[6] - _ref->oGammaijk[6]) * s2 * s2 * H1 + (Gammaijk[7] - _ref->oGammaijk[7]) * s2 * s2 * H2;
+			val -= (Gammaijk[0] - _ref->oGammaijk[0]) * s1 * w1 * V1 + (Gammaijk[1] - _ref->oGammaijk[1]) * s1 * w1 * V2 +
+				(Gammaijk[2] - _ref->oGammaijk[2]) * s1 * w2 * V1 + (Gammaijk[3] - _ref->oGammaijk[3]) * s1 * w2 * V2 +
+				(Gammaijk[4] - _ref->oGammaijk[4]) * s2 * w1 * V1 + (Gammaijk[5] - _ref->oGammaijk[5]) * s2 * w1 * V2 +
+				(Gammaijk[6] - _ref->oGammaijk[6]) * s2 * w2 * V1 + (Gammaijk[7] - _ref->oGammaijk[7]) * s2 * w2 * V2;
+
+
+			return val;
+
+		}
+
+
+		void compati2_xi(double* ptr, double s1, double s2, double w1, double w2)
+		{
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length; w2 /= length;
+			double xu = 0, xv = 0, yu = 0, yv = 0;
+
+			double val = 0;
+
+		
+			double* ptr1 = ptr;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+
+				double _xu = 0, _xv = 0, _yu = 0, _yv = 0;
+
+				
+				_xu = _ref->d1[0][s];
+				_xv = _ref->d1[1][s];
+					_yu =0;
+					_yv =0;
+				
+				double _duu = _xu * _ref->_ogi[0] + _yu * _ref->_ogi[1];
+				double _duv = _xu * _ref->_ogi[3] + _yu * _ref->_ogi[4];
+				double _dvu = _xv * _ref->_ogi[0] + _yv * _ref->_ogi[1];
+				double _dvv = _xv * _ref->_ogi[3] + _yv * _ref->_ogi[4];
+
+
+				double _tr = _duu * _ref->oG11 + _duv * _ref->oG12 + _dvu * _ref->oG12 + _dvv * _ref->oG22;
+
+				double _huu = (2 * _duu) - _tr * _ref->og11;
+				double _huv = (_duv + _dvu) - _tr * _ref->og12;
+
+				double _hvv = (2 * _dvv) - _tr * _ref->og22;
+
+				double _hvu = _huv;
+
+				double _H1 = _huu * w1 + _huv * w2;
+				double _H2 = _hvu * w1 + _hvv * w2;
+				double _V1 = _huu * s1 + _huv * s2;
+				double _V2 = _hvu * s1 + _hvv * s2;
+
+
+				val = (Gammaijk[0] - _ref->oGammaijk[0]) * s1 * s1 * _H1 + (Gammaijk[1] - _ref->oGammaijk[1]) * s1 * s1 * _H2 +
+					(Gammaijk[2] - _ref->oGammaijk[2]) * s1 * s2 * _H1 + (Gammaijk[3] - _ref->oGammaijk[3]) * s1 * s2 * _H2 +
+					(Gammaijk[4] - _ref->oGammaijk[4]) * s2 * s1 * _H1 + (Gammaijk[5] - _ref->oGammaijk[5]) * s2 * s1 * _H2 +
+					(Gammaijk[6] - _ref->oGammaijk[6]) * s2 * s2 * _H1 + (Gammaijk[7] - _ref->oGammaijk[7]) * s2 * s2 * _H2;
+				val -= (Gammaijk[0] - _ref->oGammaijk[0]) * s1 * w1 * _V1 + (Gammaijk[1] - _ref->oGammaijk[1]) * s1 * w1 * _V2 +
+					(Gammaijk[2] - _ref->oGammaijk[2]) * s1 * w2 * _V1 + (Gammaijk[3] - _ref->oGammaijk[3]) * s1 * w2 * _V2 +
+					(Gammaijk[4] - _ref->oGammaijk[4]) * s2 * w1 * _V1 + (Gammaijk[5] - _ref->oGammaijk[5]) * s2 * w1 * _V2 +
+					(Gammaijk[6] - _ref->oGammaijk[6]) * s2 * w2 * _V1 + (Gammaijk[7] - _ref->oGammaijk[7]) * s2 * w2 * _V2;
+
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
+		void compati2_eta(double* ptr, double s1, double s2, double w1, double w2)
+		{
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length; w2 /= length;
+			double xu = 0, xv = 0, yu = 0, yv = 0;
+
+			double val = 0;
+
+
+			double* ptr1 = ptr;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+
+				double _xu = 0, _xv = 0, _yu = 0, _yv = 0;
+
+
+				_xu = 0;
+				_xv = 0;
+				_yu = _ref->d1[0][s];
+				_yv = _ref->d1[1][s];
+
+				double _duu = _xu * _ref->_ogi[0] + _yu * _ref->_ogi[1];
+				double _duv = _xu * _ref->_ogi[3] + _yu * _ref->_ogi[4];
+				double _dvu = _xv * _ref->_ogi[0] + _yv * _ref->_ogi[1];
+				double _dvv = _xv * _ref->_ogi[3] + _yv * _ref->_ogi[4];
+
+
+				double _tr = _duu * _ref->oG11 + _duv * _ref->oG12 + _dvu * _ref->oG12 + _dvv * _ref->oG22;
+
+				double _huu = (2 * _duu) - _tr * _ref->og11;
+				double _huv = (_duv + _dvu) - _tr * _ref->og12;
+
+				double _hvv = (2 * _dvv) - _tr * _ref->og22;
+
+				double _hvu = _huv;
+
+				double _H1 = _huu * w1 + _huv * w2;
+				double _H2 = _hvu * w1 + _hvv * w2;
+				double _V1 = _huu * s1 + _huv * s2;
+				double _V2 = _hvu * s1 + _hvv * s2;
+
+
+				val = (Gammaijk[0] - _ref->oGammaijk[0]) * s1 * s1 * _H1 + (Gammaijk[1] - _ref->oGammaijk[1]) * s1 * s1 * _H2 +
+					(Gammaijk[2] - _ref->oGammaijk[2]) * s1 * s2 * _H1 + (Gammaijk[3] - _ref->oGammaijk[3]) * s1 * s2 * _H2 +
+					(Gammaijk[4] - _ref->oGammaijk[4]) * s2 * s1 * _H1 + (Gammaijk[5] - _ref->oGammaijk[5]) * s2 * s1 * _H2 +
+					(Gammaijk[6] - _ref->oGammaijk[6]) * s2 * s2 * _H1 + (Gammaijk[7] - _ref->oGammaijk[7]) * s2 * s2 * _H2;
+				val -= (Gammaijk[0] - _ref->oGammaijk[0]) * s1 * w1 * _V1 + (Gammaijk[1] - _ref->oGammaijk[1]) * s1 * w1 * _V2 +
+					(Gammaijk[2] - _ref->oGammaijk[2]) * s1 * w2 * _V1 + (Gammaijk[3] - _ref->oGammaijk[3]) * s1 * w2 * _V2 +
+					(Gammaijk[4] - _ref->oGammaijk[4]) * s2 * w1 * _V1 + (Gammaijk[5] - _ref->oGammaijk[5]) * s2 * w1 * _V2 +
+					(Gammaijk[6] - _ref->oGammaijk[6]) * s2 * w2 * _V1 + (Gammaijk[7] - _ref->oGammaijk[7]) * s2 * w2 * _V2;
+
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
+		void compati2_u(double* ptr, double s1, double s2, double w1, double w2)
+		{
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length; w2 /= length;
+		
+			double val = 0;
+					
+			double xu = 0, xv = 0, yu = 0, yv = 0;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				xu += _ref->d1[0][s] * _ref->buf_xi[s];
+				xv += _ref->d1[1][s] * _ref->buf_xi[s];
+				yu += _ref->d1[0][s] * _ref->buf_eta[s];
+				yv += _ref->d1[1][s] * _ref->buf_eta[s];
+			}
+			double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
+			double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
+			double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
+			double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
+
+
+			double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
+
+			double huu = (2 * duu) - tr * _ref->og11;
+			double huv = (duv + dvu) - tr * _ref->og12;
+
+			double hvv = (2 * dvv) - tr * _ref->og22;
+
+			double hvu = huv;
+
+			double H1 = huu * w1 + huv * w2;
+			double H2 = hvu * w1 + hvv * w2;
+			double V1 = huu * s1 + huv * s2;
+			double V2 = hvu * s1 + hvv * s2;
+			double* ptr1 = ptr;
+			
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+
+
+				double _Gamma111 = _ref->__dh[0][s] * _ref->get__Gi(0, 0);
+				double _Gamma112 = _ref->__dh[0][s] * _ref->get__Gi(1, 0);
+				double _Gamma121 = _ref->__dh[1][s] * _ref->get__Gi(0, 0);
+				double _Gamma122 = _ref->__dh[1][s] * _ref->get__Gi(1, 0);
+				double _Gamma221 = _ref->__dh[3][s] * _ref->get__Gi(0, 0);
+				double _Gamma222 = _ref->__dh[3][s] * _ref->get__Gi(1, 0);
+				double _Gamma211 = _Gamma121;
+				double _Gamma212 = _Gamma122;
+
+		
+
+				val = (_Gamma111)*s1 * s1 * H1 + (_Gamma112)*s1 * s1 * H2 +
+					(_Gamma121)*s1 * s2 * H1 + (_Gamma122)*s1 * s2 * H2 +
+					(_Gamma211)*s2 * s1 * H1 + (_Gamma212)*s2 * s1 * H2 +
+					(_Gamma221)*s2 * s2 * H1 + (_Gamma222)*s2 * s2 * H2;
+				val -= (_Gamma111)*s1 * w1 * V1 + (_Gamma112)*s1 * w1 * V2 +
+					(_Gamma121)*s1 * w2 * V1 + (_Gamma122)*s1 * w2 * V2 +
+					(_Gamma211)*s2 * w1 * V1 + (_Gamma212)*s2 * w1 * V2 +
+					(_Gamma221)*s2 * w2 * V1 + (_Gamma222)*s2 * w2 * V2;
+
+
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
+		void compati2_v(double* ptr, double s1, double s2, double w1, double w2)
+		{
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length; w2 /= length;
+			
+
+			double val = 0;
+		
+			double xu = 0, xv = 0, yu = 0, yv = 0;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				xu += _ref->d1[0][s] * _ref->buf_xi[s];
+				xv += _ref->d1[1][s] * _ref->buf_xi[s];
+				yu += _ref->d1[0][s] * _ref->buf_eta[s];
+				yv += _ref->d1[1][s] * _ref->buf_eta[s];
+			}
+			double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
+			double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
+			double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
+			double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
+
+
+			double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
+
+			double huu = (2 * duu) - tr * _ref->og11;
+			double huv = (duv + dvu) - tr * _ref->og12;
+
+			double hvv = (2 * dvv) - tr * _ref->og22;
+
+			double hvu = huv;
+
+			double H1 = huu * w1 + huv * w2;
+			double H2 = hvu * w1 + hvv * w2;
+			double V1 = huu * s1 + huv * s2;
+			double V2 = hvu * s1 + hvv * s2;
+			
+
+			double* ptr1 = ptr;
+			
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+
+
+
+
+				double _Gamma111 = _ref->__dh[0][s] * _ref->get__Gi(0, 1);
+				double _Gamma112 = _ref->__dh[0][s] * _ref->get__Gi(1, 1);
+				double _Gamma121 = _ref->__dh[1][s] * _ref->get__Gi(0, 1);
+				double _Gamma122 = _ref->__dh[1][s] * _ref->get__Gi(1, 1);
+				double _Gamma221 = _ref->__dh[3][s] * _ref->get__Gi(0, 1);
+				double _Gamma222 = _ref->__dh[3][s] * _ref->get__Gi(1, 1);
+				double _Gamma211 = _Gamma121;
+				double _Gamma212 = _Gamma122;
+
+
+
+				val = (_Gamma111)*s1 * s1 * H1 + (_Gamma112)*s1 * s1 * H2 +
+					(_Gamma121)*s1 * s2 * H1 + (_Gamma122)*s1 * s2 * H2 +
+					(_Gamma211)*s2 * s1 * H1 + (_Gamma212)*s2 * s1 * H2 +
+					(_Gamma221)*s2 * s2 * H1 + (_Gamma222)*s2 * s2 * H2;
+				val -= (_Gamma111)*s1 * w1 * V1 + (_Gamma112)*s1 * w1 * V2 +
+					(_Gamma121)*s1 * w2 * V1 + (_Gamma122)*s1 * w2 * V2 +
+					(_Gamma211)*s2 * w1 * V1 + (_Gamma212)*s2 * w1 * V2 +
+					(_Gamma221)*s2 * w2 * V1 + (_Gamma222)*s2 * w2 * V2;
 
 
 
@@ -23077,24 +23867,24 @@ if(add)
 		{
 			return __mem->det();
 		}
-		double free_edge(double v1, double v2)
+		double free_edge(double v1, double v2, double w1, double w2)
 		{
-			return __mem->free_edge(v1, v2);
+			return __mem->free_edge(v1, v2,w1,w2);
 		}
 		
-		void  free_edge_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, bool add)
+		void  free_edge_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, double w1, double w2, bool add)
 		{
-			__mem->free_edge_phi(__mem->__grad, v1, v2);
+			__mem->free_edge_phi(__mem->__grad, v1, v2, w1, w2);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c);
 		}
-		void  free_edge_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2,  bool add)
+		void  free_edge_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, double w1, double w2,  bool add)
 		{
-			__mem->free_edge_xi(__mem->__grad, v1, v2);
+			__mem->free_edge_xi(__mem->__grad, v1, v2, w1, w2);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c);
 		}
-		void  free_edge_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, bool add)
+		void  free_edge_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, double w1, double w2, bool add)
 		{
-			__mem->free_edge_eta(__mem->__grad, v1, v2);
+			__mem->free_edge_eta(__mem->__grad, v1, v2, w1, w2);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c);
 		}
 
@@ -23158,6 +23948,18 @@ if(add)
 		void  free_edge5_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, double s1, double s2, double t1, double t2, bool add)
 		{
 			__mem->free_edge5_z(__mem->__grad, v1, v2, s1, s2, t1, t2);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c);
+
+		}
+		void  free_edge5_u(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, double s1, double s2, double t1, double t2, bool add)
+		{
+			__mem->free_edge5_u(__mem->__grad, v1, v2, s1, s2, t1, t2);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c);
+
+		}
+		void  free_edge5_v(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, double s1, double s2, double t1, double t2, bool add)
+		{
+			__mem->free_edge5_v(__mem->__grad, v1, v2, s1, s2, t1, t2);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c);
 
 		}
@@ -24626,36 +25428,95 @@ if(add)
 			}*/
 			double Gamma11t(double s1, double s2, double t1, double t2)
 			{
-				return __mem->Gamma11t(s1,s2);
+				return __mem->Gamma11t(s1,s2, t1, t2);
 			}
 			
 			void Gamma11t_v(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, bool add)
 			{
-				__mem->Gamma11t_v(__mem->__grad, s1, s2);
+				__mem->Gamma11t_v(__mem->__grad, s1, s2, t1, t2);
 				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
 			}
-			double Gamma11N(double s1, double s2, double t1, double t2)
+			double GammattN(double s1, double s2, double t1, double t2)
 			{
-				return __mem->Gamma11N(s1, s2,t1,t2);
+				return __mem->GammattN(s1, s2,t1,t2);
 			}
-			void Gamma11N_u(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, bool add)
+			void GammattN_u(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, bool add)
 			{
-				__mem->Gamma11N_u(__mem->__grad, s1, s2,t1,t2);
+				__mem->GammattN_u(__mem->__grad, s1, s2,t1,t2);
 				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
 			}
-			void Gamma11N_v(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, bool add)
+			void GammattN_v(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, bool add)
 			{
-				__mem->Gamma11N_v(__mem->__grad, s1, s2,t1,t2);
+				__mem->GammattN_v(__mem->__grad, s1, s2,t1,t2);
 				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
 			}
+			double GammatnN(double s1, double s2, double t1, double t2)
+			{
+				return __mem->GammatnN(s1, s2, t1, t2);
+			}
+			void GammatnN_u(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, bool add)
+			{
+				__mem->GammatnN_u(__mem->__grad, s1, s2, t1, t2);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
+			}
+			void GammatnN_v(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, bool add)
+			{
+				__mem->GammatnN_v(__mem->__grad, s1, s2, t1, t2);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
+			}
+			double compati(double s1, double s2, double t1, double t2)
+			{
+				return __mem->compati(s1, s2, t1, t2);
+			}
+
+			void compati_u(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, bool add)
+			{
+				__mem->compati_u(__mem->__grad, s1, s2, t1, t2);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
+			}
+			void compati_v(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, bool add)
+			{
+				__mem->compati_v(__mem->__grad, s1, s2, t1, t2);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
+			}
+			void compati_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, bool add)
+			{
+				__mem->compati_phi(__mem->__grad, s1, s2, t1, t2);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
+			}
+			
+			double compati2(double s1, double s2, double t1, double t2)
+			{
+				return __mem->compati2(s1, s2, t1, t2);
+			}
+			void compati2_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, bool add)
+			{
+				__mem->compati2_xi(__mem->__grad, s1, s2, t1, t2);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
+			}void compati2_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, bool add)
+			{
+				__mem->compati2_eta(__mem->__grad, s1, s2, t1, t2);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
+			}
+			void compati2_u(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, bool add)
+			{
+				__mem->compati2_u(__mem->__grad, s1, s2, t1, t2);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
+			}
+			void compati2_v(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, bool add)
+			{
+				__mem->compati2_v(__mem->__grad, s1, s2, t1, t2);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
+			}
+			
 			double Gamma11s(double s1, double s2, double t1, double t2)
 			{
-				return __mem->Gamma11s(s1,s2);
+				return __mem->Gamma11s(s1,s2,t1,t2);
 			}
 		
 			void Gamma11s_u(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, bool add)
 			{
-				__mem->Gamma11s_u(__mem->__grad, s1, s2);
+				__mem->Gamma11s_u(__mem->__grad, s1, s2, t1, t2);
 				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
 			}
 			
@@ -24669,8 +25530,17 @@ if(add)
 				__mem->Gamma11z_z(__mem->__grad, s1, s2, t1, t2);
 				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
 			}
-			
-			
+			void Gamma11z_u(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, bool add)
+			{
+				__mem->Gamma11z_u(__mem->__grad, s1, s2, t1, t2);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
+			}
+			void Gamma11z_v(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, bool add)
+			{
+				__mem->Gamma11z_v(__mem->__grad, s1, s2, t1, t2);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
+			}
+
 			double symm4(double s1, double s2, double t1, double t2)
 			{
 				return __mem->symm4(s1, s2, t1, t2);
