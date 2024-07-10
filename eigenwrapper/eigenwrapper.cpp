@@ -3673,7 +3673,7 @@ ret->_dmat = this->_dmat.inverse();
 	sss << "cpu_mode";
 	return sss.str();
 #else
-    this->_freeze();
+   /* this->_freeze();
 	int64_t N = _dmat.cols();// __c;
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 
@@ -3766,8 +3766,8 @@ ret->_dmat = this->_dmat.inverse();
 	cudaDeviceSynchronize();
 
 	sss <<"solveI"<<"residual=" << (( this->_dmat* ret->_dmat -Eigen::MatrixXd::Identity(N,N)).trace());
-	return sss.str();
-	/*this->_freeze();
+	return sss.str();*/
+	this->_freeze();
 	int64_t N = _dmat.cols();// __c;
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);
 
@@ -3848,7 +3848,7 @@ ret->_dmat = this->_dmat.inverse();
 	cudaDeviceSynchronize();
 
 	sss <<"solveI"<<"residual=" << (( this->_dmat* ret->_dmat -Eigen::MatrixXd::Identity(N,N)).trace());
-	return sss.str();*/
+	return sss.str();
 #endif
 }
 
