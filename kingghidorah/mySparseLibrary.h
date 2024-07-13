@@ -980,6 +980,15 @@ namespace KingOfMonsters {
 			}
 
 		}
+		void ofStack3(mySparse^ A, mySparse^ B)
+		{
+			auto m1 = A->dat->_dmat;
+			auto m2 = B->dat->_dmat;
+			Eigen::MatrixXd M(m1.rows() + m2.rows(), m1.cols());
+			M.topRows(m1.rows()) = m1;
+			M.bottomRows(m2.rows()) = m2;
+
+		}
 		void ofStack(mySparse^ A, mySparse^ B)
 		{
 			std::vector<Eigen::Triplet<double>> dat;
@@ -2273,7 +2282,10 @@ namespace KingOfMonsters {
 					break;
 				}
 			}
-			if (_str == "")_str = "success";
+			if (_str == "") {
+				_str += "success";
+				
+			}
 			System::Console::WriteLine(gcnew System::String(_str.c_str()));
 		}
 		void _solve0_lu_cpu(myDoubleArray^ rhs, myDoubleArray^ ret, int ordering, bool meh) {

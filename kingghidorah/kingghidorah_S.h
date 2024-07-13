@@ -77,11 +77,12 @@ namespace KingOfMonsters {
 		double _bij[12];
 		double _Sij[4];
 		double _Gammaijk[8];
+		double _Gammaijk2[8];
 		double oGammaijk[8];
 		double _gammaijk[8];
 		double* __dh[4]{ 0,0,0,0 };
 		double* ___dh[4]{ 0,0,0,0 };
-
+		double _N[3];
 		
 		double* __mat = 0;
 		double* __matF_xi = 0;
@@ -5035,11 +5036,11 @@ namespace KingOfMonsters {
 		}
 		//body force term projected
 		double G4(int i) {
-			return _ref->d0[i] * _dv;
+			return _ref->d0[i] * _ref->_refDv;
 		}
 		//body force term accurate element area
 		double G2(int i) {
-			return _ref->d0[i] * dv;
+			return _ref->d0[i] * _ref->refDv;
 		}
 		double _d0(int i) {
 			return _ref->d0[i];
@@ -5186,6 +5187,8 @@ namespace KingOfMonsters {
 			S[1] = 0;
 			S[2] = 0;
 			S[3] = 0;
+
+
 			for (int k = 0; k < 2; k++) {
 				for (int l = 0; l < 2; l++) {
 					double val = 0;
@@ -5202,11 +5205,10 @@ namespace KingOfMonsters {
 							//double E = 0;
 							for (int s = 0; s < 3; s++)
 							{
-								auto ff = get_gi(n, s);
-								auto gg = _ref->get__gi(n, s);
+								//auto ff = get_gi(n, s);
+								//auto gg = _ref->get__gi(n, s);
 
-								D += _ref->get__gi(m, s) * (get_gi(n, s) - _ref->get__gi(n, s));
-								D += _ref->get__gi(n, s) * (get_gi(m, s) - _ref->get__gi(m, s));
+								D += (get_gi(n, s) * _ref->get__gi(m, s) + get_gi(m, s) * _ref->get__gi(n, s) - 2 * _ref->get__gi(m, s) * _ref->get__gi(n, s));
 							}
 							//double D2 = /*get_gij(n, m) - */ _ref->get__gij(n, m);
 							val += A * D;
@@ -5234,10 +5236,10 @@ namespace KingOfMonsters {
 			S[3] = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				S[0] += (_ref->d2[0][s] - Gammaijk2[0] * _ref->d1[0][s] - Gammaijk2[1] * _ref->d1[1][s]) * _ref->node[s * 3 + 2];
-				S[1] += (_ref->d2[1][s] - Gammaijk2[2] * _ref->d1[0][s] - Gammaijk2[3] * _ref->d1[1][s]) * _ref->node[s * 3 + 2];
-				S[2] += (_ref->d2[2][s] - Gammaijk2[4] * _ref->d1[0][s] - Gammaijk2[5] * _ref->d1[1][s]) * _ref->node[s * 3 + 2];
-				S[3] += (_ref->d2[3][s] - Gammaijk2[6] * _ref->d1[0][s] - Gammaijk2[7] * _ref->d1[1][s]) * _ref->node[s * 3 + 2];
+				S[0] += (_ref->d2[0][s] - _ref->_Gammaijk2[0] * _ref->d1[0][s] - _ref->_Gammaijk2[1] * _ref->d1[1][s]) * _ref->node[s * 3 + 2];
+				S[1] += (_ref->d2[1][s] - _ref->_Gammaijk2[2] * _ref->d1[0][s] - _ref->_Gammaijk2[3] * _ref->d1[1][s]) * _ref->node[s * 3 + 2];
+				S[2] += (_ref->d2[2][s] - _ref->_Gammaijk2[4] * _ref->d1[0][s] - _ref->_Gammaijk2[5] * _ref->d1[1][s]) * _ref->node[s * 3 + 2];
+				S[3] += (_ref->d2[3][s] - _ref->_Gammaijk2[6] * _ref->d1[0][s] - _ref->_Gammaijk2[7] * _ref->d1[1][s]) * _ref->node[s * 3 + 2];
 			}
 			*a = S[0];
 			*b = S[1];
@@ -5344,12 +5346,12 @@ namespace KingOfMonsters {
 			double bending = 0;
 			for (int k = 0; k < 2; k++) {
 				for (int l = 0; l < 2; l++) {
-					double __bij2 = get_bij(k, l, 0) * N[0] + get_bij(k, l, 1) * N[1] + get_bij(k, l, 2) * N[2];
-					double ___bij2 = _ref->get__bij(k, l, 0) * N[0] + _ref->get__bij(k, l, 1) * N[1] + _ref->get__bij(k, l, 2) * N[2];
+					double __bij2 = get_bij(k, l, 0) * _ref->_N[0] + get_bij(k, l, 1) * _ref->_N[1] + get_bij(k, l, 2) * _ref->_N[2];
+					double ___bij2 = _ref->get__bij(k, l, 0) * _ref->_N[0] + _ref->get__bij(k, l, 1) * _ref->_N[1] + _ref->get__bij(k, l, 2) * _ref->_N[2];
 					for (int m = 0; m < 2; m++) {
 						for (int n = 0; n < 2; n++) {
-							double __bij = get_bij(m, n, 0) * N[0] + get_bij(m, n, 1) * N[1] + get_bij(m, n, 2) * N[2];
-							double ___bij = _ref->get__bij(m, n, 0) * N[0] + _ref->get__bij(m, n, 1) * N[1] + _ref->get__bij(m, n, 2) * N[2];
+							double __bij = get_bij(m, n, 0) * _ref->_N[0] + get_bij(m, n, 1) * _ref->_N[1] + get_bij(m, n, 2) * _ref->_N[2];
+							double ___bij = _ref->get__bij(m, n, 0) * _ref->_N[0] + _ref->get__bij(m, n, 1) * _ref->_N[1] + _ref->get__bij(m, n, 2) * _ref->_N[2];
 
 							double A = _la * _ref->get__Gij(l, k) * _ref->get__Gij(n, m) + 2 * _mu * _ref->get__Gij(l, n) * _ref->get__Gij(k, m);
 
@@ -5357,8 +5359,8 @@ namespace KingOfMonsters {
 							double E = 0;
 							for (int s = 0; s < 3; s++)
 							{
-								D += N[s] * ((get_bij(m, n, s) - _ref->get__bij(m, n, s)) - _ref->get__Gammaijk(m, n, 0) * (get_gi(0, s) - _ref->get__gi(0, s)) - _ref->get__Gammaijk(m, n, 1) * (get_gi(1, s) - _ref->get__gi(1, s)));
-								E += N[s] * ((get_bij(k, l, s) - _ref->get__bij(k, l, s)) - _ref->get__Gammaijk(k, l, 0) * (get_gi(0, s) - _ref->get__gi(0, s)) - _ref->get__Gammaijk(k, l, 1) * (get_gi(1, s) - _ref->get__gi(1, s)));
+								D += _ref->_N[s] * ((get_bij(m, n, s) - _ref->get__bij(m, n, s)) - _ref->get__Gammaijk(m, n, 0) * (get_gi(0, s) - _ref->get__gi(0, s)) - _ref->get__Gammaijk(m, n, 1) * (get_gi(1, s) - _ref->get__gi(1, s)));
+								E += _ref->_N[s] * ((get_bij(k, l, s) - _ref->get__bij(k, l, s)) - _ref->get__Gammaijk(k, l, 0) * (get_gi(0, s) - _ref->get__gi(0, s)) - _ref->get__Gammaijk(k, l, 1) * (get_gi(1, s) - _ref->get__gi(1, s)));
 								//E += 0.5 * N[s] * ((tup.bij[l, k, s] - tup._bij[l, l, s]) - tup._Gammaijk[l, k, 0] * (tup.gi[0, s] - tup._gi[0, s]) - tup._Gammaijk[l, m, 1] * (tup.gi[1, s] - tup._gi[1, s]));
 							}
 							bending += A * D * E * _ref->refDv;
@@ -5626,7 +5628,37 @@ namespace KingOfMonsters {
 			}
 			return membrane;
 		}
-
+		double gradK(int i, int k2,  double _la, double _mu)
+		{
+			double _val3 = 0;
+			double _val4 = 0;
+			double _val5 = 0;
+			double _val6 = 0;
+			for (int l = 0; l < 2; l++)
+			{
+				for (int m = 0; m < 2; m++)
+				{
+					for (int g = 0; g < 2; g++)
+					{
+						for (int h = 0; h < 2; h++)
+						{
+							double A = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(m, l) + 2 * _mu * _ref->get__Gij(h, m) * _ref->get__Gij(g, l));
+							double D = 0;
+							for (int s = 0; s < 3; s++)
+							{
+								D += _ref->_N[s] * ((get_bij(g, h, s) - _ref->get__bij(g, h, s)) - _ref->get__Gammaijk(g, h, 0) * (get_gi(0, s) - _ref->get__gi(0, s)) - _ref->get__Gammaijk(g, h, 1) * (get_gi(1, s) - _ref->get__gi(1, s)));
+							}
+							double E = _ref->d2[l * 2 + m][i]  - _ref->_Gammaijk[(l * 2 + m) * 2 + 0] * _ref->d1[0][i] - _ref->_Gammaijk[(l * 2 + m) * 2 + 1] * _ref->d1[1][i];
+							_val3 += A * (D) * _ref->_N[k2] * (E);
+							//_val4 += A * this->gradN[k][j] * get_bij(g, h, k) * this->gradN[k2][i] * get_bij(l, m, k2);
+							//_val5 += A * this->gradN[k][j] * get_bij(g, h, k) * N[k2] * E;
+							//_val6 += A * this->gradN[k2][i] * get_bij(l, m, k2) * N[k] * D;
+						}
+					}
+				}
+			}
+			return (_val4 + _val3 + _val5 + _val6) * _ref->refDv;
+		}
 		//bending term
 		double K(int i, int k2, int j, int k, double _la, double _mu)
 		{
@@ -5643,9 +5675,9 @@ namespace KingOfMonsters {
 						for (int h = 0; h < 2; h++)
 						{
 							double A = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(m, l) + 2 * _mu * _ref->get__Gij(h, m) * _ref->get__Gij(g, l));
-							double D = _ref->d2[g * 2 + h][j]/**N[k]+_ref->get__bij(g,h,k)*gradN[k][j];//*/ - Gammaijk[(g * 2 + h) * 2 + 0] * _ref->d1[0][j] - Gammaijk[(g * 2 + h) * 2 + 1] * _ref->d1[1][j];
-							double E = _ref->d2[l * 2 + m][i] /** N[k2] + _ref->get__bij(l, m, k2) * gradN[k2][i];//*/ - Gammaijk[(l * 2 + m) * 2 + 0] * _ref->d1[0][i] - Gammaijk[(l * 2 + m) * 2 + 1] * _ref->d1[1][i];
-							_val3 += A * (D)*N[k] * N[k2] * (E);
+							double D = _ref->d2[g * 2 + h][j]- _ref->_Gammaijk[(g * 2 + h) * 2 + 0] * _ref->d1[0][j] - _ref->_Gammaijk[(g * 2 + h) * 2 + 1] * _ref->d1[1][j];
+							double E = _ref->d2[l * 2 + m][i] - _ref->_Gammaijk[(l * 2 + m) * 2 + 0] * _ref->d1[0][i] - _ref->_Gammaijk[(l * 2 + m) * 2 + 1] * _ref->d1[1][i];
+							_val3 += A * (D)*_ref->_N[k] * _ref->_N[k2] * (E);
 							//_val4 += A * this->gradN[k][j] * get_bij(g, h, k) * this->gradN[k2][i] * get_bij(l, m, k2);
 							//_val5 += A * this->gradN[k][j] * get_bij(g, h, k) * N[k2] * E;
 							//_val6 += A * this->gradN[k2][i] * get_bij(l, m, k2) * N[k] * D;
@@ -5653,7 +5685,7 @@ namespace KingOfMonsters {
 					}
 				}
 			}
-			return (_val4 + _val3 + _val5 + _val6) * this->dv;
+			return (_val4 + _val3 + _val5 + _val6) * _ref->refDv;
 		}
 		double dK(int i, int k, double _la, double _mu)
 		{
@@ -19366,8 +19398,8 @@ if(add)
 				
 				double _Htt = (_Huu * s1 * s1 + 2 * _Huv * (s1 * s2) + _Hvv * s2 * s2);
 
-				val = Stt * _Htt*sc;
-				val -= Sn * (_Htt + qtt) * sc * Gammassn;
+				val = Stt ;
+				//val -= Sn * (_Htt + qtt) * sc * Gammassn;
 
 				*ptr1 = val;
 				ptr1++;
@@ -19445,8 +19477,8 @@ if(add)
 
 
 
-				val = Stt * Htt*sc;
-				val -= Sn * (Htt + _qtt)*sc * Gammassn;
+				val = Stt ;
+				//val -= Sn * (Htt + _qtt)*sc * Gammassn;
 
 				*ptr1 = val;
 				ptr1++;
@@ -23267,11 +23299,29 @@ if(add)
 				for (int h = 0; h < 2; h++)
 				{
 					double A = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(m, l) + 2 * _mu * _ref->get__Gij(h, m) * _ref->get__Gij(g, l));
-					double D = (_ref->d2[g * 2 + h][j] - Gammaijk[(g * 2 + h) * 2 + 0] * _ref->d1[0][j] - Gammaijk[(g * 2 + h) * 2 + 1] * _ref->d1[1][j]);
-					_val3 += A * N[k] * (D);
+					double D = (_ref->d2[g * 2 + h][j] - _ref->_Gammaijk[(g * 2 + h) * 2 + 0] * _ref->d1[0][j] - _ref->_Gammaijk[(g * 2 + h) * 2 + 1] * _ref->d1[1][j]);
+					_val3 += A * _ref->_N[k] * (D);
 				}
 			}
 
+			return _val3 * _ref->refDv * _ref->refDv;
+		}
+		double tKB( int l, int m, double _la, double _mu)
+		{
+			double _val3 = 0;
+			for (int g = 0; g < 2; g++)
+			{
+				for (int h = 0; h < 2; h++)
+				{
+					double A = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(m, l) + 2 * _mu * _ref->get__Gij(h, m) * _ref->get__Gij(g, l));
+					double D = 0;
+					for (int s = 0; s < 3; s++)
+					{
+						D += _ref->_N[s] * (get_bij(g, h, s) - _ref->_Gammaijk[(g * 2 + h) * 2 + 0] * get_gi(0, s) - _ref->_Gammaijk[(g * 2 + h) * 2 + 1] * get_gi(1, s));
+					}
+					_val3 += A * D;
+				}
+			}
 			return _val3 * _ref->refDv * _ref->refDv;
 		}
 		//membrane boundary term
@@ -23299,7 +23349,18 @@ if(add)
 			for (int l = 0; l < 2; l++)
 			{
 
-				val += _ref->d1[l][i] * N[s] * _ref->get__Gij(l, m);
+				val += _ref->d1[l][i] * _ref->_N[s] * _ref->get__Gij(l, m);
+			}
+			return val * _ref->refDv;
+		}
+		double tT(int m) {
+			double val = 0;
+			for (int l = 0; l < 2; l++)
+			{
+				for (int s = 0; s < 3; s++)
+				{
+					val += get_gi(l, s) * _ref->_N[s] * _ref->get__Gij(l, m);
+				}
 			}
 			return val * _ref->refDv;
 		}
@@ -23331,8 +23392,39 @@ if(add)
 
 							double A = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(m, l) + 2 * _mu * _ref->get__Gij(h, m) * _ref->get__Gij(g, l));
 
-							double FF = (_ref->d1[g][j] * get_gi(h, k) + _ref->d1[h][j] * get_gi(g, k));
-							double GG = (_ref->d1[l][i] * get_gi(m, k2) + _ref->d1[m][i] * get_gi(l, k2));
+							double FF = (_ref->d1[g][j] * _ref->get__gi(h, k) + _ref->d1[h][j] * _ref->get__gi(g, k));
+							double GG = (_ref->d1[l][i] * _ref->get__gi(m, k2) + _ref->d1[m][i] * _ref->get__gi(l, k2));
+							_val4 += A * FF * GG;
+						}
+					}
+				}
+			}
+			return _val4 * _ref->refDv * 0.25;
+		}
+		double gradH(int i, int k, double _la, double _mu)
+		{
+			const static int kk[3]{ 0,1,2 };
+			const static int ll[2]{ 0,1 };
+
+			double _val4 = 0;
+
+			for (const auto& l : ll)
+			{
+				for (const auto& m : ll)
+				{
+					for (const auto& g : ll)
+					{
+						for (const auto& h : ll)
+						{
+
+							double A = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(m, l) + 2 * _mu * _ref->get__Gij(h, m) * _ref->get__Gij(g, l));
+
+							
+							double FF = (get_gi(g, 0) * _ref->get__gi(h, 0) + get_gi(h, 0) * _ref->get__gi(g, 0) - 2*_ref->get__gi(g, 0) * _ref->get__gi(h, 0)) +
+								(get_gi(g, 1) * _ref->get__gi(h, 1) + get_gi(h, 1) * _ref->get__gi(g, 1) - 2 * _ref->get__gi(g, 1) * _ref->get__gi(h, 1)) +
+								(get_gi(g, 2) * _ref->get__gi(h, 2) + get_gi(h, 2) * _ref->get__gi(g, 2) - 2 * _ref->get__gi(g, 2) * _ref->get__gi(h, 2));
+							
+							double GG = (_ref->d1[l][i] * _ref->get__gi(m, k) + _ref->d1[m][i] * _ref->get__gi(l, k));
 							_val4 += A * FF * GG;
 						}
 					}
@@ -23362,6 +23454,44 @@ if(add)
 						}
 					}
 				}
+			}
+		}
+		void gradH(_myDoubleArray * grad, int64_t* _index, double _la, double _mu, double sc)
+		{
+			const static int kk[3]{ 0,1,2 };
+			const static int ll[2]{ 0,1 };
+			//static std::map<_mySparse*, std::vector<Eigen::Triplet<double>>> dict;
+
+			for (int i = 0; i < _nNode; i++)
+			{
+				int I = _index[i] * 3;
+				for (const auto& k : kk)
+				{
+						double _val4 = 0;
+						_val4 = gradH(i, k,  _la, _mu);
+						grad->__v(I + k) += _val4 * sc;
+				}				
+			}
+		}
+		void gradK(_myDoubleArray* grad, int64_t* _index, double _la, double _mu, double sc)
+		{
+			const static int kk[3]{ 0,1,2 };
+			const static int ll[2]{ 0,1 };
+			//static std::map<_mySparse*, std::vector<Eigen::Triplet<double>>> dict;
+
+			for (int i = 0; i < _nNode; i++)
+			{
+				int I = _index[i] * 3;
+
+				for (const auto& k : kk)
+				{
+
+					double _val4 = 0;
+					_val4 = gradK(i, k, _la, _mu);
+					grad->__v(I + k) += _val4 * sc;
+
+				}
+
 			}
 		}
 		void memory2(_memS_ref* __mem)
@@ -23461,10 +23591,15 @@ if(add)
 					__mem->_Gi[5] = 0;
 				}
 			}
+			__mem->_N[0] = N[0];
+			__mem->_N[1] = N[1];
+			__mem->_N[2] = N[2];
+
 			//std::memset(__mem->_gij, 0, sizeof(double) * 4);
 			//std::memset(__mem->_Gij, 0, sizeof(double) * 4);
 			std::memcpy(__mem->_bij, bij, sizeof(double) * 12);
 			std::memcpy(__mem->_Gammaijk, Gammaijk, sizeof(double) * 8);
+			std::memcpy(__mem->_Gammaijk2, Gammaijk2, sizeof(double) * 8);
 			std::memcpy(__mem->_gammaijk, gammaijk, sizeof(double) * 8);
 
 		}
@@ -23495,6 +23630,7 @@ if(add)
 		void setbuffer(buffer^ buf) {
 			__mem->set_buffer(buf->_buf->mem);
 		}
+		
 		double _x() {
 			return __mem->_x;
 		}
@@ -26686,12 +26822,18 @@ if(add)
 		double KB(int j, int k, int l, int m, double _la, double _mu) {
 			return __mem->KB(j, k, l, m, _la, _mu);
 		}
+		double tKB( int l, int m, double _la, double _mu) {
+			return __mem->tKB(l, m, _la, _mu);
+		}
 		double HB(int j, int k, int l, int m, double _la, double _mu) {
 			return __mem->HB(j, k, l, m, _la, _mu);
 		}
 		//rotation angle at boundary
 		double T(int i, int s, int m) {
 			return __mem->T(i, s, m);
+		}
+		double tT(int m) {
+			return __mem->tT(m);
 		}
 		//membrane boundary term handle
 		double T2(int l, int i) {
@@ -26713,6 +26855,14 @@ if(add)
 		{
 			__mem->H(M->dat, index->data(), _la, _mu, sc);
 		}
+		void gradH(myDoubleArray^ grad, myIntArray^ index, double _la, double _mu, double sc)
+		{
+			__mem->gradH(grad->_arr, index->data(), _la, _mu, sc);
+		}
+			void gradK(myDoubleArray ^ grad, myIntArray ^ index, double _la, double _mu, double sc)
+			{
+				__mem->gradK(grad->_arr, index->data(), _la, _mu, sc);
+			}
 		void K(mySparse^ M, myIntArray^ index, double _la, double _mu, double sc)
 		{
 			__mem->K(M->dat, index->data(), _la, _mu, sc);
@@ -26789,6 +26939,10 @@ if(add)
 		double dcdtstar(double x, double y, int i)
 		{
 			return x * __mem->get_gi(i, 0) + y * __mem->get_gi(i, 1);
+		}
+		double N(int i)
+		{
+			return __mem->N[i];
 		}
 		double norm(double d1, double d2) {
 			double x = __mem->get_Gi(0, 0) * d1 + __mem->get_Gi(1, 0) * d2;

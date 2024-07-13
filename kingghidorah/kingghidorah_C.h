@@ -21,7 +21,8 @@ namespace KingOfMonsters {
 		double* buf_eta = 0;
 		double* buf_nu = 0;
 		double* buf_W = 0;
-
+		double _N[3];
+		double _H[3];
 		double _gi[3];
 		double _Gi[3];
 		double _gij[1];
@@ -341,7 +342,11 @@ namespace KingOfMonsters {
 		~_memC() {
 			del();
 		}
-		void update2() {
+		void update2()
+		{
+			update2("STANDARD");
+		}
+		void update2(string mode) {
 
 			double* ptr;
 			ptr = hh0;
@@ -437,16 +442,32 @@ namespace KingOfMonsters {
 			double fx = 0, fy = 0, fz = 0;
 			ptr = d1;
 			ptr2 = _ref->node;
-			for (int i = 0; i < _nNode; i++)
+			if (mode == "SHELL")
 			{
-				fx += *ptr * *ptr2;
-				ptr2++;
-				fy += *ptr * *ptr2;
-				ptr2++;
-				//fz += *ptr * *ptr2;
-				fz += *ptr * _ref->buf_z[i];
-				ptr2++;
-				ptr++;
+				for (int i = 0; i < _nNode; i++)
+				{
+					fx += *ptr * *ptr2;
+					ptr2++;
+					fy += *ptr * *ptr2;
+					ptr2++;
+					fz += *ptr * *ptr2;
+					//fz += *ptr * _ref->buf_z[i];
+					ptr2++;
+					ptr++;
+				}
+			}
+			else {
+				for (int i = 0; i < _nNode; i++)
+				{
+					fx += *ptr * *ptr2;
+					ptr2++;
+					fy += *ptr * *ptr2;
+					ptr2++;
+					//fz += *ptr * *ptr2;
+					fz += *ptr * _ref->buf_z[i];
+					ptr2++;
+					ptr++;
+				}
 			}
 			gi[0] = fx;
 			gi[1] = fy;
@@ -1397,9 +1418,9 @@ namespace KingOfMonsters {
 			double _val4 = 0;
 
 			double A = _ref->get__Gtt() * _ref->get__Gtt();
-			double D = (d2[j] - Gammaijk[0] * d1[j]);
-			double E = (d2[i] - Gammaijk[0] * d1[i]);
-			_val3 += A * N[k] * N[k2] * (D) * (E);
+			double D = (d2[j] - _ref->_Gammaijk[0] * d1[j]);
+			double E = (d2[i] - _ref->_Gammaijk[0] * d1[i]);
+			_val3 += A * _ref->_N[k] * _ref->_N[k2] * (D) * (E);
 
 			return _val3 * _ref->refDv;
 		}
@@ -1431,9 +1452,9 @@ namespace KingOfMonsters {
 			double _val4 = 0;
 
 			double A = _ref->get__Gtt() * _ref->get__Gtt();
-			double D = (d2[j] - Gammaijk[0] * d1[j]);
-			double E = (d2[i] - Gammaijk[0] * d1[i]);
-			_val3 += A * H[k] * H[k2] * (D) * (E);
+			double D = (d2[j] - _ref->_Gammaijk[0] * d1[j]);
+			double E = (d2[i] - _ref->_Gammaijk[0] * d1[i]);
+			_val3 += A * _ref->_H[k] * _ref->_H[k2] * (D) * (E);
 
 			return _val3 * _ref->refDv;
 		}
@@ -1513,8 +1534,8 @@ namespace KingOfMonsters {
 			double _val4 = 0;
 			double A = _ref->get__Gtt() * _ref->get__Gtt();
 
-			double FF = (d1[j] * get_gt(k) + d1[j] * get_gt(k));
-			double GG = (d1[i] * get_gt(k2) + d1[i] * get_gt(k2));
+			double FF = (d1[j] * _ref->get__gt(k) + d1[j] * _ref->get__gt(k));
+			double GG = (d1[i] *_ref->get__gt(k2) + d1[i] * _ref->get__gt(k2));
 			_val4 += A * FF * GG;
 			return _val4 * _ref->refDv * 0.25;
 		}
@@ -1538,6 +1559,31 @@ namespace KingOfMonsters {
 				}
 			}
 		}
+		double _gradH(int i, int k2)
+		{
+			double _val4 = 0;
+			double A = _ref->get__Gtt() * _ref->get__Gtt();
+
+			double FF = 2*(get_gt(0)*_ref->get__gt(0)+ get_gt(1) * _ref->get__gt(1)+ get_gt(2) * _ref->get__gt(2) - _ref->get__gtt());
+			double GG = (d1[i] * _ref->get__gt(k2) + d1[i] * _ref->get__gt(k2));
+			_val4 += A * FF * GG;
+			return _val4 * _ref->refDv * 0.25;
+		}
+		void _gradH(_myDoubleArray* grad, int64_t* _index, double sc)
+		{
+			for (int i = 0; i < _nNode; i++)
+			{
+				int64_t I = _index[i] * 3;
+				for (int s = 0; s < 3; s++)
+				{
+					
+
+							double _val4 = _gradH(i, s);
+							grad->__v.coeffRef(I + s) += _val4 * sc;
+					
+				}
+			}
+		}
 		void memory(_memC_ref* __mem) {
 			if (__mem->__z < -1000) {
 				__mem->__z = z;
@@ -1548,6 +1594,12 @@ namespace KingOfMonsters {
 
 			__mem->refDv = dv;
 			__mem->_refDv = _dv;
+			__mem->_N[0] = N[0];
+			__mem->_N[1] = N[1];
+			__mem->_N[2] = N[2];
+			__mem->_H[0] = H[0];
+			__mem->_H[1] = H[1];
+			__mem->_H[2] = H[2];
 			std::memcpy(__mem->_gi, gi2, sizeof(double) * 3);
 			std::memcpy(__mem->_Gi, Gi2, sizeof(double) * 3);
 			std::memcpy(__mem->_gij, gij2, sizeof(double) * 1);
@@ -1668,7 +1720,14 @@ namespace KingOfMonsters {
 		void update(int nNode, int Dim) {
 			__mem->update(nNode, Dim);
 		}
-		
+		double refDv()
+		{
+			return __mem->refDv;
+		}
+		double _refDv()
+		{
+			return __mem->_refDv;
+		}
 	};
 	public ref class memC {
 	public:
@@ -1817,6 +1876,10 @@ namespace KingOfMonsters {
 		{
 			__mem->_H(M->dat, index->data(), sc);
 		}
+		void gradH(myDoubleArray^ grad, myIntArray^ index, double sc)
+		{
+			__mem->_gradH(grad->_arr, index->data(), sc);
+		}
 		void L(double val1) {
 			__mem->set_L(val1);
 		}
@@ -1917,15 +1980,23 @@ namespace KingOfMonsters {
 			this->__mem->angle_v2(other->__mem, this->__mem->__grad);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_ref->_nNode, false, coeff);
 		}
-		void compute() {
+		void compute(System::String ^str) {
 			
-			__mem->update2();
+			if (str == "SHELL")
+				__mem->update2("SHELL");
+			else if (str == "STANDARD")
+				__mem->update2("STANDARD");
+			else
+				__mem->update2("STANDARD");
 			x = __mem->x;
 			y = __mem->y;
 			z = __mem->z;
 			dv = __mem->dv;
 			_refDv = __mem->_dv;
 			refDv = __mem->dv;
+		}
+		void compute() {
+			compute("STANDARD");
 		}
 		void update_lo(double lo) {
 			__mem->set_lo(lo);
