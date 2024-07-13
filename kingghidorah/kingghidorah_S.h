@@ -5205,8 +5205,8 @@ namespace KingOfMonsters {
 								auto ff = get_gi(n, s);
 								auto gg = _ref->get__gi(n, s);
 
-								D += _ref->get__gi(m, s) * (get_gi(n, s) - _ref->get__gi(n, s));
-								D += _ref->get__gi(n, s) * (get_gi(m, s) - _ref->get__gi(m, s));
+								D += _ref->get__gi(m, s) * get_gi(n, s) - _ref->get__gi(m, s) * _ref->get__gi(n, s);
+								D += _ref->get__gi(n, s) * get_gi(m, s) - _ref->get__gi(n, s) * _ref->get__gi(m, s);
 							}
 							//double D2 = /*get_gij(n, m) - */ _ref->get__gij(n, m);
 							val += A * D;
