@@ -310,6 +310,7 @@ namespace KingOfMonsters {
 		std::string _solve0_lu_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering);
 		std::string _solve0_chol_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering);
 		void solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
+		void solve0_qr(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void _solve0_lu_cg(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		std::string _solve0_gpu(KingOfMonsters::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int64_t device);
 		//std::string _QR_gpu(KingOfMonsters::cuda* cuda, Eigen::MatrixXd* Q, Eigen::MatrixXd* R, int64_t device);

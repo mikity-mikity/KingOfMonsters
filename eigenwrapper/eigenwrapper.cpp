@@ -4251,13 +4251,26 @@ std::string KingOfMonsters::_mySparse::_solve0_lu_cpu(Eigen::VectorXd* rhs, Eige
 	}
 
 }
+void KingOfMonsters::_mySparse::solve0_qr(Eigen::VectorXd* rhs, Eigen::VectorXd* ret) {
+	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);
+	//Eigen::SparseLU<Eigen::SparseMatrix<double,Eigen::ColMajor>> lu;
+	Eigen::FullPivHouseholderQR<Eigen::MatrixXd> qr;
+	qr.compute(this->_dmat);
+	//Eigen::Map<Eigen::VectorXd> b(rhs, N);
+	ret->conservativeResize(this->_dmat.cols());
+	ret->setZero();
+	//Eigen::VectorXd x(_mat[0].rows());
+	//x.setZero();
+	*ret = qr.solve(*rhs);
+	//return x;
+}
 void KingOfMonsters::_mySparse::solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret) {
 	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);
 	//Eigen::SparseLU<Eigen::SparseMatrix<double,Eigen::ColMajor>> lu;
 	Eigen::PartialPivLU<Eigen::MatrixXd> lu;
 	lu.compute(this->_dmat);
 	//Eigen::Map<Eigen::VectorXd> b(rhs, N);
-	ret->conservativeResize(_mat[0].cols());
+	ret->conservativeResize(_dmat.cols());
 	ret->setZero();
 	//Eigen::VectorXd x(_mat[0].rows());
 	//x.setZero();
