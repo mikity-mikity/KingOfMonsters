@@ -23798,46 +23798,75 @@ if(add)
 			const static int kk[3]{ 0,1,2 };
 			const static int ll[2]{ 0,1 };
 
-			double _val4 = 0;
 			
-			for (const auto& l : ll)
-			{
-				for (const auto& m : ll)
-				{
-					double Sml = 0;
-					for (const auto& g : ll)
-					{
-						for (const auto& h : ll)
-						{
-
-							double Chgml = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(m, l) + 2 * _mu * _ref->get__Gij(h, m) * _ref->get__Gij(g, l));
-							double Ehg = 0;
-							for (int k = 0; k < 3; k++)
-							{
-								Ehg += (get_gi(h, k) * _ref->get__gi(g, k) + get_gi(g, k) * _ref->get__gi(h, k));
-								Ehg -= 2 * _ref->get__gi(h, k) * _ref->get__gi(g, k);
-							}
-							Sml+= Chgml*Ehg;
-						}
-					}
-					_val4 += Sml * W1 * W2;
-				}
-			}
-			double _w[2]{0,0};
-			_w[0] = w1;
-			_w[1] = w2;
+			double _W[2]{0,0};
+			_W[0] = W1;
+			_W[1] = W2;
 			double val = 0;
 			for (const auto& l : ll)
 			{
 				for (const auto& m : ll)
 				{
-					double Sml = _val4 * _w[l] * _w[m];
-					
-					double dgml = (_ref->d1[m][i] * _ref->get__gi(l, k) + _ref->d1[l][i] * _ref->get__gi(m, k));
-					val += Sml * dgml;
+					for (const auto& g : ll)
+					{
+						for (const auto& h : ll)
+						{
+							double Chgml = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(m, l) + 2 * _mu * _ref->get__Gij(h, m) * _ref->get__Gij(g, l));
+
+
+							double dSml = (_ref->d1[m][i] * _ref->get__gi(l, k) + _ref->d1[l][i] * _ref->get__gi(m, k));
+							val += Chgml * dSml *_W[h]*_W[g];
+						}
+					}
 				}
 			}
 			return val*0.25;
+		}
+		double Hwv(double _la, double _mu, double v1, double v2, double w1, double w2, int i, int k)
+		{
+			double W1 = v2;
+			double W2 = -v1;
+			double V1 = w2;
+			double V2 = -w1;
+			double length = W1 * w1 + W2 * w2;
+			W1 /= length;
+			W2 /= length;
+
+			length = V1 * v1 + V2 * v2;
+			V1 /= length;
+			V2 /= length;
+
+			const static int kk[3]{ 0,1,2 };
+			const static int ll[2]{ 0,1 };
+
+	
+
+			double _W[2]{ 0,0 };
+			_W[0] = W1;
+			_W[1] = W2;
+			double _V[2]{ 0,0 };
+			_V[0] = V1;
+			_V[1] = V2;
+			double val = 0;
+			for (const auto& l : ll)
+			{
+				for (const auto& m : ll)
+				{
+					for (const auto& g : ll)
+					{
+						for (const auto& h : ll)
+						{
+							double Chgml = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(m, l) + 2 * _mu * _ref->get__Gij(h, m) * _ref->get__Gij(g, l));
+
+
+							double dSml = (_ref->d1[m][i] * _ref->get__gi(l, k) + _ref->d1[l][i] * _ref->get__gi(m, k));
+							val += Chgml * dSml * _W[h] * _V[g];
+						}
+					}
+				}
+			}
+			return val * 0.25;
+		
 		}
 		//membrane term
 		double H(int i, int k2, int j, int k, double _la, double _mu)
@@ -26862,6 +26891,10 @@ if(add)
 		double Hww(double _la, double _mu, double v1, double v2, double w1, double w2,int i,int k)
 		{
 			return __mem->Hww(_la, _mu, v1, v2, w1, w2,i,k);
+		}
+		double Hwv(double _la, double _mu, double v1, double v2, double w1, double w2, int i, int k)
+		{
+			return __mem->Hwv(_la, _mu, v1, v2, w1, w2, i, k);
 		}
 		double shear_z(int uv)
 		{
