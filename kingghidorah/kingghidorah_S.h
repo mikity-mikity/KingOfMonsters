@@ -19572,7 +19572,7 @@ if(add)
 			double qtt = (quu * s1 * s1 + 2 * quv * (s1 * s2) + qvv * s2 * s2);
 			double Sn = Su * t1 + Sv * t2;
 			val = Stt;
-            //val -= Sn *  Gammassn;
+            val -= Sn *  Gammassn;
 		
 
 			return val;
@@ -19641,7 +19641,7 @@ if(add)
 				
 				double _Sn = _Su * t1 + _Sv * t2;
 				val = _Stt ;
-				//val -= _Sn * Gammassn;
+				val -= _Sn * Gammassn;
 
 				*ptr1 = val;
 				ptr1++;
