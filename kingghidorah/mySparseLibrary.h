@@ -2238,6 +2238,13 @@ namespace KingOfMonsters {
 			System::Console::WriteLine(gcnew System::String(_str.c_str()));
 			return gcnew System::String(_str.c_str());
 		}*/
+		void _solve0_lu_cpu2(myDoubleArray^ rhs, myDoubleArray^ ret,double salt) {
+
+			
+			std::string _str = this->dat->_solve0_lu_cpu2(&rhs->_arr->__v, &ret->_arr->__v,salt);
+			System::Console::WriteLine(gcnew System::String(_str.c_str()));
+		}
+
 		void _solve0_lu_cpu(myDoubleArray^ rhs, myDoubleArray^ ret, int ordering, bool meh,double nnn) {
 			mySparse^ m = nullptr;
 			myDoubleArray^ v = nullptr;

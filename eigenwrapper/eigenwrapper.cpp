@@ -4229,7 +4229,49 @@ void KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, _mySpars
 	}
 #endif
 }
+std::string KingOfMonsters::_mySparse::_solve0_lu_cpu2(Eigen::VectorXd* rhs, Eigen::VectorXd* ret,double salt) {
+	Eigen::SparseLU<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>, Eigen::COLAMDOrdering<int64_t>> lu;
 
+	Eigen::FullPivHouseholderQR<Eigen::MatrixXd> qr;
+	Eigen::MatrixXd m = _mat[0];
+	qr.compute(m);
+
+	*ret=qr.solve(*rhs);
+	return ("SUCCESS");
+		/*if (salt == 0)
+		{
+			lu.compute(_mat[0].transpose() * _mat[0]);
+			if (lu.info() == Eigen::ComputationInfo::Success) {
+				*ret = lu.solve(_mat[0].transpose() * *rhs);
+				return "SUCCESS";
+			}
+			else {
+
+				return ("FAILED ");
+
+			}
+		}
+		else {
+
+			Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>id;
+			id.resize(_mat[0].cols(), _mat[0].cols());
+			id.setIdentity();
+			id *= salt;
+			lu.compute(_mat[0].transpose() * _mat[0]+id);
+			if (lu.info() == Eigen::ComputationInfo::Success) {
+
+				*ret = lu.solve(_mat[0].transpose() * *rhs);
+				return "SUCCESS";
+			}
+			else {
+
+				return ("FAILED ");
+
+				}
+
+		}*/
+
+}
 
 std::string KingOfMonsters::_mySparse::_solve0_lu_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering) {
 	Eigen::SparseLU<Eigen::SparseMatrix<double,Eigen::ColMajor, int64_t>,Eigen::COLAMDOrdering<int64_t>> lu;

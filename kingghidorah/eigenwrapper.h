@@ -308,6 +308,7 @@ namespace KingOfMonsters {
 		//void _solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		//Eigen::MatrixXd _solve0(_myLLT* LLT, _mySparse* mat);
 		std::string _solve0_lu_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering);
+		std::string _solve0_lu_cpu2(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, double salt);
 		std::string _solve0_chol_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering);
 		void solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void solve0_qr(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);

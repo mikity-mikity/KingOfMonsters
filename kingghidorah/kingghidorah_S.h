@@ -23609,7 +23609,7 @@ if(add)
 		}
 		//bending boundary term 2
 		
-		double KB2(int i, int k2,int j,int k,double _la, double _mu,double v1,double v2)
+		double KB2(/*int i, int k2,*/int j, int k, double _la, double _mu, double v1, double v2)
 		{
 			
 			double length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + 2 * v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
@@ -23627,34 +23627,33 @@ if(add)
 			for (int m = 0; m < 2; m++)
 			{
 				
-				for (int g = 0; g < 2; g++)
+				/*for (int g = 0; g < 2; g++)
 				{
 					double D = (_ref->d2[g * 2 + m][i] - _ref->_Gammaijk[(g * 2 + m) * 2 + 0] * _ref->d1[0][i] - _ref->_Gammaijk[(g * 2 + m) * 2 + 1] * _ref->d1[1][i]) * _ref->_N[k2];
 					val1 += D * w[g]*w[m];
-				}
+				}*/
 				for (int g = 0; g < 2; g++)
 				{
 					for (int h = 0; h < 2; h++)
 					{
 						for (int l = 0; l < 2; l++)
 						{
-							for (int g = 0; g < 2; g++)
-							{
+							
 								double A = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(m, l) + 2 * _mu * _ref->get__Gij(h, m) * _ref->get__Gij(g, l));
 								double D = (_ref->d2[g * 2 + h][j] - _ref->_Gammaijk[(g * 2 + h) * 2 + 0] * _ref->d1[0][j] - _ref->_Gammaijk[(g * 2 + h) * 2 + 1] * _ref->d1[1][j]) * _ref->_N[k];
 
 
 								val2 += A * D * W[l]*W[m];
-							}
+							
 						}
 					}
 				}
 			
 			}
-			return val1*val2;
+			return val2;
 		}
 
-		/*void KB2(myDoubleArray^ grad, int64_t* _index, double _la, double _mu, double sc, double v1, double v2)
+		void KB2(myDoubleArray^ grad, int64_t* _index, double _la, double _mu, double sc, double v1, double v2)
 		{
 			const static int kk[3]{ 0,1,2 };
 			const static int ll[2]{ 0,1 };
@@ -23675,7 +23674,7 @@ if(add)
 				}
 			}
 				
-		}*/
+		}
 
 		//bending boundary term
 		double KB(int j, int k, int l, int m, double _la, double _mu)
@@ -23792,7 +23791,7 @@ if(add)
 			return val;
 		}
 
-		double Hww(int i, int k, int j, int k2, double _la, double _mu, double v1, double v2, double w1, double w2)
+		double Hww(/*int i, int k, */ int j, int k2, double _la, double _mu, double v1, double v2, double w1, double w2)
 		{
 			double W1 = v2;
 			double W2 = -v1;
@@ -23822,12 +23821,12 @@ if(add)
 			for (const auto& g : ll)
 			{
 				
-				for (const auto& l : ll)
+				/*for (const auto& l : ll)
 				{
 					
 						double dEgl = (_ref->d1[g][i] * _ref->get__gi(l, k) + _ref->d1[l][i] * _ref->get__gi(g, k));
 						val2 += dEgl * _w[l]*_w[g];
-				}
+				}*/
 				for (const auto& l : ll)
 				{
 					for (const auto& m : ll)
@@ -23835,11 +23834,10 @@ if(add)
 						double dEml = (_ref->d1[m][j] * _ref->get__gi(l, k2) + _ref->d1[l][j] * _ref->get__gi(m, k2));
 						for (const auto& h : ll)
 						{
-							for (const auto& l : ll)
-							{
+							
 								double Chgml = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(m, l) + 2 * _mu * _ref->get__Gij(h, m) * _ref->get__Gij(g, l));
-								val1 += Chgml * dEml * _W[h] * _W[l];
-							}
+								val1 += Chgml * dEml * _W[h] * _W[g];
+							
 						}
 					}
 				}
@@ -23847,9 +23845,9 @@ if(add)
 
 			}
 		
-			return val1*val2*0.25;
+			return val1*0.25;
 		}
-		double Hwv(int i, int k,int j,int k2,double _la, double _mu, double v1, double v2, double w1, double w2)
+		double Hwv(/*int i, int k,*/ int j, int k2, double _la, double _mu, double v1, double v2, double w1, double w2)
 		{
 			double W1 = v2;
 			double W2 = -v1;
@@ -23881,16 +23879,16 @@ if(add)
 			_w[1] = w2;
 
 			double val1 = 0;
-			double val2 = 0;
+			//double val2 = 0;
 			for (const auto& g : ll)
 			{
 
-				for (const auto& l : ll)
+				/*for (const auto& l : ll)
 				{
 
 					double dEgl = (_ref->d1[g][i] * _ref->get__gi(l, k) + _ref->d1[l][i] * _ref->get__gi(g, k));
 					val2 += dEgl * _w[l] * _v[g];
-				}
+				}*/
 				for (const auto& l : ll)
 				{
 					for (const auto& m : ll)
@@ -23898,11 +23896,10 @@ if(add)
 						double dEml = (_ref->d1[m][j] * _ref->get__gi(l, k2) + _ref->d1[l][j] * _ref->get__gi(m, k2));
 						for (const auto& h : ll)
 						{
-							for (const auto& l : ll)
-							{
+						
 								double Chgml = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(m, l) + 2 * _mu * _ref->get__Gij(h, m) * _ref->get__Gij(g, l));
-								val1 += Chgml * dEml * _W[h] * _V[l];
-							}
+								val1 += Chgml * dEml * _W[h] * _V[g];
+						
 						}
 					}
 				}
@@ -23910,7 +23907,7 @@ if(add)
 
 			}
 
-			return val1 * val2 * 0.25;
+			return val1  * 0.25;
 		
 		}
 		//membrane term
@@ -23996,77 +23993,77 @@ if(add)
 				}
 			}
 		}
-		void KB2(_mySparse* M, int64_t* _index, double _la, double _mu, double v1, double v2,  double sc)
+		void KB2(_mySparseVector * grad, int64_t* _index, double _la, double _mu, double v1, double v2, double sc)
 		{
 			const static int kk[3]{ 0,1,2 };
 			const static int ll[2]{ 0,1 };
 			//static std::map<_mySparse*, std::vector<Eigen::Triplet<double>>> dict;
 
-			for (int i = 0; i < _nNode; i++)
-			{
-				int I = _index[i] * 3;
+			//for (int i = 0; i < _nNode; i++)
+			//{
+				//int I = _index[i] * 3;
 				for (int j = 0; j < _nNode; j++)
 				{
 					int J = _index[j] * 3;
-					for (const auto& k : kk)
-					{
+					//for (const auto& k : kk)
+					//{
 						for (const auto& k2 : kk)
 						{
 							double _val4 = 0;
-							_val4 = KB2(i, k, j, k2, _la, _mu, v1, v2);
-							M->_mat[0].coeffRef(I + k, J + k2) += _val4 * sc;
+							_val4 = KB2( j, k2, _la, _mu, v1, v2);
+							grad->_vec.coeffRef(J + k2) += _val4 * sc;
 						}
-					}
+					//}
 				}
-			}
+			//}
 		}
-		void Hww(_mySparse* M, int64_t* _index, double _la, double _mu,double v1,double v2,double w1,double w2, double sc)
+		void Hww(_mySparseVector* grad, int64_t* _index, double _la, double _mu,double v1,double v2,double w1,double w2, double sc)
 		{
 			const static int kk[3]{ 0,1,2 };
 			const static int ll[2]{ 0,1 };
 			//static std::map<_mySparse*, std::vector<Eigen::Triplet<double>>> dict;
 
-			for (int i = 0; i < _nNode; i++)
+			/*for (int i = 0; i < _nNode; i++)
 			{
-				int I = _index[i] * 3;
+				int I = _index[i] * 3;*/
 				for (int j = 0; j < _nNode; j++)
 				{
 					int J = _index[j] * 3;
-					for (const auto& k : kk)
-					{
+					//for (const auto& k : kk)
+					//{
 						for (const auto& k2 : kk)
 						{
 							double _val4 = 0;
-							_val4 = Hww(i, k, j, k2, _la, _mu,v1,v2,w1,w2);
-							M->_mat[0].coeffRef(I + k, J + k2) += _val4 * sc;
+							_val4 = Hww( j, k2, _la, _mu,v1,v2,w1,w2);
+							grad->_vec.coeffRef(J + k2) += _val4 * sc;
 						}
-					}
+					//}
 				}
-			}
+			//}
 		}
-		void Hwv(_mySparse* M, int64_t* _index, double _la, double _mu, double v1, double v2, double w1, double w2, double sc)
+		void Hwv(_mySparseVector* grad, int64_t* _index, double _la, double _mu, double v1, double v2, double w1, double w2, double sc)
 		{
 			const static int kk[3]{ 0,1,2 };
 			const static int ll[2]{ 0,1 };
 			//static std::map<_mySparse*, std::vector<Eigen::Triplet<double>>> dict;
 
-			for (int i = 0; i < _nNode; i++)
+			/*for (int i = 0; i < _nNode; i++)
 			{
-				int I = _index[i] * 3;
+				int I = _index[i] * 3;*/
 				for (int j = 0; j < _nNode; j++)
 				{
 					int J = _index[j] * 3;
-					for (const auto& k : kk)
-					{
+					//for (const auto& k : kk)
+					//{
 						for (const auto& k2 : kk)
 						{
 							double _val4 = 0;
-							_val4 = Hwv(i, k, j, k2, _la, _mu, v1, v2, w1, w2);
-							M->_mat[0].coeffRef(I + k, J + k2) += _val4 * sc;
+							_val4 = Hwv( j, k2, _la, _mu, v1, v2, w1, w2);
+							grad->_vec.coeffRef(J + k2) += _val4 * sc;
 						}
-					}
+						//}
 				}
-			}
+			//}
 		}
 		void gradH(_myDoubleArray * grad, int64_t* _index, double _la, double _mu, double sc)
 		{
@@ -27518,21 +27515,21 @@ if(add)
 		{
 			return __mem->K_phi(j);
 		}
-		void KB2(mySparse^ mat, myIntArray^ index, double _la, double _mu, double sc, double v1, double v2)
+		void KB2(mySparseVector ^grad, myIntArray^ index, double _la, double _mu, double v1, double v2,double sc)
 		{
-			__mem->KB2(mat->dat, index->data(), _la, _mu, sc,v1,v2);
+			__mem->KB2(grad->_vec, index->data(), _la, _mu, v1,v2,sc);
 		}
 		void H(mySparse^ M, myIntArray^ index, double _la, double _mu, double sc)
 		{
 			__mem->H(M->dat, index->data(), _la, _mu, sc);
 		}
-		void Hww(mySparse^ M, myIntArray^ index, double _la, double _mu, double v1,double v2,double w1,double w2,double sc)
+		void Hww(mySparseVector ^grad, myIntArray^ index, double _la, double _mu, double v1,double v2,double w1,double w2,double sc)
 		{
-			__mem->Hww(M->dat, index->data(), _la, _mu, v1,v2,w1,w2,sc);
+			__mem->Hww(grad->_vec, index->data(), _la, _mu, v1,v2,w1,w2,sc);
 		}
-		void Hwv(mySparse^ M, myIntArray^ index, double _la, double _mu, double v1, double v2, double w1, double w2, double sc)
+		void Hwv(mySparseVector^ grad, myIntArray^ index, double _la, double _mu, double v1, double v2, double w1, double w2, double sc)
 		{
-			__mem->Hwv(M->dat, index->data(), _la, _mu, v1, v2, w1, w2, sc);
+			__mem->Hwv(grad->_vec, index->data(), _la, _mu, v1, v2, w1, w2, sc);
 		}
 		void gradH(myDoubleArray^ grad, myIntArray^ index, double _la, double _mu, double sc)
 		{
