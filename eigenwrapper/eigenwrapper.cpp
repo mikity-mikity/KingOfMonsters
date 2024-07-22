@@ -4230,12 +4230,16 @@ void KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, _mySpars
 #endif
 }
 std::string KingOfMonsters::_mySparse::_solve0_lu_cpu2(Eigen::VectorXd* rhs, Eigen::VectorXd* ret,double salt) {
-	Eigen::SparseLU<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>, Eigen::COLAMDOrdering<int64_t>> lu;
+	//Eigen::SparseLU<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>, Eigen::COLAMDOrdering<int64_t>> lu;
 
 	Eigen::FullPivHouseholderQR<Eigen::MatrixXd> qr;
+	//Eigen::LeastSquaresConjugateGradient<  Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>, Eigen::LeastSquareDiagonalPreconditioner<double>> cg;
+	//cg.setTolerance(salt);
+	qr.setThreshold(salt);
 	Eigen::MatrixXd m = _mat[0];
 	qr.compute(m);
-
+	//cg.compute(_mat[0]);
+	//*ret = cg.solve(*rhs);
 	*ret=qr.solve(*rhs);
 	return ("SUCCESS");
 		/*if (salt == 0)
