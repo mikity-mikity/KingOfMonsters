@@ -5322,14 +5322,9 @@ namespace KingOfMonsters {
 			double membrane = 0;
 			for (int k = 0; k < 2; k++) {
 				for (int l = 0; l < 2; l++) {
-
 					for (int m = 0; m < 2; m++) {
 						for (int n = 0; n < 2; n++) {
-
-
 							double A = _la * _ref->get__Gij(l, k) * _ref->get__Gij(n, m) + 2 * _mu * _ref->get__Gij(l, n) * _ref->get__Gij(k, m);
-
-
 							double D = 0;
 							double E = 0;
 							for (int s = 0; s < 3; s++)
@@ -5339,8 +5334,7 @@ namespace KingOfMonsters {
 								E += _ref->get__gi(k, s) * (get_gi(l, s) - _ref->get__gi(l, s));
 								E += _ref->get__gi(l, s) * (get_gi(k, s) - _ref->get__gi(k, s));
 							}
-							membrane += 0.25 * A * D * E * _ref->refDv;
-							//Print((bij - _bij).ToString() + "," +  (tup.Gij[m, n] - tup._Gij[m, n]).ToString());
+							membrane += 0.25 * A * D * E * _ref->refDv;							
 						}
 					}
 				}
@@ -19572,7 +19566,7 @@ if(add)
 			double qtt = (quu * s1 * s1 + 2 * quv * (s1 * s2) + qvv * s2 * s2);
 			double Sn = Su * t1 + Sv * t2;
 			val = Stt;
-            val -= Sn *  Gammassn;
+            //val -= Sn *  Gammassn;
 		
 
 			return val;
@@ -19641,7 +19635,7 @@ if(add)
 				
 				double _Sn = _Su * t1 + _Sv * t2;
 				val = _Stt ;
-				val -= _Sn * Gammassn;
+				//val -= _Sn * Gammassn;
 
 				*ptr1 = val;
 				ptr1++;
@@ -24146,6 +24140,291 @@ if(add)
 			}
 			return val * _ref->refDv * 0.25;
 		}
+
+		double H5(int i,  int k2,int j, int k, double _la, double _mu, double v1, double v2, double w1, double w2)
+		{
+			double length = w1 * w1 * _ref->get__gij(0, 0) + 2 * w1 * w2 * _ref->get__gij(0, 1) + w2 * w2 * _ref->get__gij(1, 1);
+			w1 /= length;
+			w2 /= length;
+			length = v1 * v1 * _ref->get__gij(0, 0) + 2 * v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1);
+			v1 /= length;
+			v2 /= length;
+			double det = _ref->get__gij(0, 0) * _ref->get__gij(1, 1) - _ref->get__gij(0, 1) * _ref->get__gij(0, 1);
+			double W1 = v2 * det;
+			double W2 = -v1 * det;
+
+			double V1 = w2 * det;
+			double V2 = -w1 * det;
+
+			double w[2]{ 0,0 };
+			double v[2]{ 0,0 };
+			double W[2]{ 0,0 };
+			double V[2]{ 0,0 };
+			w[0] = w1;
+			w[1] = w2;
+			v[0] = v1;
+			v[1] = v2;
+			W[0] = W1;
+			W[1] = W2;
+			V[0] = V1;
+			V[1] = V2;
+
+
+			const static int kk[3]{ 0,1,2 };
+			const static int ll[2]{ 0,1 };
+
+			double _val4 = 0;
+
+			double val = 0;
+			double val2 = 0;
+			for (const auto& g : ll)
+			{
+				for (const auto& h : ll)
+				{
+					for (const auto& u : ll)
+					{
+						for (const auto& s : ll)
+						{
+							double A = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(s, u) + 2 * _mu * _ref->get__Gij(h, s) * _ref->get__Gij(g, u));
+							double FF = (_ref->d1[u][j] * _ref->get__gi(s, k) + _ref->d1[s][j] * _ref->get__gi(u, k));
+
+							val += A * FF * W[g] * V[h];
+						}
+					}
+
+				}
+			}
+			if (k2 == 0)
+			{
+				val2 = _ref->d0[i];
+			}
+			else if (k2 == 1)
+			{
+				val2 = _ref->d1[0][i];
+			}
+			else if (k2 == 2)
+			{
+				val2 = _ref->d1[1][i];
+			}
+			else if (k2 == 3)
+			{
+				val2 = _ref->d2[0][i];
+			}
+			else if (k2 == 4)
+			{
+				val2 = _ref->d2[1][i];
+			}
+			else if (k2 == 5)
+			{
+				val2 = _ref->d2[3][i];
+			}
+			return val * val2 * _ref->refDv * 0.5;
+		}
+		double dH5(int i,int k, double _la, double _mu, double v1, double v2, double w1, double w2)
+		{
+			double length = w1 * w1 * _ref->get__gij(0, 0) + 2 * w1 * w2 * _ref->get__gij(0, 1) + w2 * w2 * _ref->get__gij(1, 1);
+			w1 /= length;
+			w2 /= length;
+			length = v1 * v1 * _ref->get__gij(0, 0) + 2 * v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1);
+			v1 /= length;
+			v2 /= length;
+			double det = _ref->get__gij(0, 0) * _ref->get__gij(1, 1) - _ref->get__gij(0, 1) * _ref->get__gij(0, 1);
+			double W1 = v2 * det;
+			double W2 = -v1 * det;
+
+			double V1 = w2 * det;
+			double V2 = -w1 * det;
+
+			double w[2]{ 0,0 };
+			double v[2]{ 0,0 };
+			double W[2]{ 0,0 };
+			double V[2]{ 0,0 };
+			w[0] = w1;
+			w[1] = w2;
+			v[0] = v1;
+			v[1] = v2;
+			W[0] = W1;
+			W[1] = W2;
+			V[0] = V1;
+			V[1] = V2;
+
+
+			const static int kk[3]{ 0,1,2 };
+			const static int ll[2]{ 0,1 };
+
+			double _val4 = 0;
+
+			double val = 0;
+			double val2 = 0;
+			for (const auto& g : ll)
+			{
+				for (const auto& h : ll)
+				{
+					for (const auto& u : ll)
+					{
+						for (const auto& s : ll)
+						{
+							double A = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(s, u) + 2 * _mu * _ref->get__Gij(h, s) * _ref->get__Gij(g, u));
+							double FF = 0;
+
+							for (int k = 0; k < 3; k++)
+							{
+								FF += 2 * _ref->get__gi(u, k) * _ref->get__gi(s, k);
+							}
+
+							val += A * FF * W[g] * V[h];
+						}
+					}
+
+				}
+			}
+			if (k == 0)
+			{
+				val2 = _ref->d0[i];
+			}
+			else if (k == 1)
+			{
+				val2 = _ref->d1[0][i];
+			}
+			else if (k == 2)
+			{
+				val2 = _ref->d1[1][i];
+			}
+			else if (k == 3)
+			{
+				val2 = _ref->d2[0][i];
+			}
+			else if (k == 4)
+			{
+				val2 = _ref->d2[1][i];
+			}
+			else if (k == 5)
+			{
+				val2 = _ref->d2[3][i];
+			}
+			return val * val2 * _ref->refDv * 0.5;
+		}
+		double dH6(int i, int k,double lambda, double _la, double _mu, double v1, double v2, double w1, double w2)
+		{
+			double length = w1 * w1 * _ref->get__gij(0, 0) + 2 * w1 * w2 * _ref->get__gij(0, 1) + w2 * w2 * _ref->get__gij(1, 1);
+			w1 /= length;
+			w2 /= length;
+			length = v1 * v1 * _ref->get__gij(0, 0) + 2 * v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1);
+			v1 /= length;
+			v2 /= length;
+			double det = _ref->get__gij(0, 0) * _ref->get__gij(1, 1) - _ref->get__gij(0, 1) * _ref->get__gij(0, 1);
+			double W1 = v2 * det;
+			double W2 = -v1 * det;
+
+			double V1 = w2 * det;
+			double V2 = -w1 * det;
+
+			double w[2]{ 0,0 };
+			double v[2]{ 0,0 };
+			double W[2]{ 0,0 };
+			double V[2]{ 0,0 };
+			w[0] = w1;
+			w[1] = w2;
+			v[0] = v1;
+			v[1] = v2;
+			W[0] = W1;
+			W[1] = W2;
+			V[0] = V1;
+			V[1] = V2;
+
+
+			const static int kk[3]{ 0,1,2 };
+			const static int ll[2]{ 0,1 };
+
+			double _val4 = 0;
+
+			double val2 = 0;
+			for (const auto& g : ll)
+			{
+				for (const auto& h : ll)
+				{
+					for (const auto& u : ll)
+					{
+						for (const auto& s : ll)
+						{
+							double A = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(s, u) + 2 * _mu * _ref->get__Gij(h, s) * _ref->get__Gij(g, u));
+							
+
+							
+								double FF = _ref->d1[u][i] * _ref->get__gi(s, k)+ _ref->d1[s][i] * _ref->get__gi(u, k);
+							
+
+							val2 += A * FF * W[g] * V[h];
+						}
+					}
+
+				}
+			}
+			
+			return lambda * val2 * _ref->refDv * 0.5;
+		}
+		double lambda( double _la, double _mu, double v1, double v2, double w1, double w2)
+		{
+			double length = w1 * w1 * _ref->get__gij(0, 0) + 2 * w1 * w2 * _ref->get__gij(0, 1) + w2 * w2 * _ref->get__gij(1, 1);
+			w1 /= length;
+			w2 /= length;
+			length = v1 * v1 * _ref->get__gij(0, 0) + 2 * v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1);
+			v1 /= length;
+			v2 /= length;
+			double det = _ref->get__gij(0, 0) * _ref->get__gij(1, 1) - _ref->get__gij(0, 1) * _ref->get__gij(0, 1);
+			double W1 = v2 * det;
+			double W2 = -v1 * det;
+
+			double V1 = w2 * det;
+			double V2 = -w1 * det;
+
+			double w[2]{ 0,0 };
+			double v[2]{ 0,0 };
+			double W[2]{ 0,0 };
+			double V[2]{ 0,0 };
+			w[0] = w1;
+			w[1] = w2;
+			v[0] = v1;
+			v[1] = v2;
+			W[0] = W1;
+			W[1] = W2;
+			V[0] = V1;
+			V[1] = V2;
+
+
+			const static int kk[3]{ 0,1,2 };
+			const static int ll[2]{ 0,1 };
+
+			double _val4 = 0;
+
+			double val = 0;
+			double val2 = 0;
+			for (const auto& g : ll)
+			{
+				for (const auto& h : ll)
+				{
+					for (const auto& u : ll)
+					{
+						for (const auto& s : ll)
+						{
+							double A = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(s, u) + 2 * _mu * _ref->get__Gij(h, s) * _ref->get__Gij(g, u));
+							double FF = 0;
+
+							for (int k = 0; k < 3; k++)
+							{
+								FF += get_gi(u,k) * _ref->get__gi(s, k)+ get_gi(s, k) * _ref->get__gi(u, k)-2* _ref->get__gi(u, k) * _ref->get__gi(s, k) ;
+							}
+
+
+							val += A * FF * W[g] * V[h];
+						}
+					}
+
+				}
+			}
+
+			return val * 0.5;
+		}
 		double gradH(int i, int k, double _la, double _mu)
 		{
 			const static int kk[3]{ 0,1,2 };
@@ -24198,6 +24477,60 @@ if(add)
 							M->_mat[0].coeffRef(I + k, J + k2) += _val4 * sc;
 						}
 					}
+				}
+			}
+		}
+		double  lambda(double _la, double _mu, double sc, double v1, double v2, double w1, double w2)
+		{
+			return lambda(_la, _mu, v1, v2, w1, w2);
+		}
+		void H5(_mySparse* M,_myDoubleArray*grad, int64_t* _index, double _la, double _mu, double sc, double v1, double v2, double w1, double w2)
+		{
+			const static int kk[3]{ 0,1,2 };
+			const static int ll[2]{ 0,1 };
+			//static std::map<_mySparse*, std::vector<Eigen::Triplet<double>>> dict;
+
+			for (int i = 0; i < _nNode; i++)
+			{
+				int I = _index[i]*6 ;
+
+				for (int k = 0; k < 6; k++)
+				{
+					double _val5 = 0;
+					_val5 = dH5(i, k, _la, _mu, v1, v2, w1, w2);
+					grad->__v.coeffRef(I + k) += _val5 * sc;
+
+
+					for (int j = 0; j < _nNode; j++)
+					{
+						int J = _index[j] * 3;
+
+						for (const auto& k2 : kk)
+						{
+							double _val4 = 0;
+							_val4 = H5(i, k, j, k2, _la, _mu, v1, v2, w1, w2);
+							M->_mat[0].coeffRef(I + k, J + k2) += _val4 * sc;
+						}
+					}
+				}
+			}
+		}
+		void H6(_myDoubleArray* grad, int64_t* _index,double lambda, double _la, double _mu, double sc, double v1, double v2, double w1, double w2)
+		{
+			const static int kk[3]{ 0,1,2 };
+			const static int ll[2]{ 0,1 };
+			//static std::map<_mySparse*, std::vector<Eigen::Triplet<double>>> dict;
+
+			for (int i = 0; i < _nNode; i++)
+			{
+				int I = _index[i] * 3;
+
+				for (int k = 0; k < 3; k++)
+				{
+					double _val5 = 0;
+					_val5 = dH6(i, k,lambda, _la, _mu, v1, v2, w1, w2);
+					grad->__v.coeffRef(I + k) += _val5 * sc;
+					
 				}
 			}
 		}
@@ -27815,6 +28148,18 @@ if(add)
 		void H4(mySparse^ M, myIntArray^ index, double _la, double _mu, double sc, double v1, double v2, double w1, double w2)
 		{
 			__mem->H4(M->dat, index->data(), _la, _mu, sc, v1, v2, w1, w2);
+		}
+		void H5(mySparse^ M, myDoubleArray^ grad, myIntArray^ index, double _la, double _mu, double sc, double v1, double v2, double w1, double w2)
+		{
+			__mem->H5(M->dat, grad->_arr, index->data(), _la, _mu, sc, v1, v2, w1, w2);
+		}
+		void H6(myDoubleArray ^ grad, myIntArray ^ index, double lambda,double _la, double _mu, double sc, double v1, double v2, double w1, double w2)
+		{
+			__mem->H6( grad->_arr, index->data(),lambda, _la, _mu, sc, v1, v2, w1, w2);
+		}
+		double lambda(double _la, double _mu, double sc, double v1, double v2, double w1, double w2)
+		{
+			return __mem->lambda( _la, _mu, sc, v1, v2, w1, w2);
 		}
 		void Hww(mySparseVector ^grad, myIntArray^ index, double _la, double _mu, double v1,double v2,double w1,double w2,double sc)
 		{

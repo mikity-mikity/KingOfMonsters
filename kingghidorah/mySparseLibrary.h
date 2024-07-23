@@ -1116,6 +1116,34 @@ namespace KingOfMonsters {
 			this->dat->_mat[0].reserve(dat.size());
 			this->dat->_mat[0].setFromTriplets(dat.begin(), dat.end());
 		}
+		double lambda(myDoubleArray ^b,mySparse^ A, mySparse^ B) {
+			double f = (b->_arr->__v.transpose() * A->dat->_mat[0] * B->dat->_mat[0] * b->_arr->__v);
+		    double g= (b->_arr->__v.transpose() * A->dat->_mat[0] * A->dat->_mat[0] * b->_arr->__v);
+			return -f / g;
+		}
+		void ofStack4(mySparse^ A, mySparse^ B)
+		{
+			std::vector<Eigen::Triplet<double>> dat;
+			for (Int64 k = 0; k < A->dat->_mat[0].outerSize(); ++k)
+			{
+				for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(A->dat->_mat[0], k); it; ++it)
+				{
+					dat.push_back(Eigen::Triplet<double>(it.row(), it.col(), it.value()));
+				}
+			}
+			for (Int64 k = 0; k < B->dat->_mat[0].outerSize(); ++k)
+			{
+				for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(B->dat->_mat[0], k); it; ++it)
+				{
+					dat.push_back(Eigen::Triplet<double>(it.col() , it.row() + A->dat->_mat[0].cols(), it.value()));
+				}
+			}
+
+			this->dat->_mat[0].setZero();
+			this->dat->_mat[0].resize(A->dat->_mat[0].rows(),A->dat->_mat[0].cols()+B->dat->_mat[0].rows());
+			this->dat->_mat[0].reserve(dat.size());
+			this->dat->_mat[0].setFromTriplets(dat.begin(), dat.end());
+		}
 		mySparse() {
 			
 			dat = 0;
@@ -2251,7 +2279,7 @@ namespace KingOfMonsters {
 			if (meh) {
 
 				//rhs->_arr->__v = this->dat->_mat[0].transpose() * rhs->_arr->__v;
-				
+			
 				Eigen::VectorXd _v = this->dat->_mat[0].transpose() * rhs->_arr->__v;
 				Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t> _m = this->dat->_mat[0].transpose() * this->dat->_mat[0];
 
@@ -2292,6 +2320,57 @@ namespace KingOfMonsters {
 			if (_str == "") {
 				_str += "success";
 				
+			}
+			System::Console::WriteLine(gcnew System::String(_str.c_str()));
+		}
+		void _solve0_lu_cpu_minN(myDoubleArray^ rhs, myDoubleArray^ ret, int ordering, bool meh, double nnn) {
+			mySparse^ m = nullptr;
+			myDoubleArray^ v = nullptr;
+			if (meh) {
+
+
+				
+				Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t> _m = this->dat->_mat[0]* this->dat->_mat[0].transpose();
+
+			
+				m = gcnew mySparse(_m.rows(), _m.cols());
+				m->dat->_mat[0] = _m;
+				v = gcnew myDoubleArray(rhs->_arr->__v.size());
+				v->_arr->__v = rhs->_arr->__v;
+			}
+			else {
+				m = this;
+				v = rhs;
+			}
+			double nn = 0.00000000001;
+			bool allocerr = false;
+			std::string _str = "";
+			if (nnn != 0)
+			{
+				m->dat->addsmallidentity(nnn, true, false);
+				nn = nnn;
+			}
+
+			for (int i = 0; i < 10; i++)
+			{
+				std::string str = m->dat->_solve0_lu_cpu(&v->_arr->__v, &ret->_arr->__v, ordering);
+
+			
+				_str += str;
+				if (str.find("SUCCESS") == string::npos)
+				{
+					nn *= 100;
+					m->dat->addsmallidentity(nn, true, false);
+				}
+				else {
+					break;
+				}
+			}
+			ret->_arr->__v = this->dat->_mat[0] .transpose()* (ret->_arr->__v);
+
+			if (_str == "") {
+				_str += "success";
+
 			}
 			System::Console::WriteLine(gcnew System::String(_str.c_str()));
 		}
