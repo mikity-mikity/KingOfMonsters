@@ -16087,9 +16087,9 @@ if(add)
 				double huv = (duv + dvu) - tr * _ref->og12;
 				double hvu = (duv + dvu) - tr * _ref->og12;
 				double hvv = (2 * dvv) - tr * _ref->og22;
-				h11 += huu;
-				h12 += huv;
-				h22 += hvv;
+				h11 += -huu;
+				h12 += -huv;
+				h22 += -hvv;
 				
 			}
 			double h21 = h12;
@@ -16159,9 +16159,9 @@ if(add)
 				double huv = (duv + dvu) - tr * _ref->og12;
 				double hvu = (duv + dvu) - tr * _ref->og12;
 				double hvv = (2 * dvv) - tr * _ref->og22;
-				h11 += huu;
-				h12 += huv;
-				h22 += hvv;
+				h11 += -huu;
+				h12 += -huv;
+				h22 += -hvv;
 			}
 			double h21 = h12;
 
@@ -16184,12 +16184,12 @@ if(add)
 			}
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				double _Gamma111 = _ref->__dh[0][s] * _ref->get__Gi(0, 0);
-				double _Gamma112 = _ref->__dh[0][s] * _ref->get__Gi(1, 0);
-				double _Gamma121 = _ref->__dh[1][s] * _ref->get__Gi(0, 0);
-				double _Gamma122 = _ref->__dh[1][s] * _ref->get__Gi(1, 0);
-				double _Gamma221 = _ref->__dh[3][s] * _ref->get__Gi(0, 0);
-				double _Gamma222 = _ref->__dh[3][s] * _ref->get__Gi(1, 0);
+				double _Gamma111 = _ref->__dh[0][s] * _ref->_Gi[0];
+				double _Gamma112 = _ref->__dh[0][s] * _ref->_Gi[3];
+				double _Gamma121 = _ref->__dh[1][s] * _ref->_Gi[0];
+				double _Gamma122 = _ref->__dh[1][s] * _ref->_Gi[3];
+				double _Gamma221 = _ref->__dh[3][s] * _ref->_Gi[0];
+				double _Gamma222 = _ref->__dh[3][s] * _ref->_Gi[3];
 				double _Gamma211 = _Gamma121;
 				double _Gamma212 = _Gamma122;
 
@@ -16266,9 +16266,9 @@ if(add)
 				double huv = (duv + dvu) - tr * _ref->og12;
 				double hvu = (duv + dvu) - tr * _ref->og12;
 				double hvv = (2 * dvv) - tr * _ref->og22;
-				h11 += huu;
-				h12 += huv;
-				h22 += hvv;
+				h11 += -huu;
+				h12 += -huv;
+				h22 += -hvv;
 			}
 			double h21 = h12;
 
@@ -16292,12 +16292,12 @@ if(add)
 			}
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				double _Gamma111 = _ref->__dh[0][s] * _ref->get__Gi(0, 1);
-				double _Gamma112 = _ref->__dh[0][s] * _ref->get__Gi(1, 1);
-				double _Gamma121 = _ref->__dh[1][s] * _ref->get__Gi(0, 1);
-				double _Gamma122 = _ref->__dh[1][s] * _ref->get__Gi(1, 1);
-				double _Gamma221 = _ref->__dh[3][s] * _ref->get__Gi(0, 1);
-				double _Gamma222 = _ref->__dh[3][s] * _ref->get__Gi(1, 1);
+				double _Gamma111 = _ref->__dh[0][s] * _ref->_Gi[1];
+				double _Gamma112 = _ref->__dh[0][s] * _ref->_Gi[4];
+				double _Gamma121 = _ref->__dh[1][s] * _ref->_Gi[1];
+				double _Gamma122 = _ref->__dh[1][s] * _ref->_Gi[4];
+				double _Gamma221 = _ref->__dh[3][s] * _ref->_Gi[1];
+				double _Gamma222 = _ref->__dh[3][s] * _ref->_Gi[4];
 				double _Gamma211 = _Gamma121;
 				double _Gamma212 = _Gamma122;
 
@@ -16381,9 +16381,9 @@ if(add)
 				double huv = (duv + dvu) - tr * _ref->og12;
 				double hvu = (duv + dvu) - tr * _ref->og12;
 				double hvv = (2 * dvv) - tr * _ref->og22;
-				h11 += huu;
-				h12 += huv;
-				h22 += hvv;
+				h11 += -huu;
+				h12 += -huv;
+				h22 += -hvv;
 			}
 			double h21 = h12;
 			double scale = 1.0  /*/ trEij*/ / _ref->orefDv;
@@ -16500,6 +16500,10 @@ if(add)
 				double _h21 = (_duv + _dvu) - _tr * _ref->og12;
 				double _h22 = (2 * _dvv) - _tr * _ref->og22;
 
+				_h11 = -_h11;
+				_h12 = -_h12;
+				_h21 = -_h21;
+				_h22 = -_h22;
 
 				val = (_h11 * E11 * S12 + _h11 * E12 * S22 + _h12 * E21 * S12 + _h12 * E22 * S22) * scale;
 				val -= (_h21 * E11 * S11 + _h21 * E12 * S21 + _h22 * E21 * S11 + _h22 * E22 * S21) * scale;
@@ -16547,7 +16551,10 @@ if(add)
 				double _h12 = (_duv + _dvu) - _tr * _ref->og12;
 				double _h21 = (_duv + _dvu) - _tr * _ref->og12;
 				double _h22 = (2 * _dvv) - _tr * _ref->og22;
-
+				_h11 = -_h11;
+				_h12 = -_h12;
+				_h21 = -_h21;
+				_h22 = -_h22;
 
 				val = (_h11 * E11 * S12 + _h11 * E12 * S22 + _h12 * E21 * S12 + _h12 * E22 * S22) * scale;
 				val -= (_h21 * E11 * S11 + _h21 * E12 * S21 + _h22 * E21 * S11 + _h22 * E22 * S21) * scale;
@@ -20447,12 +20454,13 @@ if(add)
 			double val = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				double _Gamma111 = _ref->__dh[0][s] * _ref->get__Gi(0, 0);
-				double _Gamma112 = _ref->__dh[0][s] * _ref->get__Gi(1, 0);
-				double _Gamma121 = _ref->__dh[1][s] * _ref->get__Gi(0, 0);
-				double _Gamma122 = _ref->__dh[1][s] * _ref->get__Gi(1, 0);
-				double _Gamma221 = _ref->__dh[3][s] * _ref->get__Gi(0, 0);
-				double _Gamma222 = _ref->__dh[3][s] * _ref->get__Gi(1, 0);
+				double _Gamma111 = _ref->__dh[0][s] * _ref->_Gi[0];
+				double _Gamma112 = _ref->__dh[0][s] * _ref->_Gi[3];
+				double _Gamma121 = _ref->__dh[1][s] * _ref->_Gi[0];
+				double _Gamma122 = _ref->__dh[1][s] * _ref->_Gi[3];
+				double _Gamma221 = _ref->__dh[3][s] * _ref->_Gi[0];
+				double _Gamma222 = _ref->__dh[3][s] * _ref->_Gi[3];
+
 				double _Gamma211 = _Gamma121;
 				double _Gamma212 = _Gamma122;
 
@@ -20495,12 +20503,139 @@ if(add)
 			double val = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				double _Gamma111 = _ref->__dh[0][s] * _ref->get__Gi(0, 1);
-				double _Gamma112 = _ref->__dh[0][s] * _ref->get__Gi(1, 1);
-				double _Gamma121 = _ref->__dh[1][s] * _ref->get__Gi(0, 1);
-				double _Gamma122 = _ref->__dh[1][s] * _ref->get__Gi(1, 1);
-				double _Gamma221 = _ref->__dh[3][s] * _ref->get__Gi(0, 1);
-				double _Gamma222 = _ref->__dh[3][s] * _ref->get__Gi(1, 1);
+				double _Gamma111 = _ref->__dh[0][s] * _ref->_Gi[1];
+				double _Gamma112 = _ref->__dh[0][s] * _ref->_Gi[4];
+				double _Gamma121 = _ref->__dh[1][s] * _ref->_Gi[1];
+				double _Gamma122 = _ref->__dh[1][s] * _ref->_Gi[4];
+				double _Gamma221 = _ref->__dh[3][s] * _ref->_Gi[1];
+				double _Gamma222 = _ref->__dh[3][s] * _ref->_Gi[4];
+				double _Gamma211 = _Gamma121;
+				double _Gamma212 = _Gamma122;
+
+
+				double _S11 = (-_Gamma111 * S1 - _Gamma112 * S2);
+				double _S12 = (-_Gamma121 * S1 - _Gamma122 * S2);
+				double _S22 = (-_Gamma221 * S1 - _Gamma222 * S2);
+				double _S21 = _S12;
+
+
+				double val = _S11 * t1 * w1 + _S12 * (t1 * w2 + t2 * w1) + _S22 * t2 * w2;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+
+		double reinforced_edge(double t1, double t2, double w1, double w2)
+		{
+		
+			double length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
+			t1 /= length; t2 /= length;
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length; w2 /= length;
+
+
+
+
+			double Suu = get__Sij(0, 0);
+			double Suv = get__Sij(0, 1);
+			double Svv = get__Sij(1, 1);
+
+
+			double Svu = Suv;
+			return Suu * t1 * w1 + Suv * (t1 * w2 + t2 * w1) + Svv * t2 * w2;
+
+		}
+		void reinforced_edge_z(double* ptr, double t1, double t2, double w1, double w2)
+		{
+		
+			double length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
+			t1 /= length; t2 /= length;
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length; w2 /= length;
+
+
+			double* ptr1 = ptr;
+			double val = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _S11 = _ref->__dh[0][s];
+				double _S12 = _ref->__dh[1][s];
+				double _S22 = _ref->__dh[3][s];
+
+
+				double val = _S11 * t1 * w1 + _S12 * (t1 * w2 + t2 * w1) + _S22 * t2 * w2;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+
+		void reinforced_edge_u(double* ptr, double t1, double t2, double w1, double w2)
+		{
+			
+
+			double length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
+			t1 /= length; t2 /= length;
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length; w2 /= length;
+
+			double S1 = 0, S2 = 0;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				S1 += _ref->d1[0][s] * _ref->buf_z[s];
+				S2 += _ref->d1[1][s] * _ref->buf_z[s];
+			}
+			double* ptr1 = ptr;
+			double val = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _Gamma111 = _ref->__dh[0][s] * _ref->_Gi[0];
+				double _Gamma112 = _ref->__dh[0][s] * _ref->_Gi[3];
+				double _Gamma121 = _ref->__dh[1][s] * _ref->_Gi[0];
+				double _Gamma122 = _ref->__dh[1][s] * _ref->_Gi[3];
+				double _Gamma221 = _ref->__dh[3][s] * _ref->_Gi[0];
+				double _Gamma222 = _ref->__dh[3][s] * _ref->_Gi[3];
+				double _Gamma211 = _Gamma121;
+				double _Gamma212 = _Gamma122;
+
+
+				double _S11 = (-_Gamma111 * S1 - _Gamma112 * S2);
+				double _S12 = (-_Gamma121 * S1 - _Gamma122 * S2);
+				double _S22 = (-_Gamma221 * S1 - _Gamma222 * S2);
+				double _S21 = _S12;
+
+
+				double val = _S11 * t1 * w1 + _S12 * (t1 * w2 + t2 * w1) + _S22 * t2 * w2;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		void reinforced_edge_v(double* ptr, double t1, double t2, double w1, double w2)
+		{
+		
+
+			double length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
+			t1 /= length; t2 /= length;
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length; w2 /= length;
+
+			double S1 = 0, S2 = 0;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				S1 += _ref->d1[0][s] * _ref->buf_z[s];
+				S2 += _ref->d1[1][s] * _ref->buf_z[s];
+			}
+			double* ptr1 = ptr;
+			double val = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _Gamma111 = _ref->__dh[0][s] * _ref->_Gi[1];
+				double _Gamma112 = _ref->__dh[0][s] * _ref->_Gi[4];
+				double _Gamma121 = _ref->__dh[1][s] * _ref->_Gi[1];
+				double _Gamma122 = _ref->__dh[1][s] * _ref->_Gi[4];
+				double _Gamma221 = _ref->__dh[3][s] * _ref->_Gi[1];
+				double _Gamma222 = _ref->__dh[3][s] * _ref->_Gi[4];
 				double _Gamma211 = _Gamma121;
 				double _Gamma212 = _Gamma122;
 
@@ -21357,9 +21492,9 @@ if(add)
 					double hvu = (duv + dvu) - tr * _ref->og12;
 					double hvv = (2 * dvv) - tr * _ref->og22;
 
-					h11 += huu;
-					h12 += huv;
-					h22 += hvv;
+					h11 += -huu;
+					h12 += -huv;
+					h22 += -hvv;
 
 				}
 				double Huu = h22 * _ref->osc;
@@ -21453,7 +21588,7 @@ if(add)
 
 
 
-					double _H11 = _h22 * _ref->osc, _H22 = _h11 * _ref->osc, _H12 = -_h12 * _ref->osc;
+					double _H11 = -_h22 * _ref->osc, _H22 = -_h11 * _ref->osc, _H12 = _h12 * _ref->osc;
 
 					val = (_H11 * Suu + 2 * _H12 * Suv + _H22 * Svv);// *iJ;
 					*ptr1 = val;
@@ -21501,7 +21636,7 @@ if(add)
 
 
 
-					double _H11 = _h22 * _ref->osc, _H22 = _h11 * _ref->osc, _H12 = -_h12 * _ref->osc;
+					double _H11 = -_h22 * _ref->osc, _H22 = -_h11 * _ref->osc, _H12 = _h12 * _ref->osc;
 
 					val = (_H11 * Suu + 2 * _H12 * Suv + _H22 * Svv);// *iJ;
 					*ptr1 = val;
@@ -21540,9 +21675,9 @@ if(add)
 					double hvu = (duv + dvu) - tr * _ref->og12;
 					double hvv = (2 * dvv) - tr * _ref->og22;
 
-					h11 += huu;
-					h12 += huv;
-					h22 += hvv;
+					h11 += -huu;
+					h12 += -huv;
+					h22 += -hvv;
 
 				}
 				
@@ -21615,9 +21750,9 @@ if(add)
 					double hvu = (duv + dvu) - tr * _ref->og12;
 					double hvv = (2 * dvv) - tr * _ref->og22;
 
-					h11 += huu;
-					h12 += huv;
-					h22 += hvv;
+					h11 += -huu;
+					h12 += -huv;
+					h22 += -hvv;
 				}
 				double Huu = h22 * _ref->osc;
 				double Huv = -h12 * _ref->osc;
@@ -21708,7 +21843,7 @@ if(add)
 					double _h21 = (_duv + _dvu) - _tr * _ref->og12;
 					double _h22 = (2 * _dvv) - _tr * _ref->og22;
 
-					double _H11 = _h22 * _ref->osc, _H22 = _h11 * _ref->osc, _H12 = -_h12 * _ref->osc; 
+					double _H11 = -_h22 * _ref->osc, _H22 = -_h11 * _ref->osc, _H12 = _h12 * _ref->osc; 
 					
 					val = (_H11 * Suu + 2 * _H12 * Suv + _H22 * Svv);// *iJ;
 					*ptr1 = val;
@@ -21755,7 +21890,7 @@ if(add)
 					double _h21 = (_duv + _dvu) - _tr * _ref->og12;
 					double _h22 = (2 * _dvv) - _tr * _ref->og22;
 
-					double _H11 = _h22 * _ref->osc, _H22 = _h11 * _ref->osc, _H12 = -_h12 * _ref->osc;
+					double _H11 = -_h22 * _ref->osc, _H22 = -_h11 * _ref->osc, _H12 = _h12 * _ref->osc;
 
 					val = (_H11 * Suu + 2 * _H12 * Suv + _H22 * Svv);// *iJ;
 					*ptr1 = val;
@@ -21801,9 +21936,9 @@ if(add)
 					double hvu = (duv + dvu) - tr * _ref->og12;
 					double hvv = (2 * dvv) - tr * _ref->og22;
 
-					h11 += huu;
-					h12 += huv;
-					h22 += hvv;
+					h11 += -huu;
+					h12 += -huv;
+					h22 += -hvv;
 				}
 				double Huu = h22 * _ref->osc;
 				double Huv = -h12 * _ref->osc;
@@ -21888,9 +22023,9 @@ if(add)
 				double huv = (duv + dvu) -tr * _ref->og12;
 				double hvu = (duv + dvu) -tr * _ref->og12;
 				double hvv = (2 * dvv) -tr * _ref->og22;
-				h11 += huu;
-				h12 += huv;
-				h22 += hvv;
+				h11 += -huu;
+				h12 += -huv;
+				h22 += -hvv;
 			}
 
 			double Huu = h22 *_ref->osc;
@@ -21990,7 +22125,7 @@ if(add)
 			double _h21 = (_duv + _dvu) - _tr * _ref->og12;
 			double _h22 = (2 * _dvv) - _tr * _ref->og22;
 
-				double _H11 = _h22 * _ref->osc, _H22 = _h11 * _ref->osc, _H12 = -_h12 * _ref->osc;
+				double _H11 = -_h22 * _ref->osc, _H22 = -_h11 * _ref->osc, _H12 = _h12 * _ref->osc;
 
 				val = (_H11 * Suu + 2 * _H12 * Suv + _H22 * Svv);// *iJ;
 				*ptr1 = val;
@@ -22039,7 +22174,7 @@ if(add)
 				double _h21 = (_duv + _dvu) - _tr * _ref->og12;
 				double _h22 = (2 * _dvv) - _tr * _ref->og22;
 
-				double _H11 = _h22 * _ref->osc, _H22 = _h11 * _ref->osc, _H12 = -_h12 * _ref->osc;
+				double _H11 = -_h22 * _ref->osc, _H22 = -_h11 * _ref->osc, _H12 = _h12 * _ref->osc;
 
 				val = (_H11 * Suu + 2 * _H12 * Suv + _H22 * Svv);//*iJ;
 				*ptr1 = val;
@@ -22090,9 +22225,9 @@ if(add)
 				double huv = (duv + dvu) - tr * _ref->og12;
 				double hvu = (duv + dvu) - tr * _ref->og12;
 				double hvv = (2 * dvv) - tr * _ref->og22;
-				h11 += huu;
-				h12 += huv;
-				h22 += hvv;
+				h11 += -huu;
+				h12 += -huv;
+				h22 += -hvv;
 			}
 
 
@@ -22186,9 +22321,9 @@ if(add)
 				double huv = (duv + dvu) - tr * _ref->og12;
 				double hvu = (duv + dvu) - tr * _ref->og12;
 				double hvv = (2 * dvv) - tr * _ref->og22;
-				h11 += huu;
-				h12 += huv;
-				h22 += hvv;
+				h11 += -huu;
+				h12 += -huv;
+				h22 += -hvv;
 			}
 
 
@@ -22279,9 +22414,9 @@ if(add)
 				double huv = (duv + dvu) - tr * _ref->og12;
 				double hvu = (duv + dvu) - tr * _ref->og12;
 				double hvv = (2 * dvv) - tr * _ref->og22;
-				h11 += huu;
-				h12 += huv;
-				h22 += hvv;
+				h11 += -huu;
+				h12 += -huv;
+				h22 += -hvv;
 			}
 
 
@@ -25492,6 +25627,29 @@ if(add)
 		void  free_edge5_v(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, double s1, double s2, double t1, double t2, bool add)
 		{
 			__mem->free_edge5_v(__mem->__grad, v1, v2, s1, s2, t1, t2);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c);
+
+		}
+		double reinforced_edge(double v1, double v2, double s1, double s2)
+		{
+			return __mem->reinforced_edge(v1, v2, s1, s2);
+		}
+
+		void reinforced_edge_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, double s1, double s2, bool add)
+		{
+			__mem->reinforced_edge_z(__mem->__grad, v1, v2, s1, s2);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c);
+
+		}
+		void  reinforced_edge_u(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, double s1, double s2,  bool add)
+		{
+			__mem->reinforced_edge_u(__mem->__grad, v1, v2, s1, s2);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c);
+
+		}
+		void  reinforced_edge_v(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, double s1, double s2,  bool add)
+		{
+			__mem->reinforced_edge_v(__mem->__grad, v1, v2, s1, s2);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c);
 
 		}
