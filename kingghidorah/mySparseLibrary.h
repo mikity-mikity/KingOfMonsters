@@ -1014,9 +1014,9 @@ namespace KingOfMonsters {
 				}
 			}
 
-			this->dat->_mat[0].setZero();
 			this->dat->_mat[0].reserve(dat.size());
 			this->dat->_mat[0].resize(A->dat->_mat[0].rows() + B->dat->_mat[0].rows(), A->dat->_mat[0].cols() + B->dat->_mat[0].rows());
+			this->dat->_mat[0].setZero();
 			this->dat->_mat[0].setFromTriplets(dat.begin(), dat.end());
 		}
 		mySparse^ trimMatrix(Int64 L1, Int64 L2)
@@ -2269,10 +2269,25 @@ namespace KingOfMonsters {
 		void _solve0_lu_cpu2(myDoubleArray^ rhs, myDoubleArray^ ret,double salt) {
 
 			
-			std::string _str = this->dat->_solve0_lu_cpu2(&rhs->_arr->__v, &ret->_arr->__v,salt);
+			std::string _str = this->dat->_solve0_lu_cpu2(&rhs->_arr->__v, &ret->_arr->__v);
 			System::Console::WriteLine(gcnew System::String(_str.c_str()));
 		}
+		void _solve_two(mySparse ^B,double lambda,myDoubleArray^ rhs, myDoubleArray^ ret, int ordering,double nnn) {
+			mySparse^ m = nullptr;
+			myDoubleArray^ v = nullptr;
+			auto _m = this->dat->_mat[0];
+			auto _v = rhs->_arr->__v;
+			m = gcnew mySparse(_m.cols(), _m.cols());
+			v = gcnew myDoubleArray(_v.size());
 
+			m->dat->_mat[0]=
+				(this->dat->_mat[0].transpose() * this->dat->_mat[0] + lambda * B->dat->_mat[0].transpose() * B->dat->_mat[0]);
+			m->dat->addsmallidentity(nnn, true, false);
+			v->_arr->__v = this->dat->_mat[0].transpose() * rhs->_arr->__v;
+
+			std::string str=m->dat->_solve0_lu_cpu2(&v->_arr->__v, &ret->_arr->__v);
+			System::Console::WriteLine(gcnew System::String(str.c_str()));
+		}
 		void _solve0_lu_cpu(myDoubleArray^ rhs, myDoubleArray^ ret, int ordering, bool meh,double nnn) {
 			mySparse^ m = nullptr;
 			myDoubleArray^ v = nullptr;

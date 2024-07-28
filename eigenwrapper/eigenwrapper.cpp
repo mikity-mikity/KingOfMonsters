@@ -4229,13 +4229,13 @@ void KingOfMonsters::_mySparse::_solve0_gpu(KingOfMonsters::cuda* cuda, _mySpars
 	}
 #endif
 }
-std::string KingOfMonsters::_mySparse::_solve0_lu_cpu2(Eigen::VectorXd* rhs, Eigen::VectorXd* ret,double salt) {
+std::string KingOfMonsters::_mySparse::_solve0_lu_cpu2(Eigen::VectorXd* rhs, Eigen::VectorXd* ret) {
 	//Eigen::SparseLU<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>, Eigen::COLAMDOrdering<int64_t>> lu;
 
-	Eigen::FullPivHouseholderQR<Eigen::MatrixXd> qr;
+	Eigen::HouseholderQR<Eigen::MatrixXd> qr;
 	//Eigen::LeastSquaresConjugateGradient<  Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>, Eigen::LeastSquareDiagonalPreconditioner<double>> cg;
 	//cg.setTolerance(salt);
-	qr.setThreshold(salt);
+	//qr. setThreshold(threshold);
 	Eigen::MatrixXd m = _mat[0];
 	qr.compute(m);
 	//cg.compute(_mat[0]);
@@ -4327,7 +4327,10 @@ void KingOfMonsters::_mySparse::_solve0_lu_cg(Eigen::VectorXd* rhs, Eigen::Vecto
 	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);
 	//Eigen::SparseLU<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>> lu;
 	Eigen::ConjugateGradient<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>, Eigen::Lower | Eigen::Upper> cg;
+	cg.setMaxIterations(20000);
+	cg.setTolerance(0.00000000000000000001);
 	cg.compute(_mat[0]);
+
 	//Eigen::Map<Eigen::VectorXd> b(rhs, N);
 	ret->conservativeResize(_mat[0].cols());
 	ret->setZero();
