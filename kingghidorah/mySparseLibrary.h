@@ -302,7 +302,7 @@ namespace KingOfMonsters {
 		}
 		void copyfrom(myDoubleArray^ arr, Int64 N)
 		{
-			_arr->__v = arr->_arr->__v;
+			_arr->__v = arr->_arr->__v.topRows(N);
 			//System::Runtime::InteropServices::Marshal::Copy( arr,0, (System::IntPtr)_arr->data(), N);
 		}
 		void minus() {
