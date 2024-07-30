@@ -19883,7 +19883,11 @@ if(add)
 			double huv = (duv + dvu) - tr * _ref->og12;
 			double hvu = (duv + dvu) - tr * _ref->og12;
 			double hvv = (2 * dvv) - tr * _ref->og22;
-			
+			huu = -huu;
+			huv = -huv;
+			hvu = -hvu;
+			hvv = -hvv;
+
 			huu += get___hij(0, 0);
 			huv += get___hij(0, 1);
 			hvv += get___hij(1, 1);
@@ -19941,7 +19945,10 @@ if(add)
 				double _h12 = (_duv + _dvu) - _tr * _ref->og12;
 				double _h21 = (_duv + _dvu) - _tr * _ref->og12;
 				double _h22 = (2 * _dvv) - _tr * _ref->og22;
-
+				_h11 = -_h11;
+				_h12 = -_h12;
+				_h21 = -_h21;
+			    _h22 = -_h22;
 
 				double val=_h11 * s1 * w1 + _h12 * (s1 * w2 + s2 * w2) + _h22 * s2 * w2;
 				*ptr1 = val;
@@ -19977,7 +19984,10 @@ if(add)
 				double _h12 = (_duv + _dvu) - _tr * _ref->og12;
 				double _h21 = (_duv + _dvu) - _tr * _ref->og12;
 				double _h22 = (2 * _dvv) - _tr * _ref->og22;
-
+				_h11 = -_h11;
+				_h12 = -_h12;
+				_h21 = -_h21;
+				_h22 = -_h22;
 
 				double val = _h11 * s1 * w1 + _h12 * (s1 * w2 + s2 * w1) + _h22 * s2 * w2;
 				*ptr1 = val;
