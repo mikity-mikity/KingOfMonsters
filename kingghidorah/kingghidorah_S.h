@@ -5213,8 +5213,8 @@ namespace KingOfMonsters {
 								//auto ff = get_gi(n, s);
 								//auto gg = _ref->get__gi(n, s);
 
-								D += get_gi(l, s) * get_gi(k, s) - _ref->get__gi(l, s) * _ref->get__gi(k, s);
-								D += get_gi(k, s) * get_gi(l, s) - _ref->get__gi(l, s) * _ref->get__gi(k, s);
+								D += get_gi(l, s) * _ref->get__gi(k, s) - _ref->get__gi(l, s) * _ref->get__gi(k, s);
+								D += get_gi(k, s) * _ref->get__gi(l, s) - _ref->get__gi(l, s) * _ref->get__gi(k, s);
 							}
 							//double D2 = /*get_gij(n, m) - */ _ref->get__gij(n, m);
 							val += A * D;
