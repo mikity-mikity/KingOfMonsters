@@ -23647,6 +23647,28 @@ if(add)
 			}
 			return val;// *_ref->refDv;
 		}
+		double _T(int s, double v1, double v2) {
+
+			double length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + 2 * v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
+			v1 /= length;
+			v2 /= length;
+
+			double W[2]{ 0,0 };
+			double det = _ref->get__gij(0, 0) * _ref->get__gij(1, 1) - _ref->get__gij(0, 1) * _ref->get__gij(0, 1);
+			W[0] = v2 * det;
+			W[1] = -v1 * det;
+			double w[2]{ 0,0 };
+			w[0] = W[0] * _ref->get__Gij(0, 0) + W[1] * _ref->get__Gij(0, 1);
+			w[1] = W[0] * _ref->get__Gij(0, 1) + W[1] * _ref->get__Gij(1, 1);
+			double val = 0;
+			for (int l = 0; l < 2; l++)
+			{
+				
+					val += get_gi(l, s) * w[l];
+				
+			}
+			return val;// *_ref->refDv;
+		}
 		double TT(int i, int s,double v1, double v2) {
 
 			double length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + 2 * v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
@@ -23670,6 +23692,36 @@ if(add)
 
 			val2 += _ref->get__gi(0, s) * v1 + _ref->get__gi(1, s) * v2;
 			return val*val2;// *_ref->refDv;
+		}
+		double _TT( double v1, double v2) {
+
+			double length = sqrt(v1 * v1 * _ref->get__gij(0, 0) + 2 * v1 * v2 * _ref->get__gij(0, 1) + v2 * v2 * _ref->get__gij(1, 1));
+			v1 /= length;
+			v2 /= length;
+
+			double W[2]{ 0,0 };
+			double det = _ref->get__gij(0, 0) * _ref->get__gij(1, 1) - _ref->get__gij(0, 1) * _ref->get__gij(0, 1);
+			W[0] = v2 * det;
+			W[1] = -v1 * det;
+			double w[2]{ 0,0 };
+			w[0] = W[0] * _ref->get__Gij(0, 0) + W[1] * _ref->get__Gij(0, 1);
+			w[1] = W[0] * _ref->get__Gij(0, 1) + W[1] * _ref->get__Gij(1, 1);
+			double v[2]{ 0,0 };
+			v[0] = v1;
+			v[1] = v2;
+			double val = 0;
+			for (int l = 0; l < 2; l++)
+			{
+				double val1 = 0, val2 = 0;
+				for (int s = 0; s < 3; s++)
+				{
+					val1 += (get_gi(l,s)- _ref->get__gi(l, s)) * w[l];
+					val2 += _ref->get__gi(l, s) * v[l];
+				}
+				val += val1 * val2;
+			}
+
+			return val;// *_ref->refDv;
 		}
 		double angle(double v1, double v2)
 		{
@@ -23751,8 +23803,8 @@ if(add)
 
 							double A = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(m, l) + 2 * _mu * _ref->get__Gij(h, m) * _ref->get__Gij(g, l));
 
-							double FF = (_ref->d1[g][j] * _ref->get__gi(h, k) + _ref->d1[h][j] * _ref->get__gi(g, k));
-							double GG = (_ref->d1[l][i] * _ref->get__gi(m, k2) + _ref->d1[m][i] * _ref->get__gi(l, k2));
+							double FF = (_ref->d1[g][j] * get_gi(h, k) + _ref->d1[h][j] * get_gi(g, k));
+							double GG = (_ref->d1[l][i] * get_gi(m, k2) + _ref->d1[m][i] * get_gi(l, k2));
 							_val4 += A * FF * GG;
 						}
 					}
@@ -23794,13 +23846,13 @@ if(add)
 							double A = (_la * _ref->get__Gij(h, g) * _ref->get__Gij(m, l) + 2 * _mu * _ref->get__Gij(h, m) * _ref->get__Gij(g, l));
 							double FF = W[h] * V[g];
 							
-							double GG = (_ref->d1[l][i] * _ref->get__gi(m, k) + _ref->d1[m][i] * _ref->get__gi(l, k));
+							double GG = (_ref->d1[l][i] * get_gi(m, k) + _ref->d1[m][i] * get_gi(l, k));
 							_val4 += A * FF * GG;
 						}
 					}
 				}
 			}
-			return _val4/* * _ref->refDv*/ * 0.25;
+			return _val4/* * _ref->refDv*/ * 0.5;
 		}
 		double _Hwv( double _la, double _mu, double w1, double w2, double v1, double v2)
 		{
@@ -23836,7 +23888,7 @@ if(add)
 							double GG = 0;
 							for (int k = 0; k < 3; k++)
 							{
-								GG += (get_gi(l, k) * _ref->get__gi(m, k) + get_gi(m,k) * _ref->get__gi(l, k));
+								GG += (get_gi(l, k) * get_gi(m, k) + get_gi(m,k) * get_gi(l, k));
 								GG -= 2*_ref->get__gi(l, k) * _ref->get__gi(m, k);
 							}
 							_val4 += A * FF * GG;
@@ -23844,7 +23896,7 @@ if(add)
 					}
 				}
 			}
-			return _val4/* * _ref->refDv*/ * 0.25;
+			return _val4/* * _ref->refDv*/ * 0.5;
 		}
 		double dH(int i, int k2,  double _la, double _mu)
 		{
@@ -27380,13 +27432,19 @@ if(add)
 			return __mem->HB(j, k, l, m, _la, _mu);
 		}
 		//rotation angle at boundary
-		double T(int i,  double v1,double v2) {
-			return __mem->T(i,  v1,v2);
+		double T(int i, double v1, double v2) {
+			return __mem->T(i, v1, v2);
+
+		}
+		double _T(int s,double v1, double v2) {
+			return __mem->_T(s,v1, v2);
 		}
 		double TT(int i, int s,double v1, double v2) {
 			return __mem->TT(i,s, v1, v2);
 		}
-
+		double _TT(double v1, double v2) {
+			return __mem->_TT(v1, v2);
+		}
 		double Hwv(int i, int s, double _la,double _mu,double v1, double v2,double w1,double w2) {
 			return __mem->Hwv(i, s,_la,_mu, v1, v2,w1,w2);
 		}

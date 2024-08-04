@@ -147,6 +147,10 @@ namespace KingOfMonsters {
 		{
 			this->_vec->_vec *= sc;
 		}
+		double  at(int i)
+		{
+			return this->_vec->_vec.coeffRef(i);
+		}
 		~mySparseVector()
 		{
 			if (_vec != 0)
@@ -850,6 +854,11 @@ namespace KingOfMonsters {
 		{
 			ret->_arr->__v = v->_arr->__v.transpose() * this->dat->_dmat;
 		}
+		double multiply_both(myDoubleArray^ w, myDoubleArray^ v)
+		{
+			return w->_arr->__v.transpose() * this->dat->_mat[0] * v->_arr->__v;
+		}
+
 		void ofIdentity(int N)
 		{
 			this->dat->_dmat.resize(N, N);
