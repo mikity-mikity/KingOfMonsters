@@ -5182,8 +5182,44 @@ namespace KingOfMonsters {
 				}
 			}
 			return da;
+		}void getS(double _la, double _mu, double* a, double* b, double* c, double* d)
+		{
+			
+
+			//vector<double> ret;
+			double S[4]; //covariant
+			S[0] = 0;
+			S[1] = 0;
+			S[2] = 0;
+			S[3] = 0;
+
+
+			for (int m = 0; m < 2; m++) {
+				for (int n = 0; n < 2; n++) {
+					double val = 0;
+					for (int l = 0; l < 2; l++) {
+						for (int t = 0; t < 2; t++) {
+							double A = _la * _ref->get__Gij(l, t) * _ref->get__Gij(n, m) + 2 * _mu * _ref->get__Gij(l, n) * _ref->get__Gij(t, m);
+
+							double D = 0;
+							for (int s = 0; s < 3; s++)
+							{
+						D += (get_gi(l, s) * _ref->get__gi(t, s) - _ref->get__gi(l, s) * _ref->get__gi(t, s));
+								D += (get_gi(t, s) * _ref->get__gi(l, s) - _ref->get__gi(l, s) * _ref->get__gi(t, s));
+							}
+							val += A * D;
+						}
+					}
+					S[(m << 1) + n] = val;// get_gij(k, l);// -_ref->get__gij(k, l);
+				}
+			}
+			*a = S[0];
+			*b = S[1];
+			*c = S[2];
+			*d = S[3];
+
 		}
-		void getS(double _la, double _mu, double* a, double* b, double* c, double* d,double v1,double v2,double w1,double w2)
+		void getS2(double _la, double _mu, double* a, double* b, double* c, double* d,double v1,double v2,double w1,double w2)
 		{
 			double w[2];
 			double v[2];
@@ -5218,7 +5254,8 @@ namespace KingOfMonsters {
 							double D = 0;
 							for (int s = 0; s < 3; s++)
 							{
-								D += 2 * (get_gi(m, s) * _ref->get__gi(n, s) - _ref->get__gi(n, s) * _ref->get__gi(m, s));
+								D +=  (get_gi(l, s) * _ref->get__gi(t, s) - _ref->get__gi(l, s) * _ref->get__gi(t, s));
+								D += (get_gi(t, s) * _ref->get__gi(l , s) - _ref->get__gi(l, s) * _ref->get__gi(t, s));
 							}
 							val += A * D;
 						}
@@ -19420,6 +19457,42 @@ if(add)
 				ptr1++;
 			}
 		}
+		double ztn(double s1, double s2, double t1, double t2)
+		{
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
+
+			length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
+			t1 /= length; t2 /= length;
+			double xu = 0, xv = 0, yu = 0, yv = 0;
+
+			double Suu = get___Sij(0, 0);
+			double Suv = get___Sij(0, 1);
+			double Svv = get___Sij(1, 1);
+			return Suu * s1 * t1 + Suv * s1 * t2 + Suv * s2 * t1 + Svv * s2 * t2;
+		}
+		void ztn_z(double* ptr, double s1, double s2, double t1, double t2)
+		{
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
+
+			length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
+			t1 /= length; t2 /= length;
+			double xu = 0, xv = 0, yu = 0, yv = 0;
+
+			double* ptr1 = ptr;
+			double val = 0;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _Suu = _ref->___dh[0][s];
+				double _Suv = _ref->___dh[1][s];
+				double _Svv = _ref->___dh[3][s];
+				val = _Suu * s1 * t1 + _Suv * s1 * t2 + _Suv * s2 * t1 + _Svv * s2 * t2;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
 		double htn(double s1, double s2, double t1, double t2)
 		{
 			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
@@ -19672,357 +19745,161 @@ if(add)
 			}
 		}
 
-		double Gamma11z(double t1, double t2, double s1, double s2,double load)
+		double Gamma11z(double s1, double s2, double t1, double t2,bool add)
 		{
 
-			double length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
-			t1 /= length; t2 /= length;
+			
 
-
-			length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
 			s1 /= length; s2 /= length;
 			
-			double h11 = 0, h12 = 0, h22 = 0;
+			length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
+			t1 /= length; t2 /= length;
 
-			h11 = get___hij(0, 0);
-			h12 = get___hij(0, 1);
-			h22 = get___hij(1, 1);
-			
-			double xu = 0, xv = 0, yu = 0, yv = 0;
+			double n1 = t1 * _ref->og11 + t2 * _ref->og12;
+			double n2 = t1 * _ref->og12 + t2 * _ref->og22;
 
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				xu += _ref->d1[0][s] * _ref->buf_xi[s];
-				xv += _ref->d1[1][s] * _ref->buf_xi[s];
-				yu += _ref->d1[0][s] * _ref->buf_eta[s];
-				yv += _ref->d1[1][s] * _ref->buf_eta[s];
-			}
-
-			double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
-			double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
-			double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
-			double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
-
-
-
-			double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
-
-			double huu = (2 * duu) - tr * _ref->og11;
-			double huv = (duv + dvu) - tr * _ref->og12;
-			double hvu = (duv + dvu) - tr * _ref->og12;
-			double hvv = (2 * dvv) - tr * _ref->og22;
-			h11 += huu;
-			h12 += huv;
-			h22 += hvv;
-		
 
 			double Suu = 0, Suv = 0, Svv = 0;
 			Suu = get___Sij(0, 0);
 			Suv = get___Sij(0, 1);
 			Svv = get___Sij(1, 1);
-			
+			double Su = 0, Sv = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				Su += _ref->d1[0][s] * _ref->buf_z[s];
+				Sv += _ref->d1[1][s] * _ref->buf_z[s];
+			}
 			double val = 0;
-			double Stt = (Suu * t1 * t1 + 2*Suv * t1 * t2 + Svv * t2 * t2) ;
-			double hnn = (h11 * s1 * s1 + 2*h12 * s1 * s2 + h22 * s2 * s2);
-			val = Stt*hnn;
+			double Gammassn = (_ref->oGammaijk[0] * s1 * s1 * n1 + _ref->oGammaijk[1] * s1 * s1 * n2 + 2 * (_ref->oGammaijk[2] * s1 * s2 * n1 + _ref->oGammaijk[3] * s1 * s2 * n2) +
+		    	_ref->oGammaijk[6] * s2 * s2 * n1 + _ref->oGammaijk[7] * s2 * s2 * n2);
 			
-			val -= load * dv / _ref->orefDv;//  _dv;
+			double Stt = (Suu * s1 * s1 + Suv * (s1 * s2 + s2 * s1) + Svv * s2 * s2);
+			double Sn = Su * t1 + Sv * t2;
+			val = Stt;
+			if(add)
+				val -= Sn * Gammassn;
 
 			return val;
 		}
 
-		void Gamma11z_z(double* ptr, double t1, double t2, double s1, double s2,double load)
+		void Gamma11z_z(double* ptr, double s1, double s2, double t1, double t2,bool add)
 		{
-			double length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
-			t1 /= length; t2 /= length;
-			length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
 			s1 /= length; s2 /= length;
 
-			
+			length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
+			t1 /= length; t2 /= length;
 
-			double h11 = 0, h12 = 0, h22 = 0;
-			h11 = get___hij(0, 0);
-			h12 = get___hij(0, 1);
-			h22 = get___hij(1, 1);
-
-
-
-			
-			{
-				double xu = 0, xv = 0, yu = 0, yv = 0;
-
-				for (int s = 0; s < _ref->_nNode; s++)
-				{
-					xu += _ref->d1[0][s] * _ref->buf_xi[s];
-					xv += _ref->d1[1][s] * _ref->buf_xi[s];
-					yu += _ref->d1[0][s] * _ref->buf_eta[s];
-					yv += _ref->d1[1][s] * _ref->buf_eta[s];
-				}
-
-				double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
-				double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
-				double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
-				double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
-
-
-
-				double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
-
-				double huu = (2 * duu) - tr * _ref->og11;
-				double huv = (duv + dvu) - tr * _ref->og12;
-				double hvu = (duv + dvu) - tr * _ref->og12;
-				double hvv = (2 * dvv) - tr * _ref->og22;
-				h11 += huu;
-				h12 += huv;
-				h22 += hvv;
-			}
+			double n1 = t1 * _ref->og11 + t2 * _ref->og12;
+			double n2 = t1 * _ref->og12 + t2 * _ref->og22;
+	
+		
 
 			double* ptr1 = ptr;
 			double val = 0;
-		
-			double hnn = h11 * s1 * s1 + 2 * h12 * s1 * s2 + h22 * s2 * s2;
+			double Gammassn = (_ref->oGammaijk[0] * s1 * s1 * n1 + _ref->oGammaijk[1] * s1 * s1 * n2 + 2 * (_ref->oGammaijk[2] * s1 * s2 * n1 + _ref->oGammaijk[3] * s1 * s2 * n2) +
+				_ref->oGammaijk[6] * s2 * s2 * n1 + _ref->oGammaijk[7] * s2 * s2 * n2);
+
+
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				double _Suu = _ref->___dh[0][s];// _ref->d2[0][s];// -_ref->oGammaijk[0] * _ref->d1[0][s] - _ref->oGammaijk[1] * _ref->d1[1][s];
 				double _Suv = _ref->___dh[1][s];//_ref->d2[1][s];// - _ref->oGammaijk[2] * _ref->d1[0][s] - _ref->oGammaijk[3] * _ref->d1[1][s];
 				double _Svv = _ref->___dh[3][s];//_ref->d2[3][s];// - _ref->oGammaijk[6] * _ref->d1[0][s] - _ref->oGammaijk[7] * _ref->d1[1][s];
-		
+				double _Su = _ref->d1[0][s];
+				double _Sv = _ref->d1[1][s];
 
 
-				double _Stt = (_Suu * t1 * t1 + 2*_Suv * t1 * t2 + _Svv * t2 * t2);
-				
-				val = _Stt* hnn;
-				
-				{
-					double _g11 = 0, _g12 = 0, _g21 = 0, _g22 = 0;
 
-					_g11 = 2.0 * _ref->d1[0][s] * get_gi(0, 2);
-					_g12 = _ref->d1[0][s] * get_gi(1, 2) + _ref->d1[1][s] * get_gi(0, 2);
-					_g22 = 2.0 * _ref->d1[1][s] * get_gi(1, 2);
-					_g21 = _g12;
-					double ddv = 0.5 * (_g11 * this->get_Gij(0, 0) + _g22 * this->get_Gij(1, 1) + 2 * _g12 * this->get_Gij(0, 1)) * this->dv;
-
-					//double _ddv = 0.5 * (_g11 * this->get_Gij(0, 0) + _g22 * this->get_Gij(1, 1) + 2 * _g12 * this->get_Gij(0, 1)) * this->_dv;
-					val += -load * ddv / _ref->orefDv;// _dv;
-				}
-
+				double _Stt = (_Suu * s1 * s1 + _Suv * (s1 * s2+s2*s1) + _Svv * s2 * s2);
+				double _Sn = _Su * t1 + _Sv * t2;
+				val = _Stt ;
+				if(add)	
+				val -= _Sn* Gammassn;
 				*ptr1 = val;
 				ptr1++;
 			}
 		}
-		void Gamma11z_x(double* ptr, double t1, double t2, double s1, double s2, double load)
-		{
-			double length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
-			t1 /= length; t2 /= length;
-			length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
-			s1 /= length; s2 /= length;
-
-			double* ptr1 = ptr;
-			double val = 0;
-
-		
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-			
-
-				{
-					double _g11 = 0, _g12 = 0, _g21 = 0, _g22 = 0;
-
-					_g11 = 2.0 * _ref->d1[0][s] * get_gi(0, 0);
-					_g12 = _ref->d1[0][s] * get_gi(1, 0) + _ref->d1[1][s] * get_gi(0, 0);
-					_g22 = 2.0 * _ref->d1[1][s] * get_gi(1, 0);
-					_g21 = _g12;
-					double ddv = 0.5 * (_g11 * this->get_Gij(0, 0) + _g22 * this->get_Gij(1, 1) + 2 * _g12 * this->get_Gij(0, 1)) * this->dv;
-
-					//double _ddv = 0.5 * (_g11 * this->get_Gij(0, 0) + _g22 * this->get_Gij(1, 1) + 2 * _g12 * this->get_Gij(0, 1)) * this->_dv;
-					val = -load * ddv / _ref->orefDv;// _dv;
-				}
-
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
-		void Gamma11z_y(double* ptr, double t1, double t2, double s1, double s2, double load)
-		{
-			double length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
-			t1 /= length; t2 /= length;
-			length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
-			s1 /= length; s2 /= length;
-
-			double* ptr1 = ptr;
-			double val = 0;
-
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-
-
-				{
-					double _g11 = 0, _g12 = 0, _g21 = 0, _g22 = 0;
-
-					_g11 = 2.0 * _ref->d1[0][s] * get_gi(0, 1);
-					_g12 = _ref->d1[0][s] * get_gi(1, 1) + _ref->d1[1][s] * get_gi(0, 1);
-					_g22 = 2.0 * _ref->d1[1][s] * get_gi(1, 1);
-					_g21 = _g12;
-					double ddv = 0.5 * (_g11 * this->get_Gij(0, 0) + _g22 * this->get_Gij(1, 1) + 2 * _g12 * this->get_Gij(0, 1)) * this->dv;
-
-					//double _ddv = 0.5 * (_g11 * this->get_Gij(0, 0) + _g22 * this->get_Gij(1, 1) + 2 * _g12 * this->get_Gij(0, 1)) * this->_dv;
-					val = -load * ddv / _ref->orefDv;// _dv;
-				}
-
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
-		void Gamma11z_phi(double* ptr, double t1, double t2, double s1, double s2)
+		double Gamma12z(double s1, double s2, double t1, double t2, bool add)
 		{
 
-			double length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
-			t1 /= length; t2 /= length;
-			length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+
+
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
 			s1 /= length; s2 /= length;
 
-			double h11 = 0, h12 = 0, h22 = 0;
-		
-			double* ptr1 = ptr;
-			double val = 0;
+			length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
+			t1 /= length; t2 /= length;
+
+			double n1 = t1 * _ref->og11 + t2 * _ref->og12;
+			double n2 = t1 * _ref->og12 + t2 * _ref->og22;
+
+
 			double Suu = 0, Suv = 0, Svv = 0;
 			Suu = get___Sij(0, 0);
 			Suv = get___Sij(0, 1);
 			Svv = get___Sij(1, 1);
+			double Su = 0, Sv = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				Su += _ref->d1[0][s] * _ref->buf_z[s];
+				Sv += _ref->d1[1][s] * _ref->buf_z[s];
+			}
+			double val = 0;
+			double Gammassn = (_ref->oGammaijk[0] * s1 * s1 * n1 + _ref->oGammaijk[1] * s1 * s1 * n2 + 2 * (_ref->oGammaijk[2] * s1 * s2 * n1 + _ref->oGammaijk[3] * s1 * s2 * n2) +
+				_ref->oGammaijk[6] * s2 * s2 * n1 + _ref->oGammaijk[7] * s2 * s2 * n2);
 
-			
-			double Stt = (Suu * t1 * t1 + 2 * Suv * t1 * t2 + Svv * t2 * t2);
+			double Stt = (Suu * s1 * t1 + Suv * (s1 * t2 + s2 * t1) + Svv * s2 * t2);
+			//double Sn = Su * t1 + Sv * t2;
+			val = Stt;
+			//if (add)
+		//		val -= Sn * Gammassn;
 
+			return val;
+		}
+
+		void Gamma12z_z(double* ptr, double s1, double s2, double t1, double t2, bool add)
+		{
+
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
+
+			length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
+			t1 /= length; t2 /= length;
+
+			double n1 = t1 * _ref->og11 + t2 * _ref->og12;
+			double n2 = t1 * _ref->og12 + t2 * _ref->og22;
+
+
+
+			double* ptr1 = ptr;
+			double val = 0;
+			double Gammassn = (_ref->oGammaijk[0] * s1 * s1 * n1 + _ref->oGammaijk[1] * s1 * s1 * n2 + 2 * (_ref->oGammaijk[2] * s1 * s2 * n1 + _ref->oGammaijk[3] * s1 * s2 * n2) +
+				_ref->oGammaijk[6] * s2 * s2 * n1 + _ref->oGammaijk[7] * s2 * s2 * n2);
+
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _Suu = _ref->___dh[0][s];// _ref->d2[0][s];// -_ref->oGammaijk[0] * _ref->d1[0][s] - _ref->oGammaijk[1] * _ref->d1[1][s];
+				double _Suv = _ref->___dh[1][s];//_ref->d2[1][s];// - _ref->oGammaijk[2] * _ref->d1[0][s] - _ref->oGammaijk[3] * _ref->d1[1][s];
+				double _Svv = _ref->___dh[3][s];//_ref->d2[3][s];// - _ref->oGammaijk[6] * _ref->d1[0][s] - _ref->oGammaijk[7] * _ref->d1[1][s];
+				double _Su = _ref->d1[0][s];
+				double _Sv = _ref->d1[1][s];
+
+
+
+				double _Stt = (_Suu * s1 * t1 + _Suv * (s1 * t2 + s2 * t1) + _Svv * s2 * t2);
+				double _Sn = _Su * t1 + _Sv * t2;
+				val = _Stt;
+				//if (add)
+			//		val -= _Sn * Gammassn;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
 		
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				double _h11 = _ref->___dh[0][s];// _ref->d2[0][s];// -_ref->oGammaijk[0] * _ref->d1[0][s] - _ref->oGammaijk[1] * _ref->d1[1][s];
-				double _h12 = _ref->___dh[1][s];//_ref->d2[1][s];// - _ref->oGammaijk[2] * _ref->d1[0][s] - _ref->oGammaijk[3] * _ref->d1[1][s];
-				double _h22 = _ref->___dh[3][s];//_ref->d2[3][s];// - _ref->oGammaijk[6] * _ref->d1[0][s] - _ref->oGammaijk[7] * _ref->d1[1][s];
-
-				double _hnn = (_h11 * s1 * s1 + 2 * _h12 * s1 * s2 + _h22 * s2 * s2);
-
-
-				val = Stt * _hnn;
-				
-
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
-		void Gamma11z_xi(double* ptr, double t1, double t2, double s1, double s2)
-		{
-
-			double length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
-			t1 /= length; t2 /= length;
-			length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
-			s1 /= length; s2 /= length;
-
-			double h11 = 0, h12 = 0, h22 = 0;
-
-			double* ptr1 = ptr;
-			double val = 0;
-			double Suu = 0, Suv = 0, Svv = 0;
-			Suu = get___Sij(0, 0);
-			Suv = get___Sij(0, 1);
-			Svv = get___Sij(1, 1);
-
-
-			double Stt = (Suu * t1 * t1 + 2*Suv * t1 * t2 + Svv * t2 * t2);
-
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				double _xu = 0, _xv = 0, _yu = 0, _yv = 0;
-
-					_xu = _ref->d1[0][s];
-					_xv = _ref->d1[1][s];
-					_yu = 0;
-					_yv = 0;
-
-				double _duu = _xu * _ref->_ogi[0] + _yu * _ref->_ogi[1];
-				double _duv = _xu * _ref->_ogi[3] + _yu * _ref->_ogi[4];
-				double _dvu = _xv * _ref->_ogi[0] + _yv * _ref->_ogi[1];
-				double _dvv = _xv * _ref->_ogi[3] + _yv * _ref->_ogi[4];
-
-
-
-				double _tr = _duu * _ref->oG11 + _duv * _ref->oG12 + _dvu * _ref->oG12 + _dvv * _ref->oG22;
-
-				double _h11 = (2 * _duu) - _tr * _ref->og11;
-				double _h12 = (_duv + _dvu) - _tr * _ref->og12;
-				double _h21 = (_duv + _dvu) - _tr * _ref->og12;
-				double _h22 = (2 * _dvv) - _tr * _ref->og22;
-
-
-				double _hnn = (_h11 * s1 * s1 + 2*_h12 * s1 * s2+ _h22 * s2 * s2);
-
-
-				val = Stt * _hnn;
-
-
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
-		void Gamma11z_eta(double* ptr, double t1, double t2, double s1, double s2)
-		{
-
-			double length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
-			t1 /= length; t2 /= length;
-			length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
-			s1 /= length; s2 /= length;
-
-
-			double h11 = 0, h12 = 0, h22 = 0;
-
-			double* ptr1 = ptr;
-			double val = 0;
-			double Suu = 0, Suv = 0, Svv = 0;
-			Suu = get___Sij(0, 0);
-			Suv = get___Sij(0, 1);
-			Svv = get___Sij(1, 1);
-
-
-			double Stt = (Suu * t1 * t1 + 2*Suv * (t1 * t2) + Svv * t2 * t2);
-
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				double _xu = 0, _xv = 0, _yu = 0, _yv = 0;
-
-				_xu = 0;
-				_xv = 0;
-				_yu = _ref->d1[0][s];
-				_yv = _ref->d1[1][s];
-
-				double _duu = _xu * _ref->_ogi[0] + _yu * _ref->_ogi[1];
-				double _duv = _xu * _ref->_ogi[3] + _yu * _ref->_ogi[4];
-				double _dvu = _xv * _ref->_ogi[0] + _yv * _ref->_ogi[1];
-				double _dvv = _xv * _ref->_ogi[3] + _yv * _ref->_ogi[4];
-
-
-
-				double _tr = _duu * _ref->oG11 + _duv * _ref->oG12 + _dvu * _ref->oG12 + _dvv * _ref->oG22;
-
-				double _h11 = (2 * _duu) - _tr * _ref->og11;
-				double _h12 = (_duv + _dvu) - _tr * _ref->og12;
-				double _h21 = (_duv + _dvu) - _tr * _ref->og12;
-				double _h22 = (2 * _dvv) - _tr * _ref->og22;
-
-
-				double _hnn = (_h11 * s1 * s1 + 2*_h12 * (s1 * s2) + _h22 * s2 * s2);
-
-
-				val = Stt * _hnn;
-
-
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
-
 		double free_edge(double s1, double s2,double w1,double w2)
 		{
 			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
@@ -20597,13 +20474,13 @@ if(add)
 			double val = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				double _Gamma111 = _ref->__dh[0][s] * _ref->_Gi[0];
-				double _Gamma112 = _ref->__dh[0][s] * _ref->_Gi[3];
-				double _Gamma121 = _ref->__dh[1][s] * _ref->_Gi[0];
-				double _Gamma122 = _ref->__dh[1][s] * _ref->_Gi[3];
-				double _Gamma221 = _ref->__dh[3][s] * _ref->_Gi[0];
-				double _Gamma222 = _ref->__dh[3][s] * _ref->_Gi[3];
-	
+				double _Gamma111 = _ref->__dh[0][s] * get_Gi2(0, 0);
+				double _Gamma112 = _ref->__dh[0][s] * get_Gi2(1, 0);
+				double _Gamma121 = _ref->__dh[1][s] * get_Gi2(0, 0);
+				double _Gamma122 = _ref->__dh[1][s] * get_Gi2(1, 0);
+				double _Gamma221 = _ref->__dh[3][s] * get_Gi2(0, 0);
+				double _Gamma222 = _ref->__dh[3][s] * get_Gi2(1, 0);
+
 				double _Gamma211 = _Gamma121;
 				double _Gamma212 = _Gamma122;
 
@@ -20646,12 +20523,12 @@ if(add)
 			double val = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				double _Gamma111 = _ref->__dh[0][s] * _ref->_Gi[1];
-				double _Gamma112 = _ref->__dh[0][s] * _ref->_Gi[4];
-				double _Gamma121 = _ref->__dh[1][s] * _ref->_Gi[1];
-				double _Gamma122 = _ref->__dh[1][s] * _ref->_Gi[4];
-				double _Gamma221 = _ref->__dh[3][s] * _ref->_Gi[1];
-				double _Gamma222 = _ref->__dh[3][s] * _ref->_Gi[4];
+				double _Gamma111 = _ref->__dh[0][s] * get_Gi2(0, 1);
+				double _Gamma112 = _ref->__dh[0][s] * get_Gi2(1, 1);
+				double _Gamma121 = _ref->__dh[1][s] * get_Gi2(0, 1);
+				double _Gamma122 = _ref->__dh[1][s] * get_Gi2(1, 1);
+				double _Gamma221 = _ref->__dh[3][s] * get_Gi2(0, 1);
+				double _Gamma222 = _ref->__dh[3][s] * get_Gi2(1, 1);
 				double _Gamma211 = _Gamma121;
 				double _Gamma212 = _Gamma122;
 
@@ -22428,8 +22305,57 @@ if(add)
 			double val = 0;
 
 
+			double h11 = 0, h12 = 0, h22 = 0;
+			/*for (int s = 0; s < _ref->_nNode; s++)
+			{
+				h11 += _ref->___dh[0][s] * _ref->buf_phi[s];// _ref->d2[0][s] * _ref->buf_phi[s] - _ref->oGammaijk[0] * _ref->d1[0][s] * _ref->buf_phi[s] - _ref->oGammaijk[1] * _ref->d1[1][s] * _ref->buf_phi[s];
+				h12 += _ref->___dh[1][s] * _ref->buf_phi[s];//_ref->d2[1][s] * _ref->buf_phi[s] - _ref->oGammaijk[2] * _ref->d1[0][s] * _ref->buf_phi[s] - _ref->oGammaijk[3] * _ref->d1[1][s] * _ref->buf_phi[s];
+				h22 += _ref->___dh[3][s] * _ref->buf_phi[s];//_ref->d2[3][s] * _ref->buf_phi[s] - _ref->oGammaijk[6] * _ref->d1[0][s] * _ref->buf_phi[s] - _ref->oGammaijk[7] * _ref->d1[1][s] * _ref->buf_phi[s];
+			}*/
+			h11 = get___hij(0, 0);
+			h12 = get___hij(0, 1);
+			h22 = get___hij(1, 1);
+			if (add)
+			{
+				double xu = 0, xv = 0, yu = 0, yv = 0;
 
-		
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					xu += _ref->d1[0][s] * _ref->buf_xi[s];
+					xv += _ref->d1[1][s] * _ref->buf_xi[s];
+					yu += _ref->d1[0][s] * _ref->buf_eta[s];
+					yv += _ref->d1[1][s] * _ref->buf_eta[s];
+				}
+
+				double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
+				double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
+				double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
+				double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
+
+
+
+
+				double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
+
+				double huu = (2 * duu) - tr * _ref->og11;
+				double huv = (duv + dvu) - tr * _ref->og12;
+				double hvu = (duv + dvu) - tr * _ref->og12;
+				double hvv = (2 * dvv) - tr * _ref->og22;
+				h11 += huu;
+				h12 += huv;
+				h22 += hvv;
+			}
+
+
+			double Huu = h22 * _ref->osc;
+			double Huv = -h12 * _ref->osc;
+			double Hvv = h11 * _ref->osc;
+
+			double S11 = get___Sij(0, 0);
+			double S12 = get___Sij(0, 1);
+			double S22 = get___Sij(1, 1);
+
+			//double iJ = _ref->orefDv / _dv;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				double _g11 = 0, _g12 = 0, _g21 = 0, _g22 = 0;
@@ -22440,7 +22366,9 @@ if(add)
 				_g21 = _g12;
 
 
-			
+				double _S11 = _ref->___dh[0][s];// _ref->d2[0][s] - _ref->oGammaijk[0] * _ref->d1[0][s] - _ref->oGammaijk[1] * _ref->d1[1][s];
+				double _S12 = _ref->___dh[1][s];//_ref->d2[1][s] - _ref->oGammaijk[2] * _ref->d1[0][s] - _ref->oGammaijk[3] * _ref->d1[1][s];
+				double _S22 = _ref->___dh[3][s];//_ref->d2[3][s] - _ref->oGammaijk[6] * _ref->d1[0][s] - _ref->oGammaijk[7] * _ref->d1[1][s];
 				val = 0;
 				double _ddv = 0.5 * (_g11 * this->get_Gij(0, 0) + _g22 * this->get_Gij(1, 1) + 2 * _g12 * this->get_Gij(0, 1)) * this->_dv;
 
@@ -22470,6 +22398,57 @@ if(add)
 			double val = 0;
 
 
+			double h11 = 0, h12 = 0, h22 = 0;
+			/*for (int s = 0; s < _ref->_nNode; s++)
+			{
+				h11 += _ref->___dh[0][s] * _ref->buf_phi[s];// _ref->d2[0][s] * _ref->buf_phi[s] - _ref->oGammaijk[0] * _ref->d1[0][s] * _ref->buf_phi[s] - _ref->oGammaijk[1] * _ref->d1[1][s] * _ref->buf_phi[s];
+				h12 += _ref->___dh[1][s] * _ref->buf_phi[s];//_ref->d2[1][s] * _ref->buf_phi[s] - _ref->oGammaijk[2] * _ref->d1[0][s] * _ref->buf_phi[s] - _ref->oGammaijk[3] * _ref->d1[1][s] * _ref->buf_phi[s];
+				h22 += _ref->___dh[3][s] * _ref->buf_phi[s];//_ref->d2[3][s] * _ref->buf_phi[s] - _ref->oGammaijk[6] * _ref->d1[0][s] * _ref->buf_phi[s] - _ref->oGammaijk[7] * _ref->d1[1][s] * _ref->buf_phi[s];
+			}*/
+			h11 = get___hij(0, 0);
+			h12 = get___hij(0, 1);
+			h22 = get___hij(1, 1);
+			if (add)
+			{
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					xu += _ref->d1[0][s] * _ref->buf_xi[s];
+					xv += _ref->d1[1][s] * _ref->buf_xi[s];
+					yu += _ref->d1[0][s] * _ref->buf_eta[s];
+					yv += _ref->d1[1][s] * _ref->buf_eta[s];
+				}
+
+				double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
+				double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
+				double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
+				double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
+
+
+
+
+				double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
+
+				double huu = (2 * duu) - tr * _ref->og11;
+				double huv = (duv + dvu) - tr * _ref->og12;
+				double hvu = (duv + dvu) - tr * _ref->og12;
+				double hvv = (2 * dvv) - tr * _ref->og22;
+				h11 += huu;
+				h12 += huv;
+				h22 += hvv;
+			}
+
+
+			double Huu = h22 * _ref->osc;
+			double Huv = -h12 * _ref->osc;
+			double Hvv = h11 * _ref->osc;
+
+			double S11 = get___Sij(0, 0);
+			double S12 = get___Sij(0, 1);
+			double S22 = get___Sij(1, 1);
+
+			//double iJ = _ref->orefDv / _dv;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				double _g11 = 0, _g12 = 0, _g21 = 0, _g22 = 0;
@@ -22480,11 +22459,14 @@ if(add)
 				_g21 = _g12;
 
 
-			
+				double _S11 = _ref->___dh[0][s];// _ref->d2[0][s] - _ref->oGammaijk[0] * _ref->d1[0][s] - _ref->oGammaijk[1] * _ref->d1[1][s];
+				double _S12 = _ref->___dh[1][s];//_ref->d2[1][s] - _ref->oGammaijk[2] * _ref->d1[0][s] - _ref->oGammaijk[3] * _ref->d1[1][s];
+				double _S22 = _ref->___dh[3][s];//_ref->d2[3][s] - _ref->oGammaijk[6] * _ref->d1[0][s] - _ref->oGammaijk[7] * _ref->d1[1][s];
 				val = 0;
 				double _ddv = 0.5 * (_g11 * this->get_Gij(0, 0) + _g22 * this->get_Gij(1, 1) + 2 * _g12 * this->get_Gij(0, 1)) * this->_dv;
 
-			
+				//double _iJ = -_ref->orefDv / _dv / _dv * _ddv;
+				//val = (Hvv * S22 + 2 * Huv * S12 + Huu * S11) * _iJ;//
 				if (accurate_area) {
 
 
@@ -22502,6 +22484,528 @@ if(add)
 			}
 		}
 	
+		double __bodyBC(double load, bool accurate_area, bool add,double s1,double s2,double t1,double t2)
+		{
+			double val = 0;
+
+
+
+				double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+				s1 /= length; s2 /= length;
+
+				length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
+				t1 /= length; t2 /= length;
+
+			double h11 = 0, h12 = 0, h22 = 0;
+
+			h11 = get___hij(0, 0);
+			h12 = get___hij(0, 1);
+			h22 = get___hij(1, 1);
+
+
+
+			if (add)
+			{
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					xu += _ref->d1[0][s] * _ref->buf_xi[s];
+					xv += _ref->d1[1][s] * _ref->buf_xi[s];
+					yu += _ref->d1[0][s] * _ref->buf_eta[s];
+					yv += _ref->d1[1][s] * _ref->buf_eta[s];
+				}
+
+				double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
+				double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
+				double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
+				double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
+
+
+
+				double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
+
+				double huu = (2 * duu) - tr * _ref->og11;
+				double huv = (duv + dvu) - tr * _ref->og12;
+				double hvu = (duv + dvu) - tr * _ref->og12;
+				double hvv = (2 * dvv) - tr * _ref->og22;
+				h11 += huu;
+				h12 += huv;
+				h22 += hvv;
+			}
+
+			double Huu = h22 * _ref->osc;
+			double Huv = -h12 * _ref->osc;
+			double Hvv = h11 * _ref->osc;
+
+			double Suu = 0, Suv = 0, Svv = 0;
+
+
+			Suu = get___Sij(0, 0);
+			Suv = get___Sij(0, 1);
+			Svv = get___Sij(1, 1);
+
+			double Stt = Suu * s1 * s1 + 2 * Suv * s1 * s2 + Svv * s2 * s2;
+			double Hnn = h11 * t1 * t1 + 2 * h12 * t1 * t2 + h22 * t2 * t2;
+			//double iJ =  _ref->orefDv/_dv;
+			//val = (Hvv * Svv + 2 * Huv * Suv + Huu * Suu);// *iJ;
+			val = Stt * Hnn;
+			if (accurate_area)
+				val -= load * dv / _ref->orefDv;//  _dv;
+			else
+				val -= load;// *_dv / _ref->orefDv;
+			return val;
+
+		}
+		void __bodyBC_phi(double* ptr, double s1, double s2, double t1, double t2)
+		{
+
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
+
+			length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
+			t1 /= length; t2 /= length;
+			double val = 0;
+			double* ptr1 = ptr;
+
+
+			double Suu = 0, Suv = 0, Svv = 0;
+			/*for (int s = 0; s < _ref->_nNode; s++)
+			{
+				Suu += _ref->___dh[0][s] * _ref->buf_z[s];//_ref->d2[0][s] * _ref->buf_z[s] - _ref->oGammaijk[0] * _ref->d1[0][s] * _ref->buf_z[s] - _ref->oGammaijk[1] * _ref->d1[1][s] * _ref->buf_z[s];
+				Suv += _ref->___dh[1][s] * _ref->buf_z[s];// _ref->d2[1][s] * _ref->buf_z[s] - _ref->oGammaijk[2] * _ref->d1[0][s] * _ref->buf_z[s] - _ref->oGammaijk[3] * _ref->d1[1][s] * _ref->buf_z[s];
+				Svv += _ref->___dh[3][s] * _ref->buf_z[s];// _ref->d2[3][s] * _ref->buf_z[s] - _ref->oGammaijk[6] * _ref->d1[0][s] * _ref->buf_z[s] - _ref->oGammaijk[7] * _ref->d1[1][s] * _ref->buf_z[s];
+			}*/
+			Suu = get___Sij(0, 0);
+			Suv = get___Sij(0, 1);
+			Svv = get___Sij(1, 1);
+			double Stt = Suu * s1 * s1 + 2 * Suv * s1 * s2 + Svv * s2 * s2;
+
+			//double iJ = _ref->orefDv / _dv;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+
+				double _h11 = _ref->___dh[0][s];// _ref->d2[0][s] - _ref->oGammaijk[0] * _ref->d1[0][s] - _ref->oGammaijk[1] * _ref->d1[1][s];
+				double _h12 = _ref->___dh[1][s];//_ref->d2[1][s] - _ref->oGammaijk[2] * _ref->d1[0][s] - _ref->oGammaijk[3] * _ref->d1[1][s];
+				double _h22 = _ref->___dh[3][s];//_ref->d2[3][s] - _ref->oGammaijk[6] * _ref->d1[0][s] - _ref->oGammaijk[7] * _ref->d1[1][s];
+				double _H11 = _h22 * _ref->osc, _H22 = _h11 * _ref->osc, _H12 = -_h12 * _ref->osc;
+				double _Hnn = _h11 * t1 * t1 + 2 * _h12 * t1 * t2 + _h22 * t2 * t2;
+				val = Stt * _Hnn;
+				
+				//val = (_H11 * Suu + 2 * _H12 * Suv + _H22 * Svv);// *iJ;
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
+		void __bodyBC_xi(double* ptr, double s1, double s2, double t1, double t2)
+		{
+
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
+
+			length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
+			t1 /= length; t2 /= length;
+			double val = 0;
+			double* ptr1 = ptr;
+
+
+			double Suu = 0, Suv = 0, Svv = 0;
+			/*for (int s = 0; s < _ref->_nNode; s++)
+			{
+				Suu += _ref->___dh[0][s] * _ref->buf_z[s];//_ref->d2[0][s] * _ref->buf_z[s] - _ref->oGammaijk[0] * _ref->d1[0][s] * _ref->buf_z[s] - _ref->oGammaijk[1] * _ref->d1[1][s] * _ref->buf_z[s];
+				Suv += _ref->___dh[1][s] * _ref->buf_z[s];// _ref->d2[1][s] * _ref->buf_z[s] - _ref->oGammaijk[2] * _ref->d1[0][s] * _ref->buf_z[s] - _ref->oGammaijk[3] * _ref->d1[1][s] * _ref->buf_z[s];
+				Svv += _ref->___dh[3][s] * _ref->buf_z[s];// _ref->d2[3][s] * _ref->buf_z[s] - _ref->oGammaijk[6] * _ref->d1[0][s] * _ref->buf_z[s] - _ref->oGammaijk[7] * _ref->d1[1][s] * _ref->buf_z[s];
+			}*/
+			Suu = get___Sij(0, 0);
+			Suv = get___Sij(0, 1);
+			Svv = get___Sij(1, 1);
+			double Stt = Suu * s1 * s1 + 2 * Suv * s1 * s2 + Svv * s2 * s2;
+
+			//double iJ = _ref->orefDv / _dv;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+
+				double _xu = _ref->d1[0][s];
+				double _xv = _ref->d1[1][s];
+				double _yu = 0;// _ref->d1[0][s];
+				double _yv = 0;// _ref->d1[1][s];
+
+				double _duu = _xu * _ref->_ogi[0] + _yu * _ref->_ogi[1];
+				double _duv = _xu * _ref->_ogi[3] + _yu * _ref->_ogi[4];
+				double _dvu = _xv * _ref->_ogi[0] + _yv * _ref->_ogi[1];
+				double _dvv = _xv * _ref->_ogi[3] + _yv * _ref->_ogi[4];
+
+
+
+				double _tr = _duu * _ref->oG11 + _duv * _ref->oG12 + _dvu * _ref->oG12 + _dvv * _ref->oG22;
+
+				double _h11 = (2 * _duu) - _tr * _ref->og11;
+				double _h12 = (_duv + _dvu) - _tr * _ref->og12;
+				double _h21 = (_duv + _dvu) - _tr * _ref->og12;
+				double _h22 = (2 * _dvv) - _tr * _ref->og22;
+				
+
+				//double _H11 = _h22 * _ref->osc, _H22 = _h11 * _ref->osc, _H12 = -_h12 * _ref->osc;
+				double _Hnn = _h11 * t1 * t1 + 2 * _h12 * t1 * t2 + _h22 * t2 * t2;
+				val = Stt * _Hnn;
+				//val = (_H11 * Suu + 2 * _H12 * Suv + _H22 * Svv);// *iJ;
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
+		void __bodyBC_eta(double* ptr, double s1, double s2, double t1, double t2)
+		{
+
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
+
+			length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
+			t1 /= length; t2 /= length;
+			double val = 0;
+			double* ptr1 = ptr;
+
+
+			double Suu = 0, Suv = 0, Svv = 0;
+			/*for (int s = 0; s < _ref->_nNode; s++)
+			{
+				Suu += _ref->___dh[0][s] * _ref->buf_z[s];// _ref->d2[0][s] * _ref->buf_z[s] - _ref->oGammaijk[0] * _ref->d1[0][s] * _ref->buf_z[s] - _ref->oGammaijk[1] * _ref->d1[1][s] * _ref->buf_z[s];
+				Suv += _ref->___dh[1][s] * _ref->buf_z[s];// _ref->d2[1][s] * _ref->buf_z[s] - _ref->oGammaijk[2] * _ref->d1[0][s] * _ref->buf_z[s] - _ref->oGammaijk[3] * _ref->d1[1][s] * _ref->buf_z[s];
+				Svv += _ref->___dh[3][s] * _ref->buf_z[s];// _ref->d2[3][s] * _ref->buf_z[s] - _ref->oGammaijk[6] * _ref->d1[0][s] * _ref->buf_z[s] - _ref->oGammaijk[7] * _ref->d1[1][s] * _ref->buf_z[s];
+			}*/
+			Suu = get___Sij(0, 0);
+			Suv = get___Sij(0, 1);
+			Svv = get___Sij(1, 1);
+			//double iJ = _ref->orefDv / _dv;
+			double Stt = Suu * s1 * s1 + 2 * Suv * s1 * s2 + Svv * s2 * s2;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+
+				double _xu = 0;// _ref->d1[0][s];
+				double _xv = 0;//_ref->d1[1][s];
+				double _yu = _ref->d1[0][s];
+				double _yv = _ref->d1[1][s];
+
+				double _duu = _xu * _ref->_ogi[0] + _yu * _ref->_ogi[1];
+				double _duv = _xu * _ref->_ogi[3] + _yu * _ref->_ogi[4];
+				double _dvu = _xv * _ref->_ogi[0] + _yv * _ref->_ogi[1];
+				double _dvv = _xv * _ref->_ogi[3] + _yv * _ref->_ogi[4];
+
+
+
+				double _tr = _duu * _ref->oG11 + _duv * _ref->oG12 + _dvu * _ref->oG12 + _dvv * _ref->oG22;
+
+				double _h11 = (2 * _duu) - _tr * _ref->og11;
+				double _h12 = (_duv + _dvu) - _tr * _ref->og12;
+				double _h21 = (_duv + _dvu) - _tr * _ref->og12;
+				double _h22 = (2 * _dvv) - _tr * _ref->og22;
+
+				//double _H11 = _h22 * _ref->osc, _H22 = _h11 * _ref->osc, _H12 = -_h12 * _ref->osc;
+				double _Hnn = _h11 * t1 * t1 + 2 * _h12 * t1 * t2 + _h22 * t2 * t2;
+				val = Stt * _Hnn;
+				//val = (_H11 * Suu + 2 * _H12 * Suv + _H22 * Svv);//*iJ;
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
+		void __bodyBC_z(double* ptr, double load, bool accurate_area, bool add, double s1, double s2, double t1, double t2)
+		{
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
+
+			length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
+			t1 /= length; t2 /= length;
+			double* ptr1 = ptr;
+			double val = 0;
+
+
+			double h11 = 0, h12 = 0, h22 = 0;
+			/*for (int s = 0; s < _ref->_nNode; s++)
+			{
+				h11 += _ref->___dh[0][s] * _ref->buf_phi[s];// _ref->d2[0][s] * _ref->buf_phi[s] - _ref->oGammaijk[0] * _ref->d1[0][s] * _ref->buf_phi[s] - _ref->oGammaijk[1] * _ref->d1[1][s] * _ref->buf_phi[s];
+				h12 += _ref->___dh[1][s] * _ref->buf_phi[s];//_ref->d2[1][s] * _ref->buf_phi[s] - _ref->oGammaijk[2] * _ref->d1[0][s] * _ref->buf_phi[s] - _ref->oGammaijk[3] * _ref->d1[1][s] * _ref->buf_phi[s];
+				h22 += _ref->___dh[3][s] * _ref->buf_phi[s];//_ref->d2[3][s] * _ref->buf_phi[s] - _ref->oGammaijk[6] * _ref->d1[0][s] * _ref->buf_phi[s] - _ref->oGammaijk[7] * _ref->d1[1][s] * _ref->buf_phi[s];
+			}*/
+			h11 = get___hij(0, 0);
+			h12 = get___hij(0, 1);
+			h22 = get___hij(1, 1);
+			if (add)
+			{
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					xu += _ref->d1[0][s] * _ref->buf_xi[s];
+					xv += _ref->d1[1][s] * _ref->buf_xi[s];
+					yu += _ref->d1[0][s] * _ref->buf_eta[s];
+					yv += _ref->d1[1][s] * _ref->buf_eta[s];
+				}
+
+				double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
+				double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
+				double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
+				double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
+
+
+
+
+				double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
+
+				double huu = (2 * duu) - tr * _ref->og11;
+				double huv = (duv + dvu) - tr * _ref->og12;
+				double hvu = (duv + dvu) - tr * _ref->og12;
+				double hvv = (2 * dvv) - tr * _ref->og22;
+				h11 += huu;
+				h12 += huv;
+				h22 += hvv;
+			}
+
+			double Hnn = h11 * t1 * t1 + 2 * h12 * t1 * t2 + h22 * t2 * t2;
+
+			double Huu = h22 * _ref->osc;
+			double Huv = -h12 * _ref->osc;
+			double Hvv = h11 * _ref->osc;
+			//double iJ = _ref->orefDv / _dv;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+
+				double _S11 = _ref->___dh[0][s];// _ref->d2[0][s] - _ref->oGammaijk[0] * _ref->d1[0][s] - _ref->oGammaijk[1] * _ref->d1[1][s];
+				double _S12 = _ref->___dh[1][s];//_ref->d2[1][s] - _ref->oGammaijk[2] * _ref->d1[0][s] - _ref->oGammaijk[3] * _ref->d1[1][s];
+				double _S22 = _ref->___dh[3][s];//_ref->d2[3][s] - _ref->oGammaijk[6] * _ref->d1[0][s] - _ref->oGammaijk[7] * _ref->d1[1][s];
+				val = 0;
+				double _Stt = _S11 * s1 * s1 + 2 * _S12 * s1 * s2 + _S22 * s2 * s2;
+				val = _Stt * Hnn;
+				//val = (Hvv * _S22 + 2 * Huv * _S12 + Huu * _S11);// *iJ;//
+				if (accurate_area) {
+
+					double _g11 = 0, _g12 = 0, _g21 = 0, _g22 = 0;
+
+					_g11 = 2.0 * _ref->d1[0][s] * get_gi(0, 2);
+					_g12 = _ref->d1[0][s] * get_gi(1, 2) + _ref->d1[1][s] * get_gi(0, 2);
+					_g22 = 2.0 * _ref->d1[1][s] * get_gi(1, 2);
+					_g21 = _g12;
+					double ddv = 0.5 * (_g11 * this->get_Gij(0, 0) + _g22 * this->get_Gij(1, 1) + 2 * _g12 * this->get_Gij(0, 1)) * this->dv;
+
+					//double _ddv = 0.5 * (_g11 * this->get_Gij(0, 0) + _g22 * this->get_Gij(1, 1) + 2 * _g12 * this->get_Gij(0, 1)) * this->_dv;
+					val += -load * ddv / _ref->orefDv;// _dv;
+					//val -= -load * dv / _dv / _dv * _ddv;
+				}
+				else {
+
+					/*double _g11 = 0, _g12 = 0, _g21 = 0, _g22 = 0;
+
+					_g11 = 2.0 * _ref->d1[0][s] * get_gi2(0, 2);
+					_g12 = _ref->d1[0][s] * get_gi2(1, 2) + _ref->d1[1][s] * get_gi2(0, 2);
+					_g22 = 2.0 * _ref->d1[1][s] * get_gi2(1, 2);
+					_g21 = _g12;
+					double d_dv = 0.5 * (_g11 * this->get_Gij(0, 0) + _g22 * this->get_Gij(1, 1) + 2 * _g12 * this->get_Gij(0, 1)) * this->_dv;
+
+					//double _ddv = 0.5 * (_g11 * this->get_Gij(0, 0) + _g22 * this->get_Gij(1, 1) + 2 * _g12 * this->get_Gij(0, 1)) * this->_dv;
+					val += -load * d_dv / _ref->orefDv;// / _dv;
+					//val -= -load * dv / _dv / _dv * _ddv;*/
+
+				}
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
+		void __bodyBC_x(double* ptr, double load, bool accurate_area, bool add, double s1, double s2, double t1, double t2)
+		{
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
+
+			length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
+			t1 /= length; t2 /= length;
+			double* ptr1 = ptr;
+			double val = 0;
+
+
+			double h11 = 0, h12 = 0, h22 = 0;
+			/*for (int s = 0; s < _ref->_nNode; s++)
+			{
+				h11 += _ref->___dh[0][s] * _ref->buf_phi[s];// _ref->d2[0][s] * _ref->buf_phi[s] - _ref->oGammaijk[0] * _ref->d1[0][s] * _ref->buf_phi[s] - _ref->oGammaijk[1] * _ref->d1[1][s] * _ref->buf_phi[s];
+				h12 += _ref->___dh[1][s] * _ref->buf_phi[s];//_ref->d2[1][s] * _ref->buf_phi[s] - _ref->oGammaijk[2] * _ref->d1[0][s] * _ref->buf_phi[s] - _ref->oGammaijk[3] * _ref->d1[1][s] * _ref->buf_phi[s];
+				h22 += _ref->___dh[3][s] * _ref->buf_phi[s];//_ref->d2[3][s] * _ref->buf_phi[s] - _ref->oGammaijk[6] * _ref->d1[0][s] * _ref->buf_phi[s] - _ref->oGammaijk[7] * _ref->d1[1][s] * _ref->buf_phi[s];
+			}*/
+			h11 = get___hij(0, 0);
+			h12 = get___hij(0, 1);
+			h22 = get___hij(1, 1);
+			if (add)
+			{
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					xu += _ref->d1[0][s] * _ref->buf_xi[s];
+					xv += _ref->d1[1][s] * _ref->buf_xi[s];
+					yu += _ref->d1[0][s] * _ref->buf_eta[s];
+					yv += _ref->d1[1][s] * _ref->buf_eta[s];
+				}
+
+				double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
+				double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
+				double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
+				double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
+
+
+
+
+				double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
+
+				double huu = (2 * duu) - tr * _ref->og11;
+				double huv = (duv + dvu) - tr * _ref->og12;
+				double hvu = (duv + dvu) - tr * _ref->og12;
+				double hvv = (2 * dvv) - tr * _ref->og22;
+				h11 += huu;
+				h12 += huv;
+				h22 += hvv;
+			}
+
+
+			double Huu = h22 * _ref->osc;
+			double Huv = -h12 * _ref->osc;
+			double Hvv = h11 * _ref->osc;
+
+			double S11 = get___Sij(0, 0);
+			double S12 = get___Sij(0, 1);
+			double S22 = get___Sij(1, 1);
+
+			//double iJ = _ref->orefDv / _dv;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _g11 = 0, _g12 = 0, _g21 = 0, _g22 = 0;
+
+				_g11 = 2.0 * _ref->d1[0][s] * get_gi(0, 0);
+				_g12 = _ref->d1[0][s] * get_gi(1, 0) + _ref->d1[1][s] * get_gi(0, 0);
+				_g22 = 2.0 * _ref->d1[1][s] * get_gi(1, 0);
+				_g21 = _g12;
+
+
+				double _S11 = _ref->___dh[0][s];// _ref->d2[0][s] - _ref->oGammaijk[0] * _ref->d1[0][s] - _ref->oGammaijk[1] * _ref->d1[1][s];
+				double _S12 = _ref->___dh[1][s];//_ref->d2[1][s] - _ref->oGammaijk[2] * _ref->d1[0][s] - _ref->oGammaijk[3] * _ref->d1[1][s];
+				double _S22 = _ref->___dh[3][s];//_ref->d2[3][s] - _ref->oGammaijk[6] * _ref->d1[0][s] - _ref->oGammaijk[7] * _ref->d1[1][s];
+				val = 0;
+				double _ddv = 0.5 * (_g11 * this->get_Gij(0, 0) + _g22 * this->get_Gij(1, 1) + 2 * _g12 * this->get_Gij(0, 1)) * this->_dv;
+
+				//double _iJ = -_ref->orefDv / _dv / _dv * _ddv;
+				//val = (Hvv * S22 + 2 * Huv * S12 + Huu * S11) * _iJ;//
+				if (accurate_area) {
+
+
+					double ddv = 0.5 * (_g11 * this->get_Gij(0, 0) + _g22 * this->get_Gij(1, 1) + 2 * _g12 * this->get_Gij(0, 1)) * this->dv;
+
+					val += -load * ddv / _ref->orefDv;//  _dv;
+					//val -= -load * dv / _dv / _dv * _ddv;
+				}
+				else {
+
+
+				}
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+
+		void __bodyBC_y(double* ptr, double load, bool accurate_area, bool add, double s1, double s2, double t1, double t2)
+		{
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
+
+			length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
+			t1 /= length; t2 /= length;
+			double* ptr1 = ptr;
+			double val = 0;
+
+
+			double h11 = 0, h12 = 0, h22 = 0;
+			/*for (int s = 0; s < _ref->_nNode; s++)
+			{
+				h11 += _ref->___dh[0][s] * _ref->buf_phi[s];// _ref->d2[0][s] * _ref->buf_phi[s] - _ref->oGammaijk[0] * _ref->d1[0][s] * _ref->buf_phi[s] - _ref->oGammaijk[1] * _ref->d1[1][s] * _ref->buf_phi[s];
+				h12 += _ref->___dh[1][s] * _ref->buf_phi[s];//_ref->d2[1][s] * _ref->buf_phi[s] - _ref->oGammaijk[2] * _ref->d1[0][s] * _ref->buf_phi[s] - _ref->oGammaijk[3] * _ref->d1[1][s] * _ref->buf_phi[s];
+				h22 += _ref->___dh[3][s] * _ref->buf_phi[s];//_ref->d2[3][s] * _ref->buf_phi[s] - _ref->oGammaijk[6] * _ref->d1[0][s] * _ref->buf_phi[s] - _ref->oGammaijk[7] * _ref->d1[1][s] * _ref->buf_phi[s];
+			}*/
+			h11 = get___hij(0, 0);
+			h12 = get___hij(0, 1);
+			h22 = get___hij(1, 1);
+			if (add)
+			{
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					xu += _ref->d1[0][s] * _ref->buf_xi[s];
+					xv += _ref->d1[1][s] * _ref->buf_xi[s];
+					yu += _ref->d1[0][s] * _ref->buf_eta[s];
+					yv += _ref->d1[1][s] * _ref->buf_eta[s];
+				}
+
+				double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
+				double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
+				double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
+				double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
+
+
+
+
+				double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
+
+				double huu = (2 * duu) - tr * _ref->og11;
+				double huv = (duv + dvu) - tr * _ref->og12;
+				double hvu = (duv + dvu) - tr * _ref->og12;
+				double hvv = (2 * dvv) - tr * _ref->og22;
+				h11 += huu;
+				h12 += huv;
+				h22 += hvv;
+			}
+
+
+			double Huu = h22 * _ref->osc;
+			double Huv = -h12 * _ref->osc;
+			double Hvv = h11 * _ref->osc;
+
+			double S11 = get___Sij(0, 0);
+			double S12 = get___Sij(0, 1);
+			double S22 = get___Sij(1, 1);
+
+			//double iJ = _ref->orefDv / _dv;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _g11 = 0, _g12 = 0, _g21 = 0, _g22 = 0;
+
+				_g11 = 2.0 * _ref->d1[0][s] * get_gi(0, 1);
+				_g12 = _ref->d1[0][s] * get_gi(1, 1) + _ref->d1[1][s] * get_gi(0, 1);
+				_g22 = 2.0 * _ref->d1[1][s] * get_gi(1, 1);
+				_g21 = _g12;
+
+
+				double _S11 = _ref->___dh[0][s];// _ref->d2[0][s] - _ref->oGammaijk[0] * _ref->d1[0][s] - _ref->oGammaijk[1] * _ref->d1[1][s];
+				double _S12 = _ref->___dh[1][s];//_ref->d2[1][s] - _ref->oGammaijk[2] * _ref->d1[0][s] - _ref->oGammaijk[3] * _ref->d1[1][s];
+				double _S22 = _ref->___dh[3][s];//_ref->d2[3][s] - _ref->oGammaijk[6] * _ref->d1[0][s] - _ref->oGammaijk[7] * _ref->d1[1][s];
+				val = 0;
+				double _ddv = 0.5 * (_g11 * this->get_Gij(0, 0) + _g22 * this->get_Gij(1, 1) + 2 * _g12 * this->get_Gij(0, 1)) * this->_dv;
+
+				//double _iJ = -_ref->orefDv / _dv / _dv * _ddv;
+				//val = (Hvv * S22 + 2 * Huv * S12 + Huu * S11) * _iJ;//
+				if (accurate_area) {
+
+
+					double ddv = 0.5 * (_g11 * this->get_Gij(0, 0) + _g22 * this->get_Gij(1, 1) + 2 * _g12 * this->get_Gij(0, 1)) * this->dv;
+
+					val += -load * ddv / _ref->orefDv;// _dv;
+					//val -= -load * dv / _dv / _dv * _ddv;
+				}
+				else {
+
+
+				}
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
 
 		double __bodyF( double load,bool accurate_area)
 		{
@@ -24197,7 +24701,30 @@ if(add)
 				}
 			}
 		}
-		
+		void H2(_mySparse* M, int64_t* _index, double _la, double _mu, double sc,double v1,double v2,double w1,double w2)
+		{
+			const static int kk[3]{ 0,1,2 };
+			const static int ll[2]{ 0,1 };
+			//static std::map<_mySparse*, std::vector<Eigen::Triplet<double>>> dict;
+
+			for (int i = 0; i < _nNode; i++)
+			{
+				int I = _index[i] * 3;
+				for (int j = 0; j < _nNode; j++)
+				{
+					int J = _index[j] * 3;
+					for (const auto& k : kk)
+					{
+						for (const auto& k2 : kk)
+						{
+							double _val4 = 0;
+							_val4 = H2(i, k, j, k2, _la, _mu,v1,v2,w1,w2);
+							M->_mat[0].coeffRef(I + k, J + k2) += _val4 * sc;
+						}
+					}
+				}
+			}
+		}
 		void dH(_myDoubleArray * grad, int64_t* _index, double _la, double _mu, double sc)
 		{
 			const static int kk[3]{ 0,1,2 };
@@ -26641,10 +27168,19 @@ if(add)
 				return __mem->htn(s1, s2, t1, t2);
 			}
 
-			void htn_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, bool add,int shift)
+			void htn_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, bool add, int shift)
 			{
 				__mem->htn_phi(__mem->__grad, s1, s2, t1, t2);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad-shift, shift, sc, __mem->_nNode, add, coeff);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_nNode, add, coeff);
+			}
+			double ztn(double s1, double s2, double t1, double t2)
+			{
+				return __mem->ztn(s1, s2, t1, t2);
+			}
+			void ztn_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, bool add, int shift)
+			{
+				__mem->ztn_z(__mem->__grad, s1, s2, t1, t2);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_nNode, add, coeff);
 			}
 			double Gamma11s(double s1, double s2, double t1, double t2)
 			{
@@ -26657,40 +27193,27 @@ if(add)
 				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
 			}
 			
-			double Gamma11z(double s1, double s2, double t1, double t2,double load)
+			double Gamma11z(double s1, double s2, double t1, double t2,bool add)
 			{
-				return __mem->Gamma11z(s1, s2, t1, t2,load);
+				return __mem->Gamma11z(s1, s2, t1, t2,add);
 			}
-			void Gamma11z_x(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, double load, bool add, int shift)
+
+			void Gamma11z_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, bool add, int shift,bool add2)
 			{
-				__mem->Gamma11z_x(__mem->__grad, s1, s2, t1, t2, load);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_nNode, add, coeff);
-			}
-			void Gamma11z_y(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, double load, bool add, int shift)
-			{
-				__mem->Gamma11z_y(__mem->__grad, s1, s2, t1, t2, load);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_nNode, add, coeff);
-			}
-			void Gamma11z_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, double load,bool add, int shift)
-			{
-				__mem->Gamma11z_z(__mem->__grad, s1, s2, t1, t2,load);
+				__mem->Gamma11z_z(__mem->__grad, s1, s2, t1, t2,add2);
 				mat->dat->addrow(ii, index->_arr, __mem->__grad-shift, shift, sc, __mem->_nNode, add, coeff);
 			}
-			void Gamma11z_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, bool add, int shift)
+			double Gamma12z(double s1, double s2, double t1, double t2, bool add)
 			{
-				__mem->Gamma11z_phi(__mem->__grad, s1, s2, t1, t2);
+				return __mem->Gamma12z(s1, s2, t1, t2, add);
+			}
+
+			void Gamma12z_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2, bool add, int shift, bool add2)
+			{
+				__mem->Gamma12z_z(__mem->__grad, s1, s2, t1, t2, add2);
 				mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_nNode, add, coeff);
 			}
-			void Gamma11z_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2,  bool add, int shift)
-			{
-				__mem->Gamma11z_xi(__mem->__grad, s1, s2, t1, t2);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_nNode, add, coeff);
-			}
-			void Gamma11z_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double s1, double s2, double t1, double t2,  bool add, int shift)
-			{
-				__mem->Gamma11z_eta(__mem->__grad, s1, s2, t1, t2);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_nNode, add, coeff);
-			}
+
 			
 			double symm4(double s1, double s2, double t1, double t2)
 			{
@@ -26809,6 +27332,41 @@ if(add)
 			{
 				__mem->__bodyF3_y(__mem->__grad, load, accurate,add2);
 				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add,coeff);
+			}
+			double bodyBC(double load, bool accurate, bool add,double s1,double s2,double t1,double t2)
+			{
+				return __mem->__bodyBC(load, accurate, add,s1,s2,t1,t2);
+			}
+			void bodyBC_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double load, bool accurate, bool add2, bool add, double s1, double s2, double t1, double t2)
+			{
+				__mem->__bodyBC_z(__mem->__grad, load, accurate, add2,s1,s2,t1,t2);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
+			}
+
+			void bodyBC_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, bool add, double s1, double s2, double t1, double t2)
+			{
+				__mem->__bodyBC_phi(__mem->__grad, s1, s2, t1, t2);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
+			}
+			void bodyBC_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, bool add, double s1, double s2, double t1, double t2)
+			{
+				__mem->__bodyBC_xi(__mem->__grad, s1, s2, t1, t2);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
+			}
+			void bodyBC_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, bool add, double s1, double s2, double t1, double t2)
+			{
+				__mem->__bodyBC_eta(__mem->__grad, s1, s2, t1, t2);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
+			}
+			void bodyBC_x(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double load, bool accurate, bool add2, bool add, double s1, double s2, double t1, double t2)
+			{
+				__mem->__bodyBC_x(__mem->__grad, load, accurate, add2, s1, s2, t1, t2);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
+			}
+			void bodyBC_y(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, double load, bool accurate, bool add2, bool add, double s1, double s2, double t1, double t2)
+			{
+				__mem->__bodyBC_y(__mem->__grad, load, accurate, add2, s1, s2, t1, t2);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
 			}
 			double ORTHO(double v1, double v2, double w1, double w2)
 			{
@@ -27154,10 +27712,21 @@ if(add)
 			arr[3] = d;
 			return arr;
 		}
-		array<double>^ getS(double _la, double _mu,double v1,double v2,double w1,double w2)
+		array<double>^ getS(double _la, double _mu)
 		{
 			double a, b, c, d;
-			__mem->getS(_la, _mu, &a, &b, &c, &d,v1,v2,w1,w2);
+			__mem->getS(_la, _mu, &a, &b, &c, &d);
+			array<double>^ arr = gcnew array<double>(4);
+			arr[0] = a;
+			arr[1] = b;
+			arr[2] = c;
+			arr[3] = d;
+			return arr;
+		}
+		array<double>^ getS2(double _la, double _mu,double v1,double v2,double w1,double w2)
+		{
+			double a, b, c, d;
+			__mem->getS2(_la, _mu, &a, &b, &c, &d,v1,v2,w1,w2);
 			array<double>^ arr = gcnew array<double>(4);
 			arr[0] = a;
 			arr[1] = b;
@@ -27758,7 +28327,7 @@ if(add)
 		}
 		void H2(mySparse^ M, myIntArray^ index, double _la, double _mu, double sc,double v1,double v2,double w1,double w2)
 		{
-			__mem->H(M->dat, index->data(), _la, _mu, sc);
+			__mem->H2(M->dat, index->data(), _la, _mu, sc,v1,v2,w1,w2);
 		}
 		
 		void dH(myDoubleArray^ grad, myIntArray^ index, double _la, double _mu, double sc)
