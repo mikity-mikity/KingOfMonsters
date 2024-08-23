@@ -20525,9 +20525,9 @@ if(add)
 			double huv = (duv + dvu) - tr * _ref->og12;
 			double hvu = (duv + dvu) - tr * _ref->og12;
 			double hvv = (2 * dvv) - tr * _ref->og22;
-			huu += get___hij(0, 0);
-			huv += get___hij(0, 1);
-			hvv += get___hij(1, 1);
+			//huu += get___hij(0, 0);
+			//huv += get___hij(0, 1);
+			//hvv += get___hij(1, 1);
 
 			
 			hvu = huv;
@@ -20535,7 +20535,7 @@ if(add)
 			double val= huu * s1 * w1 + huv * (s1 * w2 + s2 * w1) + hvv * s2 * w2;
 		return val;
 		}
-		void free_edge2_phi(double* ptr, double s1, double s2, double w1, double w2)
+		/*void free_edge2_phi(double* ptr, double s1, double s2, double w1, double w2)
 		{
 			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
 			s1 /= length; s2 /= length;
@@ -20558,7 +20558,7 @@ if(add)
 				*ptr1 = val;
 				ptr1++;
 			}
-		}
+		}*/
 		void free_edge2_xi(double* ptr, double s1, double s2, double w1, double w2)
 		{
 			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
@@ -26189,11 +26189,7 @@ if(add)
 			return __mem->free_edge2(v1, v2, s1, s2);
 		}
 
-		void  free_edge2_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, double s1, double s2, bool add)
-		{
-			__mem->free_edge2_phi(__mem->__grad, v1, v2, s1, s2);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c);
-		}
+		
 		void  free_edge2_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, double s1, double s2, bool add)
 		{
 			__mem->free_edge2_xi(__mem->__grad, v1, v2, s1, s2);
