@@ -20554,7 +20554,7 @@ if(add)
 			return (huu * s1 * w1 + huv * (s1 * w2 + s2 * w1) + hvv * s2 * w2) / Gammassn;
 
 		}
-		void free_edge2_phi(double* ptr, double s1, double s2, double w1, double w2)
+		/*void free_edge2_phi(double* ptr, double s1, double s2, double w1, double w2)
 		{
 			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
 			s1 /= length; s2 /= length;
@@ -20578,7 +20578,7 @@ if(add)
 				*ptr1 = val;
 				ptr1++;
 			}
-		}
+		}*/
 		void free_edge2_xi(double* ptr, double s1, double s2, double w1, double w2)
 		{
 			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
@@ -20872,16 +20872,16 @@ if(add)
 			}
 		}
 
-		double free_edge5(double v1, double v2, double s1, double s2, double t1, double t2)
+		double free_edge5(double v1, double v2, double s1, double s2, double w1,double w2,double t1, double t2)
 		{
-			double E11 = (v1 * v1) + (s1 * s1);
-			double E12 = (v1 * v2) + (s1 * s2);
-			double E21 = (v2 * v1) + (s2 * s1);
-			double E22 = (v2 * v2) + (s2 * s2);
+			double E11 = w1*(v1 * v1) + w2*(s1 * s1);
+			double E12 = w1 * (v1 * v2) + w2 * (s1 * s2);
+			double E21 = w1 * (v2 * v1) + w2 * (s2 * s1);
+			double E22 = w1 * (v2 * v2) + w2 * (s2 * s2);
 
 			double e11 = E22, e22 = E11, e12 = -E12, e21 = -E12;
-			double w1 = e12 * t1 + e22 * t2;
-			double w2 = -(e11 * t1 + e12 * t2);
+			w1 = e12 * t1 + e22 * t2;
+			w2 = -(e11 * t1 + e12 * t2);
 
 			double length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
 			t1 /= length; t2 /= length;
@@ -20900,16 +20900,16 @@ if(add)
 			return Suu * t1 * w1 + Suv * (t1 * w2 + t2 * w1) + Svv * t2 * w2;
 
 		}
-		void free_edge5_z(double* ptr, double v1, double v2, double s1, double s2, double t1, double t2)
+		void free_edge5_z(double* ptr, double v1, double v2, double s1, double s2,double w1,double w2, double t1, double t2)
 		{
-			double E11 = (v1 * v1) + (s1 * s1);
-			double E12 = (v1 * v2) + (s1 * s2);
-			double E21 = (v2 * v1) + (s2 * s1);
-			double E22 = (v2 * v2) + (s2 * s2);
+			double E11 = w1 * (v1 * v1) + w2 * (s1 * s1);
+			double E12 = w1 * (v1 * v2) + w2 * (s1 * s2);
+			double E21 = w1 * (v2 * v1) + w2 * (s2 * s1);
+			double E22 = w1 * (v2 * v2) + w2 * (s2 * s2);
 
 			double e11 = E22, e22 = E11, e12 = -E12, e21 = -E12;
-			double w1 = e12 * t1 + e22 * t2;
-			double w2 = -(e11 * t1 + e12 * t2);
+			w1 = e12 * t1 + e22 * t2;
+			w2 = -(e11 * t1 + e12 * t2);
 
 			double length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
 			t1 /= length; t2 /= length;
@@ -20932,16 +20932,16 @@ if(add)
 			}
 		}
 
-		void free_edge5_u(double* ptr, double v1, double v2, double s1, double s2, double t1, double t2)
+		void free_edge5_u(double* ptr, double v1, double v2, double s1, double s2, double w1, double w2, double t1, double t2)
 		{
-			double E11 = (v1 * v1) + (s1 * s1);
-			double E12 = (v1 * v2) + (s1 * s2);
-			double E21 = (v2 * v1) + (s2 * s1);
-			double E22 = (v2 * v2) + (s2 * s2);
+			double E11 = w1 * (v1 * v1) + w2 * (s1 * s1);
+			double E12 = w1 * (v1 * v2) + w2 * (s1 * s2);
+			double E21 = w1 * (v2 * v1) + w2 * (s2 * s1);
+			double E22 = w1 * (v2 * v2) + w2 * (s2 * s2);
 
 			double e11 = E22, e22 = E11, e12 = -E12, e21 = -E12;
-			double w1 = e12 * t1 + e22 * t2;
-			double w2 = -(e11 * t1 + e12 * t2);
+			w1 = e12 * t1 + e22 * t2;
+			w2 = -(e11 * t1 + e12 * t2);
 
 			double length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
 			t1 /= length; t2 /= length;
@@ -20981,16 +20981,16 @@ if(add)
 				ptr1++;
 			}
 		}
-		void free_edge5_v(double* ptr, double v1, double v2, double s1, double s2, double t1, double t2)
+		void free_edge5_v(double* ptr, double v1, double v2, double s1, double s2, double w1, double w2, double t1, double t2)
 		{
-			double E11 = (v1 * v1) + (s1 * s1);
-			double E12 = (v1 * v2) + (s1 * s2);
-			double E21 = (v2 * v1) + (s2 * s1);
-			double E22 = (v2 * v2) + (s2 * s2);
+			double E11 = w1 * (v1 * v1) + w2 * (s1 * s1);
+			double E12 = w1 * (v1 * v2) + w2 * (s1 * s2);
+			double E21 = w1 * (v2 * v1) + w2 * (s2 * s1);
+			double E22 = w1 * (v2 * v2) + w2 * (s2 * s2);
 
 			double e11 = E22, e22 = E11, e12 = -E12, e21 = -E12;
-			double w1 = e12 * t1 + e22 * t2;
-			double w2 = -(e11 * t1 + e12 * t2);
+			w1 = e12 * t1 + e22 * t2;
+			w2 = -(e11 * t1 + e12 * t2);
 
 			double length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
 			t1 /= length; t2 /= length;
@@ -26208,11 +26208,7 @@ if(add)
 			return __mem->free_edge2(v1, v2, s1, s2);
 		}
 
-		void  free_edge2_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, double s1, double s2, bool add)
-		{
-			__mem->free_edge2_phi(__mem->__grad, v1, v2, s1, s2);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c);
-		}
+		
 		void  free_edge2_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, double s1, double s2, bool add)
 		{
 			__mem->free_edge2_xi(__mem->__grad, v1, v2, s1, s2);
@@ -26255,26 +26251,26 @@ if(add)
 			__mem->free_edge4_eta(__mem->__grad, v1, v2, s1, s2, t1, t2);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c);
 		}
-		double free_edge5(double v1, double v2, double s1, double s2, double t1, double t2)
+		double free_edge5(double v1, double v2, double s1, double s2, double w1, double w2, double t1, double t2)
 		{
-			return __mem->free_edge5(v1, v2, s1, s2, t1, t2);
+			return __mem->free_edge5(v1, v2, s1, s2,w1,w2, t1, t2);
 		}
 
-		void  free_edge5_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, double s1, double s2, double t1, double t2, bool add)
+		void  free_edge5_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, double s1, double s2, double w1, double w2, double t1, double t2, bool add)
 		{
-			__mem->free_edge5_z(__mem->__grad, v1, v2, s1, s2, t1, t2);
+			__mem->free_edge5_z(__mem->__grad, v1, v2, s1, s2, w1, w2, t1, t2);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c);
 
 		}
-		void  free_edge5_u(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, double s1, double s2, double t1, double t2, bool add)
+		void  free_edge5_u(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, double s1, double s2, double w1, double w2, double t1, double t2, bool add)
 		{
-			__mem->free_edge5_u(__mem->__grad, v1, v2, s1, s2, t1, t2);
+			__mem->free_edge5_u(__mem->__grad, v1, v2, s1, s2, w1, w2, t1, t2);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c);
 
 		}
-		void  free_edge5_v(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, double s1, double s2, double t1, double t2, bool add)
+		void  free_edge5_v(mySparse^ mat, int ii, myIntArray^ index, double sc, double c, double v1, double v2, double s1, double s2, double w1, double w2, double t1, double t2, bool add)
 		{
-			__mem->free_edge5_v(__mem->__grad, v1, v2, s1, s2, t1, t2);
+			__mem->free_edge5_v(__mem->__grad, v1, v2, s1, s2, w1, w2, t1, t2);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c);
 
 		}
