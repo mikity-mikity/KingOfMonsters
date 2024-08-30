@@ -20365,7 +20365,18 @@ if(add)
 				ptr1++;
 			}
 		}
-		
+		double Gammassn(double s1, double s2, double w1, double w2)
+		{
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
+			length = sqrt(w1 * w1 * _ref->og11 + 2 * w1 * w2 * _ref->og12 + w2 * w2 * _ref->og22);
+			w1 /= length; w2 /= length;
+			double n1 = w1 * _ref->og11 + w2 * _ref->og12;
+			double n2 = w1 * _ref->og12 + w2 * _ref->og22;
+			double Gammassn = (_ref->oGammaijk[0] * s1 * s1 * n1 + _ref->oGammaijk[1] * s1 * s1 * n2 + 2 * (_ref->oGammaijk[2] * s1 * s2 * n1 + _ref->oGammaijk[3] * s1 * s2 * n2) +
+				_ref->oGammaijk[6] * s2 * s2 * n1 + _ref->oGammaijk[7] * s2 * s2 * n2);
+			return Gammassn;
+		}
 		double free_edge(double s1, double s2,double w1,double w2)
 		{
 			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
@@ -20405,7 +20416,7 @@ if(add)
 			huv += get___hij(0, 1);
 			hvv += get___hij(1, 1);
 			hvu = huv;
-			return (huu * s1 * s1 + huv * (s1 * s2 + s2 * s1) + hvv * s2 * s2)/Gammassn;
+			return (huu * s1 * s1 + huv * (s1 * s2 + s2 * s1) + hvv * s2 * s2);// / Gammassn;
 
 		}
 		void free_edge_phi(double* ptr, double s1, double s2,double w1,double w2)
@@ -20428,7 +20439,7 @@ if(add)
 				double _h22 = _ref->___dh[3][s];
 
 
-				double val = (_h11 * s1 * s1 + _h12 * (s1 * s2 + s2 * s1) + _h22 * s2 * s2)/Gammassn;
+				double val = (_h11 * s1 * s1 + _h12 * (s1 * s2 + s2 * s1) + _h22 * s2 * s2);// / Gammassn;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -20468,7 +20479,7 @@ if(add)
 				double _h22 = (2 * _dvv) - _tr * _ref->og22;
 				
 
-				double val = (_h11 * s1 * s1 + _h12 * (s1 * s2 + s2 * s1) + _h22 * s2 * s2) / Gammassn;
+				double val = (_h11 * s1 * s1 + _h12 * (s1 * s2 + s2 * s1) + _h22 * s2 * s2);// / Gammassn;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -20507,7 +20518,7 @@ if(add)
 				double _h21 = (_duv + _dvu) - _tr * _ref->og12;
 				double _h22 = (2 * _dvv) - _tr * _ref->og22;
 			
-				double val = (_h11 * s1 * s1 + _h12 * (s1 * s2 + s2 * s1) + _h22 * s2 * s2)/Gammassn;
+				double val = (_h11 * s1 * s1 + _h12 * (s1 * s2 + s2 * s1) + _h22 * s2 * s2);// / Gammassn;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -20551,7 +20562,7 @@ if(add)
 			huv += get___hij(0, 1);
 			hvv += get___hij(1, 1);
 			hvu = huv;
-			return (huu * s1 * w1 + huv * (s1 * w2 + s2 * w1) + hvv * s2 * w2) / Gammassn;
+			return (huu * s1 * w1 + huv * (s1 * w2 + s2 * w1) + hvv * s2 * w2);// / Gammassn;
 
 		}
 		void free_edge2_phi(double* ptr, double s1, double s2, double w1, double w2)
@@ -20574,7 +20585,7 @@ if(add)
 				double _h22 = _ref->___dh[3][s];
 
 
-				double val = (_h11 * s1 * w1 + _h12 * (s1 * w2 + s2 * w1) + _h22 * s2 * w2) / Gammassn;
+				double val = (_h11 * s1 * w1 + _h12 * (s1 * w2 + s2 * w1) + _h22 * s2 * w2);// / Gammassn;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -20614,7 +20625,7 @@ if(add)
 				double _h22 = (2 * _dvv) - _tr * _ref->og22;
 
 
-				double val = (_h11 * s1 * w1 + _h12 * (s1 * w2 + s2 * w1) + _h22 * s2 * w2) / Gammassn;
+				double val = (_h11 * s1 * w1 + _h12 * (s1 * w2 + s2 * w1) + _h22 * s2 * w2);// / Gammassn;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -20653,7 +20664,7 @@ if(add)
 				double _h21 = (_duv + _dvu) - _tr * _ref->og12;
 				double _h22 = (2 * _dvv) - _tr * _ref->og22;
 
-				double val = (_h11 * s1 * w1 + _h12 * (s1 * w2 + s2 * w1) + _h22 * s2 * w2) / Gammassn;
+				double val = (_h11 * s1 * w1 + _h12 * (s1 * w2 + s2 * w1) + _h22 * s2 * w2);// / Gammassn;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -26181,6 +26192,10 @@ if(add)
 		double det()
 		{
 			return __mem->det();
+		}
+		double Gammassn(double v1, double v2, double w1, double w2)
+		{
+			return __mem->Gammassn(v1, v2, w1, w2);
 		}
 		double free_edge(double v1, double v2, double w1, double w2)
 		{
