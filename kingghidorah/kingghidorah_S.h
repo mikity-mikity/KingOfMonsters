@@ -20025,6 +20025,7 @@ if(add)
 			
 
 			double h11 = 0, h12 = 0, h22 = 0;
+			double H11 = 0, H12 = 0, H22 = 0;
 
 			/*for (int s = 0; s < _ref->_nNode; s++)
 			{
@@ -20035,39 +20036,16 @@ if(add)
 			h11 = get___hij(0, 0);
 			h12 = get___hij(0, 1);
 			h22 = get___hij(1, 1);
+			H11 = other->get___hij(0, 0);
+			H12 = other->get___hij(0, 1);
+			H22 = other->get___hij(1, 1);
 
-			if (add)
-			{
-				double xu = 0, xv = 0, yu = 0, yv = 0;
-
-				for (int s = 0; s < _ref->_nNode; s++)
-				{
-					xu += _ref->d1[0][s] * _ref->buf_xi[s];
-					xv += _ref->d1[1][s] * _ref->buf_xi[s];
-					yu += _ref->d1[0][s] * _ref->buf_eta[s];
-					yv += _ref->d1[1][s] * _ref->buf_eta[s];
-				}
-				double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
-				double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
-				double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
-				double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
-
-
-				double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
-
-				double huu = (2 * duu) - tr * _ref->og11;
-				double huv = (duv + dvu) - tr * _ref->og12;
-				double hvu = (duv + dvu) - tr * _ref->og12;
-				double hvv = (2 * dvv) - tr * _ref->og22;
-				h11 += huu;
-				h12 += huv;
-				h22 += hvv;
-
-			}
+			
 			double h21 = h12;
 			double htt = (h11 * s1 * s1 + h12 * (s1 * s2 + s2 * s1) + h22 * s2 * s2);
+			double Htt = (H11 * S1 * S1 + H12 * (S1 * S2 + S2 * S1) + H22 * S2 * S2);
 
-			val -= htt * Zn;
+			val += (htt-Htt) * Zn;
 
 			return val;
 		}
@@ -20109,6 +20087,7 @@ if(add)
 			double val = 0;
 			
 			double h11 = 0, h12 = 0, h22 = 0;
+			double H11 = 0, H12 = 0, H22 = 0;
 
 			/*for (int s = 0; s < _ref->_nNode; s++)
 			{
@@ -20120,36 +20099,11 @@ if(add)
 			h12 = get___hij(0, 1);
 			h22 = get___hij(1, 1);
 
-			if (add)
-			{
-				double xu = 0, xv = 0, yu = 0, yv = 0;
-
-				for (int s = 0; s < _ref->_nNode; s++)
-				{
-					xu += _ref->d1[0][s] * _ref->buf_xi[s];
-					xv += _ref->d1[1][s] * _ref->buf_xi[s];
-					yu += _ref->d1[0][s] * _ref->buf_eta[s];
-					yv += _ref->d1[1][s] * _ref->buf_eta[s];
-				}
-				double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
-				double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
-				double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
-				double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
-
-
-				double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
-
-				double huu = (2 * duu) - tr * _ref->og11;
-				double huv = (duv + dvu) - tr * _ref->og12;
-				double hvu = (duv + dvu) - tr * _ref->og12;
-				double hvv = (2 * dvv) - tr * _ref->og22;
-				h11 += huu;
-				h12 += huv;
-				h22 += hvv;
-
-			}
-			double h21 = h12;
+			H11 = other->get___hij(0, 0);
+			H12 = other->get___hij(0, 1);
+			H22 = other->get___hij(1, 1);
 			double htt = (h11 * s1 * s1 + h12 * (s1 * s2 + s2 * s1) + h22 * s2 * s2);
+			double Htt = (H11 * S1 * S1 + H12 * (S1 * S2 + S2 * S1) + H22 * S2 * S2);
 
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
@@ -20164,7 +20118,7 @@ if(add)
 			
 				val = _Stt*Sn;
 
-				val -= htt * _Zn;
+				val += (htt-Htt) * _Zn;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -20229,7 +20183,7 @@ if(add)
 
 
 				double _htt = (_h11 * s1 * s1 + _h12 * (s1 * s2 + s2 * s1) + _h22 * s2 * s2);
-				val -= _htt * Zn;
+				val += _htt * Zn;
 
 				*ptr1 = val;
 				ptr1++;
@@ -20244,167 +20198,20 @@ if(add)
 				double _Ev = other->_ref->d1[1][s];
 
 				double _Sn = _Eu * T1 + _Ev * T2;
-				
+				double _h11 = other->_ref->___dh[0][s];
+				double _h12 = other->_ref->___dh[1][s];
+				double _h22 = other->_ref->___dh[3][s];
+				double _htt = (_h11 * S1 * S1 + _h12 * (S1 * S2 + S2 * S1) + _h22 * S2 * S2);
+
 				val = Stt * _Sn;
-				
+				val += -_htt * Zn;
+
 				*ptr1 = val;
 				ptr1++;
 			}
 
 		}
 
-		void BCT_xi(_memS* other, double* ptr, double* ptr2, double s1, double s2, double t1, double t2, double S1, double S2, double T1, double T2, bool add)
-		{
-
-			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
-			s1 /= length; s2 /= length;
-
-			length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
-			t1 /= length; t2 /= length;
-
-
-			length = sqrt(S1 * S1 * other->_ref->og11 + 2 * S1 * S2 * other->_ref->og12 + S2 * S2 * other->_ref->og22);
-			S1 /= length; S2 /= length;
-
-			length = sqrt(T1 * T1 * other->_ref->og11 + 2 * T1 * T2 * other->_ref->og12 + T2 * T2 * other->_ref->og22);
-			T1 /= length; T2 /= length;
-			double Suu = 0, Suv = 0, Svv = 0;
-			Suu = get___Sij(0, 0);
-			Suv = get___Sij(0, 1);
-			Svv = get___Sij(1, 1);
-			double Du = 0, Dv = 0;
-			double Zu = 0, Zv = 0;
-
-			double Stt = (Suu * s1 * s1 + Suv * (s1 * s2 + s2 * s1) + Svv * s2 * s2);
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-
-				Du += _ref->d1[0][s] * _ref->buf_phi[s];
-				Dv += _ref->d1[1][s] * _ref->buf_phi[s];
-				Zu += _ref->d1[0][s] * _ref->buf_z[s];
-				Zv += _ref->d1[1][s] * _ref->buf_z[s];
-			}
-			double Eu = 0, Ev = 0;
-			for (int s = 0; s < other->_ref->_nNode; s++)
-			{
-				Eu += other->_ref->d1[0][s] * other->_ref->buf_phi[s];
-				Ev += other->_ref->d1[1][s] * other->_ref->buf_phi[s];
-			}
-			double Sn = Du * t1 + Dv * t2 + Eu * T1 + Ev * T2;
-			double Zn = Zu * t1 + Zv * t2;
-
-
-			double* ptr1 = ptr;
-			double val = 0;
-
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				double _xu = _ref->d1[0][s];
-				double _xv = _ref->d1[1][s];
-				double _yu = 0;// _ref->d1[0][s];
-				double _yv = 0;// _ref->d1[1][s];
-
-				double _duu = _xu * _ref->_ogi[0] + _yu * _ref->_ogi[1];
-				double _duv = _xu * _ref->_ogi[3] + _yu * _ref->_ogi[4];
-				double _dvu = _xv * _ref->_ogi[0] + _yv * _ref->_ogi[1];
-				double _dvv = _xv * _ref->_ogi[3] + _yv * _ref->_ogi[4];
-
-
-
-
-				double _tr = _duu * _ref->oG11 + _duv * _ref->oG12 + _dvu * _ref->oG12 + _dvv * _ref->oG22;
-
-				double _h11 = (2 * _duu) - _tr * _ref->og11;
-				double _h12 = (_duv + _dvu) - _tr * _ref->og12;
-				double _h21 = (_duv + _dvu) - _tr * _ref->og12;
-				double _h22 = (2 * _dvv) - _tr * _ref->og22;
-
-			
-
-				double _htt = (_h11 * s1 * s1 + _h12 * (s1 * s2 + s2 * s1) + _h22 * s2 * s2);
-
-				
-				val = -_htt * Zn;
-
-				*ptr1 = val;
-				ptr1++;
-			}			
-		}
-
-		void BCT_eta(_memS* other, double* ptr, double* ptr2, double s1, double s2, double t1, double t2, double S1, double S2, double T1, double T2, bool add)
-		{
-
-			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
-			s1 /= length; s2 /= length;
-
-			length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
-			t1 /= length; t2 /= length;
-
-
-			length = sqrt(S1 * S1 * other->_ref->og11 + 2 * S1 * S2 * other->_ref->og12 + S2 * S2 * other->_ref->og22);
-			S1 /= length; S2 /= length;
-
-			length = sqrt(T1 * T1 * other->_ref->og11 + 2 * T1 * T2 * other->_ref->og12 + T2 * T2 * other->_ref->og22);
-			T1 /= length; T2 /= length;
-			double Suu = 0, Suv = 0, Svv = 0;
-			Suu = get___Sij(0, 0);
-			Suv = get___Sij(0, 1);
-			Svv = get___Sij(1, 1);
-			double Du = 0, Dv = 0;
-			double Zu = 0, Zv = 0;
-
-			double Stt = (Suu * s1 * s1 + Suv * (s1 * s2 + s2 * s1) + Svv * s2 * s2);
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-
-				Du += _ref->d1[0][s] * _ref->buf_phi[s];
-				Dv += _ref->d1[1][s] * _ref->buf_phi[s];
-				Zu += _ref->d1[0][s] * _ref->buf_z[s];
-				Zv += _ref->d1[1][s] * _ref->buf_z[s];
-			}
-			double Eu = 0, Ev = 0;
-			for (int s = 0; s < other->_ref->_nNode; s++)
-			{
-				Eu += other->_ref->d1[0][s] * other->_ref->buf_phi[s];
-				Ev += other->_ref->d1[1][s] * other->_ref->buf_phi[s];
-			}
-			double Sn = Du * t1 + Dv * t2 + Eu * T1 + Ev * T2;
-			double Zn = Zu * t1 + Zv * t2;
-
-			double* ptr1 = ptr;
-			double val = 0;
-
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				double _xu = 0;
-				double _xv = 0;
-				double _yu = _ref->d1[0][s];// _ref->d1[0][s];
-				double _yv = _ref->d1[1][s];// _ref->d1[1][s];
-
-				double _duu = _xu * _ref->_ogi[0] + _yu * _ref->_ogi[1];
-				double _duv = _xu * _ref->_ogi[3] + _yu * _ref->_ogi[4];
-				double _dvu = _xv * _ref->_ogi[0] + _yv * _ref->_ogi[1];
-				double _dvv = _xv * _ref->_ogi[3] + _yv * _ref->_ogi[4];
-
-				double _tr = _duu * _ref->oG11 + _duv * _ref->oG12 + _dvu * _ref->oG12 + _dvv * _ref->oG22;
-
-				double _h11 = (2 * _duu) - _tr * _ref->og11;
-				double _h12 = (_duv + _dvu) - _tr * _ref->og12;
-				double _h21 = (_duv + _dvu) - _tr * _ref->og12;
-				double _h22 = (2 * _dvv) - _tr * _ref->og22;
-
-				double _htt = (_h11 * s1 * s1 + _h12 * (s1 * s2 + s2 * s1) + _h22 * s2 * s2);
-
-				val = -_htt * Zn;
-
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
 		double Gamma11z(double s1, double s2, double t1, double t2,bool add)
 		{
 
@@ -28240,16 +28047,7 @@ if(add)
 				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
 				mat->dat->addrow(ii, index->_arr, other->__mem->__grad - shift, shift, sc, other->__mem->_nNode, false, coeff);
 			}
-			void BCT_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, memS^ other, double s1, double s2, double t1, double t2, double S1, double S2, double T1, double T2, int shift, bool add2)
-			{
-				__mem->BCT_xi(other->__mem, __mem->__grad, other->__mem->__grad, s1, s2, t1, t2, S1, S2, T1, T2, add2);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);				
-			}
-			void BCT_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, memS^ other, double s1, double s2, double t1, double t2, double S1, double S2, double T1, double T2, int shift, bool add2)
-			{
-				__mem->BCT_eta(other->__mem, __mem->__grad, other->__mem->__grad, s1, s2, t1, t2, S1, S2, T1, T2, add2);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
-			}
+			
 			double Gamma11w(double s1, double s2, double t1, double t2, bool add)
 			{
 				return __mem->Gamma11w(s1, s2, t1, t2, add);
