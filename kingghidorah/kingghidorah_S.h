@@ -20304,22 +20304,22 @@ if(add)
 			double _gamma = s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22;
 			double gamma = s1 * s1 * get_gij(0,0) + 2 * s1 * s2 * get_gij(0, 1) + s2 * s2 * get_gij(1, 1);
 
-			//double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
-			//s1 /= length; s2 /= length;
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
 
-			double length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
+			length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
 			t1 /= length; t2 /= length;
 
 		
-			//length = sqrt(S1 * S1 * other->_ref->og11 + 2 * S1 * S2 * other->_ref->og12 + S2 * S2 * other->_ref->og22);
-			//S1 /= length; S2 /= length;
+			length = sqrt(S1 * S1 * other->_ref->og11 + 2 * S1 * S2 * other->_ref->og12 + S2 * S2 * other->_ref->og22);
+			S1 /= length; S2 /= length;
 
 			length = sqrt(T1 * T1 * other->_ref->og11 + 2 * T1 * T2 * other->_ref->og12 + T2 * T2 * other->_ref->og22);
 			T1 /= length; T2 /= length;
 			
 			
-			double n1 = s1 * _ref->og11 + s2 * _ref->og12;
-			double n2 = s1 * _ref->og12 + s2 * _ref->og22;
+			double n1 = t1 * _ref->og11 + t2 * _ref->og12;
+			double n2 = t1 * _ref->og12 + t2 * _ref->og22;
 			double w1 = s1 * _ref->og11 + s2 * _ref->og12;
 			double w2 = s1 * _ref->og12 + s2 * _ref->og22;
 
@@ -20398,7 +20398,7 @@ if(add)
 			else
 				val -= Gammasst * Zt * (Dn + En);
 
-			val /= _gamma;
+			//val /= _gamma;
 
 			val -= _load * sqrt(gamma / _gamma);
 			return val;
@@ -20412,22 +20412,22 @@ if(add)
 			double Gtt = 1 / gamma;
 
 
-			//double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
-			//s1 /= length; s2 /= length;
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
 
-			double length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
+			length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
 			t1 /= length; t2 /= length;
 
 
-			//length = sqrt(S1 * S1 * other->_ref->og11 + 2 * S1 * S2 * other->_ref->og12 + S2 * S2 * other->_ref->og22);
-			//S1 /= length; S2 /= length;
+			length = sqrt(S1 * S1 * other->_ref->og11 + 2 * S1 * S2 * other->_ref->og12 + S2 * S2 * other->_ref->og22);
+			S1 /= length; S2 /= length;
 
 			length = sqrt(T1 * T1 * other->_ref->og11 + 2 * T1 * T2 * other->_ref->og12 + T2 * T2 * other->_ref->og22);
 			T1 /= length; T2 /= length;
 
 
-			double n1 = s1 * _ref->og11 + s2 * _ref->og12;
-			double n2 = s1 * _ref->og12 + s2 * _ref->og22;
+			double n1 = t1 * _ref->og11 + t2 * _ref->og12;
+			double n2 = t1 * _ref->og12 + t2 * _ref->og22;
 			double w1 = s1 * _ref->og11 + s2 * _ref->og12;
 			double w2 = s1 * _ref->og12 + s2 * _ref->og22;
 
@@ -20502,7 +20502,7 @@ if(add)
 					val += Gammasst * _Zt * (Dn + En);
 				else
 					val -= Gammasst * _Zt * (Dn + En);
-				val /= _gamma;
+				//val /= _gamma;
 				if (accurate) {
 				
 					
@@ -20530,22 +20530,22 @@ if(add)
 			double _gamma = s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22;
 			double gamma = s1 * s1 * get_gij(0, 0) + 2 * s1 * s2 * get_gij(0, 1) + s2 * s2 * get_gij(1, 1);
 
-			//double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
-			//s1 /= length; s2 /= length;
+			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			s1 /= length; s2 /= length;
 
-			double length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
+			length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
 			t1 /= length; t2 /= length;
 
 
-			//length = sqrt(S1 * S1 * other->_ref->og11 + 2 * S1 * S2 * other->_ref->og12 + S2 * S2 * other->_ref->og22);
-			//S1 /= length; S2 /= length;
+			length = sqrt(S1 * S1 * other->_ref->og11 + 2 * S1 * S2 * other->_ref->og12 + S2 * S2 * other->_ref->og22);
+			S1 /= length; S2 /= length;
 
 			length = sqrt(T1 * T1 * other->_ref->og11 + 2 * T1 * T2 * other->_ref->og12 + T2 * T2 * other->_ref->og22);
 			T1 /= length; T2 /= length;
 
 
-			double n1 = s1 * _ref->og11 + s2 * _ref->og12;
-			double n2 = s1 * _ref->og12 + s2 * _ref->og22;
+			double n1 = t1 * _ref->og11 + t2 * _ref->og12;
+			double n2 = t1 * _ref->og12 + t2 * _ref->og22;
 			double w1 = s1 * _ref->og11 + s2 * _ref->og12;
 			double w2 = s1 * _ref->og12 + s2 * _ref->og22;
 
@@ -20610,7 +20610,7 @@ if(add)
 					val += Gammasst * Zt * (_Dn); // _htt* Zn;
 				else
 					val -= Gammasst * Zt * (_Dn); //_htt * Zn;
-				val /= _gamma;
+				//val /= _gamma;
 
 				*ptr1 = val;
 				ptr1++;
@@ -20641,7 +20641,7 @@ if(add)
 				else
 					val -= Gammasst * Zt * (_En);
 
-				val /= _gamma;
+				//val /= _gamma;
 
 				*ptr1 = val;
 				ptr1++;
