@@ -20595,10 +20595,7 @@ if(add)
 				double _Dn = _Du * t1 + _Dv * t2;
 
 				val = Stt * _Dn;
-				if (add2)
-					val += Gammasst * Zt * (_Dn);
-				else
-					val -= Gammasst * Zt * (_Dn);
+				
 				double _h11 = _ref->___dh[0][s];
 				double _h12 = _ref->___dh[1][s];
 				double _h22 = _ref->___dh[3][s];
