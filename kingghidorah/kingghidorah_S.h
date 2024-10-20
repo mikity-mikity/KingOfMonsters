@@ -20304,15 +20304,15 @@ if(add)
 			double _gamma = s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22;
 			double gamma = s1 * s1 * get_gij(0,0) + 2 * s1 * s2 * get_gij(0, 1) + s2 * s2 * get_gij(1, 1);
 
-			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
-			s1 /= length; s2 /= length;
+			//double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			//s1 /= length; s2 /= length;
 
-			length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
+			double length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
 			t1 /= length; t2 /= length;
 
 		
-			length = sqrt(S1 * S1 * other->_ref->og11 + 2 * S1 * S2 * other->_ref->og12 + S2 * S2 * other->_ref->og22);
-			S1 /= length; S2 /= length;
+			//length = sqrt(S1 * S1 * other->_ref->og11 + 2 * S1 * S2 * other->_ref->og12 + S2 * S2 * other->_ref->og22);
+			//S1 /= length; S2 /= length;
 
 			length = sqrt(T1 * T1 * other->_ref->og11 + 2 * T1 * T2 * other->_ref->og12 + T2 * T2 * other->_ref->og22);
 			T1 /= length; T2 /= length;
@@ -20366,7 +20366,7 @@ if(add)
 			double Zt = Zu * s1 + Zv * s2;
 
 
-			val = Stt*(Dn+En);
+			val = Stt*(-Dn-En);
 			
 
 			double h11 = 0, h12 = 0, h22 = 0;
@@ -20389,16 +20389,16 @@ if(add)
 			double h21 = h12;
 			double htt = (h11 * s1 * s1 + h12 * (s1 * s2 + s2 * s1) + h22 * s2 * s2);
 			double Htt = (H11 * S1 * S1 + H12 * (S1 * S2 + S2 * S1) + H22 * S2 * S2);
-			if(add)
-				val += Gammassn * Zn * (Dn + En);// htt* Zn - Htt * Zn;
+			if (add)
+				val += htt * Zn - Htt * Zn;// Gammassn* Zn* (-Dn - En);// ;
 			else
-				val -= Gammassn * Zn * (Dn + En); //htt * Zn - Htt * Zn;
+				val -= htt * Zn - Htt * Zn;// Gammassn* Zn* (-Dn - En); //;
 			if (add2)
-				val += Gammasst *Zt * (Dn + En);
+				val += Gammasst *Zt * (-Dn - En);
 			else
-				val -= Gammasst * Zt * (Dn + En);
+				val -= Gammasst * Zt * (-Dn - En);
 
-			//val /= _gamma;
+			val /= _gamma;
 
 			val -= _load * sqrt(gamma / _gamma);
 			return val;
@@ -20412,15 +20412,15 @@ if(add)
 			double Gtt = 1 / gamma;
 
 
-			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
-			s1 /= length; s2 /= length;
+			//double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			//s1 /= length; s2 /= length;
 
-			length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
+			double length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
 			t1 /= length; t2 /= length;
 
 
-			length = sqrt(S1 * S1 * other->_ref->og11 + 2 * S1 * S2 * other->_ref->og12 + S2 * S2 * other->_ref->og22);
-			S1 /= length; S2 /= length;
+			//length = sqrt(S1 * S1 * other->_ref->og11 + 2 * S1 * S2 * other->_ref->og12 + S2 * S2 * other->_ref->og22);
+			//S1 /= length; S2 /= length;
 
 			length = sqrt(T1 * T1 * other->_ref->og11 + 2 * T1 * T2 * other->_ref->og12 + T2 * T2 * other->_ref->og22);
 			T1 /= length; T2 /= length;
@@ -20493,16 +20493,16 @@ if(add)
 				double _Zt = _Zu * s1 + _Zv * s2;
 				double _Stt = (_Suu * s1 * s1 + _Suv * (s1 * s2 + s2 * s1) + _Svv * s2 * s2);
 			
-				val = _Stt*(Dn+En);
+				val = _Stt*(-Dn-En);
 				if (add)
-					val += Gammassn * _Zn * (Dn + En);// htt* _Zn - Htt * _Zn;
+					val += htt * _Zn - Htt * _Zn;// Gammassn* _Zn* (-Dn - En);// ;
 				else
-					val -= Gammassn * _Zn * (Dn + En);//htt * _Zn - Htt * _Zn;
+					val -= htt * _Zn - Htt * _Zn;// Gammassn* _Zn* (-Dn - En);//;
 				if (add2)
-					val += Gammasst * _Zt * (Dn + En);
+					val += Gammasst * _Zt * (-Dn - En);
 				else
-					val -= Gammasst * _Zt * (Dn + En);
-				//val /= _gamma;
+					val -= Gammasst * _Zt * (-Dn - En);
+				val /= _gamma;
 				if (accurate) {
 				
 					
@@ -20530,15 +20530,15 @@ if(add)
 			double _gamma = s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22;
 			double gamma = s1 * s1 * get_gij(0, 0) + 2 * s1 * s2 * get_gij(0, 1) + s2 * s2 * get_gij(1, 1);
 
-			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
-			s1 /= length; s2 /= length;
+			//double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
+			//s1 /= length; s2 /= length;
 
-			length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
+			double length = sqrt(t1 * t1 * _ref->og11 + 2 * t1 * t2 * _ref->og12 + t2 * t2 * _ref->og22);
 			t1 /= length; t2 /= length;
 
 
-			length = sqrt(S1 * S1 * other->_ref->og11 + 2 * S1 * S2 * other->_ref->og12 + S2 * S2 * other->_ref->og22);
-			S1 /= length; S2 /= length;
+			//length = sqrt(S1 * S1 * other->_ref->og11 + 2 * S1 * S2 * other->_ref->og12 + S2 * S2 * other->_ref->og22);
+			//S1 /= length; S2 /= length;
 
 			length = sqrt(T1 * T1 * other->_ref->og11 + 2 * T1 * T2 * other->_ref->og12 + T2 * T2 * other->_ref->og22);
 			T1 /= length; T2 /= length;
@@ -20594,7 +20594,7 @@ if(add)
 
 				double _Dn = _Du * t1 + _Dv * t2;
 
-				val = Stt * _Dn;
+				val = Stt * (-_Dn);
 				
 				double _h11 = _ref->___dh[0][s];
 				double _h12 = _ref->___dh[1][s];
@@ -20603,14 +20603,14 @@ if(add)
 
 				double _htt = (_h11 * s1 * s1 + _h12 * (s1 * s2 + s2 * s1) + _h22 * s2 * s2);
 				if (add)
-					val += Gammassn * Zn * (_Dn); // _htt* Zn;
+					val += _htt * Zn;// Gammassn* Zn* (-_Dn); // ;
 				else
-					val -= Gammassn * Zn * (_Dn); //_htt * Zn;
+					val -= _htt * Zn;// Gammassn* Zn* (-_Dn); //;
 				if (add2)
-					val += Gammasst * Zt * (_Dn); // _htt* Zn;
+					val += Gammasst * Zt * (-_Dn); // _htt* Zn;
 				else
-					val -= Gammasst * Zt * (_Dn); //_htt * Zn;
-				//val /= _gamma;
+					val -= Gammasst * Zt * (-_Dn); //_htt * Zn;
+				val /= _gamma;
 
 				*ptr1 = val;
 				ptr1++;
@@ -20630,18 +20630,18 @@ if(add)
 				double _H22 = other->_ref->___dh[3][s];
 				double _Htt = (_H11 * S1 * S1 + _H12 * (S1 * S2 + S2 * S1) + _H22 * S2 * S2);
 
-				val = Stt * _En;
-				if(add)
-					val += Gammassn * Zn * (_En); // -_Htt * Zn;
+				val = Stt * (-_En);
+				if (add)
+					val += -_Htt * Zn;// Gammassn* Zn* (-_En); // ;
 				else
-					val -= Gammassn * Zn * (_En); // -_Htt * Zn;
+					val -= -_Htt * Zn;// Gammassn* Zn* (-_En); // ;
 
 				if (add2)
-					val += Gammasst * Zt * (_En);
+					val += Gammasst * Zt * (-_En);
 				else
-					val -= Gammasst * Zt * (_En);
+					val -= Gammasst * Zt * (-_En);
 
-				//val /= _gamma;
+				val /= _gamma;
 
 				*ptr1 = val;
 				ptr1++;
