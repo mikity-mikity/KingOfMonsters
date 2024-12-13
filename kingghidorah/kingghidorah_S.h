@@ -20120,6 +20120,7 @@ if(add)
 				ptr1++;
 			}
 		}
+		
 		double qtt(double s1, double s2, double t1, double t2)
 		{
 			double length = sqrt(s1 * s1 * _ref->og11 + 2 * s1 * s2 * _ref->og12 + s2 * s2 * _ref->og22);
@@ -23345,8 +23346,793 @@ if(add)
 
 			}
 
+			double selfairyA()
+			{
+				double h11 = 0, h12 = 0, h22 = 0;
+
+				h11 = get__hij(0, 0);
+				h12 = get__hij(0, 1);
+				h22 = get__hij(1, 1);
+
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					xu += _ref->d1[0][s] * _ref->buf_xi[s];
+					xv += _ref->d1[1][s] * _ref->buf_xi[s];
+					yu += _ref->d1[0][s] * _ref->buf_eta[s];
+					yv += _ref->d1[1][s] * _ref->buf_eta[s];
+				}
+
+				double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
+				double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
+				double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
+				double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
+
+				double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
+
+				double huu = (2 * duu) - tr * _ref->og11;
+				double huv = (duv + dvu) - tr * _ref->og12;
+				double hvu = (duv + dvu) - tr * _ref->og12;
+				double hvv = (2 * dvv) - tr * _ref->og22;
+				h11 += huu;
+				h12 += huv;
+				h22 += hvv;
+				
+				double S11 = get__Sij(0, 0);
+				double S12 = get__Sij(0, 1);
+				double S22 = get__Sij(1, 1);
+
+				return (S11 * h22 - S22 * h11) * sc;
+			}
 			
-		
+			void selfairyA_phi(double *ptr)
+			{
+				double h11 = 0, h12 = 0, h22 = 0;
+
+				h11 = get__hij(0, 0);
+				h12 = get__hij(0, 1);
+				h22 = get__hij(1, 1);
+
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					xu += _ref->d1[0][s] * _ref->buf_xi[s];
+					xv += _ref->d1[1][s] * _ref->buf_xi[s];
+					yu += _ref->d1[0][s] * _ref->buf_eta[s];
+					yv += _ref->d1[1][s] * _ref->buf_eta[s];
+				}
+
+				double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
+				double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
+				double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
+				double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
+
+				double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
+
+				double huu = (2 * duu) - tr * _ref->og11;
+				double huv = (duv + dvu) - tr * _ref->og12;
+				double hvu = (duv + dvu) - tr * _ref->og12;
+				double hvv = (2 * dvv) - tr * _ref->og22;
+				h11 += huu;
+				h12 += huv;
+				h22 += hvv;
+
+				double S11 = get__Sij(0, 0);
+				double S12 = get__Sij(0, 1);
+				double S22 = get__Sij(1, 1);
+				double *ptr1 = ptr;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					double _h11 = _ref->___dh[0][s];
+					double _h12 = _ref->___dh[1][s];
+					double _h22 = _ref->___dh[3][s];
+					double val= (S11 * _h22 - S22 * _h11)* sc;
+					*ptr1 = val;
+					ptr1++;
+				}
+			}
+			void selfairyA_xi(double* ptr)
+			{
+				double h11 = 0, h12 = 0, h22 = 0;
+
+				h11 = get__hij(0, 0);
+				h12 = get__hij(0, 1);
+				h22 = get__hij(1, 1);
+
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					xu += _ref->d1[0][s] * _ref->buf_xi[s];
+					xv += _ref->d1[1][s] * _ref->buf_xi[s];
+					yu += _ref->d1[0][s] * _ref->buf_eta[s];
+					yv += _ref->d1[1][s] * _ref->buf_eta[s];
+				}
+
+				double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
+				double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
+				double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
+				double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
+
+				double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
+
+				double huu = (2 * duu) - tr * _ref->og11;
+				double huv = (duv + dvu) - tr * _ref->og12;
+				double hvu = (duv + dvu) - tr * _ref->og12;
+				double hvv = (2 * dvv) - tr * _ref->og22;
+				h11 += huu;
+				h12 += huv;
+				h22 += hvv;
+
+				double S11 = get__Sij(0, 0);
+				double S12 = get__Sij(0, 1);
+				double S22 = get__Sij(1, 1);
+				double* ptr1 = ptr;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					double _xu = 0, _xv = 0, _yu = 0, _yv = 0;
+					
+					_xu = _ref->d1[0][s];// *_ref->buf_xi[s];
+					_xv = _ref->d1[1][s];// * _ref->buf_xi[s];
+					_yu = 0;//_ref->d1[0][s] * _ref->buf_eta[s];
+					_yv = 0;// _ref->d1[1][s] * _ref->buf_eta[s];
+					
+
+					double _duu = _xu * _ref->_ogi[0] + _yu * _ref->_ogi[1];
+					double _duv = _xu * _ref->_ogi[3] + _yu * _ref->_ogi[4];
+					double _dvu = _xv * _ref->_ogi[0] + _yv * _ref->_ogi[1];
+					double _dvv = _xv * _ref->_ogi[3] + _yv * _ref->_ogi[4];
+
+					double _tr = _duu * _ref->oG11 + _duv * _ref->oG12 + _dvu * _ref->oG12 + _dvv * _ref->oG22;
+
+					double _h11 = (2 * _duu) - _tr * _ref->og11;
+					double _h12 = (_duv + _dvu) - _tr * _ref->og12;
+					double _h21 = (_duv + _dvu) - _tr * _ref->og12;
+					double _h22 = (2 * _dvv) - _tr * _ref->og22;
+
+					double val = (S11 * _h22 - S22 * _h11)*sc;
+					*ptr1 = val;
+					ptr1++;
+				}
+			}
+
+			void selfairyA_eta(double* ptr)
+			{
+				double h11 = 0, h12 = 0, h22 = 0;
+
+				h11 = get__hij(0, 0);
+				h12 = get__hij(0, 1);
+				h22 = get__hij(1, 1);
+
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					xu += _ref->d1[0][s] * _ref->buf_xi[s];
+					xv += _ref->d1[1][s] * _ref->buf_xi[s];
+					yu += _ref->d1[0][s] * _ref->buf_eta[s];
+					yv += _ref->d1[1][s] * _ref->buf_eta[s];
+				}
+
+				double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
+				double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
+				double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
+				double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
+
+				double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
+
+				double huu = (2 * duu) - tr * _ref->og11;
+				double huv = (duv + dvu) - tr * _ref->og12;
+				double hvu = (duv + dvu) - tr * _ref->og12;
+				double hvv = (2 * dvv) - tr * _ref->og22;
+				h11 += huu;
+				h12 += huv;
+				h22 += hvv;
+
+				double S11 = get__Sij(0, 0);
+				double S12 = get__Sij(0, 1);
+				double S22 = get__Sij(1, 1);
+				double* ptr1 = ptr;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					double _xu = 0, _xv = 0, _yu = 0, _yv = 0;
+
+					_xu = 0;// _ref->d1[0][s];// *_ref->buf_xi[s];
+					_xv = 0;//_ref->d1[1][s];// * _ref->buf_xi[s];
+					_yu = _ref->d1[0][s];// *_ref->buf_eta[s];
+					_yv = _ref->d1[1][s];// * _ref->buf_eta[s];
+
+
+					double _duu = _xu * _ref->_ogi[0] + _yu * _ref->_ogi[1];
+					double _duv = _xu * _ref->_ogi[3] + _yu * _ref->_ogi[4];
+					double _dvu = _xv * _ref->_ogi[0] + _yv * _ref->_ogi[1];
+					double _dvv = _xv * _ref->_ogi[3] + _yv * _ref->_ogi[4];
+
+					double _tr = _duu * _ref->oG11 + _duv * _ref->oG12 + _dvu * _ref->oG12 + _dvv * _ref->oG22;
+
+					double _h11 = (2 * _duu) - _tr * _ref->og11;
+					double _h12 = (_duv + _dvu) - _tr * _ref->og12;
+					double _h21 = (_duv + _dvu) - _tr * _ref->og12;
+					double _h22 = (2 * _dvv) - _tr * _ref->og22;
+
+					double val = (S11 * _h22 - S22 * _h11) * sc;
+					*ptr1 = val;
+					ptr1++;
+				}
+			}
+			void selfairyA_z(double* ptr)
+			{
+				double h11 = 0, h12 = 0, h22 = 0;
+
+				h11 = get__hij(0, 0);
+				h12 = get__hij(0, 1);
+				h22 = get__hij(1, 1);
+
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					xu += _ref->d1[0][s] * _ref->buf_xi[s];
+					xv += _ref->d1[1][s] * _ref->buf_xi[s];
+					yu += _ref->d1[0][s] * _ref->buf_eta[s];
+					yv += _ref->d1[1][s] * _ref->buf_eta[s];
+				}
+
+				double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
+				double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
+				double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
+				double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
+
+				double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
+
+				double huu = (2 * duu) - tr * _ref->og11;
+				double huv = (duv + dvu) - tr * _ref->og12;
+				double hvu = (duv + dvu) - tr * _ref->og12;
+				double hvv = (2 * dvv) - tr * _ref->og22;
+				h11 += huu;
+				h12 += huv;
+				h22 += hvv;
+
+				double S11 = get__Sij(0, 0);
+				double S12 = get__Sij(0, 1);
+				double S22 = get__Sij(1, 1);
+				double* ptr1 = ptr;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					double _S11 = _ref->___dh[0][s];
+					double _S12 = _ref->___dh[1][s];
+					double _S22 = _ref->___dh[3][s];
+					double val = (_S11 * h22 - _S22 * h11)* sc;
+					*ptr1 = val;
+					ptr1++;
+				}
+			}
+			double selfairyB()
+			{
+				double h11 = 0, h12 = 0, h22 = 0;
+
+				h11 = get__hij(0, 0);
+				h12 = get__hij(0, 1);
+				h22 = get__hij(1, 1);
+
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					xu += _ref->d1[0][s] * _ref->buf_xi[s];
+					xv += _ref->d1[1][s] * _ref->buf_xi[s];
+					yu += _ref->d1[0][s] * _ref->buf_eta[s];
+					yv += _ref->d1[1][s] * _ref->buf_eta[s];
+				}
+
+				double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
+				double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
+				double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
+				double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
+
+				double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
+
+				double huu = (2 * duu) - tr * _ref->og11;
+				double huv = (duv + dvu) - tr * _ref->og12;
+				double hvu = (duv + dvu) - tr * _ref->og12;
+				double hvv = (2 * dvv) - tr * _ref->og22;
+				h11 += huu;
+				h12 += huv;
+				h22 += hvv;
+
+				double S11 = get__Sij(0, 0);
+				double S12 = get__Sij(0, 1);
+				double S22 = get__Sij(1, 1);
+
+				return (S11 * h12 - S12 * h11) * sc;
+			}
+			void selfairyB_phi(double* ptr)
+			{
+				double h11 = 0, h12 = 0, h22 = 0;
+
+				h11 = get__hij(0, 0);
+				h12 = get__hij(0, 1);
+				h22 = get__hij(1, 1);
+
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					xu += _ref->d1[0][s] * _ref->buf_xi[s];
+					xv += _ref->d1[1][s] * _ref->buf_xi[s];
+					yu += _ref->d1[0][s] * _ref->buf_eta[s];
+					yv += _ref->d1[1][s] * _ref->buf_eta[s];
+				}
+
+				double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
+				double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
+				double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
+				double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
+
+				double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
+
+				double huu = (2 * duu) - tr * _ref->og11;
+				double huv = (duv + dvu) - tr * _ref->og12;
+				double hvu = (duv + dvu) - tr * _ref->og12;
+				double hvv = (2 * dvv) - tr * _ref->og22;
+				h11 += huu;
+				h12 += huv;
+				h22 += hvv;
+
+				double S11 = get__Sij(0, 0);
+				double S12 = get__Sij(0, 1);
+				double S22 = get__Sij(1, 1);
+				double* ptr1 = ptr;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					double _h11 = _ref->___dh[0][s];
+					double _h12 = _ref->___dh[1][s];
+					double _h22 = _ref->___dh[3][s];
+					double val = (S11 * _h12 - S12 * _h11) * sc;
+					*ptr1 = val;
+					ptr1++;
+				}
+			}
+			void selfairyB_xi(double* ptr)
+			{
+				double h11 = 0, h12 = 0, h22 = 0;
+
+				h11 = get__hij(0, 0);
+				h12 = get__hij(0, 1);
+				h22 = get__hij(1, 1);
+
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					xu += _ref->d1[0][s] * _ref->buf_xi[s];
+					xv += _ref->d1[1][s] * _ref->buf_xi[s];
+					yu += _ref->d1[0][s] * _ref->buf_eta[s];
+					yv += _ref->d1[1][s] * _ref->buf_eta[s];
+				}
+
+				double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
+				double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
+				double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
+				double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
+
+				double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
+
+				double huu = (2 * duu) - tr * _ref->og11;
+				double huv = (duv + dvu) - tr * _ref->og12;
+				double hvu = (duv + dvu) - tr * _ref->og12;
+				double hvv = (2 * dvv) - tr * _ref->og22;
+				h11 += huu;
+				h12 += huv;
+				h22 += hvv;
+
+				double S11 = get__Sij(0, 0);
+				double S12 = get__Sij(0, 1);
+				double S22 = get__Sij(1, 1);
+				double* ptr1 = ptr;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					double _xu = 0, _xv = 0, _yu = 0, _yv = 0;
+
+					_xu = _ref->d1[0][s];// *_ref->buf_xi[s];
+					_xv = _ref->d1[1][s];// * _ref->buf_xi[s];
+					_yu = 0;//_ref->d1[0][s] * _ref->buf_eta[s];
+					_yv = 0;// _ref->d1[1][s] * _ref->buf_eta[s];
+
+
+					double _duu = _xu * _ref->_ogi[0] + _yu * _ref->_ogi[1];
+					double _duv = _xu * _ref->_ogi[3] + _yu * _ref->_ogi[4];
+					double _dvu = _xv * _ref->_ogi[0] + _yv * _ref->_ogi[1];
+					double _dvv = _xv * _ref->_ogi[3] + _yv * _ref->_ogi[4];
+
+					double _tr = _duu * _ref->oG11 + _duv * _ref->oG12 + _dvu * _ref->oG12 + _dvv * _ref->oG22;
+
+					double _h11 = (2 * _duu) - _tr * _ref->og11;
+					double _h12 = (_duv + _dvu) - _tr * _ref->og12;
+					double _h21 = (_duv + _dvu) - _tr * _ref->og12;
+					double _h22 = (2 * _dvv) - _tr * _ref->og22;
+
+					double val = (S11 * _h12 - S12 * _h11) * sc;
+					*ptr1 = val;
+					ptr1++;
+				}
+			}
+
+			void selfairyB_eta(double* ptr)
+			{
+				double h11 = 0, h12 = 0, h22 = 0;
+
+				h11 = get__hij(0, 0);
+				h12 = get__hij(0, 1);
+				h22 = get__hij(1, 1);
+
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					xu += _ref->d1[0][s] * _ref->buf_xi[s];
+					xv += _ref->d1[1][s] * _ref->buf_xi[s];
+					yu += _ref->d1[0][s] * _ref->buf_eta[s];
+					yv += _ref->d1[1][s] * _ref->buf_eta[s];
+				}
+
+				double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
+				double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
+				double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
+				double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
+
+				double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
+
+				double huu = (2 * duu) - tr * _ref->og11;
+				double huv = (duv + dvu) - tr * _ref->og12;
+				double hvu = (duv + dvu) - tr * _ref->og12;
+				double hvv = (2 * dvv) - tr * _ref->og22;
+				h11 += huu;
+				h12 += huv;
+				h22 += hvv;
+
+				double S11 = get__Sij(0, 0);
+				double S12 = get__Sij(0, 1);
+				double S22 = get__Sij(1, 1);
+				double* ptr1 = ptr;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					double _xu = 0, _xv = 0, _yu = 0, _yv = 0;
+
+					_xu = 0;// _ref->d1[0][s];// *_ref->buf_xi[s];
+					_xv = 0;//_ref->d1[1][s];// * _ref->buf_xi[s];
+					_yu = _ref->d1[0][s];// *_ref->buf_eta[s];
+					_yv = _ref->d1[1][s];// * _ref->buf_eta[s];
+
+
+					double _duu = _xu * _ref->_ogi[0] + _yu * _ref->_ogi[1];
+					double _duv = _xu * _ref->_ogi[3] + _yu * _ref->_ogi[4];
+					double _dvu = _xv * _ref->_ogi[0] + _yv * _ref->_ogi[1];
+					double _dvv = _xv * _ref->_ogi[3] + _yv * _ref->_ogi[4];
+
+					double _tr = _duu * _ref->oG11 + _duv * _ref->oG12 + _dvu * _ref->oG12 + _dvv * _ref->oG22;
+
+					double _h11 = (2 * _duu) - _tr * _ref->og11;
+					double _h12 = (_duv + _dvu) - _tr * _ref->og12;
+					double _h21 = (_duv + _dvu) - _tr * _ref->og12;
+					double _h22 = (2 * _dvv) - _tr * _ref->og22;
+
+					double val = (S11 * _h12 - S12 * _h11)* sc;
+					*ptr1 = val;
+					ptr1++;
+				}
+			}
+			void selfairyB_z(double* ptr)
+			{
+				double h11 = 0, h12 = 0, h22 = 0;
+
+				h11 = get__hij(0, 0);
+				h12 = get__hij(0, 1);
+				h22 = get__hij(1, 1);
+
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					xu += _ref->d1[0][s] * _ref->buf_xi[s];
+					xv += _ref->d1[1][s] * _ref->buf_xi[s];
+					yu += _ref->d1[0][s] * _ref->buf_eta[s];
+					yv += _ref->d1[1][s] * _ref->buf_eta[s];
+				}
+
+				double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
+				double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
+				double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
+				double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
+
+				double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
+
+				double huu = (2 * duu) - tr * _ref->og11;
+				double huv = (duv + dvu) - tr * _ref->og12;
+				double hvu = (duv + dvu) - tr * _ref->og12;
+				double hvv = (2 * dvv) - tr * _ref->og22;
+				h11 += huu;
+				h12 += huv;
+				h22 += hvv;
+
+				double S11 = get__Sij(0, 0);
+				double S12 = get__Sij(0, 1);
+				double S22 = get__Sij(1, 1);
+				double* ptr1 = ptr;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					double _S11 = _ref->___dh[0][s];
+					double _S12 = _ref->___dh[1][s];
+					double _S22 = _ref->___dh[3][s];
+					double val = (_S11 * h12 - _S12 * h11) * sc;
+					*ptr1 = val;
+					ptr1++;
+				}
+			}
+			double selfairyC()
+			{
+				double h11 = 0, h12 = 0, h22 = 0;
+
+				h11 = get__hij(0, 0);
+				h12 = get__hij(0, 1);
+				h22 = get__hij(1, 1);
+
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					xu += _ref->d1[0][s] * _ref->buf_xi[s];
+					xv += _ref->d1[1][s] * _ref->buf_xi[s];
+					yu += _ref->d1[0][s] * _ref->buf_eta[s];
+					yv += _ref->d1[1][s] * _ref->buf_eta[s];
+				}
+
+				double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
+				double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
+				double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
+				double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
+
+				double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
+
+				double huu = (2 * duu) - tr * _ref->og11;
+				double huv = (duv + dvu) - tr * _ref->og12;
+				double hvu = (duv + dvu) - tr * _ref->og12;
+				double hvv = (2 * dvv) - tr * _ref->og22;
+				h11 += huu;
+				h12 += huv;
+				h22 += hvv;
+
+				double S11 = get__Sij(0, 0);
+				double S12 = get__Sij(0, 1);
+				double S22 = get__Sij(1, 1);
+
+				return (S22 * h12 - S12 * h22) * sc;
+			}
+			void selfairyC_phi(double* ptr)
+			{
+				double h11 = 0, h12 = 0, h22 = 0;
+
+				h11 = get__hij(0, 0);
+				h12 = get__hij(0, 1);
+				h22 = get__hij(1, 1);
+
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					xu += _ref->d1[0][s] * _ref->buf_xi[s];
+					xv += _ref->d1[1][s] * _ref->buf_xi[s];
+					yu += _ref->d1[0][s] * _ref->buf_eta[s];
+					yv += _ref->d1[1][s] * _ref->buf_eta[s];
+				}
+
+				double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
+				double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
+				double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
+				double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
+
+				double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
+
+				double huu = (2 * duu) - tr * _ref->og11;
+				double huv = (duv + dvu) - tr * _ref->og12;
+				double hvu = (duv + dvu) - tr * _ref->og12;
+				double hvv = (2 * dvv) - tr * _ref->og22;
+				h11 += huu;
+				h12 += huv;
+				h22 += hvv;
+
+				double S11 = get__Sij(0, 0);
+				double S12 = get__Sij(0, 1);
+				double S22 = get__Sij(1, 1);
+				double* ptr1 = ptr;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					double _h11 = _ref->___dh[0][s];
+					double _h12 = _ref->___dh[1][s];
+					double _h22 = _ref->___dh[3][s];
+					double val = (S22 * _h12 - S12 * _h22) * sc;
+					*ptr1 = val;
+					ptr1++;
+				}
+			}
+			void selfairyC_xi(double* ptr)
+			{
+				double h11 = 0, h12 = 0, h22 = 0;
+
+				h11 = get__hij(0, 0);
+				h12 = get__hij(0, 1);
+				h22 = get__hij(1, 1);
+
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					xu += _ref->d1[0][s] * _ref->buf_xi[s];
+					xv += _ref->d1[1][s] * _ref->buf_xi[s];
+					yu += _ref->d1[0][s] * _ref->buf_eta[s];
+					yv += _ref->d1[1][s] * _ref->buf_eta[s];
+				}
+
+				double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
+				double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
+				double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
+				double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
+
+				double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
+
+				double huu = (2 * duu) - tr * _ref->og11;
+				double huv = (duv + dvu) - tr * _ref->og12;
+				double hvu = (duv + dvu) - tr * _ref->og12;
+				double hvv = (2 * dvv) - tr * _ref->og22;
+				h11 += huu;
+				h12 += huv;
+				h22 += hvv;
+
+				double S11 = get__Sij(0, 0);
+				double S12 = get__Sij(0, 1);
+				double S22 = get__Sij(1, 1);
+				double* ptr1 = ptr;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					double _xu = 0, _xv = 0, _yu = 0, _yv = 0;
+
+					_xu = _ref->d1[0][s];// *_ref->buf_xi[s];
+					_xv = _ref->d1[1][s];// * _ref->buf_xi[s];
+					_yu = 0;//_ref->d1[0][s] * _ref->buf_eta[s];
+					_yv = 0;// _ref->d1[1][s] * _ref->buf_eta[s];
+
+
+					double _duu = _xu * _ref->_ogi[0] + _yu * _ref->_ogi[1];
+					double _duv = _xu * _ref->_ogi[3] + _yu * _ref->_ogi[4];
+					double _dvu = _xv * _ref->_ogi[0] + _yv * _ref->_ogi[1];
+					double _dvv = _xv * _ref->_ogi[3] + _yv * _ref->_ogi[4];
+
+					double _tr = _duu * _ref->oG11 + _duv * _ref->oG12 + _dvu * _ref->oG12 + _dvv * _ref->oG22;
+
+					double _h11 = (2 * _duu) - _tr * _ref->og11;
+					double _h12 = (_duv + _dvu) - _tr * _ref->og12;
+					double _h21 = (_duv + _dvu) - _tr * _ref->og12;
+					double _h22 = (2 * _dvv) - _tr * _ref->og22;
+
+					double val = (S22 * _h12 - S12 * _h22) * sc;
+					*ptr1 = val;
+					ptr1++;
+				}
+			}
+
+			void selfairyC_eta(double* ptr)
+			{
+				double h11 = 0, h12 = 0, h22 = 0;
+
+				h11 = get__hij(0, 0);
+				h12 = get__hij(0, 1);
+				h22 = get__hij(1, 1);
+
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					xu += _ref->d1[0][s] * _ref->buf_xi[s];
+					xv += _ref->d1[1][s] * _ref->buf_xi[s];
+					yu += _ref->d1[0][s] * _ref->buf_eta[s];
+					yv += _ref->d1[1][s] * _ref->buf_eta[s];
+				}
+
+				double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
+				double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
+				double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
+				double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
+
+				double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
+
+				double huu = (2 * duu) - tr * _ref->og11;
+				double huv = (duv + dvu) - tr * _ref->og12;
+				double hvu = (duv + dvu) - tr * _ref->og12;
+				double hvv = (2 * dvv) - tr * _ref->og22;
+				h11 += huu;
+				h12 += huv;
+				h22 += hvv;
+
+				double S11 = get__Sij(0, 0);
+				double S12 = get__Sij(0, 1);
+				double S22 = get__Sij(1, 1);
+				double* ptr1 = ptr;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					double _xu = 0, _xv = 0, _yu = 0, _yv = 0;
+
+					_xu = 0;// _ref->d1[0][s];// *_ref->buf_xi[s];
+					_xv = 0;//_ref->d1[1][s];// * _ref->buf_xi[s];
+					_yu = _ref->d1[0][s];// *_ref->buf_eta[s];
+					_yv = _ref->d1[1][s];// * _ref->buf_eta[s];
+
+
+					double _duu = _xu * _ref->_ogi[0] + _yu * _ref->_ogi[1];
+					double _duv = _xu * _ref->_ogi[3] + _yu * _ref->_ogi[4];
+					double _dvu = _xv * _ref->_ogi[0] + _yv * _ref->_ogi[1];
+					double _dvv = _xv * _ref->_ogi[3] + _yv * _ref->_ogi[4];
+
+					double _tr = _duu * _ref->oG11 + _duv * _ref->oG12 + _dvu * _ref->oG12 + _dvv * _ref->oG22;
+
+					double _h11 = (2 * _duu) - _tr * _ref->og11;
+					double _h12 = (_duv + _dvu) - _tr * _ref->og12;
+					double _h21 = (_duv + _dvu) - _tr * _ref->og12;
+					double _h22 = (2 * _dvv) - _tr * _ref->og22;
+
+					double val = (S22 * _h12 - S12 * _h22) * sc;
+					*ptr1 = val;
+					ptr1++;
+				}
+			}
+			void selfairyC_z(double* ptr)
+			{
+				double h11 = 0, h12 = 0, h22 = 0;
+
+				h11 = get__hij(0, 0);
+				h12 = get__hij(0, 1);
+				h22 = get__hij(1, 1);
+
+				double xu = 0, xv = 0, yu = 0, yv = 0;
+
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					xu += _ref->d1[0][s] * _ref->buf_xi[s];
+					xv += _ref->d1[1][s] * _ref->buf_xi[s];
+					yu += _ref->d1[0][s] * _ref->buf_eta[s];
+					yv += _ref->d1[1][s] * _ref->buf_eta[s];
+				}
+
+				double duu = xu * _ref->_ogi[0] + yu * _ref->_ogi[1];
+				double duv = xu * _ref->_ogi[3] + yu * _ref->_ogi[4];
+				double dvu = xv * _ref->_ogi[0] + yv * _ref->_ogi[1];
+				double dvv = xv * _ref->_ogi[3] + yv * _ref->_ogi[4];
+
+				double tr = duu * _ref->oG11 + duv * _ref->oG12 + dvu * _ref->oG12 + dvv * _ref->oG22;
+
+				double huu = (2 * duu) - tr * _ref->og11;
+				double huv = (duv + dvu) - tr * _ref->og12;
+				double hvu = (duv + dvu) - tr * _ref->og12;
+				double hvv = (2 * dvv) - tr * _ref->og22;
+				h11 += huu;
+				h12 += huv;
+				h22 += hvv;
+
+				double S11 = get__Sij(0, 0);
+				double S12 = get__Sij(0, 1);
+				double S22 = get__Sij(1, 1);
+				double* ptr1 = ptr;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					double _S11 = _ref->___dh[0][s];
+					double _S12 = _ref->___dh[1][s];
+					double _S22 = _ref->___dh[3][s];
+					double val = (_S22 * h12 - _S12 * h22) * sc;
+					*ptr1 = val;
+					ptr1++;
+				}
+			}
 		double __bodyF3(double load, bool accurate_area,bool add)
 		{
 			double val = 0;
@@ -29405,6 +30191,78 @@ if(add)
 			{
 				__mem->__bodyF3BC_y(__mem->__grad, s1, s2, w1, w2, load, accurate, add2);
 				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
+			}
+			double selfairyA()
+			{
+				return __mem->selfairyA();
+			}
+			void selfairyA_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->selfairyA_phi(__mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode,true, coeff);
+			}
+			void selfairyA_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->selfairyA_xi(__mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
+			}
+			void selfairyA_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->selfairyA_eta(__mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
+			}
+			void selfairyA_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->selfairyA_z(__mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
+			}
+			double selfairyB()
+			{
+				return __mem->selfairyB();
+			}
+			void selfairyB_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->selfairyB_phi(__mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
+			}
+			void selfairyB_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->selfairyB_xi(__mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
+			}
+			void selfairyB_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->selfairyB_eta(__mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
+			}
+			void selfairyB_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->selfairyB_z(__mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
+			}
+			double selfairyC()
+			{
+				return __mem->selfairyC();
+			}
+			void selfairyC_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->selfairyC_phi(__mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
+			}
+			void selfairyC_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->selfairyC_xi(__mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
+			}
+			void selfairyC_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->selfairyC_eta(__mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
+			}
+			void selfairyC_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->selfairyC_z(__mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
 			}
 			double bodyF3(double load, bool accurate,bool add)
 			{
