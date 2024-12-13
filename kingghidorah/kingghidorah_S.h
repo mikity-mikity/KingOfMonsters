@@ -6339,7 +6339,7 @@ namespace KingOfMonsters {
 				ptr1++;
 			}
 		}
-		double length(double v1, double v2)
+		/*double length(double v1, double v2)
 		{
 			double length = sqrt(v1 * v1 * _ref->og11 + 2 * v1 * v2 * _ref->og12 + v2 * v2 * _ref->og22);
 			v1 /= length;
@@ -6380,7 +6380,7 @@ namespace KingOfMonsters {
 				*ptr1 = val;
 				ptr1++;
 			}
-		}
+		}*/
 		double fair2(double v1, double v2, double w1, double w2, double s1, double s2)
 		{
 			double length = sqrt(v1 * v1 * _ref->og11 + 2 * v1 * v2 * _ref->og12 + v2 * v2 * _ref->og22);
@@ -16496,6 +16496,16 @@ if(add)
 
 			}
 
+		}
+		double length(double v1, double v2)
+		{
+			double length = get_gij(0, 0) * v1 * v1 + 2 * get_gij(0, 1) * v1 * v2 + get_gij(1, 1) * v2 * v2;
+			return length;
+		}
+		double _length(double v1, double v2)
+		{
+			double length = get_gij2(0, 0) * v1 * v1 + 2 * get_gij2(0, 1) * v1 * v2 + get_gij2(1, 1) * v2 * v2;
+			return length;
 		}
 		double align_mix2(double v1, double v2, double s1, double s2, double w1, double w2,bool add)
 		{
@@ -28514,6 +28524,14 @@ if(add)
 			_w2 = __w2;
 
 		}
+		double length(double v1, double v2)
+		{
+			return __mem->length(v1, v2);
+		}
+		double _length(double v1, double v2)
+		{
+			return __mem->_length(v1, v2);
+		}
 		double align_mix2(double v1, double v2, double s1, double s2, double w1, double w2,bool add)
 		{
 			return __mem->align_mix2( v1, v2, s1, s2, w1, w2,add);
@@ -28714,7 +28732,7 @@ if(add)
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
 		}
 
-		double length(double v1, double v2)
+		/*double length(double v1, double v2)
 		{
 			return __mem->length(v1, v2);
 		}
@@ -28728,7 +28746,7 @@ if(add)
 			__mem->length_v(__mem->__grad, v1, v2);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
 		}
-
+		*/
 		double gamma(double v1, double v2)
 		{
 			return __mem->gamma(v1, v2);
