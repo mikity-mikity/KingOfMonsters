@@ -16499,12 +16499,12 @@ if(add)
 		}
 		double length(double v1, double v2)
 		{
-			double length = get_gij(0, 0) * v1 * v1 + 2 * get_gij(0, 1) * v1 * v2 + get_gij(1, 1) * v2 * v2;
+			double length = sqrt(get_gij(0, 0) * v1 * v1 + 2 * get_gij(0, 1) * v1 * v2 + get_gij(1, 1) * v2 * v2);
 			return length;
 		}
 		double _length(double v1, double v2)
 		{
-			double length = get_gij2(0, 0) * v1 * v1 + 2 * get_gij2(0, 1) * v1 * v2 + get_gij2(1, 1) * v2 * v2;
+			double length = sqrt(get_gij2(0, 0) * v1 * v1 + 2 * get_gij2(0, 1) * v1 * v2 + get_gij2(1, 1) * v2 * v2);
 			return length;
 		}
 		double align_mix2(double v1, double v2, double s1, double s2, double w1, double w2,bool add)
@@ -27831,6 +27831,10 @@ if(add)
 			__mem->_ref->RAM = __mem->RAM;
 
 
+		}
+		double _gij(int i, int j)
+		{
+			return __mem->get_gij(i, j);
 		}
 		double _Gi2(int i, int s)
 		{
