@@ -30255,7 +30255,7 @@ if(add)
 			Svv = get___Sij(1, 1);
 			
 			double Du = 0, Dv = 0;
-			double Zu = 0, Zv = 0;
+			
 
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
@@ -30265,8 +30265,7 @@ if(add)
 				//Svv += _ref->d2[3][s] * _ref->buf_z[s];
 				Du += _ref->d1[0][s] * _ref->buf_phi[s];
 				Dv += _ref->d1[1][s] * _ref->buf_phi[s];
-				Zu += _ref->d1[0][s] * _ref->buf_z[s];
-				Zv += _ref->d1[1][s] * _ref->buf_z[s];
+			
 			}
 			double Eu = 0, Ev = 0;
 			double Wu = 0, Wv = 0;
@@ -30281,9 +30280,7 @@ if(add)
 			double Stt = (Suu * s1 * s1 + Suv * (s1 * s2 + s2 * s1) + Svv * s2 * s2);
 			double Dn = Du * t1 + Dv * t2;
 			double En = Eu* T1 + Ev * T2;
-			double Zn = Zu * t1 + Zv * t2;
-			double Zt = Zu * s1 + Zv * s2;
-
+	
 
 			val = Stt*(-Dn-En);
 			
@@ -30371,10 +30368,7 @@ if(add)
 				double _Suv = _ref->___dh[1][s];//_ref->d2[1][s];// - _ref->oGammaijk[2] * _ref->d1[0][s] - _ref->oGammaijk[3] * _ref->d1[1][s];
 				double _Svv = _ref->___dh[3][s];//_ref->d2[3][s];// - _ref->oGammaijk[6] * _ref->d1[0][s] - _ref->oGammaijk[7] * _ref->d1[1][s];
 
-				double _Zu = _ref->d1[0][s];
-				double _Zv = _ref->d1[1][s];
-				double _Zn = _Zu * t1 + _Zv * t2;
-				double _Zt = _Zu * s1 + _Zv * s2;
+
 				double _Stt = (_Suu * s1 * s1 + _Suv * (s1 * s2 + s2 * s1) + _Svv * s2 * s2);
 			
 				val =_Stt*(-Dn-En);
@@ -30443,16 +30437,7 @@ if(add)
 			double Zu = 0, Zv = 0;
 
 
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				//Suu += _ref->d2[0][s] * _ref->buf_z[s];
-				//Suv += _ref->d2[1][s] * _ref->buf_z[s];
-				//Svv += _ref->d2[3][s] * _ref->buf_z[s];
-				//Du += _ref->d1[0][s] * _ref->buf_phi[s];
-				//Dv += _ref->d1[1][s] * _ref->buf_phi[s];
-				Zu += _ref->d1[0][s] * _ref->buf_z[s];
-				Zv += _ref->d1[1][s] * _ref->buf_z[s];
-			}
+		
 			double Stt = (Suu * s1 * s1 + Suv * (s1 * s2 + s2 * s1) + Svv * s2 * s2);
 
 			//double Dn = Du * t1 + Dv * t2;
@@ -30564,8 +30549,7 @@ if(add)
 				Svv += _ref->___dh[3][s] * _ref->node[s * 3 + 0];
 				Du += _ref->d1[0][s] * _ref->buf_phi[s];
 				Dv += _ref->d1[1][s] * _ref->buf_phi[s];
-				Zu += _ref->d1[0][s] * _ref->buf_z[s];
-				Zv += _ref->d1[1][s] * _ref->buf_z[s];
+
 			}
 			double Eu = 0, Ev = 0;
 			double Wu = 0, Wv = 0;
@@ -30720,15 +30704,13 @@ if(add)
 				Svv += _ref->___dh[3][s] * _ref->node[s * 3 + 0];
 				//Du += _ref->d1[0][s] * _ref->buf_phi[s];
 				//Dv += _ref->d1[1][s] * _ref->buf_phi[s];
-				Zu += _ref->d1[0][s] * _ref->buf_z[s];
-				Zv += _ref->d1[1][s] * _ref->buf_z[s];
+			
 			}
 			double Stt = (Suu * s1 * s1 + Suv * (s1 * s2 + s2 * s1) + Svv * s2 * s2);
 
 			//double Dn = Du * t1 + Dv * t2;
 			//double En = Eu * T1 + Ev * T2;
-			double Zn = Zu * t1 + Zv * t2;
-			double Zt = Zu * s1 + Zv * s2;
+	
 
 
 
@@ -30835,8 +30817,7 @@ if(add)
 				Svv += _ref->___dh[3][s] * _ref->node[s * 3 + 1];
 				Du += _ref->d1[0][s] * _ref->buf_phi[s];
 				Dv += _ref->d1[1][s] * _ref->buf_phi[s];
-				Zu += _ref->d1[0][s] * _ref->buf_z[s];
-				Zv += _ref->d1[1][s] * _ref->buf_z[s];
+			
 			}
 			double Eu = 0, Ev = 0;
 			double Wu = 0, Wv = 0;
@@ -30934,10 +30915,7 @@ if(add)
 				double _Suv = _ref->___dh[1][s];//_ref->d2[1][s];// - _ref->oGammaijk[2] * _ref->d1[0][s] - _ref->oGammaijk[3] * _ref->d1[1][s];
 				double _Svv = _ref->___dh[3][s];//_ref->d2[3][s];// - _ref->oGammaijk[6] * _ref->d1[0][s] - _ref->oGammaijk[7] * _ref->d1[1][s];
 
-				double _Zu = _ref->d1[0][s];
-				double _Zv = _ref->d1[1][s];
-				double _Zn = _Zu * t1 + _Zv * t2;
-				double _Zt = _Zu * s1 + _Zv * s2;
+			
 				double _Stt = (_Suu * s1 * s1 + _Suv * (s1 * s2 + s2 * s1) + _Svv * s2 * s2);
 
 				val = _Stt * (-Dn - En);
@@ -30993,8 +30971,7 @@ if(add)
 				Svv += _ref->___dh[3][s] * _ref->node[s * 3 + 1];
 				//Du += _ref->d1[0][s] * _ref->buf_phi[s];
 				//Dv += _ref->d1[1][s] * _ref->buf_phi[s];
-				Zu += _ref->d1[0][s] * _ref->buf_z[s];
-				Zv += _ref->d1[1][s] * _ref->buf_z[s];
+			
 			}
 			double Stt = (Suu * s1 * s1 + Suv * (s1 * s2 + s2 * s1) + Svv * s2 * s2);
 
