@@ -222,21 +222,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 12.4.targets" />
   </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\intelopenmp.redist.win.2022.0.0.3663\build\native\intelopenmp.redist.win.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\intelopenmp.redist.win.2022.0.0.3663\build\native\intelopenmp.redist.win.targets'))" />
-    <Error Condition="!Exists('..\packages\intelopenmp.devel.win.2022.0.0.3663\build\native\intelopenmp.devel.win.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\intelopenmp.devel.win.2022.0.0.3663\build\native\intelopenmp.devel.win.targets'))" />
-    <Error Condition="!Exists('..\packages\inteltbb.redist.win.2021.1.1.133\build\native\nuget\inteltbb.redist.win.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\inteltbb.redist.win.2021.1.1.133\build\native\nuget\inteltbb.redist.win.targets'))" />
-    <Error Condition="!Exists('..\packages\inteltbb.devel.win.2021.1.1.133\build\native\nuget\inteltbb.devel.win.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\inteltbb.devel.win.2021.1.1.133\build\native\nuget\inteltbb.devel.win.targets'))" />
-    <Error Condition="!Exists('..\packages\intelmkl.static.win-x64.2022.2.1.19754\build\native\intelmkl.static.win-x64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\intelmkl.static.win-x64.2022.2.1.19754\build\native\intelmkl.static.win-x64.targets'))" />
-  </Target>
+ 
 </Project>

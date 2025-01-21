@@ -165,9 +165,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="eigenwrapper.h" />
     <ClInclude Include="kingghidorah.h" />
     <ClInclude Include="kingghidorah_C.h" />
@@ -182,17 +179,5 @@
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 12.4.targets" />
   </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\intelmkl.static.win-x64.2022.2.1.19754\build\native\intelmkl.static.win-x64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\intelmkl.static.win-x64.2022.2.1.19754\build\native\intelmkl.static.win-x64.targets'))" />
-    <Error Condition="!Exists('..\packages\intelmkl.static.cluster.win-x64.2022.2.1.19754\build\native\intelmkl.static.cluster.win-x64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\intelmkl.static.cluster.win-x64.2022.2.1.19754\build\native\intelmkl.static.cluster.win-x64.targets'))" />
-    <Error Condition="!Exists('..\packages\intelmpi.redist.win-x64.2021.7.1.15761\build\native\IntelMPI.redist.win-x64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\intelmpi.redist.win-x64.2021.7.1.15761\build\native\IntelMPI.redist.win-x64.targets'))" />
-    <Error Condition="!Exists('..\packages\intelmpi.devel.win-x64.2021.7.1.15761\build\native\IntelMPI.devel.win-x64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\intelmpi.devel.win-x64.2021.7.1.15761\build\native\IntelMPI.devel.win-x64.targets'))" />
-    <Error Condition="!Exists('..\packages\intelopenmp.redist.win.2022.2.1.19741\build\native\intelopenmp.redist.win.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\intelopenmp.redist.win.2022.2.1.19741\build\native\intelopenmp.redist.win.targets'))" />
-    <Error Condition="!Exists('..\packages\intelopenmp.devel.win.2022.2.1.19741\build\native\intelopenmp.devel.win.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\intelopenmp.devel.win.2022.2.1.19741\build\native\intelopenmp.devel.win.targets'))" />
-    <Error Condition="!Exists('..\packages\inteltbb.redist.win.2021.7.1.15305\build\native\inteltbb.redist.win.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\inteltbb.redist.win.2021.7.1.15305\build\native\inteltbb.redist.win.targets'))" />
-    <Error Condition="!Exists('..\packages\inteltbb.devel.win.2021.7.1.15305\build\native\inteltbb.devel.win.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\inteltbb.devel.win.2021.7.1.15305\build\native\inteltbb.devel.win.targets'))" />
-  </Target>
+  
 </Project>
