@@ -978,15 +978,28 @@ namespace KingOfMonsters {
 		}
 		void assemble(mySparse^ A, mySparse^ B, mySparse^ C)
 		{
+			assemble(A, B, C, false);;
+		}
+		void assemble(mySparse^ A, mySparse^ B, mySparse^ C,bool transpose)
+		{
 			this->dat->_dmat.resize(A->dat->_dmat.cols() + C->dat->_dmat.cols(), A->dat->_dmat.cols() + C->dat->_dmat.cols());
 			this->dat->_dmat.setZero();
 			this->dat->_dmat.topLeftCorner(A->dat->_dmat.cols(), A->dat->_dmat.cols()) = A->dat->_dmat;
 			this->dat->_dmat.bottomRightCorner(C->dat->_dmat.cols(), C->dat->_dmat.cols()) = C->dat->_dmat;
 			if (B != nullptr)
 			{
-				this->dat->_dmat.topRightCorner(A->dat->_dmat.rows(), C->dat->_dmat.cols()) = B->dat->_dmat;
-				this->dat->_dmat.bottomLeftCorner(C->dat->_dmat.cols(), A->dat->_dmat.cols()) = B->dat->_dmat.transpose();
+				if (transpose)
+				{
+					this->dat->_dmat.topRightCorner(A->dat->_dmat.rows(), C->dat->_dmat.cols()) = B->dat->_dmat.transpose();
+					this->dat->_dmat.bottomLeftCorner(C->dat->_dmat.cols(), A->dat->_dmat.cols()) = B->dat->_dmat;
+				}
+				else {
+					this->dat->_dmat.topRightCorner(A->dat->_dmat.rows(), C->dat->_dmat.cols()) = B->dat->_dmat;
+					this->dat->_dmat.bottomLeftCorner(C->dat->_dmat.cols(), A->dat->_dmat.cols()) = B->dat->_dmat.transpose();
+				}
+				
 			}
+			
 
 		}
 		void ofStack3(mySparse^ A, mySparse^ B)
