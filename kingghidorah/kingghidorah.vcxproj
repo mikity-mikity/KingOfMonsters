@@ -150,6 +150,7 @@
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <Optimization>MaxSpeed</Optimization>
       <OmitFramePointers>true</OmitFramePointers>
+      <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
       <AdditionalDependencies>cuda.lib;cudart_static.lib;cusolver.lib;cublas.lib;cusparse.lib</AdditionalDependencies>
@@ -179,5 +180,4 @@
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 12.4.targets" />
   </ImportGroup>
-  
 </Project>
