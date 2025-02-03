@@ -187,10 +187,14 @@ namespace KingOfMonsters {
 		{
 			this->_arr->__v = M->get() * this->_arr->__v;
 		}
+		
 		void assemble(myDoubleArray^ v, myDoubleArray^ w)
 		{
-			this->_arr->__v.resize(v->_arr->__v.rows() + w->_arr->__v.rows());
+			if(v!=nullptr && w!=nullptr)
+				this->_arr->__v.resize(v->_arr->__v.rows() + w->_arr->__v.rows());
+			if(v!=nullptr)
 			this->_arr->__v.topRows(v->_arr->__v.rows()) = v->_arr->__v;
+			if(w!=nullptr)
 			this->_arr->__v.bottomRows(w->_arr->__v.rows()) = w->_arr->__v;
 
 		}
@@ -687,6 +691,11 @@ namespace KingOfMonsters {
 			this->dat->_dmat.setIdentity();
 			this->dat->_dmat -= m->dat->_dmat;
 		}
+		
+		void __set(int i, int j, double val)
+		{
+			this->dat->_mat[0].coeffRef(i,j) = val;
+		}
 		void pseudoinverse(myDoubleArray^ v)
 		{
 			Eigen::MatrixXd tmp = Eigen::MatrixXd::Identity(v->_arr->__v.size(), v->_arr->__v.size())-v->_arr->__v*(1.0/(v->_arr->__v.transpose() * v->_arr->__v))* v->_arr->__v.transpose();
@@ -782,6 +791,56 @@ namespace KingOfMonsters {
 			
 
 		}
+		void __assemble2(mySparse^ EE, myPermutation^ mZ, int C) {
+			Eigen::SparseMatrix<double, 0, int64_t> D(mZ->p->perm.size(), EE->dat->_mat[0].cols());
+			D.setZero();
+			//D.leftCols(mZ->p->perm.size()).setIdentity();
+			for (int i = 0; i < mZ->p->perm.size();i++)
+			{
+				D.coeffRef(i, i) = 1;
+			}
+			Eigen::SparseMatrix<double, 0, int64_t> D2(C, mZ->p->perm.size());
+			D2.setZero();
+			//D2.leftCols(C).setIdentity();
+			for (int i = 0; i < C;i++)
+			{
+				D2.coeffRef(i, i) = 1;
+			}
+
+			{
+				this->dat->_mat[0] = D2 * mZ->p->perm * D * EE->dat->_mat[0].transpose();
+			}
+		
+
+		}
+		void __assemble(mySparse^ ML, myPermutation^ mXY, mySparse^ EE, myPermutation^ mZ, int C) {
+			Eigen::SparseMatrix<double, 0, int64_t> D(mZ->p->perm.size(), EE->dat->_mat[0].cols());
+			D.setZero();
+			for (int i = 0; i < mZ->p->perm.size();i++)
+			{
+				D.coeffRef(i, i) = 1;
+			}
+			Eigen::SparseMatrix<double, 0, int64_t> D2(C, mZ->p->perm.size());
+			D2.setZero();
+			for (int i = 0; i < C; i++)
+			{
+				D2.coeffRef(i, i) = 1;
+			}
+
+			{
+				this->dat->_mat[0] = D2 * mZ->p->perm * D * EE->dat->_mat[0].transpose() * mXY->p->perm * ML->dat->_mat[0];
+			}
+		
+
+		}
+		void _AtBv(mySparse^ A, myDoubleArray^ v, myDoubleArray ^res)
+		{
+			res->_arr->__v = A->dat->_dmat.transpose() *(this->dat->_dmat * v->_arr->__v);
+		}
+		void _BAv(mySparse^ A, myDoubleArray^ v,  myDoubleArray^ w, myDoubleArray^ res)
+		{
+			res->_arr->__v = this->dat->_dmat*(w->_arr->__v+A->dat->_dmat * v->_arr->__v);
+		}
 		mySparse^ AtA() {
 			mySparse^ newMat = gcnew mySparse();
 			newMat->dat->_mat.resize(1);
@@ -858,7 +917,13 @@ namespace KingOfMonsters {
 		{
 			return w->_arr->__v.transpose() * this->dat->_mat[0] * v->_arr->__v;
 		}
+		void __ofIdentity(int N)
+		{
+			this->dat->_mat[0].resize(N, N);
 
+			this->dat->_mat[0].setZero();
+			for (int i = 0; i < N; i++)this->dat->_mat[0].coeffRef(i, i) = 1;
+		}
 		void ofIdentity(int N)
 		{
 			this->dat->_dmat.resize(N, N);
@@ -978,24 +1043,31 @@ namespace KingOfMonsters {
 		}
 		void assemble(mySparse^ A, mySparse^ B, mySparse^ C)
 		{
-			assemble(A, B, C, false);;
+			assemble(A, B, C, false,true,true,true,true,A->dat->_dmat.cols(),C->dat->_dmat.cols());
 		}
 		void assemble(mySparse^ A, mySparse^ B, mySparse^ C,bool transpose)
 		{
-			this->dat->_dmat.resize(A->dat->_dmat.cols() + C->dat->_dmat.cols(), A->dat->_dmat.cols() + C->dat->_dmat.cols());
+			assemble(A, B, C, false,true,true,true,true, A->dat->_dmat.cols(), C->dat->_dmat.cols());;
+		}
+		void assemble(mySparse^ A, mySparse^ B, mySparse^ C,bool transpose,bool topleft,bool bottomright,bool topright,bool bottomleft,int N1,int N2)
+		{
+			//if(A!=nullptr && C!=nullptr)
+			this->dat->_dmat.resize(N1+N2, N1+N2);
 			this->dat->_dmat.setZero();
-			this->dat->_dmat.topLeftCorner(A->dat->_dmat.cols(), A->dat->_dmat.cols()) = A->dat->_dmat;
-			this->dat->_dmat.bottomRightCorner(C->dat->_dmat.cols(), C->dat->_dmat.cols()) = C->dat->_dmat;
+			if(A!=nullptr)
+				if(topleft)this->dat->_dmat.topLeftCorner(N1, N1) = A->dat->_dmat;
+			if(C!=nullptr)
+				if(bottomright)this->dat->_dmat.bottomRightCorner(N2,N2) = C->dat->_dmat;
 			if (B != nullptr)
 			{
 				if (transpose)
 				{
-					this->dat->_dmat.topRightCorner(A->dat->_dmat.rows(), C->dat->_dmat.cols()) = B->dat->_dmat.transpose();
-					this->dat->_dmat.bottomLeftCorner(C->dat->_dmat.cols(), A->dat->_dmat.cols()) = B->dat->_dmat;
+					if(topright)this->dat->_dmat.topRightCorner(N1,N2) = B->dat->_dmat.transpose();
+					if (bottomleft)this->dat->_dmat.bottomLeftCorner(N2,N1) = B->dat->_dmat;
 				}
 				else {
-					this->dat->_dmat.topRightCorner(A->dat->_dmat.rows(), C->dat->_dmat.cols()) = B->dat->_dmat;
-					this->dat->_dmat.bottomLeftCorner(C->dat->_dmat.cols(), A->dat->_dmat.cols()) = B->dat->_dmat.transpose();
+					if (topright)this->dat->_dmat.topRightCorner(N1,N2) = B->dat->_dmat;
+					if (bottomleft)this->dat->_dmat.bottomLeftCorner(N2,N1) = B->dat->_dmat.transpose();
 				}
 				
 			}
@@ -1402,6 +1474,7 @@ namespace KingOfMonsters {
 			this->dat->_dmat.bottomRightCorner(this->dat->_dmat.rows() - split, this->dat->_dmat.cols() - split)=m2->dat->_dmat;
 
 		}
+		
 		void resizedense(int n, int m)
 		{
 			this->dat->_dmat.resize(n, m);
@@ -1465,6 +1538,24 @@ namespace KingOfMonsters {
 			}
 
 		}
+		
+		void __transform2(mySparse^ K, double salt, myPermutation^ p, mySparse^ ML, long L, long M, long S, int sc1, int sc2)
+		{
+
+			//L:HRC,M:nBC,S:nSymm
+			int L1 = L * sc1;
+			int L2 = L * sc2;
+			int N = L2 - S - M;//free variables
+			
+			{
+				auto perm = p->p->perm;
+				auto pt = p->p->perm.transpose();
+				Eigen::SparseMatrix<double,0,int64_t> D = perm * ML->dat->_mat[0] * this->dat->_mat[0] * (ML->dat->_mat[0]).transpose() * pt;//
+
+				K->dat->_mat[0] = D;
+			}
+
+		}
 		void _AtBA(denseMatrix^ E)
 		{
 			
@@ -1484,7 +1575,18 @@ namespace KingOfMonsters {
 		{
 			this->dat->_dmat = E->dat->_dmat * this->dat->_mat[0] * E->dat->_dmat.transpose();
 		}
-		
+		void __AtBA(mySparse^ E)
+		{
+			this->dat->_mat[0] = E->dat->_mat[0].transpose() * this->dat->_mat[0] * E->dat->_mat[0];
+		}
+		void __ABAt(mySparse^ E)
+		{
+			this->dat->_mat[0] = E->dat->_mat[0] * this->dat->_mat[0] * E->dat->_mat[0].transpose();
+		}
+		void __AtBA(mySparse^ B, mySparse^ A, myDoubleArray^ b, myDoubleArray^ ret)
+		{
+			this->dat->_mat[0] = A->dat->_mat[0].transpose() * B->dat->_mat[0] * A->dat->_mat[0];
+		}
 		System::String^ AtBA(mySparse^ B, mySparse^ A, myCuda^ cuda, myDoubleArray^ b, myDoubleArray^ ret)
 		{
 			System::String^ sss = gcnew System::String("");
@@ -1528,6 +1630,10 @@ namespace KingOfMonsters {
 				ret->_arr->__v = this->dat->_dmat * b->_arr->__v;
 			}
 			return sss;
+		}
+		void __AtBA(mySparse^ E, myCuda^ cuda)
+		{
+			this->dat->_mat[0] = E->dat->_mat[0].transpose() * this->dat->_mat[0] * E->dat->_mat[0];
 		}
 		void AtBA(denseMatrix^ E, myCuda^ cuda)
 		{
@@ -1659,6 +1765,13 @@ namespace KingOfMonsters {
 				cudaMemcpy(this->dat->_dmat.data(), this->dat->gpumat, sizeof(double) * E->dat->_dmat.rows() * E->dat->_dmat.rows(), cudaMemcpyDeviceToHost);
 			}
 		}
+		void __AB(mySparse^ E)
+		{
+		
+			
+				this->dat->_mat[0] = E->dat->_mat[0] * this->dat->_mat[0];
+			
+		}
 		void AB(mySparse^ E, myCuda^ cuda)
 		{
 			int device = cuda->fastest();
@@ -1682,6 +1795,12 @@ namespace KingOfMonsters {
 
 				cudaMemcpy(this->dat->_dmat.data(), result, sizeof(double) * E->dat->_dmat.rows() * this->dat->_dmat.cols(), cudaMemcpyDeviceToHost);
 			}
+		}
+		void __ABCt(mySparse^ E, mySparse^ D)
+		{
+			
+				this->dat->_mat[0] = E->dat->_mat[0] * this->dat->_mat[0] * D->dat->_mat[0].transpose();
+		
 		}
 		void ABCt(mySparse^ E, mySparse^ D, myCuda^ cuda)
 		{			
@@ -1715,9 +1834,18 @@ namespace KingOfMonsters {
 				cudaMemcpy(this->dat->_dmat.data(), this->dat->gpumat, sizeof(double) * E->dat->_dmat.rows() * D->dat->_dmat.rows(), cudaMemcpyDeviceToHost);
 			}
 		}
+		
 		void AtB(myDoubleArray^ b)
 		{
 			b->_arr->__v = this->dat->_dmat.transpose() * b->_arr->__v;
+		}
+		void __AtB(myDoubleArray^ b)
+		{
+			b->_arr->__v = this->dat->_mat[0].transpose() * b->_arr->__v;
+		}
+		void __AB(myDoubleArray^ b)
+		{
+			b->_arr->__v = this->dat->_mat[0] * b->_arr->__v;
 		}
 		void AB(myDoubleArray^ b)
 		{
@@ -2171,6 +2299,11 @@ namespace KingOfMonsters {
 		void fillZeros()
 		{
 			memset((this->dat->_mat[0]).valuePtr(), 0, sizeof(double) * this->dat->_mat[0].nonZeros());
+		}
+		void _fillZeros()
+		{
+			this->dat->_dmat.setZero();
+			//memset((this->dat->_mat[0]).valuePtr(), 0, sizeof(double) * this->dat->_mat[0].nonZeros());
 		}
 		void solve0(myDoubleArray^ rhs, myDoubleArray^ ret) {
 			//pin_ptr<double> ptr = &rhs[0];
@@ -2660,9 +2793,9 @@ namespace KingOfMonsters {
 			this->dat->_plus(i, j, val);
 			//this->dat->_mat[0].coeffRef(i, j) += val;
 		}
-		void _set(Int64 i, Int64 j, double val) {
+		/*void _set(Int64 i, Int64 j, double val) {
 			this->dat->_mat[0].coeffRef(i, j) = val;
-		}
+		}*/
 		void increaseCapacityBy(Int64 nn)
 		{
 			if (this->dat->_mat[0].data().allocatedSize() - this->dat->_mat[0].nonZeros() < nn)
@@ -2780,6 +2913,10 @@ namespace KingOfMonsters {
 		void addsmallones(double salt)
 		{
 			this->dat->_dmat += salt * Eigen::MatrixXd::Ones(this->dat->_dmat.rows(), this->dat->_dmat.cols());
+		}
+		void setidentity()
+		{
+			this->dat->_dmat.Identity(this->dat->_dmat.rows(), this->dat->_dmat.cols());
 		}
 		void Clear() {
 			this->dat->Clear();
@@ -3592,6 +3729,10 @@ namespace KingOfMonsters {
 			this->_dat->_z.setZero();
 		}
 		void set(int i, int j, double val)
+		{
+			this->_dat->_mat(i, j) = val;
+		}
+		void __set(int i, int j, double val)
 		{
 			this->_dat->_mat(i, j) = val;
 		}
