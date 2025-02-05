@@ -27905,7 +27905,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[0];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[0];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[0];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+			
 
 				double _xu = _ref->d1[0][s];
 				double _xv = _ref->d1[1][s];
@@ -27923,6 +27923,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
+				double _S21 = _S12; 
 				double _g11 = 2 * _ref->d1[0][s] * get_gi2(0, 0);
 				double _g12 = _ref->d1[0][s] * get_gi2(1, 0)+ _ref->d1[1][s] * get_gi2(0, 0);
 				double _g22 = 2 * _ref->d1[1][s] * get_gi2(1, 0);
@@ -27986,7 +27987,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[1];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[1];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[1];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+			
 
 				double _xu = 0;
 				double _xv = 0;
@@ -28004,6 +28005,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
+				double _S21 = _S12; 
 				double _g11 = 2 * _ref->d1[0][s] * get_gi2(0, 1);
 				double _g12 = _ref->d1[0][s] * get_gi2(1, 1) + _ref->d1[1][s] * get_gi2(0, 1);
 				double _g22 = 2 * _ref->d1[1][s] * get_gi2(1, 1);
@@ -28066,7 +28068,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[2];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[2];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[2];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+				
 
 				double _xu = 0;
 				double _xv = 0;
@@ -28084,6 +28086,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
+				double _S21 = _S12; 
 				double _g11 = 2 * _ref->d1[0][s] * get_gi2(0, 2);
 				double _g12 = _ref->d1[0][s] * get_gi2(1, 2) + _ref->d1[1][s] * get_gi2(0, 2);
 				double _g22 = 2 * _ref->d1[1][s] * get_gi2(1, 2);
@@ -28185,8 +28188,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[0];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[0];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[0];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
-
+			
 				double _xu = _ref->d1[0][s];
 				double _xv = _ref->d1[1][s];
 				double _yu = 0;
@@ -28203,6 +28205,8 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
+				double _S21 = _S12;
+				
 				double _g11 = 2 * _ref->d1[0][s] * get_gi2(0, 0);
 				double _g12 = _ref->d1[0][s] * get_gi2(1, 0) + _ref->d1[1][s] * get_gi2(0, 0);
 				double _g22 = 2 * _ref->d1[1][s] * get_gi2(1, 0);
@@ -28261,7 +28265,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[1];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[1];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[1];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+			
 
 				double _xu = 0;
 				double _xv = 0;
@@ -28279,6 +28283,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
+				double _S21 = _S12; 
 				double _g11 = 2 * _ref->d1[0][s] * get_gi2(0, 1);
 				double _g12 = _ref->d1[0][s] * get_gi2(1, 1) + _ref->d1[1][s] * get_gi2(0, 1);
 				double _g22 = 2 * _ref->d1[1][s] * get_gi2(1, 1);
@@ -28336,7 +28341,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[2];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[2];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[2];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+				
 
 				double _xu = 0;
 				double _xv = 0;
@@ -28354,6 +28359,8 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
+				double _S21 = _S12; 
+				
 				double _g11 = 2 * _ref->d1[0][s] * get_gi2(0, 2);
 				double _g12 = _ref->d1[0][s] * get_gi2(1, 2) + _ref->d1[1][s] * get_gi2(0, 2);
 				double _g22 = 2 * _ref->d1[1][s] * get_gi2(1, 2);
@@ -28717,7 +28724,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[0];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[0];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[0];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+			
 
 				double _xu = _ref->d1[0][s];
 				double _xv = _ref->d1[1][s];
@@ -28735,7 +28742,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-
+				double _S21 = _S12;
 				val = (h11 * E11 * _S12 + h11 * E12 * _S22 + h12 * E21 * _S12 + h12 * E22 * _S22) * scale;
 				val -= (h21 * E11 * _S11 + h21 * E12 * _S21 + h22 * E21 * _S11 + h22 * E22 * _S21) * scale;
 				*ptr1 = val;
@@ -28820,7 +28827,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[1];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[1];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[1];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+			
 
 				double _xu = 0;
 				double _xv = 0;
@@ -28838,7 +28845,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-
+				double _S21 = _S12;
 				val = (h11 * E11 * _S12 + h11 * E12 * _S22 + h12 * E21 * _S12 + h12 * E22 * _S22) * scale;
 				val -= (h21 * E11 * _S11 + h21 * E12 * _S21 + h22 * E21 * _S11 + h22 * E22 * _S21) * scale;
 				*ptr1 = val;
@@ -28923,7 +28930,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[2];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[2];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[2];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+				
 
 				double _xu = 0;
 				double _xv = 0;
@@ -28941,7 +28948,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-
+				double _S21 = _S12;
 				val = (h11 * E11 * _S12 + h11 * E12 * _S22 + h12 * E21 * _S12 + h12 * E22 * _S22) * scale;
 				val -= (h21 * E11 * _S11 + h21 * E12 * _S21 + h22 * E21 * _S11 + h22 * E22 * _S21) * scale;
 				*ptr1 = val;
@@ -30062,7 +30069,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[2];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[2];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[2];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+			
 
 				double _xu = 0;
 				double _xv = 0;
@@ -30081,7 +30088,7 @@ if(add)
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
 
-
+				double _S21 = _S12;
 				val = (e11 * E11 * _S12 + e11 * E12 * _S22 + e12 * E21 * _S12 + e12 * E22 * _S22) * scale;
 				val -= (e21 * E11 * _S11 + e21 * E12 * _S21 + e22 * E21 * _S11 + e22 * E22 * _S21) * scale;
 
@@ -30144,7 +30151,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[0];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[0];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[0];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+				
 
 				double _xu = _ref->d1[0][s];
 				double _xv = _ref->d1[1][s];
@@ -30163,7 +30170,7 @@ if(add)
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
 
-
+				double _S21 = _S12;
 				val = (e11 * E11 * _S12 + e11 * E12 * _S22 + e12 * E21 * _S12 + e12 * E22 * _S22) * scale;
 				val -= (e21 * E11 * _S11 + e21 * E12 * _S21 + e22 * E21 * _S11 + e22 * E22 * _S21) * scale;
 
@@ -30226,7 +30233,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[1];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[1];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[1];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+				
 
 				double _xu = 0;
 				double _xv = 0;
@@ -30244,7 +30251,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-
+				double _S21 = _S12;
 
 				val = (e11 * E11 * _S12 + e11 * E12 * _S22 + e12 * E21 * _S12 + e12 * E22 * _S22) * scale;
 				val -= (e21 * E11 * _S11 + e21 * E12 * _S21 + e22 * E21 * _S11 + e22 * E22 * _S21) * scale;
@@ -31184,7 +31191,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[2];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[2];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[2];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+				
 
 				double _xu = 0;
 				double _xv = 0;
@@ -31202,7 +31209,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-
+				double _S21 = _S12;
 
 				val = (h11 * E11 * _S12 + h11 * E12 * _S22 + h12 * E21 * _S12 + h12 * E22 * _S22) * scale;
 				val -= (h21 * E11 * _S11 + h21 * E12 * _S21 + h22 * E21 * _S11 + h22 * E22 * _S21) * scale;
@@ -31262,7 +31269,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[0];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[0];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[0];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+				
 
 				double _xu = _ref->d1[0][s];
 				double _xv = _ref->d1[1][s];
@@ -31280,7 +31287,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-
+				double _S21 = _S12;
 
 				val = (h11 * E11 * _S12 + h11 * E12 * _S22 + h12 * E21 * _S12 + h12 * E22 * _S22) * scale;
 				val -= (h21 * E11 * _S11 + h21 * E12 * _S21 + h22 * E21 * _S11 + h22 * E22 * _S21) * scale;
@@ -31340,7 +31347,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[1];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[1];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[1];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+				
 
 				double _xu = 0;
 				double _xv = 0;
@@ -31358,7 +31365,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-
+				double _S21 = _S12;
 
 				val = (h11 * E11 * _S12 + h11 * E12 * _S22 + h12 * E21 * _S12 + h12 * E22 * _S22) * scale;
 				val -= (h21 * E11 * _S11 + h21 * E12 * _S21 + h22 * E21 * _S11 + h22 * E22 * _S21) * scale;
@@ -31526,7 +31533,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[2];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[2];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[2];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+				
 
 				double _xu = 0;
 				double _xv = 0;
@@ -31544,7 +31551,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-
+				double _S21 = _S12;
 
 				val = (h11 * E11 * _S12 + h11 * E12 * _S22 + h12 * E21 * _S12 + h12 * E22 * _S22) * scale;
 				val -= (h21 * E11 * _S11 + h21 * E12 * _S21 + h22 * E21 * _S11 + h22 * E22 * _S21) * scale;
@@ -31604,7 +31611,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[0];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[0];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[0];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+				
 
 				double _xu = _ref->d1[0][s];
 				double _xv = _ref->d1[1][s];
@@ -31622,7 +31629,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-
+				double _S21 = _S12;
 
 				val = (h11 * E11 * _S12 + h11 * E12 * _S22 + h12 * E21 * _S12 + h12 * E22 * _S22) * scale;
 				val -= (h21 * E11 * _S11 + h21 * E12 * _S21 + h22 * E21 * _S11 + h22 * E22 * _S21) * scale;
@@ -31682,7 +31689,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[1];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[1];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[1];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+
 
 				double _xu = 0;
 				double _xv = 0;
@@ -31700,7 +31707,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-
+				double _S21 = _S12;
 
 				val = (h11 * E11 * _S12 + h11 * E12 * _S22 + h12 * E21 * _S12 + h12 * E22 * _S22) * scale;
 				val -= (h21 * E11 * _S11 + h21 * E12 * _S21 + h22 * E21 * _S11 + h22 * E22 * _S21) * scale;
@@ -31869,7 +31876,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[2];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[2];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[2];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+				
 
 				double _xu = 0;
 				double _xv = 0;
@@ -31887,7 +31894,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-
+				double _S21 = _S12;
 
 				val = (h11 * E11 * _S12 + h11 * E12 * _S22 + h12 * E21 * _S12 + h12 * E22 * _S22) * scale;
 				val -= (h21 * E11 * _S11 + h21 * E12 * _S21 + h22 * E21 * _S11 + h22 * E22 * _S21) * scale;
@@ -31947,7 +31954,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[0];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[0];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[0];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+				
 
 				double _xu = _ref->d1[0][s];
 				double _xv = _ref->d1[1][s];
@@ -31965,7 +31972,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-
+				double _S21 = _S12;
 
 				val = (h11 * E11 * _S12 + h11 * E12 * _S22 + h12 * E21 * _S12 + h12 * E22 * _S22) * scale;
 				val -= (h21 * E11 * _S11 + h21 * E12 * _S21 + h22 * E21 * _S11 + h22 * E22 * _S21) * scale;
@@ -32025,7 +32032,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[1];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[1];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[1];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+				
 
 				double _xu = 0;
 				double _xv = 0;
@@ -32043,7 +32050,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-
+				double _S21 = _S12;
 
 				val = (h11 * E11 * _S12 + h11 * E12 * _S22 + h12 * E21 * _S12 + h12 * E22 * _S22) * scale;
 				val -= (h21 * E11 * _S11 + h21 * E12 * _S21 + h22 * E21 * _S11 + h22 * E22 * _S21) * scale;
@@ -32211,7 +32218,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[2];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[2];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[2];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+				
 
 				double _xu = 0;
 				double _xv = 0;
@@ -32229,7 +32236,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-
+				double _S21 = _S12;
 
 				val = (h11 * E11 * _S12 + h11 * E12 * _S22 + h12 * E21 * _S12 + h12 * E22 * _S22) * scale;
 				val -= (h21 * E11 * _S11 + h21 * E12 * _S21 + h22 * E21 * _S11 + h22 * E22 * _S21) * scale;
@@ -32289,7 +32296,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[0];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[0];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[0];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+				
 
 				double _xu = _ref->d1[0][s];
 				double _xv = _ref->d1[1][s];
@@ -32307,7 +32314,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-
+				double _S21 = _S12;
 
 				val = (h11 * E11 * _S12 + h11 * E12 * _S22 + h12 * E21 * _S12 + h12 * E22 * _S22) * scale;
 				val -= (h21 * E11 * _S11 + h21 * E12 * _S21 + h22 * E21 * _S11 + h22 * E22 * _S21) * scale;
@@ -32367,7 +32374,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[1];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[1];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[1];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+				
 
 				double _xu = 0;
 				double _xv = 0;
@@ -32385,7 +32392,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-
+				double _S21 = _S12;
 
 				val = (h11 * E11 * _S12 + h11 * E12 * _S22 + h12 * E21 * _S12 + h12 * E22 * _S22) * scale;
 				val -= (h21 * E11 * _S11 + h21 * E12 * _S21 + h22 * E21 * _S11 + h22 * E22 * _S21) * scale;
@@ -32532,7 +32539,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[0];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[0];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[0];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+				
 
 				double _xu = _ref->d1[0][s];
 				double _xv = _ref->d1[1][s];
@@ -32550,7 +32557,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-
+				double _S21 = _S12;
 					val = (_S11 * v1 * s1 + _S12 * v1 * s2 + _S21 * v2 * s1 + _S22 * v2 * s2);
 				
 				*ptr1 = val;
@@ -32603,7 +32610,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[1];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[1];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[1];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+				
 
 				double _xu = 0;
 				double _xv = 0;
@@ -32621,6 +32628,8 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
+				double _S21 = _S12;
+
 	val = (_S11 * v1 * s1 + _S12 * v1 * s2 + _S21 * v2 * s1 + _S22 * v2 * s2);
 
 				*ptr1 = val;
@@ -32671,7 +32680,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[2];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[2];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[2];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+				
 
 				double _xu = 0;
 				double _xv = 0;
@@ -32689,7 +32698,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-
+				double _S21 = _S12;
 				val = (_S11 * v1 * s1 + _S12 * v1 * s2 + _S21 * v2 * s1 + _S22 * v2 * s2);
 
 				*ptr1 = val;
@@ -32774,7 +32783,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[0];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[0];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[0];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+				
 
 				double _xu = _ref->d1[0][s];
 				double _xv = _ref->d1[1][s];
@@ -32792,7 +32801,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-
+				double _S21 = _S12;
 				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 0);
 				double _g12 = _ref->d1[0][s] * get_gi(1, 0) + _ref->d1[1][s] * get_gi(0, 0);
 				double _g22 = 2 * _ref->d1[1][s] * get_gi(1, 0);
@@ -32848,7 +32857,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[1];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[1];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[1];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+			
 
 				double _xu = 0;
 				double _xv = 0;
@@ -32866,7 +32875,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-
+				double _S21 = _S12;
 				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 1);
 				double _g12 = _ref->d1[0][s] * get_gi(1, 1) + _ref->d1[1][s] * get_gi(0, 1);
 				double _g22 = 2 * _ref->d1[1][s] * get_gi(1, 1);
@@ -32924,7 +32933,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[2];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[2];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[2];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+			
 
 				double _xu = 0;
 				double _xv = 0;
@@ -32942,7 +32951,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-
+				double _S21 = _S12;
 				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 2);
 				double _g12 = _ref->d1[0][s] * get_gi(1, 2) + _ref->d1[1][s] * get_gi(0, 2);
 				double _g22 = 2 * _ref->d1[1][s] * get_gi(1, 2);
@@ -32984,7 +32993,7 @@ if(add)
 				Z12 += _ref->d2[1][s] * _ref->buf_z[s];
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
-			double Z21 = Z12;
+		
 
 			double S11 = X11 * N[0] + Y11 * N[1] + Z11 * N[2];
 			double S12 = X12 * N[0] + Y12 * N[1] + Z12 * N[2];
@@ -33021,7 +33030,7 @@ if(add)
 				Z12 += _ref->d2[1][s] * _ref->buf_z[s];
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
-			double Z21 = Z12;
+		
 
 			double S11 = X11 * N[0] + Y11 * N[1] + Z11 * N[2];
 			double S12 = X12 * N[0] + Y12 * N[1] + Z12 * N[2];
@@ -33041,8 +33050,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[0];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[0];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[0];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
-
+				
 				double _xu = _ref->d1[0][s];
 				double _xv = _ref->d1[1][s];
 				double _yu = 0;
@@ -33059,6 +33067,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
+				double _S21 = _S12;
 
 				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 0);
 				double _g12 = _ref->d1[0][s] * get_gi(1, 0) + _ref->d1[1][s] * get_gi(0, 0);
@@ -33099,8 +33108,7 @@ if(add)
 				Z12 += _ref->d2[1][s] * _ref->buf_z[s];
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
-			double Z21 = Z12;
-
+			
 			double S11 = X11 * N[0] + Y11 * N[1] + Z11 * N[2];
 			double S12 = X12 * N[0] + Y12 * N[1] + Z12 * N[2];
 			double S22 = X22 * N[0] + Y22 * N[1] + Z22 * N[2];
@@ -33119,8 +33127,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[1];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[1];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[1];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
-
+				
 				double _xu = 0;
 				double _xv = 0;
 				double _yu = _ref->d1[0][s];
@@ -33137,6 +33144,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
+				double _S21 = _S12;
 
 				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 1);
 				double _g12 = _ref->d1[0][s] * get_gi(1, 1) + _ref->d1[1][s] * get_gi(0, 1);
@@ -33179,8 +33187,7 @@ if(add)
 				Z12 += _ref->d2[1][s] * _ref->buf_z[s];
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
-			double Z21 = Z12;
-
+		
 			double S11 = X11 * N[0] + Y11 * N[1] + Z11 * N[2];
 			double S12 = X12 * N[0] + Y12 * N[1] + Z12 * N[2];
 			double S22 = X22 * N[0] + Y22 * N[1] + Z22 * N[2];
@@ -33199,8 +33206,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[2];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[2];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[2];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
-
+			
 				double _xu = 0;
 				double _xv = 0;
 				double _yu = 0;
@@ -33217,6 +33223,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
+				double _S21 = _S12;
 
 				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 2);
 				double _g12 = _ref->d1[0][s] * get_gi(1, 2) + _ref->d1[1][s] * get_gi(0, 2);
@@ -33262,17 +33269,17 @@ if(add)
 				Z12 += _ref->d2[1][s] * _ref->buf_z[s];
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
-			double Z21 = Z12;
-
+	
 			double S11 = X11 * N[0] + Y11 * N[1] + Z11 * N[2];
 			double S12 = X12 * N[0] + Y12 * N[1] + Z12 * N[2];
 			double S22 = X22 * N[0] + Y22 * N[1] + Z22 * N[2];
 			double S21 = S12;
 
 			double L2 = v1 * v1 * get_gij(0, 0) + 2 * v1 * v2 * get_gij(0, 1) + v2 * v2 * get_gij(1, 1);
+			double dv2 = get_gij(0, 0) * get_gij(1, 1) - get_gij(0, 1) * get_gij(0, 1);
 			double w2 = -get_gij(0, 0) * v1 - get_gij(0, 1) * v2;
 			double w1 = get_gij(0, 1) * v1 + get_gij(1, 1) * v2;
-			val = (S11 * w1 * w1 + S12 * w1 * w2 + S21 * w2 * w1 + S22 * w2 * w2) *sc / L2;
+			val = (S11 * w1 * w1 + S12 * w1 * w2 + S21 * w2 * w1 + S22 * w2 * w2) /dv2 / L2;
 
 			return val;
 
@@ -33298,7 +33305,7 @@ if(add)
 				Z12 += _ref->d2[1][s] * _ref->buf_z[s];
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
-			double Z21 = Z12;
+		
 
 			double S11 = X11 * N[0] + Y11 * N[1] + Z11 * N[2];
 			double S12 = X12 * N[0] + Y12 * N[1] + Z12 * N[2];
@@ -33307,6 +33314,7 @@ if(add)
 			double L2 = v1 * v1 * get_gij(0, 0) + 2 * v1 * v2 * get_gij(0, 1) + v2 * v2 * get_gij(1, 1);
 			double w2 = -get_gij(0, 0) * v1 - get_gij(0, 1) * v2;
 			double w1 = get_gij(0, 1) * v1 + get_gij(1, 1) * v2;
+			double dv2 = get_gij(0, 0) * get_gij(1, 1) - get_gij(0, 1) * get_gij(0, 1);
 
 			double scale = 1.0  /*/ trEij*/ / _ref->orefDv;
 			//double scale = 1.0 /_dv;
@@ -33318,7 +33326,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[0];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[0];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[0];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+			
 
 				double _xu = _ref->d1[0][s];
 				double _xv = _ref->d1[1][s];
@@ -33336,20 +33344,20 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-
+				double _S21 = _S12;
 				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 0);
 				double _g12 = _ref->d1[0][s] * get_gi(1, 0) + _ref->d1[1][s] * get_gi(0, 0);
 				double _g22 = 2 * _ref->d1[1][s] * get_gi(1, 0);
 
-				double dsc = - (_g11 * get_Gij(0, 0) + 2 * _g12 * get_Gij(0, 1) + _g22 * get_Gij(1, 1)) * sc;
+				double ddv2 = (_g11 * get_Gij(0, 0) + 2 * _g12 * get_Gij(0, 1) + _g22 * get_Gij(1, 1)) * dv2;
 				double dL2 = v1 * v1 * _g11 + 2 * v1 * v2 * _g12 + v2 * v2 * _g22;
 
 				double _w2 = -_g11 * v1 - _g12 * v2;
 				double _w1 = _g12 * v1 + _g22 * v2;
-				val = (_S11 * w1 * w1 + _S12 * w1 * w2 + _S21 * w2 * w1 + _S22 * w2 * w2) *sc / L2;
-				val += 2*(S11 * w1 * _w1 + S12 * w1 * _w2 + S21 * w2 * _w1 + S22 * w2 * _w2) *sc/ L2;
-				val += (S11 * w1 * w1 + S12 * w1 * w2 + S21 * w2 * w1 + S22 * w2 * w2) *dsc/ L2;
-				val += -(S11 * w1 * w1 + S12 * w1 * w2 + S21 * w2 * w1 + S22 * w2 * w2) *sc/ L2 / L2 * dL2;
+				val = (_S11 * w1 * w1 + _S12 * w1 * w2 + _S21 * w2 * w1 + _S22 * w2 * w2) /dv2 / L2;
+				val += 2*(S11 * w1 * _w1 + S12 * w1 * _w2 + S21 * w2 * _w1 + S22 * w2 * _w2) /dv2/ L2;
+				val += -(S11 * w1 * w1 + S12 * w1 * w2 + S21 * w2 * w1 + S22 * w2 * w2) /dv2/dv2*ddv2/ L2;
+				val += -(S11 * w1 * w1 + S12 * w1 * w2 + S21 * w2 * w1 + S22 * w2 * w2) /dv2/ L2 / L2 * dL2;
 
 				*ptr1 = val;
 				ptr1++;
@@ -33357,8 +33365,6 @@ if(add)
 
 		}void bnn_y(double* ptr, double v1, double v2)
 		{
-
-
 
 			double X11 = 0, X12 = 0, X22 = 0;
 			double Y11 = 0, Y12 = 0, Y22 = 0;
@@ -33376,7 +33382,7 @@ if(add)
 				Z12 += _ref->d2[1][s] * _ref->buf_z[s];
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
-			double Z21 = Z12;
+	
 
 			double S11 = X11 * N[0] + Y11 * N[1] + Z11 * N[2];
 			double S12 = X12 * N[0] + Y12 * N[1] + Z12 * N[2];
@@ -33385,6 +33391,7 @@ if(add)
 			double L2 = v1 * v1 * get_gij(0, 0) + 2 * v1 * v2 * get_gij(0, 1) + v2 * v2 * get_gij(1, 1);
 			double w2 = -get_gij(0, 0) * v1 - get_gij(0, 1) * v2;
 			double w1 = get_gij(0, 1) * v1 + get_gij(1, 1) * v2;
+			double dv2 = get_gij(0, 0) * get_gij(1, 1) - get_gij(0, 1) * get_gij(0, 1);
 
 			double scale = 1.0  /*/ trEij*/ / _ref->orefDv;
 			//double scale = 1.0 /_dv;
@@ -33396,7 +33403,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[1];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[1];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[1];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+			
 
 				double _xu = 0;
 				double _xv = 0;
@@ -33414,20 +33421,20 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-
+				double _S21 = _S12;
 				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 1);
 				double _g12 = _ref->d1[0][s] * get_gi(1, 1) + _ref->d1[1][s] * get_gi(0, 1);
 				double _g22 = 2 * _ref->d1[1][s] * get_gi(1, 1);
 
-				double dsc = -(_g11 * get_Gij(0, 0) + 2 * _g12 * get_Gij(0, 1) + _g22 * get_Gij(1, 1)) * sc;
+				double ddv2 = (_g11 * get_Gij(0, 0) + 2 * _g12 * get_Gij(0, 1) + _g22 * get_Gij(1, 1)) * dv2;
 				double dL2 = v1 * v1 * _g11 + 2 * v1 * v2 * _g12 + v2 * v2 * _g22;
 
 				double _w2 = -_g11 * v1 - _g12 * v2;
 				double _w1 = _g12 * v1 + _g22 * v2;
-				val = (_S11 * w1 * w1 + _S12 * w1 * w2 + _S21 * w2 * w1 + _S22 * w2 * w2) * sc / L2;
-				val += 2 * (S11 * w1 * _w1 + S12 * w1 * _w2 + S21 * w2 * _w1 + S22 * w2 * _w2) * sc / L2;
-				val += (S11 * w1 * w1 + S12 * w1 * w2 + S21 * w2 * w1 + S22 * w2 * w2) * dsc / L2;
-				val += -(S11 * w1 * w1 + S12 * w1 * w2 + S21 * w2 * w1 + S22 * w2 * w2) * sc / L2 / L2 * dL2;
+				val = (_S11 * w1 * w1 + _S12 * w1 * w2 + _S21 * w2 * w1 + _S22 * w2 * w2) / dv2 / L2;
+				val += 2 * (S11 * w1 * _w1 + S12 * w1 * _w2 + S21 * w2 * _w1 + S22 * w2 * _w2) / dv2 / L2;
+				val += -(S11 * w1 * w1 + S12 * w1 * w2 + S21 * w2 * w1 + S22 * w2 * w2) / dv2 / dv2 * ddv2 / L2;
+				val += -(S11 * w1 * w1 + S12 * w1 * w2 + S21 * w2 * w1 + S22 * w2 * w2) /dv2 / L2 / L2 * dL2;
 
 				*ptr1 = val;
 				ptr1++;
@@ -33436,9 +33443,6 @@ if(add)
 		}
 		void bnn_z(double* ptr, double v1, double v2)
 		{
-
-
-
 			double X11 = 0, X12 = 0, X22 = 0;
 			double Y11 = 0, Y12 = 0, Y22 = 0;
 			double Z11 = 0, Z12 = 0, Z22 = 0;
@@ -33455,8 +33459,7 @@ if(add)
 				Z12 += _ref->d2[1][s] * _ref->buf_z[s];
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
-			double Z21 = Z12;
-
+		
 			double S11 = X11 * N[0] + Y11 * N[1] + Z11 * N[2];
 			double S12 = X12 * N[0] + Y12 * N[1] + Z12 * N[2];
 			double S22 = X22 * N[0] + Y22 * N[1] + Z22 * N[2];
@@ -33464,6 +33467,7 @@ if(add)
 			double L2 = v1 * v1 * get_gij(0, 0) + 2 * v1 * v2 * get_gij(0, 1) + v2 * v2 * get_gij(1, 1);
 			double w2 = -get_gij(0, 0) * v1 - get_gij(0, 1) * v2;
 			double w1 = get_gij(0, 1) * v1 + get_gij(1, 1) * v2;
+			double dv2 = get_gij(0, 0) * get_gij(1, 1) - get_gij(0, 1) * get_gij(0, 1);
 
 			double scale = 1.0  /*/ trEij*/ / _ref->orefDv;
 			//double scale = 1.0 /_dv;
@@ -33475,7 +33479,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[2];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[2];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[2];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+			
 
 				double _xu = 0;
 				double _xv = 0;
@@ -33493,20 +33497,20 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-
+				double _S21 = _S12;
 				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 2);
 				double _g12 = _ref->d1[0][s] * get_gi(1, 2) + _ref->d1[1][s] * get_gi(0, 2);
 				double _g22 = 2 * _ref->d1[1][s] * get_gi(1, 2);
 
-				double dsc = -(_g11 * get_Gij(0, 0) + 2 * _g12 * get_Gij(0, 1) + _g22 * get_Gij(1, 1)) * sc;
+				double ddv2 = (_g11 * get_Gij(0, 0) + 2 * _g12 * get_Gij(0, 1) + _g22 * get_Gij(1, 1)) * dv2;
 				double dL2 = v1 * v1 * _g11 + 2 * v1 * v2 * _g12 + v2 * v2 * _g22;
 
 				double _w2 = -_g11 * v1 - _g12 * v2;
 				double _w1 = _g12 * v1 + _g22 * v2;
-				val = (_S11 * w1 * w1 + _S12 * w1 * w2 + _S21 * w2 * w1 + _S22 * w2 * w2) * sc / L2;
-				val += 2 * (S11 * w1 * _w1 + S12 * w1 * _w2 + S21 * w2 * _w1 + S22 * w2 * _w2) * sc / L2;
-				val += (S11 * w1 * w1 + S12 * w1 * w2 + S21 * w2 * w1 + S22 * w2 * w2) * dsc / L2;
-				val += -(S11 * w1 * w1 + S12 * w1 * w2 + S21 * w2 * w1 + S22 * w2 * w2) * sc / L2 / L2 * dL2;
+				val = (_S11 * w1 * w1 + _S12 * w1 * w2 + _S21 * w2 * w1 + _S22 * w2 * w2) / dv2 / L2;
+				val += 2 * (S11 * w1 * _w1 + S12 * w1 * _w2 + S21 * w2 * _w1 + S22 * w2 * _w2) / dv2 / L2;
+				val += -(S11 * w1 * w1 + S12 * w1 * w2 + S21 * w2 * w1 + S22 * w2 * w2) / dv2 / dv2 * ddv2 / L2;
+				val += -(S11 * w1 * w1 + S12 * w1 * w2 + S21 * w2 * w1 + S22 * w2 * w2) /dv2 / L2 / L2 * dL2;
 
 				*ptr1 = val;
 				ptr1++;
@@ -33692,8 +33696,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[2];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[2];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[2];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
-
+				
 				double _xu = 0;
 				double _xv = 0;
 				double _yu = 0;
@@ -33710,6 +33713,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
+				double _S21 = _S12;
 
 
 				val = (h11 * E11 * _S12 + h11 * E12 * _S22 + h12 * E21 * _S12 + h12 * E22 * _S22) * scale;
@@ -33805,8 +33809,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[0];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[0];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[0];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
-
+				
 				double _xu = _ref->d1[0][s];
 				double _xv = _ref->d1[1][s];
 				double _yu = 0;
@@ -33823,6 +33826,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
+				double _S21 = _S12;
 
 
 				val = (h11 * E11 * _S12 + h11 * E12 * _S22 + h12 * E21 * _S12 + h12 * E22 * _S22) * scale;
@@ -33918,7 +33922,7 @@ if(add)
 				double _S11 = _ref->d2[0][s] * N[1];// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
 				double _S12 = _ref->d2[1][s] * N[1];//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
 				double _S22 = _ref->d2[3][s] * N[1];//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				double _S21 = _S12;
+				
 
 				double _xu = 0;
 				double _xv = 0;
@@ -33936,7 +33940,7 @@ if(add)
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-
+				double _S21 = _S12;
 
 				val = (h11 * E11 * _S12 + h11 * E12 * _S22 + h12 * E21 * _S12 + h12 * E22 * _S22) * scale;
 				val -= (h21 * E11 * _S11 + h21 * E12 * _S21 + h22 * E21 * _S11 + h22 * E22 * _S21) * scale;
