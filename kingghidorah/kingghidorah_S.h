@@ -28587,7 +28587,7 @@ if(add)
 				double _g12 = _ref->d1[0][s] * get_gi2(1, 1) + _ref->d1[1][s] * get_gi2(0, 1);
 				double _g22 = 2 * _ref->d1[1][s] * get_gi2(1, 1);
 				double _g21 = _g12;
-				double ddv = 0.5 * (_g11 * get_Gij(20, 0) + 2 * _g12 * get_Gij2(0, 1) + _g22 * get_Gij2(1, 1)) * dv;
+				double ddv = 0.5 * (_g11 * get_Gij2(0, 0) + 2 * _g12 * get_Gij2(0, 1) + _g22 * get_Gij2(1, 1)) * dv;
 				_Nx += -Nx / dv / dv * ddv;
 				_Ny += -Ny / dv / dv * ddv;
 				_Nz += -Nz / dv / dv * ddv;
