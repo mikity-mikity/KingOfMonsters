@@ -2054,7 +2054,6 @@ namespace KingOfMonsters {
 				hy = get_gi2(1, 1);
 				hz = get_gi2(1, 2);
 			}
-
 			double Nx = gy * hz - gz * hy;
 			double Ny = gz * hx - gx * hz;
 			double Nz = gx * hy - gy * hx;
@@ -8763,14 +8762,10 @@ namespace KingOfMonsters {
 			Dx /= length;
 			Dy /= length;
 			double Dz = 0;
+			double Nx = N[0];
+			double Ny = N[1];
+			double Nz = N[2];
 
-			double Nx = get_gi(0, 1) * get_gi(1, 2) - get_gi(0, 2) * get_gi(1, 1);
-			double Ny = get_gi(0, 2) * get_gi(1, 0) - get_gi(0, 0) * get_gi(1, 2);
-			double Nz = get_gi(0, 0) * get_gi(1, 1) - get_gi(0, 1) * get_gi(1, 0);
-			double dv = sqrt(Nx * Nx + Ny * Ny + Nz * Nz);
-			Nx /= dv;
-			Ny /= dv;
-			Nz /= dv;
 			
 
 			double val = (Nx * Dx + Ny * Dy + Nz * Dz) ;
@@ -8779,13 +8774,9 @@ namespace KingOfMonsters {
 		}
 		void crossS_x(double* ptr,  double sx, double sy)
 		{
-			double Nx = get_gi(0, 1) * get_gi(1, 2) - get_gi(0, 2) * get_gi(1, 1);
-			double Ny = get_gi(0, 2) * get_gi(1, 0) - get_gi(0, 0) * get_gi(1, 2);
-			double Nz = get_gi(0, 0) * get_gi(1, 1) - get_gi(0, 1) * get_gi(1, 0);
-			double dv = sqrt(Nx * Nx + Ny * Ny + Nz * Nz);
-			Nx /= dv;
-			Ny /= dv;
-			Nz /= dv;
+			double Nx = N[0];
+			double Ny = N[1];
+			double Nz = N[2];
 			double Dx = sy;
 			double Dy = -sx;
 			double length = sqrt(Dx * Dx + Dy * Dy);
@@ -8818,13 +8809,9 @@ namespace KingOfMonsters {
 		}
 		void crossS_y(double* ptr,  double sx, double sy)
 		{
-			double Nx = get_gi(0, 1) * get_gi(1, 2) - get_gi(0, 2) * get_gi(1, 1);
-			double Ny = get_gi(0, 2) * get_gi(1, 0) - get_gi(0, 0) * get_gi(1, 2);
-			double Nz = get_gi(0, 0) * get_gi(1, 1) - get_gi(0, 1) * get_gi(1, 0);
-			double dv = sqrt(Nx * Nx + Ny * Ny + Nz * Nz);
-			Nx /= dv;
-			Ny /= dv;
-			Nz /= dv;
+			double Nx = N[0];
+			double Ny = N[1];
+			double Nz = N[2];
 			double Dx = sy;
 			double Dy = -sx;
 			double length = sqrt(Dx * Dx + Dy * Dy);
@@ -8857,13 +8844,9 @@ namespace KingOfMonsters {
 		}
 		void crossS_z(double* ptr,  double sx, double sy)
 		{
-			double Nx = get_gi(0, 1) * get_gi(1, 2) - get_gi(0, 2) * get_gi(1, 1);
-			double Ny = get_gi(0, 2) * get_gi(1, 0) - get_gi(0, 0) * get_gi(1, 2);
-			double Nz = get_gi(0, 0) * get_gi(1, 1) - get_gi(0, 1) * get_gi(1, 0);
-			double dv = sqrt(Nx * Nx + Ny * Ny + Nz * Nz);
-			Nx /= dv;
-			Ny /= dv;
-			Nz /= dv;
+			double Nx = N[0];
+			double Ny = N[1];
+			double Nz = N[2];
 			double Dx = sy;
 			double Dy = -sx;
 			double length = sqrt(Dx * Dx + Dy * Dy);
@@ -9985,49 +9968,34 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 }
 
 
-				double crossD(_memS* other)
+		double crossD(_memS* other)
 		{
 			
 
-			double Nx = get_gi(0, 1) * get_gi(1, 2) - get_gi(0, 2) * get_gi(1, 1);
-			double Ny = get_gi(0, 2) * get_gi(1, 0) - get_gi(0, 0) * get_gi(1, 2);
-			double Nz = get_gi(0, 0) * get_gi(1, 1) - get_gi(0, 1) * get_gi(1, 0);
-			double Dx = other->get_gi(0, 1) * other->get_gi(1, 2) - other->get_gi(0, 2) * other->get_gi(1, 1);
-			double Dy = other->get_gi(0, 2) * other->get_gi(1, 0) - other->get_gi(0, 0) * other->get_gi(1, 2);
-			double Dz = other->get_gi(0, 0) * other->get_gi(1, 1) - other->get_gi(0, 1) * other->get_gi(1, 0);
-			double dv = sqrt(Nx * Nx + Ny * Ny + Nz * Nz);
-			Nx /= dv;
-			Ny /= dv;
-			Nz /= dv;
-			double dv2 = sqrt(Dx * Dx + Dy * Dy + Dz * Dz);
-			Dx /= dv2;
-			Dy /= dv2;
-			Dz /= dv2;
+			double Nx = N[0];
+			double Ny = N[1];
+			double Nz = N[2];
+			double Dx = other->N[0];
+			double Dy = other->N[1];
+			double Dz = other->N[2];
+
+		
 			double val = (Nx * Dx + Ny * Dy + Nz * Dz);
 
 			return val;
 		}
 		void crossD_x(_memS* other, double* ptr,double *ptr2)
 		{
-			double Nx = get_gi(0, 1) * get_gi(1, 2) - get_gi(0, 2) * get_gi(1, 1);
-			double Ny = get_gi(0, 2) * get_gi(1, 0) - get_gi(0, 0) * get_gi(1, 2);
-			double Nz = get_gi(0, 0) * get_gi(1, 1) - get_gi(0, 1) * get_gi(1, 0);
-			double Dx = other->get_gi(0, 1) * other->get_gi(1, 2) - other->get_gi(0, 2) * other->get_gi(1, 1);
-			double Dy = other->get_gi(0, 2) * other->get_gi(1, 0) - other->get_gi(0, 0) * other->get_gi(1, 2);
-			double Dz = other->get_gi(0, 0) * other->get_gi(1, 1) - other->get_gi(0, 1) * other->get_gi(1, 0);
-			double dv = sqrt(Nx * Nx + Ny * Ny + Nz * Nz);
-			Nx /= dv;
-			Ny /= dv;
-			Nz /= dv;
-			double dv2 = sqrt(Dx * Dx + Dy * Dy + Dz * Dz);
-			Dx /= dv2;
-			Dy /= dv2;
-			Dz /= dv2;
+			double Nx = N[0];
+			double Ny = N[1];
+			double Nz = N[2];
+			double Dx = other->N[0];
+			double Dy = other->N[1];
+			double Dz = other->N[2];
 
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-			
 				double _x1 = _ref->d1[0][s];
 				double _x2 = _ref->d1[1][s];
 				double _y1 = 0;
@@ -10036,26 +10004,13 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 				double _z2 = 0;
 				double _g1N = _x1 * Nx + _y1 * Ny + _z1 * Nz;
 				double _g2N = _x2 * Nx + _y2 * Ny + _z2 * Nz;
-
-				double _Nx = (_y1 * get_gi(1, 2) - _z1 * get_gi(1, 1)) / dv; 
-				double _Ny = (_z1 * get_gi(1, 0) - _x1 * get_gi(1, 2)) / dv;
-				double _Nz = (_x1 * get_gi(1, 1) - _y1 * get_gi(1, 0)) / dv;
-				_Nx += (get_gi(0, 1) * _z2 - get_gi(0, 2) * _y2)/dv;
-				_Ny += (get_gi(0, 2) * _x2 - get_gi(0, 0) * _z2)/dv;
-				_Nz += (get_gi(0, 0) * _y2 - get_gi(0, 1) * _x2)/dv;
-
-				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 0);
-				double _g12 = _ref->d1[0][s] * get_gi(1, 0) + _ref->d1[1][s] * get_gi(0, 0);
-				double _g22 = 2 * _ref->d1[1][s] * get_gi(1, 0);
-
-				double ddv = 0.5 * (_g11 * get_Gij(0, 0) + 2 * _g12 * get_Gij(0, 1) + _g22 * get_Gij(1, 1)) * dv;
-				_Nx += -Nx / dv / dv * ddv;
-				_Ny += -Ny / dv / dv * ddv;
-				_Nz += -Nz / dv / dv * ddv;
+				double _Nx = -(_g1N * get_Gi(0, 0) + _g2N * get_Gi(1, 0));
+				double _Ny = -(_g1N * get_Gi(0, 1) + _g2N * get_Gi(1, 1));
+				double _Nz = -(_g1N * get_Gi(0, 2) + _g2N * get_Gi(1, 2));
 
 
-				double val = (_Nx * Dx + _Ny * Dy + _Nz * Dz) ;
-				
+				double val = (_Nx * Dx + _Ny * Dy + _Nz * Dz);
+
 				*ptr1 = val;
 				ptr1++;
 
@@ -10074,22 +10029,11 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 				double _g1N = _x1 * Dx + _y1 * Dy + _z1 * Dz;
 				double _g2N = _x2 * Dx + _y2 * Dy + _z2 * Dz;
 
-				double _Dx = (_y1 * other->get_gi(1, 2) - _z1 * other->get_gi(1, 1)) / dv2;
-				double _Dy = (_z1 * other->get_gi(1, 0) - _x1 * other->get_gi(1, 2)) / dv2;
-				double _Dz = (_x1 * other->get_gi(1, 1) - _y1 * other->get_gi(1, 0)) / dv2;
-				_Dx += (other->get_gi(0, 1) * _z2 - other->get_gi(0, 2) * _y2) / dv2;
-				_Dy += (other->get_gi(0, 2) * _x2 - other->get_gi(0, 0) * _z2) / dv2;
-				_Dz += (other->get_gi(0, 0) * _y2 - other->get_gi(0, 1) * _x2) / dv2;
+				double _Dx = -(_g1N * other->get_Gi(0, 0) + _g2N * other->get_Gi(1, 0));
+				double _Dy = -(_g1N * other->get_Gi(0, 1) + _g2N * other->get_Gi(1, 1));
+				double _Dz = -(_g1N * other->get_Gi(0, 2) + _g2N * other->get_Gi(1, 2));
+				
 
-
-				double _g11 = 2 * other->_ref->d1[0][s] * other->get_gi(0, 0);
-				double _g12 = other->_ref->d1[0][s] * other->get_gi(1, 0) + other->_ref->d1[1][s] * other->get_gi(0, 0);
-				double _g22 = 2 * other->_ref->d1[1][s] * other->get_gi(1, 0);
-
-				double ddv2 = 0.5 * (_g11 * other->get_Gij(0, 0) + 2 * _g12 * other->get_Gij(0, 1) + _g22 * other->get_Gij(1, 1)) * dv2;
-				_Dx += -Dx / dv2 / dv2 * ddv2;
-				_Dy += -Dy / dv2 / dv2 * ddv2;
-				_Dz += -Dz / dv2 / dv2 * ddv2;
 				double val = (Nx * _Dx + Ny * _Dy + Nz * _Dz);
 
 				*ptr1 = val;
@@ -10098,25 +10042,16 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 		}
 		void crossD_y(_memS* other, double* ptr, double* ptr2)
 		{
-			double Nx = get_gi(0, 1) * get_gi(1, 2) - get_gi(0, 2) * get_gi(1, 1);
-			double Ny = get_gi(0, 2) * get_gi(1, 0) - get_gi(0, 0) * get_gi(1, 2);
-			double Nz = get_gi(0, 0) * get_gi(1, 1) - get_gi(0, 1) * get_gi(1, 0);
-			double Dx = other->get_gi(0, 1) * other->get_gi(1, 2) - other->get_gi(0, 2) * other->get_gi(1, 1);
-			double Dy = other->get_gi(0, 2) * other->get_gi(1, 0) - other->get_gi(0, 0) * other->get_gi(1, 2);
-			double Dz = other->get_gi(0, 0) * other->get_gi(1, 1) - other->get_gi(0, 1) * other->get_gi(1, 0);
-			double dv = sqrt(Nx * Nx + Ny * Ny + Nz * Nz);
-			Nx /= dv;
-			Ny /= dv;
-			Nz /= dv;
-			double dv2 = sqrt(Dx * Dx + Dy * Dy + Dz * Dz);
-			Dx /= dv2;
-			Dy /= dv2;
-			Dz /= dv2;
+			double Nx = N[0];
+			double Ny = N[1];
+			double Nz = N[2];
+			double Dx = other->N[0];
+			double Dy = other->N[1];
+			double Dz = other->N[2];
 
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-
 				double _x1 = 0;
 				double _x2 = 0;
 				double _y1 = _ref->d1[0][s];
@@ -10125,34 +10060,20 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 				double _z2 = 0;
 				double _g1N = _x1 * Nx + _y1 * Ny + _z1 * Nz;
 				double _g2N = _x2 * Nx + _y2 * Ny + _z2 * Nz;
+				double _Nx = -(_g1N * get_Gi(0, 0) + _g2N * get_Gi(1, 0));
+				double _Ny = -(_g1N * get_Gi(0, 1) + _g2N * get_Gi(1, 1));
+				double _Nz = -(_g1N * get_Gi(0, 2) + _g2N * get_Gi(1, 2));
 
 
-				double _Nx = (_y1 * get_gi(1, 2) - _z1 * get_gi(1, 1)) / dv;
-				double _Ny = (_z1 * get_gi(1, 0) - _x1 * get_gi(1, 2)) / dv;
-				double _Nz = (_x1 * get_gi(1, 1) - _y1 * get_gi(1, 0)) / dv;
-				_Nx += (get_gi(0, 1) * _z2 - get_gi(0, 2) * _y2) / dv;
-				_Ny += (get_gi(0, 2) * _x2 - get_gi(0, 0) * _z2) / dv;
-				_Nz += (get_gi(0, 0) * _y2 - get_gi(0, 1) * _x2) / dv;
-
-				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 1);
-				double _g12 = _ref->d1[0][s] * get_gi(1, 1) + _ref->d1[1][s] * get_gi(0, 1);
-				double _g22 = 2 * _ref->d1[1][s] * get_gi(1, 1);
-
-				double ddv = 0.5 * (_g11 * get_Gij(0, 0) + 2 * _g12 * get_Gij(0, 1) + _g22 * get_Gij(1, 1)) * dv;
-				_Nx += -Nx / dv / dv * ddv;
-				_Ny += -Ny / dv / dv * ddv;
-				_Nz += -Nz / dv / dv * ddv;
 				double val = (_Nx * Dx + _Ny * Dy + _Nz * Dz);
 
 				*ptr1 = val;
 				ptr1++;
-
 			}
 
 			ptr1 = ptr2;
 			for (int s = 0; s < other->_ref->_nNode; s++)
 			{
-
 				double _x1 = 0;
 				double _x2 = 0;
 				double _y1 = other->_ref->d1[0][s];
@@ -10161,22 +10082,11 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 				double _z2 = 0;
 				double _g1N = _x1 * Dx + _y1 * Dy + _z1 * Dz;
 				double _g2N = _x2 * Dx + _y2 * Dy + _z2 * Dz;
-				double _Dx = (_y1 * other->get_gi(1, 2) - _z1 * other->get_gi(1, 1)) / dv2;
-				double _Dy = (_z1 * other->get_gi(1, 0) - _x1 * other->get_gi(1, 2)) / dv2;
-				double _Dz = (_x1 * other->get_gi(1, 1) - _y1 * other->get_gi(1, 0)) / dv2;
-				_Dx += (other->get_gi(0, 1) * _z2 - other->get_gi(0, 2) * _y2) / dv2;
-				_Dy += (other->get_gi(0, 2) * _x2 - other->get_gi(0, 0) * _z2) / dv2;
-				_Dz += (other->get_gi(0, 0) * _y2 - other->get_gi(0, 1) * _x2) / dv2;
 
-
-				double _g11 = 2 * other->_ref->d1[0][s] * other->get_gi(0, 1);
-				double _g12 = other->_ref->d1[0][s] * other->get_gi(1, 1) + other->_ref->d1[1][s] * other->get_gi(0, 1);
-				double _g22 = 2 * other->_ref->d1[1][s] * other->get_gi(1, 1);
-
-				double ddv2 = 0.5 * (_g11 * other->get_Gij(0, 0) + 2 * _g12 * other->get_Gij(0, 1) + _g22 * other->get_Gij(1, 1)) * dv2;
-				_Dx += -Dx / dv2 / dv2 * ddv2;
-				_Dy += -Dy / dv2 / dv2 * ddv2;
-				_Dz += -Dz / dv2 / dv2 * ddv2;
+				double _Dx = -(_g1N * other->get_Gi(0, 0) + _g2N * other->get_Gi(1, 0));
+				double _Dy = -(_g1N * other->get_Gi(0, 1) + _g2N * other->get_Gi(1, 1));
+				double _Dz = -(_g1N * other->get_Gi(0, 2) + _g2N * other->get_Gi(1, 2));
+				
 				double val = (Nx * _Dx + Ny * _Dy + Nz * _Dz);
 
 				*ptr1 = val;
@@ -10185,20 +10095,12 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 		}
 		void crossD_z(_memS* other, double* ptr, double* ptr2)
 		{
-			double Nx = get_gi(0, 1) * get_gi(1, 2) - get_gi(0, 2) * get_gi(1, 1);
-			double Ny = get_gi(0, 2) * get_gi(1, 0) - get_gi(0, 0) * get_gi(1, 2);
-			double Nz = get_gi(0, 0) * get_gi(1, 1) - get_gi(0, 1) * get_gi(1, 0);
-			double Dx = other->get_gi(0, 1) * other->get_gi(1, 2) - other->get_gi(0, 2) * other->get_gi(1, 1);
-			double Dy = other->get_gi(0, 2) * other->get_gi(1, 0) - other->get_gi(0, 0) * other->get_gi(1, 2);
-			double Dz = other->get_gi(0, 0) * other->get_gi(1, 1) - other->get_gi(0, 1) * other->get_gi(1, 0);
-			double dv = sqrt(Nx * Nx + Ny * Ny + Nz * Nz);
-			Nx /= dv;
-			Ny /= dv;
-			Nz /= dv;
-			double dv2 = sqrt(Dx * Dx + Dy * Dy + Dz * Dz);
-			Dx /= dv2;
-			Dy /= dv2;
-			Dz /= dv2;
+			double Nx = N[0];
+			double Ny = N[1];
+			double Nz = N[2];
+			double Dx = other->N[0];
+			double Dy = other->N[1];
+			double Dz = other->N[2];
 
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -10212,23 +10114,10 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 				double _z2 = _ref->d1[1][s];
 				double _g1N = _x1 * Nx + _y1 * Ny + _z1 * Nz;
 				double _g2N = _x2 * Nx + _y2 * Ny + _z2 * Nz;
-
-
-				double _Nx = (_y1 * get_gi(1, 2) - _z1 * get_gi(1, 1)) / dv;
-				double _Ny = (_z1 * get_gi(1, 0) - _x1 * get_gi(1, 2)) / dv;
-				double _Nz = (_x1 * get_gi(1, 1) - _y1 * get_gi(1, 0)) / dv;
-				_Nx += (get_gi(0, 1) * _z2 - get_gi(0, 2) * _y2) / dv;
-				_Ny += (get_gi(0, 2) * _x2 - get_gi(0, 0) * _z2) / dv;
-				_Nz += (get_gi(0, 0) * _y2 - get_gi(0, 1) * _x2) / dv;
-
-				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 2);
-				double _g12 = _ref->d1[0][s] * get_gi(1, 2) + _ref->d1[1][s] * get_gi(0, 2);
-				double _g22 = 2 * _ref->d1[1][s] * get_gi(1, 2);
-
-				double ddv = 0.5 * (_g11 * get_Gij(0, 0) + 2 * _g12 * get_Gij(0, 1) + _g22 * get_Gij(1, 1)) * dv;
-				_Nx += -Nx / dv / dv * ddv;
-				_Ny += -Ny / dv / dv * ddv;
-				_Nz += -Nz / dv / dv * ddv;
+				double _Nx = -(_g1N * get_Gi(0, 0) + _g2N * get_Gi(1, 0));
+				double _Ny = -(_g1N * get_Gi(0, 1) + _g2N * get_Gi(1, 1));
+				double _Nz = -(_g1N * get_Gi(0, 2) + _g2N * get_Gi(1, 2));
+			
 				double val = (_Nx * Dx + _Ny * Dy + _Nz * Dz);
 
 				*ptr1 = val;
@@ -10239,7 +10128,6 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 			ptr1 = ptr2;
 			for (int s = 0; s < other->_ref->_nNode; s++)
 			{
-
 				double _x1 = 0;
 				double _x2 = 0;
 				double _y1 = 0;
@@ -10249,22 +10137,9 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 				double _g1N = _x1 * Dx + _y1 * Dy + _z1 * Dz;
 				double _g2N = _x2 * Dx + _y2 * Dy + _z2 * Dz;
 
-				double _Dx = (_y1 * other->get_gi(1, 2) - _z1 * other->get_gi(1, 1)) / dv2;
-				double _Dy = (_z1 * other->get_gi(1, 0) - _x1 * other->get_gi(1, 2)) / dv2;
-				double _Dz = (_x1 * other->get_gi(1, 1) - _y1 * other->get_gi(1, 0)) / dv2;
-				_Dx += (other->get_gi(0, 1) * _z2 - other->get_gi(0, 2) * _y2) / dv2;
-				_Dy += (other->get_gi(0, 2) * _x2 - other->get_gi(0, 0) * _z2) / dv2;
-				_Dz += (other->get_gi(0, 0) * _y2 - other->get_gi(0, 1) * _x2) / dv2;
-
-				double _g11 = 2 * other->_ref->d1[0][s] * other->get_gi(0, 2);
-				double _g12 = other->_ref->d1[0][s] * other->get_gi(1, 2) + other->_ref->d1[1][s] * other->get_gi(0, 2);
-				double _g22 = 2 * other->_ref->d1[1][s] * other->get_gi(1, 2);
-
-				double ddv2 = 0.5 * (_g11 * other->get_Gij(0, 0) + 2 * _g12 * other->get_Gij(0, 1) + _g22 * other->get_Gij(1, 1)) * dv2;
-				_Dx += -Dx / dv2 / dv2 * ddv2;
-				_Dy += -Dy / dv2 / dv2 * ddv2;
-				_Dz += -Dz / dv2 / dv2 * ddv2;
-
+				double _Dx = -(_g1N * other->get_Gi(0, 0) + _g2N * other->get_Gi(1, 0));
+				double _Dy = -(_g1N * other->get_Gi(0, 1) + _g2N * other->get_Gi(1, 1));
+				double _Dz = -(_g1N * other->get_Gi(0, 2) + _g2N * other->get_Gi(1, 2));
 
 				double val = (Nx * _Dx + Ny * _Dy + Nz * _Dz);
 
@@ -28366,343 +28241,299 @@ if(add)
 			double k2 = e12 * p1 + e22 * p2;
 			return -k1;
 		}
-		double align_mix2K(double v1, double v2, double s1, double s2, double w1, double w2)
-		{
-			double val = 0;
-
-			double E11 = w1 * (v1 * v1) + w2 * (s1 * s1);
-			double E12 = w1 * (v1 * v2) + w2 * (s1 * s2);
-			double E21 = w1 * (v2 * v1) + w2 * (s2 * s1);
-			double E22 = w1 * (v2 * v2) + w2 * (s2 * s2);
-
-			E11 = _ref->__K11;
-			E21 = _ref->__K21;
-			E12 = _ref->__K12;
-			E22 = _ref->__K22;
-
 		
-			double X11 = 0, X12 = 0, X22 = 0;
-			double Y11 = 0, Y12 = 0, Y22 = 0;
-			double Z11 = 0, Z12 = 0, Z22 = 0;
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				X11 += _ref->d2[0][s] * _ref->node[s * 3 + 0];
-				X12 += _ref->d2[1][s] * _ref->node[s * 3 + 0];
-				X22 += _ref->d2[3][s] * _ref->node[s * 3 + 0];
-				Y11 += _ref->d2[0][s] * _ref->node[s * 3 + 1];
-				Y12 += _ref->d2[1][s] * _ref->node[s * 3 + 1];
-				Y22 += _ref->d2[3][s] * _ref->node[s * 3 + 1];
-				Z11 += _ref->d2[0][s] * _ref->buf_z[s];
-				Z12 += _ref->d2[1][s] * _ref->buf_z[s];
-				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
-			}
-			double Nx = get_gi2(0, 1) * get_gi2(1, 2) - get_gi2(0, 2) * get_gi2(1, 1);
-			double Ny = get_gi2(0, 2) * get_gi2(1, 0) - get_gi2(0, 0) * get_gi2(1, 2);
-			double Nz = get_gi2(0, 0) * get_gi2(1, 1) - get_gi2(0, 1) * get_gi2(1, 0);
-			dv = sqrt(Nx * Nx + Ny * Ny + Nz * Nz);
-			Nx /= dv;
-			Ny /= dv;
-			Nz /= dv;
-			double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
-			double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
-			double S22 = X22 * Nx + Y22 * Ny + Z22 * Nz;
-			double S21 = S12;
-			//double iJ = _ref->orefDv / _dv;
-
-
-			double scale = 1.0 / _ref->orefDv;
-			//double scale = 1.0 /  _dv;
-
-			val = (get_gij2(0,0) * E11 * S12 + get_gij2(0, 0) * E12 * S22 + get_gij2(0, 1) * E21 * S12 + get_gij2(0, 1) * E22 * S22) * scale;
-			val -= (get_gij2(1, 0) * E11 * S11 + get_gij2(1, 0) * E12 * S21 + get_gij2(1, 1) * E21 * S11 + get_gij2(1, 1) * E22 * S21) * scale;
-
-			return val;
-
-		}
-		void align_mix2K_x(double *ptr, double v1, double v2, double s1, double s2, double w1, double w2)
-		{
-			double val = 0;
-
-			double E11 = w1 * (v1 * v1) + w2 * (s1 * s1);
-			double E12 = w1 * (v1 * v2) + w2 * (s1 * s2);
-			double E21 = w1 * (v2 * v1) + w2 * (s2 * s1);
-			double E22 = w1 * (v2 * v2) + w2 * (s2 * s2);
-
-			E11 = _ref->__K11;
-			E21 = _ref->__K21;
-			E12 = _ref->__K12;
-			E22 = _ref->__K22;
-
-
-			double X11 = 0, X12 = 0, X22 = 0;
-			double Y11 = 0, Y12 = 0, Y22 = 0;
-			double Z11 = 0, Z12 = 0, Z22 = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				X11 += _ref->d2[0][s] * _ref->node[s * 3 + 0];
-				X12 += _ref->d2[1][s] * _ref->node[s * 3 + 0];
-				X22 += _ref->d2[3][s] * _ref->node[s * 3 + 0];
-				Y11 += _ref->d2[0][s] * _ref->node[s * 3 + 1];
-				Y12 += _ref->d2[1][s] * _ref->node[s * 3 + 1];
-				Y22 += _ref->d2[3][s] * _ref->node[s * 3 + 1];
-				Z11 += _ref->d2[0][s] * _ref->buf_z[s];
-				Z12 += _ref->d2[1][s] * _ref->buf_z[s];
-				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
-			}
-			double Nx = get_gi2(0, 1) * get_gi2(1, 2) - get_gi2(0, 2) * get_gi2(1, 1);
-			double Ny = get_gi2(0, 2) * get_gi2(1, 0) - get_gi2(0, 0) * get_gi2(1, 2);
-			double Nz = get_gi2(0, 0) * get_gi2(1, 1) - get_gi2(0, 1) * get_gi2(1, 0);
-			dv = sqrt(Nx * Nx + Ny * Ny + Nz * Nz);
-			Nx /= dv;
-			Ny /= dv;
-			Nz /= dv;
-			double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
-			double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
-			double S22 = X22 * Nx + Y22 * Ny + Z22 * Nz;
-			double S21 = S12;
-
-			double* ptr1 = ptr;
-
-			double scale = 1.0 / _ref->orefDv;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-			
-				double _S11 = _ref->d2[0][s] * Nx;// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
-				double _S12 = _ref->d2[1][s] * Nx;//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
-				double _S22 = _ref->d2[3][s] * Nx;//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-			
-
-				double _xu = _ref->d1[0][s];
-				double _xv = _ref->d1[1][s];
-				double _yu = 0;
-				double _yv = 0;
-				double _zu = 0;
-				double _zv = 0;
-
-				double _g1N = _xu * Nx + _yu * Ny + _zu * Nz;
-				double _g2N = _xv * Nx + _yv * Ny + _zv * Nz;
-				double _Nx = (_yu * get_gi2(1, 2) - _zu * get_gi2(1, 1)) / dv;
-				double _Ny = (_zu * get_gi2(1, 0) - _xu * get_gi2(1, 2)) / dv;
-				double _Nz = (_xu * get_gi2(1, 1) - _yu * get_gi2(1, 0)) / dv;
-				_Nx += (get_gi2(0, 1) * _zv - get_gi2(0, 2) * _yv) / dv;
-				_Ny += (get_gi2(0, 2) * _xv - get_gi2(0, 0) * _zv) / dv;
-				_Nz += (get_gi2(0, 0) * _yv - get_gi2(0, 1) * _xv) / dv;
-				double _g11 = 2 * _ref->d1[0][s] * get_gi2(0, 0);
-				double _g12 = _ref->d1[0][s] * get_gi2(1, 0) + _ref->d1[1][s] * get_gi2(0, 0);
-				double _g22 = 2 * _ref->d1[1][s] * get_gi2(1, 0);
-				double _g21 = _g12;
-				double ddv = 0.5 * (_g11 * get_Gij2(0, 0) + 2 * _g12 * get_Gij2(0, 1) + _g22 * get_Gij2(1, 1)) * dv;
-				_Nx += -Nx / dv / dv * ddv;
-				_Ny += -Ny / dv / dv * ddv;
-				_Nz += -Nz / dv / dv * ddv;
-
-
-				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
-				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
-				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-				double _S21 = _S12; 
-				
-				val = (get_gij2(0, 0) * E11 * _S12 + get_gij2(0, 0) * E12 * _S22 + get_gij2(0, 1) * E21 * _S12 + get_gij2(0, 1) * E22 * _S22) * scale;
-				val -= (get_gij2(1, 0) * E11 * _S11 + get_gij2(1, 0) * E12 * _S21 + get_gij2(1, 1) * E21 * _S11 + get_gij2(1, 1) * E22 * _S21) * scale;
-				val += (_g11 * E11 * S12 + _g11 * E12 * S22 + _g12 * E21 * S12 + _g12 * E22 * S22) * scale;
-				val -= (_g21 * E11 * S11 +_g21 * E12 * S21 + _g22* E21 * S11 + _g22 * E22 * S21) * scale;
-
-			*ptr1 = val;
-			ptr1++;
-			}
-
-		}
-
-
-		void align_mix2K_y(double* ptr, double v1, double v2, double s1, double s2, double w1, double w2)
-		{
-			double val = 0;
-
-			double E11 = w1 * (v1 * v1) + w2 * (s1 * s1);
-			double E12 = w1 * (v1 * v2) + w2 * (s1 * s2);
-			double E21 = w1 * (v2 * v1) + w2 * (s2 * s1);
-			double E22 = w1 * (v2 * v2) + w2 * (s2 * s2);
-
-			E11 = _ref->__K11;
-			E21 = _ref->__K21;
-			E12 = _ref->__K12;
-			E22 = _ref->__K22;
-
-
-			double X11 = 0, X12 = 0, X22 = 0;
-			double Y11 = 0, Y12 = 0, Y22 = 0;
-			double Z11 = 0, Z12 = 0, Z22 = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				X11 += _ref->d2[0][s] * _ref->node[s * 3 + 0];
-				X12 += _ref->d2[1][s] * _ref->node[s * 3 + 0];
-				X22 += _ref->d2[3][s] * _ref->node[s * 3 + 0];
-				Y11 += _ref->d2[0][s] * _ref->node[s * 3 + 1];
-				Y12 += _ref->d2[1][s] * _ref->node[s * 3 + 1];
-				Y22 += _ref->d2[3][s] * _ref->node[s * 3 + 1];
-				Z11 += _ref->d2[0][s] * _ref->buf_z[s];
-				Z12 += _ref->d2[1][s] * _ref->buf_z[s];
-				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
-			}
 		
-			double Nx = get_gi2(0, 1) * get_gi2(1, 2) - get_gi2(0, 2) * get_gi2(1, 1);
-			double Ny = get_gi2(0, 2) * get_gi2(1, 0) - get_gi2(0, 0) * get_gi2(1, 2);
-			double Nz = get_gi2(0, 0) * get_gi2(1, 1) - get_gi2(0, 1) * get_gi2(1, 0);
-			dv = sqrt(Nx * Nx + Ny * Ny + Nz * Nz);
-			Nx /= dv;
-			Ny /= dv;
-			Nz /= dv;
-			double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
-			double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
-			double S22 = X22 * Nx + Y22 * Ny + Z22 * Nz;
-			double S21 = S12;
-			double* ptr1 = ptr;
-
-			double scale = 1.0 / _ref->orefDv;
-			for (int s = 0; s < _ref->_nNode; s++)
+			double align_mix2K(double v1, double v2, double s1, double s2, double w1, double w2)
 			{
+				double val = 0;
 
-				double _S11 = _ref->d2[0][s] * Ny;// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
-				double _S12 = _ref->d2[1][s] * Ny;//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
-				double _S22 = _ref->d2[3][s] * Ny;//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-			
+				double E11 = _ref->__K11;
+				double E21 = _ref->__K21;
+				double E12 = _ref->__K12;
+				double E22 = _ref->__K22;
 
-				double _xu = 0;
-				double _xv = 0;
-				double _yu = _ref->d1[0][s];
-				double _yv = _ref->d1[1][s];
-				double _zu = 0;
-				double _zv = 0;
 
-				double _g1N = _xu * Nx + _yu * Ny + _zu * Nz;
-				double _g2N = _xv * Nx + _yv * Ny + _zv * Nz;
-				double _Nx = (_yu * get_gi2(1, 2) - _zu * get_gi2(1, 1)) / dv;
-				double _Ny = (_zu * get_gi2(1, 0) - _xu * get_gi2(1, 2)) / dv;
-				double _Nz = (_xu * get_gi2(1, 1) - _yu * get_gi2(1, 0)) / dv;
-				_Nx += (get_gi2(0, 1) * _zv - get_gi2(0, 2) * _yv) / dv;
-				_Ny += (get_gi2(0, 2) * _xv - get_gi2(0, 0) * _zv) / dv;
-				_Nz += (get_gi2(0, 0) * _yv - get_gi2(0, 1) * _xv) / dv;
-				double _g11 = 2 * _ref->d1[0][s] * get_gi2(0, 1);
-				double _g12 = _ref->d1[0][s] * get_gi2(1, 1) + _ref->d1[1][s] * get_gi2(0, 1);
-				double _g22 = 2 * _ref->d1[1][s] * get_gi2(1, 1);
-				double _g21 = _g12;
-				double ddv = 0.5 * (_g11 * get_Gij2(0, 0) + 2 * _g12 * get_Gij2(0, 1) + _g22 * get_Gij2(1, 1)) * dv;
-				_Nx += -Nx / dv / dv * ddv;
-				_Ny += -Ny / dv / dv * ddv;
-				_Nz += -Nz / dv / dv * ddv;
+				double X11 = 0, X12 = 0, X22 = 0;
+				double Y11 = 0, Y12 = 0, Y22 = 0;
+				double Z11 = 0, Z12 = 0, Z22 = 0;
 
-				
-				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
-				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
-				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-				double _S21 = _S12; 
-				
-				val = (get_gij2(0, 0) * E11 * _S12 + get_gij2(0, 0) * E12 * _S22 + get_gij2(0, 1) * E21 * _S12 + get_gij2(0, 1) * E22 * _S22) * scale;
-				val -= (get_gij2(1, 0) * E11 * _S11 + get_gij2(1, 0) * E12 * _S21 + get_gij2(1, 1) * E21 * _S11 + get_gij2(1, 1) * E22 * _S21) * scale;
-				val += (_g11 * E11 * S12 + _g11 * E12 * S22 + _g12 * E21 * S12 + _g12 * E22 * S22) * scale;
-				val -= (_g21 * E11 * S11 + _g21 * E12 * S21 + _g22 * E21 * S11 + _g22 * E22 * S21) * scale;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					X11 += _ref->d2[0][s] * _ref->node[s * 3 + 0];
+					X12 += _ref->d2[1][s] * _ref->node[s * 3 + 0];
+					X22 += _ref->d2[3][s] * _ref->node[s * 3 + 0];
+					Y11 += _ref->d2[0][s] * _ref->node[s * 3 + 1];
+					Y12 += _ref->d2[1][s] * _ref->node[s * 3 + 1];
+					Y22 += _ref->d2[3][s] * _ref->node[s * 3 + 1];
+					Z11 += _ref->d2[0][s] * _ref->buf_z[s];
+					Z12 += _ref->d2[1][s] * _ref->buf_z[s];
+					Z22 += _ref->d2[3][s] * _ref->buf_z[s];
+				}
+				double Nx = N[0];
+				double Ny = N[1];
+				double Nz = N[2];
 
-				*ptr1 = val;
-				ptr1++;
+				double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
+				double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
+				double S22 = X22 * Nx + Y22 * Ny + Z22 * Nz;
+				double S21 = S12;
+				//double iJ = _ref->orefDv / _dv;
+
+
+				double scale = 1.0 / _ref->orefDv;
+				//double scale = 1.0 /  _dv;
+
+				val = (get_gij2(0, 0) * E11 * S12 + get_gij2(0, 0) * E12 * S22 + get_gij2(0, 1) * E21 * S12 + get_gij2(0, 1) * E22 * S22) * scale;
+				val -= (get_gij2(1, 0) * E11 * S11 + get_gij2(1, 0) * E12 * S21 + get_gij2(1, 1) * E21 * S11 + get_gij2(1, 1) * E22 * S21) * scale;
+
+				return val;
+
+			}
+			void align_mix2K_x(double* ptr, double v1, double v2, double s1, double s2, double w1, double w2)
+			{
+				double val = 0;
+				double E11 = _ref->__K11;
+				double E21 = _ref->__K21;
+				double E12 = _ref->__K12;
+				double E22 = _ref->__K22;
+
+
+
+
+				double X11 = 0, X12 = 0, X22 = 0;
+				double Y11 = 0, Y12 = 0, Y22 = 0;
+				double Z11 = 0, Z12 = 0, Z22 = 0;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					X11 += _ref->d2[0][s] * _ref->node[s * 3 + 0];
+					X12 += _ref->d2[1][s] * _ref->node[s * 3 + 0];
+					X22 += _ref->d2[3][s] * _ref->node[s * 3 + 0];
+					Y11 += _ref->d2[0][s] * _ref->node[s * 3 + 1];
+					Y12 += _ref->d2[1][s] * _ref->node[s * 3 + 1];
+					Y22 += _ref->d2[3][s] * _ref->node[s * 3 + 1];
+					Z11 += _ref->d2[0][s] * _ref->buf_z[s];
+					Z12 += _ref->d2[1][s] * _ref->buf_z[s];
+					Z22 += _ref->d2[3][s] * _ref->buf_z[s];
+				}
+				double Nx = N[0];
+				double Ny = N[1];
+				double Nz = N[2];
+				double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
+				double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
+				double S22 = X22 * Nx + Y22 * Ny + Z22 * Nz;
+				double S21 = S12;
+				double* ptr1 = ptr;
+
+				double scale = 1.0 / _ref->orefDv;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+
+					double _S11 = _ref->d2[0][s] * Nx;// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+					double _S12 = _ref->d2[1][s] * Nx;//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+					double _S22 = _ref->d2[3][s] * Nx;//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+
+					double _xu = _ref->d1[0][s];
+					double _xv = _ref->d1[1][s];
+					double _yu = 0;
+					double _yv = 0;
+					double _zu = 0;
+					double _zv = 0;
+
+					double _g1N = _xu * Nx + _yu * Ny + _zu * Nz;
+					double _g2N = _xv * Nx + _yv * Ny + _zv * Nz;
+					double _Nx = -(_g1N * get_Gi2(0, 0) + _g2N * get_Gi2(1, 0));
+					double _Ny = -(_g1N * get_Gi2(0, 1) + _g2N * get_Gi2(1, 1));
+					double _Nz = -(_g1N * get_Gi2(0, 2) + _g2N * get_Gi2(1, 2));
+
+
+					double _g11 = 2 * _ref->d1[0][s] * get_gi2(0, 0);
+					double _g12 = _ref->d1[0][s] * get_gi2(1, 0) + _ref->d1[1][s] * get_gi2(0, 0);
+					double _g22 = 2 * _ref->d1[1][s] * get_gi2(1, 0);
+					double _g21 = _g12;
+
+
+					_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
+					_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
+					_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
+					double _S21 = _S12;
+
+
+
+					val = (get_gij2(0, 0) * E11 * _S12 + get_gij2(0, 0) * E12 * _S22 + get_gij2(0, 1) * E21 * _S12 + get_gij2(0, 1) * E22 * _S22) * scale;
+					val -= (get_gij2(1, 0) * E11 * _S11 + get_gij2(1, 0) * E12 * _S21 + get_gij2(1, 1) * E21 * _S11 + get_gij2(1, 1) * E22 * _S21) * scale;
+					val += (_g11 * E11 * S12 + _g11 * E12 * S22 + _g12 * E21 * S12 + _g12 * E22 * S22) * scale;
+					val -= (_g21 * E11 * S11 + _g21 * E12 * S21 + _g22 * E21 * S11 + _g22 * E22 * S21) * scale;
+
+					*ptr1 = val;
+					ptr1++;
+				}
+
 			}
 
-		}
 
-		void align_mix2K_z(double* ptr, double v1, double v2, double s1, double s2, double w1, double w2)
-		{
-			double val = 0;
-
-			double E11 = w1 * (v1 * v1) + w2 * (s1 * s1);
-			double E12 = w1 * (v1 * v2) + w2 * (s1 * s2);
-			double E21 = w1 * (v2 * v1) + w2 * (s2 * s1);
-			double E22 = w1 * (v2 * v2) + w2 * (s2 * s2);
-
-			E11 = _ref->__K11;
-			E21 = _ref->__K21;
-			E12 = _ref->__K12;
-			E22 = _ref->__K22;
-
-
-			double X11 = 0, X12 = 0, X22 = 0;
-			double Y11 = 0, Y12 = 0, Y22 = 0;
-			double Z11 = 0, Z12 = 0, Z22 = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
+			void align_mix2K_y(double* ptr, double v1, double v2, double s1, double s2, double w1, double w2)
 			{
-				X11 += _ref->d2[0][s] * _ref->node[s * 3 + 0];
-				X12 += _ref->d2[1][s] * _ref->node[s * 3 + 0];
-				X22 += _ref->d2[3][s] * _ref->node[s * 3 + 0];
-				Y11 += _ref->d2[0][s] * _ref->node[s * 3 + 1];
-				Y12 += _ref->d2[1][s] * _ref->node[s * 3 + 1];
-				Y22 += _ref->d2[3][s] * _ref->node[s * 3 + 1];
-				Z11 += _ref->d2[0][s] * _ref->buf_z[s];
-				Z12 += _ref->d2[1][s] * _ref->buf_z[s];
-				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
-			}
-		
-			double Nx = get_gi2(0, 1) * get_gi2(1, 2) - get_gi2(0, 2) * get_gi2(1, 1);
-			double Ny = get_gi2(0, 2) * get_gi2(1, 0) - get_gi2(0, 0) * get_gi2(1, 2);
-			double Nz = get_gi2(0, 0) * get_gi2(1, 1) - get_gi2(0, 1) * get_gi2(1, 0);
-			dv = sqrt(Nx * Nx + Ny * Ny + Nz * Nz);
-			Nx /= dv;
-			Ny /= dv;
-			Nz /= dv;
-			double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
-			double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
-			double S22 = X22 * Nx + Y22 * Ny + Z22 * Nz;
-			double S21 = S12;
-
-			double* ptr1 = ptr;
-
-			double scale = 1.0 / _ref->orefDv;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-
-				double _S11 = _ref->d2[0][s] * Nz;// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
-				double _S12 = _ref->d2[1][s] * Nz;//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
-				double _S22 = _ref->d2[3][s] * Nz;//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-				
-
-				double _xu = 0;
-				double _xv = 0;
-				double _yu = 0;
-				double _yv = 0;
-				double _zu = _ref->d1[0][s];
-				double _zv = _ref->d1[1][s];
-
-				double _g1N = _xu * Nx + _yu * Ny + _zu * Nz;
-				double _g2N = _xv * Nx + _yv * Ny + _zv * Nz;
-				double _Nx = (_yu * get_gi2(1, 2) - _zu * get_gi2(1, 1)) / dv;
-				double _Ny = (_zu * get_gi2(1, 0) - _xu * get_gi2(1, 2)) / dv;
-				double _Nz = (_xu * get_gi2(1, 1) - _yu * get_gi2(1, 0)) / dv;
-				_Nx += (get_gi2(0, 1) * _zv - get_gi2(0, 2) * _yv) / dv;
-				_Ny += (get_gi2(0, 2) * _xv - get_gi2(0, 0) * _zv) / dv;
-				_Nz += (get_gi2(0, 0) * _yv - get_gi2(0, 1) * _xv) / dv;
-				double _g11 = 2 * _ref->d1[0][s] * get_gi2(0, 2);
-				double _g12 = _ref->d1[0][s] * get_gi2(1, 2) + _ref->d1[1][s] * get_gi2(0, 2);
-				double _g22 = 2 * _ref->d1[1][s] * get_gi2(1,2);
-				double _g21 = _g12;
-				double ddv = 0.5 * (_g11 * get_Gij2(0, 0) + 2 * _g12 * get_Gij2(0, 1) + _g22 * get_Gij2(1, 1)) * dv;
-				_Nx += -Nx / dv / dv * ddv;
-				_Ny += -Ny / dv / dv * ddv;
-				_Nz += -Nz / dv / dv * ddv;
+				double val = 0;
+				double E11 = _ref->__K11;
+				double E21 = _ref->__K21;
+				double E12 = _ref->__K12;
+				double E22 = _ref->__K22;
 
 
-				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
-				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
-				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
-				double _S21 = _S12; 
-				
-				val = (get_gij2(0, 0) * E11 * _S12 + get_gij2(0, 0) * E12 * _S22 + get_gij2(0, 1) * E21 * _S12 + get_gij2(0, 1) * E22 * _S22) * scale;
-				val -= (get_gij2(1, 0) * E11 * _S11 + get_gij2(1, 0) * E12 * _S21 + get_gij2(1, 1) * E21 * _S11 + get_gij2(1, 1) * E22 * _S21) * scale;
-				val += (_g11 * E11 * S12 + _g11 * E12 * S22 + _g12 * E21 * S12 + _g12 * E22 * S22) * scale;
-				val -= (_g21 * E11 * S11 + _g21 * E12 * S21 + _g22 * E21 * S11 + _g22 * E22 * S21) * scale;
 
-				*ptr1 = val;
-				ptr1++;
+
+				double X11 = 0, X12 = 0, X22 = 0;
+				double Y11 = 0, Y12 = 0, Y22 = 0;
+				double Z11 = 0, Z12 = 0, Z22 = 0;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					X11 += _ref->d2[0][s] * _ref->node[s * 3 + 0];
+					X12 += _ref->d2[1][s] * _ref->node[s * 3 + 0];
+					X22 += _ref->d2[3][s] * _ref->node[s * 3 + 0];
+					Y11 += _ref->d2[0][s] * _ref->node[s * 3 + 1];
+					Y12 += _ref->d2[1][s] * _ref->node[s * 3 + 1];
+					Y22 += _ref->d2[3][s] * _ref->node[s * 3 + 1];
+					Z11 += _ref->d2[0][s] * _ref->buf_z[s];
+					Z12 += _ref->d2[1][s] * _ref->buf_z[s];
+					Z22 += _ref->d2[3][s] * _ref->buf_z[s];
+				}
+				double Nx = N[0];
+				double Ny = N[1];
+				double Nz = N[2];
+				double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
+				double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
+				double S22 = X22 * Nx + Y22 * Ny + Z22 * Nz;
+				double S21 = S12;
+				double* ptr1 = ptr;
+
+				double scale = 1.0 / _ref->orefDv;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+
+					double _S11 = _ref->d2[0][s] * Ny;// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+					double _S12 = _ref->d2[1][s] * Ny;//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+					double _S22 = _ref->d2[3][s] * Ny;//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+
+					double _xu = 0;
+					double _xv = 0;
+					double _yu = _ref->d1[0][s];
+					double _yv = _ref->d1[1][s];
+					double _zu = 0;
+					double _zv = 0;
+
+					double _g1N = _xu * Nx + _yu * Ny + _zu * Nz;
+					double _g2N = _xv * Nx + _yv * Ny + _zv * Nz;
+					double _Nx = -(_g1N * get_Gi2(0, 0) + _g2N * get_Gi2(1, 0));
+					double _Ny = -(_g1N * get_Gi2(0, 1) + _g2N * get_Gi2(1, 1));
+					double _Nz = -(_g1N * get_Gi2(0, 2) + _g2N * get_Gi2(1, 2));
+
+
+					double _g11 = 2 * _ref->d1[0][s] * get_gi2(0, 1);
+					double _g12 = _ref->d1[0][s] * get_gi2(1, 1) + _ref->d1[1][s] * get_gi2(0, 1);
+					double _g22 = 2 * _ref->d1[1][s] * get_gi2(1, 1);
+					double _g21 = _g12;
+
+
+					_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
+					_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
+					_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
+					double _S21 = _S12;
+
+
+
+					val = (get_gij2(0, 0) * E11 * _S12 + get_gij2(0, 0) * E12 * _S22 + get_gij2(0, 1) * E21 * _S12 + get_gij2(0, 1) * E22 * _S22) * scale;
+					val -= (get_gij2(1, 0) * E11 * _S11 + get_gij2(1, 0) * E12 * _S21 + get_gij2(1, 1) * E21 * _S11 + get_gij2(1, 1) * E22 * _S21) * scale;
+					val += (_g11 * E11 * S12 + _g11 * E12 * S22 + _g12 * E21 * S12 + _g12 * E22 * S22) * scale;
+					val -= (_g21 * E11 * S11 + _g21 * E12 * S21 + _g22 * E21 * S11 + _g22 * E22 * S21) * scale;
+
+					*ptr1 = val;
+					ptr1++;
+				}
+
+
 			}
 
-		}
+			void align_mix2K_z(double* ptr, double v1, double v2, double s1, double s2, double w1, double w2)
+			{
+				double val = 0;
+				double E11 = _ref->__K11;
+				double E21 = _ref->__K21;
+				double E12 = _ref->__K12;
+				double E22 = _ref->__K22;
+
+
+
+
+				double X11 = 0, X12 = 0, X22 = 0;
+				double Y11 = 0, Y12 = 0, Y22 = 0;
+				double Z11 = 0, Z12 = 0, Z22 = 0;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+					X11 += _ref->d2[0][s] * _ref->node[s * 3 + 0];
+					X12 += _ref->d2[1][s] * _ref->node[s * 3 + 0];
+					X22 += _ref->d2[3][s] * _ref->node[s * 3 + 0];
+					Y11 += _ref->d2[0][s] * _ref->node[s * 3 + 1];
+					Y12 += _ref->d2[1][s] * _ref->node[s * 3 + 1];
+					Y22 += _ref->d2[3][s] * _ref->node[s * 3 + 1];
+					Z11 += _ref->d2[0][s] * _ref->buf_z[s];
+					Z12 += _ref->d2[1][s] * _ref->buf_z[s];
+					Z22 += _ref->d2[3][s] * _ref->buf_z[s];
+				}
+				double Nx = N[0];
+				double Ny = N[1];
+				double Nz = N[2];
+				double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
+				double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
+				double S22 = X22 * Nx + Y22 * Ny + Z22 * Nz;
+				double S21 = S12;
+				double* ptr1 = ptr;
+
+				double scale = 1.0 / _ref->orefDv;
+				for (int s = 0; s < _ref->_nNode; s++)
+				{
+
+					double _S11 = _ref->d2[0][s] * Nz;// (_ref->d2[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+					double _S12 = _ref->d2[1][s] * Nz;//(_ref->d2[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+					double _S22 = _ref->d2[3][s] * Nz;//(_ref->d2[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+
+					double _xu = 0;
+					double _xv = 0;
+					double _yu = 0;
+					double _yv = 0;
+					double _zu = _ref->d1[0][s];
+					double _zv = _ref->d1[1][s];
+
+					double _g1N = _xu * Nx + _yu * Ny + _zu * Nz;
+					double _g2N = _xv * Nx + _yv * Ny + _zv * Nz;
+					double _Nx = -(_g1N * get_Gi2(0, 0) + _g2N * get_Gi2(1, 0));
+					double _Ny = -(_g1N * get_Gi2(0, 1) + _g2N * get_Gi2(1, 1));
+					double _Nz = -(_g1N * get_Gi2(0, 2) + _g2N * get_Gi2(1, 2));
+
+
+					double _g11 = 2 * _ref->d1[0][s] * get_gi2(0, 2);
+					double _g12 = _ref->d1[0][s] * get_gi2(1, 2) + _ref->d1[1][s] * get_gi2(0, 2);
+					double _g22 = 2 * _ref->d1[1][s] * get_gi2(1, 2);
+					double _g21 = _g12;
+
+
+					_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
+					_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
+					_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
+					double _S21 = _S12;
+
+
+
+					val = (get_gij2(0, 0) * E11 * _S12 + get_gij2(0, 0) * E12 * _S22 + get_gij2(0, 1) * E21 * _S12 + get_gij2(0, 1) * E22 * _S22) * scale;
+					val -= (get_gij2(1, 0) * E11 * _S11 + get_gij2(1, 0) * E12 * _S21 + get_gij2(1, 1) * E21 * _S11 + get_gij2(1, 1) * E22 * _S21) * scale;
+					val += (_g11 * E11 * S12 + _g11 * E12 * S22 + _g12 * E21 * S12 + _g12 * E22 * S22) * scale;
+					val -= (_g21 * E11 * S11 + _g21 * E12 * S21 + _g22 * E21 * S11 + _g22 * E22 * S21) * scale;
+
+					*ptr1 = val;
+					ptr1++;
+				}
+
+
+			}
 		double align_mix2E(double v1, double v2, double s1, double s2, double w1, double w2)
 		{
 			double val = 0;
@@ -28729,13 +28560,10 @@ if(add)
 				Z12 += _ref->d2[1][s] * _ref->buf_z[s];
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
-			double Nx = get_gi2(0, 1) * get_gi2(1, 2) - get_gi2(0, 2) * get_gi2(1, 1);
-			double Ny = get_gi2(0, 2) * get_gi2(1, 0) - get_gi2(0, 0) * get_gi2(1, 2);
-			double Nz = get_gi2(0, 0) * get_gi2(1, 1) - get_gi2(0, 1) * get_gi2(1, 0);
-			dv = sqrt(Nx * Nx + Ny * Ny + Nz * Nz);
-			Nx /= dv;
-			Ny /= dv;
-			Nz /= dv;
+			double Nx = N[0];
+			double Ny = N[1];
+			double Nz = N[2];
+			
 			double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
 			double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
 			double S22 = X22 * Nx + Y22 * Ny + Z22 * Nz;
@@ -28778,13 +28606,9 @@ if(add)
 				Z12 += _ref->d2[1][s] * _ref->buf_z[s];
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
-			double Nx = get_gi2(0, 1) * get_gi2(1, 2) - get_gi2(0, 2) * get_gi2(1, 1);
-			double Ny = get_gi2(0, 2) * get_gi2(1, 0) - get_gi2(0, 0) * get_gi2(1, 2);
-			double Nz = get_gi2(0, 0) * get_gi2(1, 1) - get_gi2(0, 1) * get_gi2(1, 0);
-			dv = sqrt(Nx * Nx + Ny * Ny + Nz * Nz);
-			Nx /= dv;
-			Ny /= dv;
-			Nz /= dv;
+			double Nx = N[0];
+			double Ny = N[1];
+			double Nz = N[2];
 			double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
 			double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
 			double S22 = X22 * Nx + Y22 * Ny + Z22 * Nz;
@@ -28808,21 +28632,16 @@ if(add)
 
 				double _g1N = _xu * Nx + _yu * Ny + _zu * Nz;
 				double _g2N = _xv * Nx + _yv * Ny + _zv * Nz;
-				double _Nx = (_yu * get_gi2(1, 2) - _zu * get_gi2(1, 1)) / dv;
-				double _Ny = (_zu * get_gi2(1, 0) - _xu * get_gi2(1, 2)) / dv;
-				double _Nz = (_xu * get_gi2(1, 1) - _yu * get_gi2(1, 0)) / dv;
-				_Nx += (get_gi2(0, 1) * _zv - get_gi2(0, 2) * _yv) / dv;
-				_Ny += (get_gi2(0, 2) * _xv - get_gi2(0, 0) * _zv) / dv;
-				_Nz += (get_gi2(0, 0) * _yv - get_gi2(0, 1) * _xv) / dv;
+				double _Nx = -(_g1N * get_Gi2(0, 0) + _g2N * get_Gi2(1, 0));
+				double _Ny = -(_g1N * get_Gi2(0, 1) + _g2N * get_Gi2(1, 1));
+				double _Nz = -(_g1N * get_Gi2(0, 2) + _g2N * get_Gi2(1, 2));
+
+
 				double _g11 = 2 * _ref->d1[0][s] * get_gi2(0, 0);
 				double _g12 = _ref->d1[0][s] * get_gi2(1, 0) + _ref->d1[1][s] * get_gi2(0, 0);
 				double _g22 = 2 * _ref->d1[1][s] * get_gi2(1, 0);
 				double _g21 = _g12;
-				double ddv = 0.5 * (_g11 * get_Gij2(0, 0) + 2 * _g12 * get_Gij2(0, 1) + _g22 * get_Gij2(1, 1)) * dv;
-				_Nx += -Nx / dv / dv * ddv;
-				_Ny += -Ny / dv / dv * ddv;
-				_Nz += -Nz / dv / dv * ddv;
-
+				
 
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
@@ -28868,13 +28687,9 @@ if(add)
 				Z12 += _ref->d2[1][s] * _ref->buf_z[s];
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
-			double Nx = get_gi2(0, 1) * get_gi2(1, 2) - get_gi2(0, 2) * get_gi2(1, 1);
-			double Ny = get_gi2(0, 2) * get_gi2(1, 0) - get_gi2(0, 0) * get_gi2(1, 2);
-			double Nz = get_gi2(0, 0) * get_gi2(1, 1) - get_gi2(0, 1) * get_gi2(1, 0);
-			dv = sqrt(Nx * Nx + Ny * Ny + Nz * Nz);
-			Nx /= dv;
-			Ny /= dv;
-			Nz /= dv;
+			double Nx = N[0];
+			double Ny = N[1];
+			double Nz = N[2];
 			double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
 			double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
 			double S22 = X22 * Nx + Y22 * Ny + Z22 * Nz;
@@ -28896,25 +28711,18 @@ if(add)
 				double _yv = _ref->d1[1][s];
 				double _zu = 0;
 				double _zv = 0;
-
 				double _g1N = _xu * Nx + _yu * Ny + _zu * Nz;
 				double _g2N = _xv * Nx + _yv * Ny + _zv * Nz;
-				double _Nx = (_yu * get_gi2(1, 2) - _zu * get_gi2(1, 1)) / dv;
-				double _Ny = (_zu * get_gi2(1, 0) - _xu * get_gi2(1, 2)) / dv;
-				double _Nz = (_xu * get_gi2(1, 1) - _yu * get_gi2(1, 0)) / dv;
-				_Nx += (get_gi2(0, 1) * _zv - get_gi2(0, 2) * _yv) / dv;
-				_Ny += (get_gi2(0, 2) * _xv - get_gi2(0, 0) * _zv) / dv;
-				_Nz += (get_gi2(0, 0) * _yv - get_gi2(0, 1) * _xv) / dv;
+				double _Nx = -(_g1N * get_Gi2(0, 0) + _g2N * get_Gi2(1, 0));
+				double _Ny = -(_g1N * get_Gi2(0, 1) + _g2N * get_Gi2(1, 1));
+				double _Nz = -(_g1N * get_Gi2(0, 2) + _g2N * get_Gi2(1, 2));
+
+
 				double _g11 = 2 * _ref->d1[0][s] * get_gi2(0, 1);
 				double _g12 = _ref->d1[0][s] * get_gi2(1, 1) + _ref->d1[1][s] * get_gi2(0, 1);
-				double _g22 = 2 * _ref->d1[1][s] * get_gi2(1,1);
+				double _g22 = 2 * _ref->d1[1][s] * get_gi2(1, 1);
 				double _g21 = _g12;
-				double ddv = 0.5 * (_g11 * get_Gij2(0, 0) + 2 * _g12 * get_Gij2(0, 1) + _g22 * get_Gij2(1, 1)) * dv;
-				_Nx += -Nx / dv / dv * ddv;
-				_Ny += -Ny / dv / dv * ddv;
-				_Nz += -Nz / dv / dv * ddv;
-
-				
+			
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
@@ -28956,13 +28764,10 @@ if(add)
 				Z12 += _ref->d2[1][s] * _ref->buf_z[s];
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
-			double Nx = get_gi2(0, 1) * get_gi2(1, 2) - get_gi2(0, 2) * get_gi2(1, 1);
-			double Ny = get_gi2(0, 2) * get_gi2(1, 0) - get_gi2(0, 0) * get_gi2(1, 2);
-			double Nz = get_gi2(0, 0) * get_gi2(1, 1) - get_gi2(0, 1) * get_gi2(1, 0);
-			dv = sqrt(Nx * Nx + Ny * Ny + Nz * Nz);
-			Nx /= dv;
-			Ny /= dv;
-			Nz /= dv;
+			double Nx = N[0];
+			double Ny = N[1];
+			double Nz = N[2];
+			
 			double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
 			double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
 			double S22 = X22 * Nx + Y22 * Ny + Z22 * Nz;
@@ -28988,21 +28793,15 @@ if(add)
 
 				double _g1N = _xu * Nx + _yu * Ny + _zu * Nz;
 				double _g2N = _xv * Nx + _yv * Ny + _zv * Nz;
-				double _Nx = (_yu * get_gi2(1, 2) - _zu * get_gi2(1, 1)) / dv;
-				double _Ny = (_zu * get_gi2(1, 0) - _xu * get_gi2(1, 2)) / dv;
-				double _Nz = (_xu * get_gi2(1, 1) - _yu * get_gi2(1, 0)) / dv;
-				_Nx += (get_gi2(0, 1) * _zv - get_gi2(0, 2) * _yv) / dv;
-				_Ny += (get_gi2(0, 2) * _xv - get_gi2(0, 0) * _zv) / dv;
-				_Nz += (get_gi2(0, 0) * _yv - get_gi2(0, 1) * _xv) / dv;
+				double _Nx = -(_g1N * get_Gi2(0, 0) + _g2N * get_Gi2(1, 0));
+				double _Ny = -(_g1N * get_Gi2(0, 1) + _g2N * get_Gi2(1, 1));
+				double _Nz = -(_g1N * get_Gi2(0, 2) + _g2N * get_Gi2(1, 2));
+
 				double _g11 = 2 * _ref->d1[0][s] * get_gi2(0, 2);
 				double _g12 = _ref->d1[0][s] * get_gi2(1, 2) + _ref->d1[1][s] * get_gi2(0, 2);
 				double _g22 = 2 * _ref->d1[1][s] * get_gi2(1, 2);
 				double _g21 = _g12;
-				double ddv = 0.5 * (_g11 * get_Gij2(0, 0) + 2 * _g12 * get_Gij2(0, 1) + _g22 * get_Gij2(1, 1)) * dv;
-				_Nx += -Nx / dv / dv * ddv;
-				_Ny += -Ny / dv / dv * ddv;
-				_Nz += -Nz / dv / dv * ddv;
-
+				
 
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
@@ -34147,21 +33946,16 @@ if(add)
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
 		
-
-			double Nx = get_gi(0, 1) * get_gi(1, 2) - get_gi(0, 2) * get_gi(1, 1);
-			double Ny = get_gi(0, 2) * get_gi(1, 0) - get_gi(0, 0) * get_gi(1, 2);
-			double Nz = get_gi(0, 0) * get_gi(1, 1) - get_gi(0, 1) * get_gi(1, 0);
-			dv = sqrt(Nx * Nx + Ny * Ny + Nz * Nz);
-			Nx /= dv;
-			Ny /= dv;
-			Nz /= dv;
+			double Nx = N[0];
+			double Ny = N[1];
+			double Nz = N[2];
 			double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
 			double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
 			double S22 = X22 * Nx + Y22 * Ny + Z22 * Nz;
 			double S21 = S12;
 
 			double L2 = v1 * v1 * get_gij(0, 0) + 2 * v1 * v2 * get_gij(0, 1) + v2 * v2 * get_gij(1, 1);
-			double dv = sqrt(get_gij(0, 0) * get_gij(1, 1) - get_gij(0, 1) * get_gij(0, 1));
+		
 			double w2 = -get_gij(0, 0) * v1 - get_gij(0, 1) * v2;
 			double w1 = get_gij(0, 1) * v1 + get_gij(1, 1) * v2;
 			val = (S11 * v1 * w1 + S12 * v1 * w2 + S21 * v2 * w1 + S22 * v2 * w2) /dv / L2;
@@ -34191,14 +33985,9 @@ if(add)
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
 		
-
-			double Nx = get_gi(0, 1) * get_gi(1, 2) - get_gi(0, 2) * get_gi(1, 1);
-			double Ny = get_gi(0, 2) * get_gi(1, 0) - get_gi(0, 0) * get_gi(1, 2);
-			double Nz = get_gi(0, 0) * get_gi(1, 1) - get_gi(0, 1) * get_gi(1, 0);
-			dv = sqrt(Nx * Nx + Ny * Ny + Nz * Nz);
-			Nx /= dv;
-			Ny /= dv;
-			Nz /= dv;
+			double Nx = N[0];
+			double Ny = N[1];
+			double Nz = N[2];
 			double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
 			double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
 			double S22 = X22 * Nx + Y22 * Ny + Z22 * Nz;
@@ -34207,7 +33996,7 @@ if(add)
 			double L2 = v1 * v1 * get_gij(0, 0) + 2 * v1 * v2 * get_gij(0, 1) + v2 * v2 * get_gij(1, 1);
 			double w2 = -get_gij(0, 0) * v1 - get_gij(0, 1) * v2;
 			double w1 = get_gij(0, 1) * v1 + get_gij(1, 1) * v2;
-			double dv = sqrt(get_gij(0, 0) * get_gij(1, 1) - get_gij(0, 1) * get_gij(0, 1));
+			
 			double scale = 1.0  /*/ trEij*/ / _ref->orefDv;
 			//double scale = 1.0 /_dv;
 			double* ptr1 = ptr;
@@ -34228,22 +34017,16 @@ if(add)
 
 				double _g1N = _xu * Nx + _yu * Ny + _zu * Nz;
 				double _g2N = _xv * Nx + _yv * Ny + _zv * Nz;
-				double _Nx = (_yu * get_gi(1, 2) - _zu * get_gi(1, 1)) / dv;
-				double _Ny = (_zu * get_gi(1, 0) - _xu * get_gi(1, 2)) / dv;
-				double _Nz = (_xu * get_gi(1, 1) - _yu * get_gi(1, 0)) / dv;
-				_Nx += (get_gi(0, 1) * _zv - get_gi(0, 2) * _yv) / dv;
-				_Ny += (get_gi(0, 2) * _xv - get_gi(0, 0) * _zv) / dv;
-				_Nz += (get_gi(0, 0) * _yv - get_gi(0, 1) * _xv) / dv;
+				double _Nx = -(_g1N * get_Gi(0, 0) + _g2N * get_Gi(1, 0));
+				double _Ny = -(_g1N * get_Gi(0, 1) + _g2N * get_Gi(1, 1));
+				double _Nz = -(_g1N * get_Gi(0, 2) + _g2N * get_Gi(1, 2));
 
 				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 0);
 				double _g12 = _ref->d1[0][s] * get_gi(1, 0) + _ref->d1[1][s] * get_gi(0, 0);
 				double _g22 = 2 * _ref->d1[1][s] * get_gi(1, 0);
 
 				double ddv = 0.5 * (_g11 * get_Gij(0, 0) + 2 * _g12 * get_Gij(0, 1) + _g22 * get_Gij(1, 1)) * dv;
-				_Nx += -Nx / dv / dv * ddv;
-				_Ny += -Ny / dv / dv * ddv;
-				_Nz += -Nz / dv / dv * ddv;
-
+			
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
@@ -34258,7 +34041,7 @@ if(add)
 				double _w1 = _g12 * v1 + _g22 * v2;
 				val = (_S11 * v1 * w1 + _S12 * v1 * w2 + _S21 * v2 * w1 + _S22 * v2 * w2) /dv / L2;
 				val +=  (S11 * v1 * _w1 + S12 * v1 * _w2 + S21 * v2 * _w1 + S22 * v2 * _w2) /dv / L2;
-				val += -(S11 * v1 * w1 + S12 * v1 * w2 + S21 * v2 * w1 + S22 * v2 * w2) / dv/dv*ddv / L2;
+				val += -(S11 * v1 * w1 + S12 * v1 * w2 + S21 * v2 * w1 + S22 * v2 * w2) /dv /dv * ddv / L2;
 				val += -(S11 * v1 * w1 + S12 * v1 * w2 + S21 * v2 * w1 + S22 * v2 * w2) /dv / L2 / L2 * dL2;
 
 				*ptr1 = val;
@@ -34287,13 +34070,9 @@ if(add)
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
 			
-			double Nx = get_gi(0, 1) * get_gi(1, 2) - get_gi(0, 2) * get_gi(1, 1);
-			double Ny = get_gi(0, 2) * get_gi(1, 0) - get_gi(0, 0) * get_gi(1, 2);
-			double Nz = get_gi(0, 0) * get_gi(1, 1) - get_gi(0, 1) * get_gi(1, 0);
-			dv = sqrt(Nx * Nx + Ny * Ny + Nz * Nz);
-			Nx /= dv;
-			Ny /= dv;
-			Nz /= dv;
+			double Nx = N[0];
+			double Ny = N[1];
+			double Nz = N[2];
 			double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
 			double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
 			double S22 = X22 * Nx + Y22 * Ny + Z22 * Nz;
@@ -34302,7 +34081,7 @@ if(add)
 			double L2 = v1 * v1 * get_gij(0, 0) + 2 * v1 * v2 * get_gij(0, 1) + v2 * v2 * get_gij(1, 1);
 			double w2 = -get_gij(0, 0) * v1 - get_gij(0, 1) * v2;
 			double w1 = get_gij(0, 1) * v1 + get_gij(1, 1) * v2;
-			double dv = sqrt(get_gij(0, 0) * get_gij(1, 1) - get_gij(0, 1) * get_gij(0, 1));
+		
 			double scale = 1.0  /*/ trEij*/ / _ref->orefDv;
 			//double scale = 1.0 /_dv;
 			double* ptr1 = ptr;
@@ -34323,21 +34102,16 @@ if(add)
 
 				double _g1N = _xu * Nx + _yu * Ny + _zu * Nz;
 				double _g2N = _xv * Nx + _yv * Ny + _zv * Nz;
-				double _Nx = (_yu * get_gi(1, 2) - _zu * get_gi(1, 1)) / dv;
-				double _Ny = (_zu * get_gi(1, 0) - _xu * get_gi(1, 2)) / dv;
-				double _Nz = (_xu * get_gi(1, 1) - _yu * get_gi(1, 0)) / dv;
-				_Nx += (get_gi(0, 1) * _zv - get_gi(0, 2) * _yv) / dv;
-				_Ny += (get_gi(0, 2) * _xv - get_gi(0, 0) * _zv) / dv;
-				_Nz += (get_gi(0, 0) * _yv - get_gi(0, 1) * _xv) / dv;
+				double _Nx = -(_g1N * get_Gi(0, 0) + _g2N * get_Gi(1, 0));
+				double _Ny = -(_g1N * get_Gi(0, 1) + _g2N * get_Gi(1, 1));
+				double _Nz = -(_g1N * get_Gi(0, 2) + _g2N * get_Gi(1, 2));
 
 				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 1);
 				double _g12 = _ref->d1[0][s] * get_gi(1, 1) + _ref->d1[1][s] * get_gi(0, 1);
 				double _g22 = 2 * _ref->d1[1][s] * get_gi(1, 1);
 
 				double ddv = 0.5 * (_g11 * get_Gij(0, 0) + 2 * _g12 * get_Gij(0, 1) + _g22 * get_Gij(1, 1)) * dv;
-				_Nx += -Nx / dv / dv * ddv;
-				_Ny += -Ny / dv / dv * ddv;
-				_Nz += -Nz / dv / dv * ddv;
+			
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
@@ -34382,13 +34156,9 @@ if(add)
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
 		
-			double Nx = get_gi(0, 1) * get_gi(1, 2) - get_gi(0, 2) * get_gi(1, 1);
-			double Ny = get_gi(0, 2) * get_gi(1, 0) - get_gi(0, 0) * get_gi(1, 2);
-			double Nz = get_gi(0, 0) * get_gi(1, 1) - get_gi(0, 1) * get_gi(1, 0);
-			dv = sqrt(Nx * Nx + Ny * Ny + Nz * Nz);
-			Nx /= dv;
-			Ny /= dv;
-			Nz /= dv;
+			double Nx = N[0];
+			double Ny = N[1];
+			double Nz = N[2];
 			double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
 			double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
 			double S22 = X22 * Nx + Y22 * Ny + Z22 * Nz;
@@ -34397,7 +34167,7 @@ if(add)
 			double L2 = v1 * v1 * get_gij(0, 0) + 2 * v1 * v2 * get_gij(0, 1) + v2 * v2 * get_gij(1, 1);
 			double w2 = -get_gij(0, 0) * v1 - get_gij(0, 1) * v2;
 			double w1 = get_gij(0, 1) * v1 + get_gij(1, 1) * v2;
-			double dv = sqrt(get_gij(0, 0) * get_gij(1, 1) - get_gij(0, 1) * get_gij(0, 1));
+		
 			double scale = 1.0  /*/ trEij*/ / _ref->orefDv;
 			//double scale = 1.0 /_dv;
 			double* ptr1 = ptr;
@@ -34418,21 +34188,16 @@ if(add)
 
 				double _g1N = _xu * Nx + _yu * Ny + _zu * Nz;
 				double _g2N = _xv * Nx + _yv * Ny + _zv * Nz;
-				double _Nx = (_yu * get_gi(1, 2) - _zu * get_gi(1, 1)) / dv;
-				double _Ny = (_zu * get_gi(1, 0) - _xu * get_gi(1, 2)) / dv;
-				double _Nz = (_xu * get_gi(1, 1) - _yu * get_gi(1, 0)) / dv;
-				_Nx += (get_gi(0, 1) * _zv - get_gi(0, 2) * _yv) / dv;
-				_Ny += (get_gi(0, 2) * _xv - get_gi(0, 0) * _zv) / dv;
-				_Nz += (get_gi(0, 0) * _yv - get_gi(0, 1) * _xv) / dv;
+				double _Nx = -(_g1N * get_Gi(0, 0) + _g2N * get_Gi(1, 0));
+				double _Ny = -(_g1N * get_Gi(0, 1) + _g2N * get_Gi(1, 1));
+				double _Nz = -(_g1N * get_Gi(0, 2) + _g2N * get_Gi(1, 2));
 
 				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 2);
 				double _g12 = _ref->d1[0][s] * get_gi(1, 2) + _ref->d1[1][s] * get_gi(0, 2);
 				double _g22 = 2 * _ref->d1[1][s] * get_gi(1,2);
 
 				double ddv = 0.5 * (_g11 * get_Gij(0, 0) + 2 * _g12 * get_Gij(0, 1) + _g22 * get_Gij(1, 1)) * dv;
-				_Nx += -Nx / dv / dv * ddv;
-				_Ny += -Ny / dv / dv * ddv;
-				_Nz += -Nz / dv / dv * ddv;
+			
 
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
@@ -34479,20 +34244,17 @@ if(add)
 				Z12 += _ref->d2[1][s] * _ref->buf_z[s];
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
-			double Nx = get_gi(0, 1) * get_gi(1, 2) - get_gi(0, 2) * get_gi(1, 1);
-			double Ny = get_gi(0, 2) * get_gi(1, 0) - get_gi(0, 0) * get_gi(1, 2);
-			double Nz = get_gi(0, 0) * get_gi(1, 1) - get_gi(0, 1) * get_gi(1, 0);
-			dv = sqrt(Nx * Nx + Ny * Ny + Nz * Nz);
-			Nx /= dv;
-			Ny /= dv;
-			Nz /= dv;
+			double Nx = N[0];
+			double Ny = N[1];
+			double Nz = N[2];
+
 			double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
 			double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
 			double S22 = X22 * Nx + Y22 * Ny + Z22 * Nz;
 			double S21 = S12;
 
 			double L2 = v1 * v1 * get_gij(0, 0) + 2 * v1 * v2 * get_gij(0, 1) + v2 * v2 * get_gij(1, 1);
-			double dv2 = get_gij(0, 0) * get_gij(1, 1) - get_gij(0, 1) * get_gij(0, 1);
+			double dv2 = dv*dv;
 			double w2 = -get_gij(0, 0) * v1 - get_gij(0, 1) * v2;
 			double w1 = get_gij(0, 1) * v1 + get_gij(1, 1) * v2;
 			val = (S11 * w1 * w1 + S12 * w1 * w2 + S21 * w2 * w1 + S22 * w2 * w2) /dv2 / L2;
@@ -34521,13 +34283,9 @@ if(add)
 				Z12 += _ref->d2[1][s] * _ref->buf_z[s];
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
-			double Nx = get_gi(0, 1) * get_gi(1, 2) - get_gi(0, 2) * get_gi(1, 1);
-			double Ny = get_gi(0, 2) * get_gi(1, 0) - get_gi(0, 0) * get_gi(1, 2);
-			double Nz = get_gi(0, 0) * get_gi(1, 1) - get_gi(0, 1) * get_gi(1, 0);
-			dv = sqrt(Nx * Nx + Ny * Ny + Nz * Nz);
-			Nx /= dv;
-			Ny /= dv;
-			Nz /= dv;
+			double Nx = N[0];
+			double Ny = N[1];
+			double Nz = N[2];
 			double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
 			double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
 			double S22 = X22 * Nx + Y22 * Ny + Z22 * Nz;
@@ -34535,7 +34293,7 @@ if(add)
 			double L2 = v1 * v1 * get_gij(0, 0) + 2 * v1 * v2 * get_gij(0, 1) + v2 * v2 * get_gij(1, 1);
 			double w2 = -get_gij(0, 0) * v1 - get_gij(0, 1) * v2;
 			double w1 = get_gij(0, 1) * v1 + get_gij(1, 1) * v2;
-			double dv2 = get_gij(0, 0) * get_gij(1, 1) - get_gij(0, 1) * get_gij(0, 1);
+			double dv2 = dv * dv;
 
 			double scale = 1.0  /*/ trEij*/ / _ref->orefDv;
 			//double scale = 1.0 /_dv;
@@ -34558,22 +34316,16 @@ if(add)
 
 				double _g1N = _xu * Nx + _yu * Ny + _zu * Nz;
 				double _g2N = _xv * Nx + _yv * Ny + _zv * Nz;
-				double _Nx = (_yu * get_gi(1, 2) - _zu * get_gi(1, 1)) / dv;
-				double _Ny = (_zu * get_gi(1, 0) - _xu * get_gi(1, 2)) / dv;
-				double _Nz = (_xu * get_gi(1, 1) - _yu * get_gi(1, 0)) / dv;
-				_Nx += (get_gi(0, 1) * _zv - get_gi(0, 2) * _yv) / dv;
-				_Ny += (get_gi(0, 2) * _xv - get_gi(0, 0) * _zv) / dv;
-				_Nz += (get_gi(0, 0) * _yv - get_gi(0, 1) * _xv) / dv;
+				double _Nx = -(_g1N * get_Gi(0, 0) + _g2N * get_Gi(1, 0));
+				double _Ny = -(_g1N * get_Gi(0, 1) + _g2N * get_Gi(1, 1));
+				double _Nz = -(_g1N * get_Gi(0, 2) + _g2N * get_Gi(1, 2));
 
 				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 0);
 				double _g12 = _ref->d1[0][s] * get_gi(1, 0) + _ref->d1[1][s] * get_gi(0, 0);
 				double _g22 = 2 * _ref->d1[1][s] * get_gi(1, 0);
 
 				double ddv = 0.5 * (_g11 * get_Gij(0, 0) + 2 * _g12 * get_Gij(0, 1) + _g22 * get_Gij(1, 1)) * dv;
-				_Nx += -Nx / dv / dv * ddv;
-				_Ny += -Ny / dv / dv * ddv;
-				_Nz += -Nz / dv / dv * ddv;
-
+			
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
@@ -34614,13 +34366,9 @@ if(add)
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
 	
-			double Nx = get_gi(0, 1) * get_gi(1, 2) - get_gi(0, 2) * get_gi(1, 1);
-			double Ny = get_gi(0, 2) * get_gi(1, 0) - get_gi(0, 0) * get_gi(1, 2);
-			double Nz = get_gi(0, 0) * get_gi(1, 1) - get_gi(0, 1) * get_gi(1, 0);
-			dv = sqrt(Nx * Nx + Ny * Ny + Nz * Nz);
-			Nx /= dv;
-			Ny /= dv;
-			Nz /= dv;
+			double Nx = N[0];
+			double Ny = N[1];
+			double Nz = N[2];
 			double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
 			double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
 			double S22 = X22 * Nx + Y22 * Ny + Z22 * Nz;
@@ -34651,21 +34399,16 @@ if(add)
 
 				double _g1N = _xu * Nx + _yu * Ny + _zu * Nz;
 				double _g2N = _xv * Nx + _yv * Ny + _zv * Nz;
-				double _Nx = (_yu * get_gi(1, 2) - _zu * get_gi(1, 1)) / dv;
-				double _Ny = (_zu * get_gi(1, 0) - _xu * get_gi(1, 2)) / dv;
-				double _Nz = (_xu * get_gi(1, 1) - _yu * get_gi(1, 0)) / dv;
-				_Nx += (get_gi(0, 1) * _zv - get_gi(0, 2) * _yv) / dv;
-				_Ny += (get_gi(0, 2) * _xv - get_gi(0, 0) * _zv) / dv;
-				_Nz += (get_gi(0, 0) * _yv - get_gi(0, 1) * _xv) / dv;
+				double _Nx = -(_g1N * get_Gi(0, 0) + _g2N * get_Gi(1, 0));
+				double _Ny = -(_g1N * get_Gi(0, 1) + _g2N * get_Gi(1, 1));
+				double _Nz = -(_g1N * get_Gi(0, 2) + _g2N * get_Gi(1, 2));
 
 				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 1);
 				double _g12 = _ref->d1[0][s] * get_gi(1, 1) + _ref->d1[1][s] * get_gi(0, 1);
 				double _g22 = 2 * _ref->d1[1][s] * get_gi(1, 1);
 
 				double ddv = 0.5 * (_g11 * get_Gij(0, 0) + 2 * _g12 * get_Gij(0, 1) + _g22 * get_Gij(1, 1)) * dv;
-				_Nx += -Nx / dv / dv * ddv;
-				_Ny += -Ny / dv / dv * ddv;
-				_Nz += -Nz / dv / dv * ddv;
+				
 
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
@@ -34706,13 +34449,9 @@ if(add)
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
 		
-			double Nx = get_gi(0, 1) * get_gi(1, 2) - get_gi(0, 2) * get_gi(1, 1);
-			double Ny = get_gi(0, 2) * get_gi(1, 0) - get_gi(0, 0) * get_gi(1, 2);
-			double Nz = get_gi(0, 0) * get_gi(1, 1) - get_gi(0, 1) * get_gi(1, 0);
-			dv = sqrt(Nx * Nx + Ny * Ny + Nz * Nz);
-			Nx /= dv;
-			Ny /= dv;
-			Nz /= dv;
+			double Nx = N[0];
+			double Ny = N[1];
+			double Nz = N[2];
 			double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
 			double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
 			double S22 = X22 * Nx + Y22 * Ny + Z22 * Nz;
@@ -34740,24 +34479,20 @@ if(add)
 				double _yv = 0;
 				double _zu = _ref->d1[0][s];
 				double _zv = _ref->d1[1][s];
-
 				double _g1N = _xu * Nx + _yu * Ny + _zu * Nz;
 				double _g2N = _xv * Nx + _yv * Ny + _zv * Nz;
-				double _Nx = (_yu * get_gi(1, 2) - _zu * get_gi(1, 1)) / dv;
-				double _Ny = (_zu * get_gi(1, 0) - _xu * get_gi(1, 2)) / dv;
-				double _Nz = (_xu * get_gi(1, 1) - _yu * get_gi(1, 0)) / dv;
-				_Nx += (get_gi(0, 1) * _zv - get_gi(0, 2) * _yv) / dv;
-				_Ny += (get_gi(0, 2) * _xv - get_gi(0, 0) * _zv) / dv;
-				_Nz += (get_gi(0, 0) * _yv - get_gi(0, 1) * _xv) / dv;
+				double _Nx = -(_g1N * get_Gi(0, 0) + _g2N * get_Gi(1, 0));
+				double _Ny = -(_g1N * get_Gi(0, 1) + _g2N * get_Gi(1, 1));
+				double _Nz = -(_g1N * get_Gi(0, 2) + _g2N * get_Gi(1, 2));
+
 
 				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 2);
 				double _g12 = _ref->d1[0][s] * get_gi(1, 2) + _ref->d1[1][s] * get_gi(0, 2);
 				double _g22 = 2 * _ref->d1[1][s] * get_gi(1, 2);
 
 				double ddv = 0.5 * (_g11 * get_Gij(0, 0) + 2 * _g12 * get_Gij(0, 1) + _g22 * get_Gij(1, 1)) * dv;
-				_Nx += -Nx / dv / dv * ddv;
-				_Ny += -Ny / dv / dv * ddv;
-				_Nz += -Nz / dv / dv * ddv;
+				
+
 				_S11 += X11 * _Nx + Y11 * _Ny + Z11 * _Nz;
 				_S12 += X12 * _Nx + Y12 * _Ny + Z12 * _Nz;
 				_S22 += X22 * _Nx + Y22 * _Ny + Z22 * _Nz;
