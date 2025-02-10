@@ -854,6 +854,16 @@ namespace KingOfMonsters {
 			newMat->dat->_mat[0] = this->dat->_mat[0].transpose() * B->dat->_mat[0]*C->dat->_mat[0];
 			return newMat;
 		}
+		void __AB(mySparse^ B, mySparse^ C)
+		{
+			
+			C->dat->_dmat = this->dat->_dmat * B->dat->_dmat;
+		}
+		void UAL(mySparse ^A,mySparse ^C)
+		{
+			auto llt=this->dat->_dmat.llt();
+			C->dat->_dmat = llt.matrixL() * A->dat->_dmat * llt.matrixL().transpose();
+		}
 		void addResidual(myDoubleArray^ r, myDoubleArray^ ret)
 		{
 			ret->_arr->__v += this->dat->_mat[0].transpose() * r->_arr->__v;
@@ -1043,13 +1053,13 @@ namespace KingOfMonsters {
 		}
 		void assemble(mySparse^ A, mySparse^ B, mySparse^ C)
 		{
-			assemble(A, B, C, false,true,true,true,true,A->dat->_dmat.cols(),C->dat->_dmat.cols());
+			assemble(A, B, C, false,true,true,true,true,1,1,A->dat->_dmat.cols(),C->dat->_dmat.cols());
 		}
 		void assemble(mySparse^ A, mySparse^ B, mySparse^ C,bool transpose)
 		{
-			assemble(A, B, C, false,true,true,true,true, A->dat->_dmat.cols(), C->dat->_dmat.cols());;
+			assemble(A, B, C, false,true,true,true,true, 1,1,A->dat->_dmat.cols(), C->dat->_dmat.cols());;
 		}
-		void assemble(mySparse^ A, mySparse^ B, mySparse^ C,bool transpose,bool topleft,bool bottomright,bool topright,bool bottomleft,int N1,int N2)
+		void assemble(mySparse^ A, mySparse^ B, mySparse^ C,bool transpose,bool topleft,bool bottomright,bool topright,bool bottomleft,double w1,double w2,int N1,int N2)
 		{
 			//if(A!=nullptr && C!=nullptr)
 			this->dat->_dmat.resize(N1+N2, N1+N2);
@@ -1288,6 +1298,7 @@ namespace KingOfMonsters {
 		double _sum() {
 			return this->dat->_dmat.cwiseAbs().sum();
 		}
+	
 
 		void ofDuplicate(mySparse^ m)
 		{
@@ -2188,6 +2199,7 @@ namespace KingOfMonsters {
 		{
 			b->_arr->__v = this->dat->_mat[0] * a->_arr->__v;
 		}
+		
 		void _transposemultplus(myDoubleArray^ a, myDoubleArray^ b)
 		{
 			b->_arr->__v += this->dat->_mat[0].transpose() * a->_arr->__v;
@@ -2665,6 +2677,22 @@ namespace KingOfMonsters {
 
 			auto ss = dat->_solveLU_gpu(gpu->cuda(), &rhs->_arr->__v, &ret->_arr->__v, device);
 			System::String^ ee = gcnew System::String(ss.c_str());
+			//array<double>^ ret = gcnew array<double>(_ret.rows());
+			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
+
+			//ptr = nullptr;
+			//return ret;
+			return ee;
+		}
+		System::String^ _solveQR_gpu(myCuda^ gpu, myDoubleArray^ rhs, myDoubleArray^ ret, Int64 device) {
+			//pin_ptr<double> ptr = &rhs[0];
+			Eigen::FullPivHouseholderQR<Eigen::MatrixXd> qr(this->dat->_dmat);
+			ret->_arr->__v = qr.solve(rhs->_arr->__v);
+			//auto ss = dat->_solveLU_gpu(gpu->cuda(), &rhs->_arr->__v, &ret->_arr->__v, device);
+
+	//	std:string ss = "";
+		//	ss<< "cpu_mode";
+			System::String^ ee = gcnew System::String("");// ss.c_str());
 			//array<double>^ ret = gcnew array<double>(_ret.rows());
 			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
 

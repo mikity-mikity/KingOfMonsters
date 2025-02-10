@@ -1653,6 +1653,7 @@ void  KingOfMonsters::_mySparse::_scale(double sc)
 {
 	_dmat *= sc;
 }
+
 int64_t KingOfMonsters::_mySparse::_rows() {
 	return _dmat.rows();// __r;
 }
@@ -3578,6 +3579,7 @@ std::string KingOfMonsters::_mySparse::_solveLU_gpu(KingOfMonsters::cuda* cuda, 
 	}
 #endif
 }
+
 /*Eigen::MatrixXd KingOfMonsters::_mySparse::_solve0(_myLLT* LLT, _mySparse* mat)
 {
 	//Eigen::Map<Eigen::MatrixXd> _dmat(___dmat, __r, __c);

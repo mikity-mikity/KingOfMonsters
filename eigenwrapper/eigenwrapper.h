@@ -316,6 +316,7 @@ namespace KingOfMonsters {
 		std::string _solve0_gpu(KingOfMonsters::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int64_t device);
 		//std::string _QR_gpu(KingOfMonsters::cuda* cuda, Eigen::MatrixXd* Q, Eigen::MatrixXd* R, int64_t device);
 		std::string _solveLU_gpu(KingOfMonsters::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int64_t device);
+		
 		std::string _solveLU_sparse_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		std::string _solveCG_sparse_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		std::string _solveLU_dense_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
