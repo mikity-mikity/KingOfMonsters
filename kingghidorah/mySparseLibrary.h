@@ -179,6 +179,12 @@ namespace KingOfMonsters {
 			double lambda = v->_arr->__v.dot(this->_arr->__v) / (this->_arr->__v.dot(this->_arr->__v));
 			return lambda;
 		}
+		void assemble(myDoubleArray^ b,double val)
+		{
+			this->_arr->__v.resize(b->_arr->__v.size());
+			this->_arr->__v.topRows(b->_arr->__v.size()) = b->_arr->__v;
+			this->_arr->__v.bottomRows(1)(0) = val;
+		}
 		void AtB(denseMatrix^ M)
 		{
 			this->_arr->__v = M->get().transpose() * this->_arr->__v;
@@ -747,6 +753,7 @@ namespace KingOfMonsters {
 			}
 			return str;
 		}
+	
 		void assemble2( mySparse^ EE, myPermutation^ mZ, int C) {
 			Eigen::MatrixXd D(mZ->p->perm.size(), EE->dat->_dmat.cols());
 			D.setZero();
@@ -914,6 +921,9 @@ namespace KingOfMonsters {
 		void _multiply(myDoubleArray^ v, myDoubleArray^ ret)
 		{
 			ret->_arr->__v = this->dat->_mat[0] * v->_arr->__v;
+		}void multiplydense(myDoubleArray^ v, myDoubleArray^ ret)
+		{
+			ret->_arr->__v = this->dat->_dmat * v->_arr->__v;
 		}
 		void leftmultiply(myDoubleArray^ v, myDoubleArray^ ret)
 		{
@@ -1050,6 +1060,16 @@ namespace KingOfMonsters {
 				M += jacobians[i]->dat->_mat[0].rows();
 			}
 			return;
+		}
+		void assemble4(mySparse^ A, myDoubleArray^ dz)
+		{
+			this->dat->_dmat.resize(A->dat->_dmat.rows() + 1, A->dat->_dmat.cols() + 1);
+			this->dat->_dmat.setZero();
+			this->dat->_dmat.topLeftCorner(A->dat->_dmat.rows(), A->dat->_dmat.cols()) = A->dat->_dmat;
+			this->dat->_dmat.bottomLeftCorner(1, A->dat->_dmat.cols()) = dz->_arr->__v.transpose();
+			this->dat->_dmat.topRightCorner(A->dat->_dmat.rows(), 1) = dz->_arr->__v.transpose();
+
+
 		}
 		void assemble(mySparse^ A, mySparse^ B, mySparse^ C)
 		{
