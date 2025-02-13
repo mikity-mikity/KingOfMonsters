@@ -34146,16 +34146,15 @@ if(add)
 				Z12 += _ref->d2[1][s] * _ref->buf_z[s];
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
-		
-			double Nx = N[0];
-			double Ny = N[1];
-			double Nz = N[2];
+			double Nx = get_gi(0, 1) * get_gi(1, 2) - get_gi(0, 2) * get_gi(1, 1);
+			double Ny = get_gi(0, 2) * get_gi(1, 0) - get_gi(0, 0) * get_gi(1, 2);
+			double Nz = get_gi(0, 0) * get_gi(1, 1) - get_gi(0, 1) * get_gi(1, 0);
 			double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
 			double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
 			double S22 = X22 * Nx + Y22 * Ny + Z22 * Nz;
 			double S21 = S12;
 
-			double scale = 1.0 / _ref->orefDv;
+			double scale = 1.0  /*/ trEij*/ / _ref->orefDv / _ref->orefDv;
 			double w2 = -get_gij(0, 0) * v1 - get_gij(0, 1) * v2;
 			double w1 = get_gij(0, 1) * v1 + get_gij(1, 1) * v2;
 			val = (S11 * v1 * w1 + S12 * v1 * w2 + S21 * v2 * w1 + S22 * v2 * w2)*scale;
@@ -34171,7 +34170,7 @@ if(add)
 			v2 /= length;
 
 
-			double scale = 1.0 / _ref->orefDv;
+			double scale = 1.0  /*/ trEij*/ / _ref->orefDv / _ref->orefDv;
 
 
 			double X11 = 0, X12 = 0, X22 = 0;
@@ -34191,9 +34190,9 @@ if(add)
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
 		
-			double Nx = N[0];
-			double Ny = N[1];
-			double Nz = N[2];
+			double Nx = get_gi(0, 1) * get_gi(1, 2) - get_gi(0, 2) * get_gi(1, 1);
+			double Ny = get_gi(0, 2) * get_gi(1, 0) - get_gi(0, 0) * get_gi(1, 2);
+			double Nz = get_gi(0, 0) * get_gi(1, 1) - get_gi(0, 1) * get_gi(1, 0);
 			double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
 			double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
 			double S22 = X22 * Nx + Y22 * Ny + Z22 * Nz;
@@ -34219,11 +34218,12 @@ if(add)
 				double _zu = 0;
 				double _zv = 0;
 
-				double _g1N = _xu * Nx + _yu * Ny + _zu * Nz;
-				double _g2N = _xv * Nx + _yv * Ny + _zv * Nz;
-				double _Nx = -(_g1N * get_Gi(0, 0) + _g2N * get_Gi(1, 0));
-				double _Ny = -(_g1N * get_Gi(0, 1) + _g2N * get_Gi(1, 1));
-				double _Nz = -(_g1N * get_Gi(0, 2) + _g2N * get_Gi(1, 2));
+				double _Nx = _yu * get_gi(1, 2) - _zu * get_gi(1, 1);
+				double _Ny = _zu * get_gi(1, 0) - _xu * get_gi(1, 2);
+				double _Nz = _xu * get_gi(1, 1) - _yu * get_gi(1, 0);
+				_Nx += get_gi(0, 1) * _zv - get_gi(0, 2) * _yv;
+				_Ny += get_gi(0, 2) * _xv - get_gi(0, 0) * _zv;
+				_Nz += get_gi(0, 0) * _yv - get_gi(0, 1) * _xv;
 
 				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 0);
 				double _g12 = _ref->d1[0][s] * get_gi(1, 0) + _ref->d1[1][s] * get_gi(0, 0);
@@ -34275,10 +34275,9 @@ if(add)
 				Z12 += _ref->d2[1][s] * _ref->buf_z[s];
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
-			
-			double Nx = N[0];
-			double Ny = N[1];
-			double Nz = N[2];
+			double Nx = get_gi(0, 1) * get_gi(1, 2) - get_gi(0, 2) * get_gi(1, 1);
+			double Ny = get_gi(0, 2) * get_gi(1, 0) - get_gi(0, 0) * get_gi(1, 2);
+			double Nz = get_gi(0, 0) * get_gi(1, 1) - get_gi(0, 1) * get_gi(1, 0);
 			double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
 			double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
 			double S22 = X22 * Nx + Y22 * Ny + Z22 * Nz;
@@ -34287,7 +34286,7 @@ if(add)
 			double w2 = -get_gij(0, 0) * v1 - get_gij(0, 1) * v2;
 			double w1 = get_gij(0, 1) * v1 + get_gij(1, 1) * v2;
 		
-			double scale = 1.0  /*/ trEij*/ / _ref->orefDv;
+			double scale = 1.0  /*/ trEij*/ / _ref->orefDv / _ref->orefDv;
 			//double scale = 1.0 /_dv;
 			double* ptr1 = ptr;
 			double val = 0;
@@ -34305,11 +34304,12 @@ if(add)
 				double _zu = 0;
 				double _zv = 0;
 
-				double _g1N = _xu * Nx + _yu * Ny + _zu * Nz;
-				double _g2N = _xv * Nx + _yv * Ny + _zv * Nz;
-				double _Nx = -(_g1N * get_Gi(0, 0) + _g2N * get_Gi(1, 0));
-				double _Ny = -(_g1N * get_Gi(0, 1) + _g2N * get_Gi(1, 1));
-				double _Nz = -(_g1N * get_Gi(0, 2) + _g2N * get_Gi(1, 2));
+				double _Nx = _yu * get_gi(1, 2) - _zu * get_gi(1, 1);
+				double _Ny = _zu * get_gi(1, 0) - _xu * get_gi(1, 2);
+				double _Nz = _xu * get_gi(1, 1) - _yu * get_gi(1, 0);
+				_Nx += get_gi(0, 1) * _zv - get_gi(0, 2) * _yv;
+				_Ny += get_gi(0, 2) * _xv - get_gi(0, 0) * _zv;
+				_Nz += get_gi(0, 0) * _yv - get_gi(0, 1) * _xv;
 
 				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 1);
 				double _g12 = _ref->d1[0][s] * get_gi(1, 1) + _ref->d1[1][s] * get_gi(0, 1);
@@ -34359,9 +34359,9 @@ if(add)
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
 		
-			double Nx = N[0];
-			double Ny = N[1];
-			double Nz = N[2];
+			double Nx = get_gi(0, 1) * get_gi(1, 2) - get_gi(0, 2) * get_gi(1, 1);
+			double Ny = get_gi(0, 2) * get_gi(1, 0) - get_gi(0, 0) * get_gi(1, 2);
+			double Nz = get_gi(0, 0) * get_gi(1, 1) - get_gi(0, 1) * get_gi(1, 0);
 			double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
 			double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
 			double S22 = X22 * Nx + Y22 * Ny + Z22 * Nz;
@@ -34371,7 +34371,7 @@ if(add)
 			double w2 = -get_gij(0, 0) * v1 - get_gij(0, 1) * v2;
 			double w1 = get_gij(0, 1) * v1 + get_gij(1, 1) * v2;
 		
-			double scale = 1.0  /*/ trEij*/ / _ref->orefDv;
+			double scale = 1.0  /*/ trEij*/ / _ref->orefDv / _ref->orefDv;
 			//double scale = 1.0 /_dv;
 			double* ptr1 = ptr;
 			double val = 0;
@@ -34389,11 +34389,12 @@ if(add)
 				double _zu = _ref->d1[0][s];
 				double _zv = _ref->d1[1][s];
 
-				double _g1N = _xu * Nx + _yu * Ny + _zu * Nz;
-				double _g2N = _xv * Nx + _yv * Ny + _zv * Nz;
-				double _Nx = -(_g1N * get_Gi(0, 0) + _g2N * get_Gi(1, 0));
-				double _Ny = -(_g1N * get_Gi(0, 1) + _g2N * get_Gi(1, 1));
-				double _Nz = -(_g1N * get_Gi(0, 2) + _g2N * get_Gi(1, 2));
+				double _Nx = _yu * get_gi(1, 2) - _zu * get_gi(1, 1);
+				double _Ny = _zu * get_gi(1, 0) - _xu * get_gi(1, 2);
+				double _Nz = _xu * get_gi(1, 1) - _yu * get_gi(1, 0);
+				_Nx += get_gi(0, 1) * _zv - get_gi(0, 2) * _yv;
+				_Ny += get_gi(0, 2) * _xv - get_gi(0, 0) * _zv;
+				_Nz += get_gi(0, 0) * _yv - get_gi(0, 1) * _xv;
 
 				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 2);
 				double _g12 = _ref->d1[0][s] * get_gi(1, 2) + _ref->d1[1][s] * get_gi(0, 2);
@@ -34429,7 +34430,7 @@ if(add)
 
 			double val = 0;
 
-			double scale = 1.0 / _ref->orefDv / _ref->orefDv;
+			double scale = 1.0 / _ref->orefDv / _ref->orefDv / _ref->orefDv;
 
 
 			double X11 = 0, X12 = 0, X22 = 0;
@@ -34448,9 +34449,9 @@ if(add)
 				Z12 += _ref->d2[1][s] * _ref->buf_z[s];
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
-			double Nx = N[0];
-			double Ny = N[1];
-			double Nz = N[2];
+			double Nx = get_gi(0, 1) * get_gi(1, 2) - get_gi(0, 2) * get_gi(1, 1);
+			double Ny = get_gi(0, 2) * get_gi(1, 0) - get_gi(0, 0) * get_gi(1, 2);
+			double Nz = get_gi(0, 0) * get_gi(1, 1) - get_gi(0, 1) * get_gi(1, 0);
 
 			double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
 			double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
@@ -34470,8 +34471,7 @@ if(add)
 			double length = sqrt(v1 * v1 * _ref->og11 + 2 * v1 * v2 * _ref->og12 + v2 * v2 * _ref->og22);
 			v1 /= length;
 			v2 /= length;
-			double scale = 1.0 / _ref->orefDv / _ref->orefDv;
-
+			double scale = 1.0 / _ref->orefDv / _ref->orefDv / _ref->orefDv;
 
 			double X11 = 0, X12 = 0, X22 = 0;
 			double Y11 = 0, Y12 = 0, Y22 = 0;
@@ -34489,9 +34489,9 @@ if(add)
 				Z12 += _ref->d2[1][s] * _ref->buf_z[s];
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
-			double Nx = N[0];
-			double Ny = N[1];
-			double Nz = N[2];
+			double Nx = get_gi(0, 1) * get_gi(1, 2) - get_gi(0, 2) * get_gi(1, 1);
+			double Ny = get_gi(0, 2) * get_gi(1, 0) - get_gi(0, 0) * get_gi(1, 2);
+			double Nz = get_gi(0, 0) * get_gi(1, 1) - get_gi(0, 1) * get_gi(1, 0);
 			double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
 			double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
 			double S22 = X22 * Nx + Y22 * Ny + Z22 * Nz;
@@ -34519,11 +34519,12 @@ if(add)
 				double _zu = 0;
 				double _zv = 0;
 
-				double _g1N = _xu * Nx + _yu * Ny + _zu * Nz;
-				double _g2N = _xv * Nx + _yv * Ny + _zv * Nz;
-				double _Nx = -(_g1N * get_Gi(0, 0) + _g2N * get_Gi(1, 0));
-				double _Ny = -(_g1N * get_Gi(0, 1) + _g2N * get_Gi(1, 1));
-				double _Nz = -(_g1N * get_Gi(0, 2) + _g2N * get_Gi(1, 2));
+				double _Nx = _yu * get_gi(1, 2) - _zu * get_gi(1, 1);
+				double _Ny = _zu * get_gi(1, 0) - _xu * get_gi(1, 2);
+				double _Nz = _xu * get_gi(1, 1) - _yu * get_gi(1, 0);
+				_Nx += get_gi(0, 1) * _zv - get_gi(0, 2) * _yv;
+				_Ny += get_gi(0, 2) * _xv - get_gi(0, 0) * _zv;
+				_Nz += get_gi(0, 0) * _yv - get_gi(0, 1) * _xv;
 
 				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 0);
 				double _g12 = _ref->d1[0][s] * get_gi(1, 0) + _ref->d1[1][s] * get_gi(0, 0);
@@ -34556,7 +34557,7 @@ if(add)
 			v1 /= length;
 			v2 /= length;
 
-			double scale = 1.0 / _ref->orefDv / _ref->orefDv;
+			double scale = 1.0 / _ref->orefDv / _ref->orefDv / _ref->orefDv;
 
 			double X11 = 0, X12 = 0, X22 = 0;
 			double Y11 = 0, Y12 = 0, Y22 = 0;
@@ -34574,9 +34575,9 @@ if(add)
 				Z12 += _ref->d2[1][s] * _ref->buf_z[s];
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
-			double Nx = N[0];
-			double Ny = N[1];
-			double Nz = N[2];
+			double Nx = get_gi(0, 1) * get_gi(1, 2) - get_gi(0, 2) * get_gi(1, 1);
+			double Ny = get_gi(0, 2) * get_gi(1, 0) - get_gi(0, 0) * get_gi(1, 2);
+			double Nz = get_gi(0, 0) * get_gi(1, 1) - get_gi(0, 1) * get_gi(1, 0);
 			double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
 			double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
 			double S22 = X22 * Nx + Y22 * Ny + Z22 * Nz;
@@ -34603,11 +34604,12 @@ if(add)
 				double _zu = 0;
 				double _zv = 0;
 
-				double _g1N = _xu * Nx + _yu * Ny + _zu * Nz;
-				double _g2N = _xv * Nx + _yv * Ny + _zv * Nz;
-				double _Nx = -(_g1N * get_Gi(0, 0) + _g2N * get_Gi(1, 0));
-				double _Ny = -(_g1N * get_Gi(0, 1) + _g2N * get_Gi(1, 1));
-				double _Nz = -(_g1N * get_Gi(0, 2) + _g2N * get_Gi(1, 2));
+				double _Nx = _yu * get_gi(1, 2) - _zu * get_gi(1, 1);
+				double _Ny = _zu * get_gi(1, 0) - _xu * get_gi(1, 2);
+				double _Nz = _xu * get_gi(1, 1) - _yu * get_gi(1, 0);
+				_Nx += get_gi(0, 1) * _zv - get_gi(0, 2) * _yv;
+				_Ny += get_gi(0, 2) * _xv - get_gi(0, 0) * _zv;
+				_Nz += get_gi(0, 0) * _yv - get_gi(0, 1) * _xv;
 
 				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 1);
 				double _g12 = _ref->d1[0][s] * get_gi(1, 1) + _ref->d1[1][s] * get_gi(0, 1);
@@ -34645,7 +34647,7 @@ if(add)
 			double Y11 = 0, Y12 = 0, Y22 = 0;
 			double Z11 = 0, Z12 = 0, Z22 = 0;
 
-			double scale = 1.0 / _ref->orefDv / _ref->orefDv;
+			double scale = 1.0 / _ref->orefDv / _ref->orefDv / _ref->orefDv;
 
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
@@ -34659,9 +34661,9 @@ if(add)
 				Z12 += _ref->d2[1][s] * _ref->buf_z[s];
 				Z22 += _ref->d2[3][s] * _ref->buf_z[s];
 			}
-			double Nx = N[0];
-			double Ny = N[1];
-			double Nz = N[2];
+			double Nx = get_gi(0, 1) * get_gi(1, 2) - get_gi(0, 2) * get_gi(1, 1);
+			double Ny = get_gi(0, 2) * get_gi(1, 0) - get_gi(0, 0) * get_gi(1, 2);
+			double Nz = get_gi(0, 0) * get_gi(1, 1) - get_gi(0, 1) * get_gi(1, 0);
 			double S11 = X11 * Nx + Y11 * Ny + Z11 * Nz;
 			double S12 = X12 * Nx + Y12 * Ny + Z12 * Nz;
 			double S22 = X22 * Nx + Y22 * Ny + Z22 * Nz;
@@ -34689,11 +34691,12 @@ if(add)
 				double _zu = _ref->d1[0][s];
 				double _zv = _ref->d1[1][s];
 
-				double _g1N = _xu * Nx + _yu * Ny + _zu * Nz;
-				double _g2N = _xv * Nx + _yv * Ny + _zv * Nz;
-				double _Nx = -(_g1N * get_Gi(0, 0) + _g2N * get_Gi(1, 0));
-				double _Ny = -(_g1N * get_Gi(0, 1) + _g2N * get_Gi(1, 1));
-				double _Nz = -(_g1N * get_Gi(0, 2) + _g2N * get_Gi(1, 2));
+				double _Nx = _yu * get_gi(1, 2) - _zu * get_gi(1, 1);
+				double _Ny = _zu * get_gi(1, 0) - _xu * get_gi(1, 2);
+				double _Nz = _xu * get_gi(1, 1) - _yu * get_gi(1, 0);
+				_Nx += get_gi(0, 1) * _zv - get_gi(0, 2) * _yv;
+				_Ny += get_gi(0, 2) * _xv - get_gi(0, 0) * _zv;
+				_Nz += get_gi(0, 0) * _yv - get_gi(0, 1) * _xv;
 
 				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 2);
 				double _g12 = _ref->d1[0][s] * get_gi(1, 2) + _ref->d1[1][s] * get_gi(0, 2);
