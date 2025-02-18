@@ -13658,10 +13658,12 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 			double e11 = xiu * xiu + etau * etau + phiu * phiu;
 			double e12 = xiu * xiv + etau * etav + phiu * phiv;
 			double e22 = xiv * xiv + etav * etav + phiv * phiv;
-
-			
+			double det = get_gij2(0, 0) * get_gij2(1, 1) - get_gij2(0, 1) * get_gij2(0, 1);
+			double det2 = e11 * e22 - e12 * e12;
+			double scale = 1.0/sqrt(det);
+			double scale2 = 1.0/sqrt(det2);
 			double _scale = _ref->osc2;
-			double val = (e11 * get_gij2(0, 1) - e12 * get_gij2(0, 0)) * _scale;// *scale* scale2;
+			double val = (e11 * get_gij2(0, 1) - e12 * get_gij2(0, 0))  *scale* scale2;
 			return val;
 		}
 		void conformalA_x(double* ptr)
@@ -13679,7 +13681,12 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 			double e11 = xiu * xiu + etau * etau + phiu * phiu;
 			double e12 = xiu * xiv + etau * etav + phiu * phiv;
 			double e22 = xiv * xiv + etav * etav + phiv * phiv;
-			
+
+			double det = get_gij2(0, 0) * get_gij2(1, 1) - get_gij2(0, 1) * get_gij2(0, 1);
+			double det2 = e11 * e22 - e12 * e12;
+			double scale = 1.0 / sqrt(det);
+			double scale2 = 1.0 / sqrt(det2);
+
 			double _scale = _ref->osc2;
 			double* ptr1 = ptr;
 
@@ -13688,8 +13695,11 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 				double _g11 = 2 * _ref->d1[0][s] * get_gi2(0, 0);
 				double _g12 = _ref->d1[0][s] * get_gi2(1, 0) + _ref->d1[1][s] * get_gi2(0, 0);
 				double _g22 = 2 * _ref->d1[1][s] * get_gi2(1, 0);
-				double val = (e11 * _g12 - e12 * _g11) * _scale;// *scale* scale2;
-				//val += (e11 * get_gij2(0, 1) - e12 * get_gij2(0, 0)) * dscale * scale2;
+
+				double dscale = -0.5 * (_g11 * get_Gij2(0, 0) + 2 * _g12 * get_Gij2(0, 1) + _g22 * get_Gij2(1, 1)) * scale;
+
+				double val = (e11 * _g12 - e12 * _g11)  *scale* scale2;
+				val += (e11 * get_gij2(0, 1) - e12 * get_gij2(0, 0)) * dscale * scale2;
 
 				*ptr1 = val;
 				ptr1++;
@@ -13710,7 +13720,10 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 			double e11 = xiu * xiu + etau * etau + phiu * phiu;
 			double e12 = xiu * xiv + etau * etav + phiu * phiv;
 			double e22 = xiv * xiv + etav * etav + phiv * phiv;
-		
+			double det = get_gij2(0, 0) * get_gij2(1, 1) - get_gij2(0, 1) * get_gij2(0, 1);
+			double det2 = e11 * e22 - e12 * e12;
+			double scale = 1.0 / sqrt(det);
+			double scale2 = 1.0 / sqrt(det2);
 			double _scale = _ref->osc2;
 
 			double* ptr1 = ptr;
@@ -13719,9 +13732,10 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 				double _g11 = 2 * _ref->d1[0][s] * get_gi2(0, 1);
 				double _g12 = _ref->d1[0][s] * get_gi2(1, 1) + _ref->d1[1][s] * get_gi2(0, 1);
 				double _g22 = 2 * _ref->d1[1][s] * get_gi2(1, 1);
-			
-				double val = (e11 * _g12 - e12 * _g11) * _scale;// *scale* scale2;
-				//val += (e11 * get_gij2(0, 1) - e12 * get_gij2(0, 0)) * dscale * scale2;
+				double dscale = -0.5 * (_g11 * get_Gij2(0, 0) + 2 * _g12 * get_Gij2(0, 1) + _g22 * get_Gij2(1, 1)) * scale;
+
+				double val = (e11 * _g12 - e12 * _g11)  *scale* scale2;
+				val += (e11 * get_gij2(0, 1) - e12 * get_gij2(0, 0)) * dscale * scale2;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -13741,7 +13755,10 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 			double e11 = xiu * xiu + etau * etau + phiu * phiu;
 			double e12 = xiu * xiv + etau * etav + phiu * phiv;
 			double e22 = xiv * xiv + etav * etav + phiv * phiv;
-			
+			double det = get_gij2(0, 0) * get_gij2(1, 1) - get_gij2(0, 1) * get_gij2(0, 1);
+			double det2 = e11 * e22 - e12 * e12;
+			double scale = 1.0 / sqrt(det);
+			double scale2 = 1.0 / sqrt(det2);
 			double _scale = _ref->osc2;
 
 			double* ptr1 = ptr;
@@ -13750,9 +13767,10 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 				double _g11 = 2 * _ref->d1[0][s] * get_gi2(0, 2);
 				double _g12 = _ref->d1[0][s] * get_gi2(1, 2) + _ref->d1[1][s] * get_gi2(0, 2);
 				double _g22 = 2 * _ref->d1[1][s] * get_gi2(1, 2);
-				
-				double val = (e11 * _g12 - e12 * _g11) * _scale;// *scale* scale2;
-				//val += (e11 * get_gij2(0, 1) - e12 * get_gij2(0, 0)) * dscale * scale2;
+				double dscale = -0.5 * (_g11 * get_Gij2(0, 0) + 2 * _g12 * get_Gij2(0, 1) + _g22 * get_Gij2(1, 1)) * scale;
+
+				double val = (e11 * _g12 - e12 * _g11) * scale * scale2;
+				val += (e11 * get_gij2(0, 1) - e12 * get_gij2(0, 0)) * dscale * scale2;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -13772,7 +13790,14 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 			double e11 = xiu * xiu + etau * etau + phiu * phiu;
 			double e12 = xiu * xiv + etau * etav + phiu * phiv;
 			double e22 = xiv * xiv + etav * etav + phiv * phiv;
-			
+			double det = get_gij2(0, 0) * get_gij2(1, 1) - get_gij2(0, 1) * get_gij2(0, 1);
+			double det2 = e11 * e22 - e12 * e12;
+			double E11 = e22 / det2;
+			double E12 = -e12 / det2;
+			double E22 = e11 / det2;
+
+			double scale = 1.0/sqrt(det);
+			double scale2 = 1.0 / sqrt(det2);
 			double _scale = _ref->osc2;
 			
 			double* ptr1 = ptr;
@@ -13782,10 +13807,11 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 				double _e12 = _ref->d1[0][s] * xiv + _ref->d1[1][s] * xiu;
 				double _e22 = 2 * _ref->d1[1][s] * xiv;
 
+				double dscale2 = -0.5 * (_e11 * E11 + 2 * _e12 * E12 + _e22 * E22) * scale2;
 
 			
-				double val = (_e11 * get_gij2(0, 1) - _e12 * get_gij2(0, 0)) * _scale;// *scale* scale2;
-				//val += (e11 * get_gij2(0, 1) - e12 * get_gij2(0, 0)) * scale * dscale2;
+				double val = (_e11 * get_gij2(0, 1) - _e12 * get_gij2(0, 0))* scale* scale2;
+				val += (e11 * get_gij2(0, 1) - e12 * get_gij2(0, 0)) * scale * dscale2;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -13805,9 +13831,15 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 			double e11 = xiu * xiu + etau * etau + phiu * phiu;
 			double e12 = xiu * xiv + etau * etav + phiu * phiv;
 			double e22 = xiv * xiv + etav * etav + phiv * phiv;
-		
+			double det = get_gij2(0, 0) * get_gij2(1, 1) - get_gij2(0, 1) * get_gij2(0, 1);
+			double det2 = e11 * e22 - e12 * e12;
+			double E11 = e22 / det2;
+			double E12 = -e12 / det2;
+			double E22 = e11 / det2;
+
+			double scale = 1.0 / sqrt(det);
+			double scale2 = 1.0 / sqrt(det2);
 			double _scale = _ref->osc2;
-			
 
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -13815,9 +13847,12 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 				double _e11 = 2 * _ref->d1[0][s] * etau;
 				double _e12 = _ref->d1[0][s] * etav + _ref->d1[1][s] * etau;
 				double _e22 = 2 * _ref->d1[1][s] * etav;
-				
-				double val = (_e11 * get_gij2(0, 1) - _e12 * get_gij2(0, 0)) * _scale;// *scale* scale2;
-				//val += (e11 * get_gij2(0, 1) - e12 * get_gij2(0, 0)) * scale * dscale2;
+
+				double dscale2 = -0.5 * (_e11 * E11 + 2 * _e12 * E12 + _e22 * E22) * scale2;
+
+
+				double val = (_e11 * get_gij2(0, 1) - _e12 * get_gij2(0, 0)) * scale * scale2;
+				val += (e11 * get_gij2(0, 1) - e12 * get_gij2(0, 0)) * scale * dscale2;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -13837,20 +13872,28 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 			double e11 = xiu * xiu + etau * etau + phiu * phiu;
 			double e12 = xiu * xiv + etau * etav + phiu * phiv;
 			double e22 = xiv * xiv + etav * etav + phiv * phiv;
-	
-			double _scale = _ref->osc2;
-			
+			double det = get_gij2(0, 0) * get_gij2(1, 1) - get_gij2(0, 1) * get_gij2(0, 1);
+			double det2 = e11 * e22 - e12 * e12;
+			double E11 = e22 / det2;
+			double E12 = -e12 / det2;
+			double E22 = e11 / det2;
 
+			double scale = 1.0 / sqrt(det);
+			double scale2 = 1.0 / sqrt(det2);
+			double _scale = _ref->osc2;
 
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				double _e11 = 2 * _ref->d1[0][s] * phiu;
 				double _e12 = _ref->d1[0][s] * phiv + _ref->d1[1][s] * phiu;
-				double _e22 = 2 * _ref->d1[1][s] * phiv;
-				
-				double val = (_e11 * get_gij2(0, 1) - _e12 * get_gij2(0, 0)) * _scale;// *scale* scale2;
-				
+				double _e22 = 2 * _ref->d1[1][s] * phi;
+
+				double dscale2 = -0.5 * (_e11 * E11 + 2 * _e12 * E12 + _e22 * E22) * scale2;
+
+
+				double val = (_e11 * get_gij2(0, 1) - _e12 * get_gij2(0, 0)) * scale * scale2;
+				val += (e11 * get_gij2(0, 1) - e12 * get_gij2(0, 0)) * scale * dscale2;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -13873,10 +13916,12 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 			double e11 = xiu * xiu + etau * etau + phiu * phiu;
 			double e12 = xiu * xiv + etau * etav + phiu * phiv;
 			double e22 = xiv * xiv + etav * etav + phiv * phiv;
-
-			
-			double _scale = _ref->osc2; 
-			double val = (e22 * get_gij2(0, 1) - e12 * get_gij2(1, 1)) * _scale;// *scale* scale2;
+			double det = get_gij2(0, 0) * get_gij2(1, 1) - get_gij2(0, 1) * get_gij2(0, 1);
+			double det2 = e11 * e22 - e12 * e12;
+			double scale = 1.0/sqrt(det);
+			double scale2 = 1.0/sqrt(det2);
+			double _scale = _ref->osc2;
+			double val = (e22 * get_gij2(0, 1) - e12 * get_gij2(1, 1)) * scale * scale2;
 			return val;
 		}
 		void conformalB_x(double* ptr)
@@ -13894,7 +13939,12 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 			double e11 = xiu * xiu + etau * etau + phiu * phiu;
 			double e12 = xiu * xiv + etau * etav + phiu * phiv;
 			double e22 = xiv * xiv + etav * etav + phiv * phiv;
-		
+
+			double det = get_gij2(0, 0) * get_gij2(1, 1) - get_gij2(0, 1) * get_gij2(0, 1);
+			double det2 = e11 * e22 - e12 * e12;
+			double scale = 1.0 / sqrt(det);
+			double scale2 = 1.0 / sqrt(det2);
+
 			double _scale = _ref->osc2;
 			double* ptr1 = ptr;
 
@@ -13904,9 +13954,10 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 				double _g12 = _ref->d1[0][s] * get_gi2(1, 0) + _ref->d1[1][s] * get_gi2(0, 0);
 				double _g22 = 2 * _ref->d1[1][s] * get_gi2(1, 0);
 
-				
-				double val = (e22 * _g12 - e12 * _g22) * _scale;// *scale* scale2;
-				//val += (e22 * get_gij2(0, 1) - e12 * get_gij2(1, 1)) * dscale * scale2;
+				double dscale = -0.5 * (_g11 * get_Gij2(0, 0) + 2 * _g12 * get_Gij2(0, 1) + _g22 * get_Gij2(1, 1)) * scale;
+
+				double val = (e22 * _g12 - e12 * _g22) * scale * scale2;
+				val += (e22 * get_gij2(0, 1) - e12 * get_gij2(1, 1)) * dscale * scale2;
 
 				*ptr1 = val;
 				ptr1++;
@@ -13927,8 +13978,11 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 			double e11 = xiu * xiu + etau * etau + phiu * phiu;
 			double e12 = xiu * xiv + etau * etav + phiu * phiv;
 			double e22 = xiv * xiv + etav * etav + phiv * phiv;
-		
-			double _scale = _ref->osc2;
+			double det = get_gij2(0, 0) * get_gij2(1, 1) - get_gij2(0, 1) * get_gij2(0, 1);
+			double det2 = e11 * e22 - e12 * e12;
+
+			double scale = 1.0 / sqrt(det);
+			double scale2 = 1.0 / sqrt(det2);
 
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -13936,9 +13990,10 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 				double _g11 = 2 * _ref->d1[0][s] * get_gi2(0, 1);
 				double _g12 = _ref->d1[0][s] * get_gi2(1, 1) + _ref->d1[1][s] * get_gi2(0, 1);
 				double _g22 = 2 * _ref->d1[1][s] * get_gi2(1, 1);
-				
-				double val = (e22 * _g12 - e12 * _g22) * _scale;// *scale* scale2;
-				//val += (e22 * get_gij2(0, 1) - e12 * get_gij2(1, 1)) * dscale * scale2;
+				double dscale = -0.5 * (_g11 * get_Gij2(0, 0) + 2 * _g12 * get_Gij2(0, 1) + _g22 * get_Gij2(1, 1)) * scale;
+
+				double val = (e22 * _g12 - e12 * _g22) * scale * scale2;
+				val += (e22 * get_gij2(0, 1) - e12 * get_gij2(1, 1)) * dscale * scale2;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -13958,8 +14013,11 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 			double e11 = xiu * xiu + etau * etau + phiu * phiu;
 			double e12 = xiu * xiv + etau * etav + phiu * phiv;
 			double e22 = xiv * xiv + etav * etav + phiv * phiv;
-		
-			double _scale = _ref->osc2;
+			double det = get_gij2(0, 0) * get_gij2(1, 1) - get_gij2(0, 1) * get_gij2(0, 1);
+			double det2 = e11 * e22 - e12 * e12;
+
+			double scale = 1.0 / sqrt(det);
+			double scale2 = 1.0 / sqrt(det2);
 
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -13967,9 +14025,10 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 				double _g11 = 2 * _ref->d1[0][s] * get_gi2(0, 2);
 				double _g12 = _ref->d1[0][s] * get_gi2(1, 2) + _ref->d1[1][s] * get_gi2(0, 2);
 				double _g22 = 2 * _ref->d1[1][s] * get_gi2(1, 2);
-				
-				double val = (e22 * _g12 - e12 * _g22) *_scale;// *scale* scale2;
-				//val += (e22 * get_gij2(0, 1) - e12 * get_gij2(1, 1)) * dscale * scale2;
+				double dscale = -0.5 * (_g11 * get_Gij2(0, 0) + 2 * _g12 * get_Gij2(0, 1) + _g22 * get_Gij2(1, 1)) * scale;
+
+				double val = (e22 * _g12 - e12 * _g22) * scale * scale2;
+				val += (e22 * get_gij2(0, 1) - e12 * get_gij2(1,1)) * dscale * scale2;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -13989,9 +14048,16 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 			double e11 = xiu * xiu + etau * etau + phiu * phiu;
 			double e12 = xiu * xiv + etau * etav + phiu * phiv;
 			double e22 = xiv * xiv + etav * etav + phiv * phiv;
-		
+	
+			double det = get_gij2(0, 0) * get_gij2(1, 1) - get_gij2(0, 1) * get_gij2(0, 1);
+			double det2 = e11 * e22 - e12 * e12;
 
-			double _scale = _ref->osc2;
+			double scale = 1.0 / sqrt(det);
+			double scale2 = 1.0 / sqrt(det2);
+			double E11 = e22 / det2;
+			double E12 = -e12 / det2;
+			double E22 = e11 / det2;
+
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
@@ -13999,10 +14065,11 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 				double _e12 = _ref->d1[0][s] * xiv + _ref->d1[1][s] * xiu;
 				double _e22 = 2 * _ref->d1[1][s] * xiv;
 
+				double dscale2 = - 0.5 * (_e11 * E11 + 2 * _e12 * E12 + _e22 * E22) * scale2;
 
-		
-				double val = (_e22 * get_gij2(0, 1) - _e12 * get_gij2(1, 1)) * _scale;// *scale* scale2;
-				//val += (e22 * get_gij2(0, 1) - e12 * get_gij2(1, 1)) * scale * dscale2;
+
+				double val = (_e22 * get_gij2(0, 1) - _e12 * get_gij2(1, 1)) * scale * scale2;
+				val += (e22 * get_gij2(0, 1) - e12 * get_gij2(1,1)) * scale * dscale2;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -14022,8 +14089,14 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 			double e11 = xiu * xiu + etau * etau + phiu * phiu;
 			double e12 = xiu * xiv + etau * etav + phiu * phiv;
 			double e22 = xiv * xiv + etav * etav + phiv * phiv;
-		
-			double _scale = _ref->osc2;
+			double det = get_gij2(0, 0) * get_gij2(1, 1) - get_gij2(0, 1) * get_gij2(0, 1);
+			double det2 = e11 * e22 - e12 * e12;
+
+			double scale = 1.0 / sqrt(det);
+			double scale2 = 1.0 / sqrt(det2);
+			double E11 = e22 / det2;
+			double E12 = -e12 / det2;
+			double E22 = e11 / det2;
 
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -14031,9 +14104,12 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 				double _e11 = 2 * _ref->d1[0][s] * etau;
 				double _e12 = _ref->d1[0][s] * etav + _ref->d1[1][s] * etau;
 				double _e22 = 2 * _ref->d1[1][s] * etav;
-				
-				double val = (_e22 * get_gij2(0, 1) - _e12 * get_gij2(1, 1)) * _scale;// *scale* scale2;
-				//val += (e22 * get_gij2(0, 1) - e12 * get_gij2(1, 1)) * scale * dscale2;
+
+				double dscale2 =- 0.5 * (_e11 * E11 + 2 * _e12 * E12 + _e22 * E22) * scale2;
+
+
+				double val = (_e22 * get_gij2(0, 1) - _e12 * get_gij2(1, 1)) * scale * scale2;
+				val += (e22* get_gij2(0, 1) - e12 * get_gij2(1, 1)) * scale * dscale2;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -14054,23 +14130,33 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 			double e12 = xiu * xiv + etau * etav + phiu * phiv;
 			double e22 = xiv * xiv + etav * etav + phiv * phiv;
 			
+	
+			double det = get_gij2(0, 0) * get_gij2(1, 1) - get_gij2(0, 1) * get_gij2(0, 1);
+			double det2 = e11 * e22 - e12 * e12;
+
+			double scale = 1.0 / sqrt(det);
+			double scale2 = 1.0 / sqrt(det2);
+			double E11 = e22 / det2;
+			double E12 = -e12 / det2;
+			double E22 = e11 / det2;
 			double _scale = _ref->osc2;
-			
 
 			double* ptr1 = ptr;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				double _e11 = 2 * _ref->d1[0][s] * phiu;
 				double _e12 = _ref->d1[0][s] * phiv + _ref->d1[1][s] * phiu;
-				double _e22 = 2 * _ref->d1[1][s] * phiv;
-			
-				double val = (_e22 * get_gij2(0, 1) - _e12 * get_gij2(1, 1)) * _scale;// * scale* scale2;
-				//val += (e22 * get_gij2(0, 1) - e12 * get_gij2(1, 1)) * scale * dscale2;
+				double _e22 = 2 * _ref->d1[1][s] * phi;
+
+				double dscale2 =- 0.5 * (_e11 * E11 + 2 * _e12 * E12 + _e22 * E22) * scale2;
+
+
+				double val = (_e22 * get_gij2(0, 1) - _e12 * get_gij2(1, 1) )* scale * scale2;
+				val += (e22 * get_gij2(0, 1) - e12 * get_gij2(1, 1)) * scale * dscale2;
 				*ptr1 = val;
 				ptr1++;
 			}
 		}
-
 
 		
 		double conformal_x()
