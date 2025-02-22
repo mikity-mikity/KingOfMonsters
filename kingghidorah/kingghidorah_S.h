@@ -10068,11 +10068,14 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 				phiu += _ref->d1[0][s] * _ref->buf_phi[s];
 				phiv += _ref->d1[1][s] * _ref->buf_phi[s];
 			}
-			
-			double _scale = 1.0 / _ref->orefDv;
-			//double length = sqrt(euu * evv - euv * euv);
+			double euu = xiu * xiu + etau * etau + phiu * phiu;
+			double euv = xiu * xiv + etau * etav + phiu * phiv;
+			double evv = xiv * xiv + etav * etav + phiv * phiv;
 
-			double val = (xiu * etav - etau * xiv)*_scale; /// length;
+			double _scale = 1.0 / _ref->orefDv;
+			double length = sqrt(euu * evv - euv * euv);
+
+			double val = (xiu * etav - etau * xiv)*_scale- length*_scale;
 			return val;
 		}
 		void crossZ_xi(double* ptr)
@@ -10088,14 +10091,27 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 				phiv += _ref->d1[1][s] * _ref->buf_phi[s];
 			}
 		
+			double euu = xiu * xiu + etau * etau + phiu * phiu;
+			double euv = xiu * xiv + etau * etav + phiu * phiv;
+			double evv = xiv * xiv + etav * etav + phiv * phiv;
+
 			double _scale = 1.0 / _ref->orefDv;
+			double length = sqrt(euu * evv - euv * euv);
 			
 			double* ptr1 = ptr;
 			double val = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				val = (_ref->d1[0][s] * etav - etau * _ref->d1[1][s]) * _scale; //;// / length;
-			
+
+				double _e11 = 2 * _ref->d1[0][s] * xiu;
+				double _e12 = _ref->d1[0][s] * xiv + _ref->d1[1][s] * xiu;
+				double _e22 = 2 * _ref->d1[1][s] * xiv;
+				double _e21 = _e12;
+
+
+				val = (_ref->d1[0][s] * etav - etau * _ref->d1[1][s])*_scale;
+				double _length= 0.5/length*(_e11 * evv +euu*_e22- 2*euv * _e12);
+				val += -_length*_scale;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -10112,20 +10128,71 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 				phiu += _ref->d1[0][s] * _ref->buf_phi[s];
 				phiv += _ref->d1[1][s] * _ref->buf_phi[s];
 			}
-			
+			double euu = xiu * xiu + etau * etau + phiu * phiu;
+			double euv = xiu * xiv + etau * etav + phiu * phiv;
+			double evv = xiv * xiv + etav * etav + phiv * phiv;
+
 			double _scale = 1.0 / _ref->orefDv;
+			double length = sqrt(euu * evv - euv * euv);
 			
 			double* ptr1 = ptr;
 			double val = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
-				val = (xiu * _ref->d1[1][s] - _ref->d1[0][s] * xiv) * _scale; //;// / length;
-			
+				double _e11 = 2 * _ref->d1[0][s] * etau;
+				double _e12 = _ref->d1[0][s] * etav + _ref->d1[1][s] * etau;
+				double _e22 = 2 * _ref->d1[1][s] * etav;
+				double _e21 = _e12;
+
+
+				val = (xiu * _ref->d1[1][s] - _ref->d1[0][s] * xiv) * _scale;// / length;
+				double _length = 0.5 / length * (_e11 * evv + euu * _e22 - 2 * euv * _e12);
+				val +=  -_length*_scale;
+
+
 				*ptr1 = val;
 				ptr1++;
 			}
 		}
-		
+		void crossZ_phi(double* ptr)
+		{
+			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				xiu += _ref->d1[0][s] * _ref->buf_xi[s];
+				xiv += _ref->d1[1][s] * _ref->buf_xi[s];
+				etau += _ref->d1[0][s] * _ref->buf_eta[s];
+				etav += _ref->d1[1][s] * _ref->buf_eta[s];
+				phiu += _ref->d1[0][s] * _ref->buf_phi[s];
+				phiv += _ref->d1[1][s] * _ref->buf_phi[s];
+			}
+			double euu = xiu * xiu + etau * etau + phiu * phiu;
+			double euv = xiu * xiv + etau * etav + phiu * phiv;
+			double evv = xiv * xiv + etav * etav + phiv * phiv;
+
+			double _scale = 1.0 / _ref->orefDv;
+			double length = sqrt(euu * evv - euv * euv);
+
+			double* ptr1 = ptr;
+			double val = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _e11 = 2 * _ref->d1[0][s] * phiu;
+				double _e12 = _ref->d1[0][s] * phiv + _ref->d1[1][s] * phiu;
+				double _e22 = 2 * _ref->d1[1][s] * phiv;
+				double _e21 = _e12;
+
+
+			
+				double _length = 0.5 / length * (_e11 * evv + euu * _e22 - 2 * euv * _e12);
+				val = -_length*_scale;
+
+
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+
 
 		double crossX()
 		{
@@ -29689,11 +29756,21 @@ if(add)
 			double e22 = xiv * xiv + etav * etav + phiv * phiv;
 			double e21 = e12;
 
-			double E11 = _ref->__K11;
-			double E22 = _ref->__K22;
-			double E12 = _ref->__K12;
-			double E21 = _ref->__K12;
+			double Z11 = 0, Z12 = 0, Z22 = 0;
 
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				Z11 += _ref->___dH[0][s] * _ref->buf_z[s];
+				Z12 += _ref->___dH[1][s] * _ref->buf_z[s];
+				Z22 += _ref->___dH[3][s] * _ref->buf_z[s];
+			}
+
+			double Z21 = Z12;
+
+			double E11 = Z22 * _ref->osc2;
+			double E22 = Z11 * _ref->osc2;
+			double E12 = -Z12 * _ref->osc2;
+			double E21 = E12;
 			double scale = 1.0 / _ref->orefDv;
 			
 
@@ -29706,12 +29783,21 @@ if(add)
 		void align_mix2KX_x(double* ptr)
 		{
 			double val = 0;
-			double E11 = _ref->__K11;
-			double E22 = _ref->__K22;
-			double E12 = _ref->__K12;
-			double E21 = _ref->__K12;
+			double Z11 = 0, Z12 = 0, Z22 = 0;
 
-	
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				Z11 += _ref->___dH[0][s] * _ref->buf_z[s];
+				Z12 += _ref->___dH[1][s] * _ref->buf_z[s];
+				Z22 += _ref->___dH[3][s] * _ref->buf_z[s];
+			}
+
+			double Z21 = Z12;
+
+			double E11 = Z22 * _ref->osc2;
+			double E22 = Z11 * _ref->osc2;
+			double E12 = -Z12 * _ref->osc2;
+			double E21 = E12;
 
 			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -29754,15 +29840,86 @@ if(add)
 			}
 
 		}
+		void align_mix2KX_z(double* ptr)
+		{
+			double val = 0;
+
+			double X11 = 0, X12 = 0, X22 = 0;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				X11 += _ref->___dH[0][s] * _ref->node[s * 3 + 0];
+				X12 += _ref->___dH[1][s] * _ref->node[s * 3 + 0];
+				X22 += _ref->___dH[3][s] * _ref->node[s * 3 + 0];
+			}
+
+			double X21 = X12;
+
 		
+
+			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				xiu += _ref->d1[0][s] * _ref->buf_xi[s];
+				xiv += _ref->d1[1][s] * _ref->buf_xi[s];
+				etau += _ref->d1[0][s] * _ref->buf_eta[s];
+				etav += _ref->d1[1][s] * _ref->buf_eta[s];
+				phiu += _ref->d1[0][s] * _ref->buf_phi[s];
+				phiv += _ref->d1[1][s] * _ref->buf_phi[s];
+			}
+			double e11 = xiu * xiu + etau * etau + phiu * phiu;
+			double e12 = xiu * xiv + etau * etav + phiu * phiv;
+			double e22 = xiv * xiv + etav * etav + phiv * phiv;
+			double e21 = e12;
+
+
+			double* ptr1 = ptr;
+
+			double scale = 1.0 / _ref->orefDv;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+
+				double _Z11 = _ref->___dH[0][s];// (_ref->___dH[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+				double _Z12 = _ref->___dH[1][s];//(_ref->___dH[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+				double _Z22 = _ref->___dH[3][s];//(_ref->___dH[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+
+
+
+
+				double _Z21 = _Z12;
+
+				double _E22 = _Z11 * _ref->osc2;
+				double _E12 = -_Z12 * _ref->osc2;
+				double _E11 = _Z22 * _ref->osc2;
+				double _E21 = _E12;
+
+				val = (e11 * _E11 * X12 + e11 * _E12 * X22 + e12 * _E21 * X12 + e12 * _E22 * X22) * scale;
+				val -= (e21 * _E11 * X11 + e21 * _E12 * X21 + e22 * _E21 * X11 + e22 * _E22 * X21) * scale;
+
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
+
 		void align_mix2KX_xi(double* ptr)
 		{
 			double val = 0;
-			double E11 = _ref->__K11;
-			double E22 = _ref->__K22;
-			double E12 = _ref->__K12;
-			double E21 = _ref->__K12;
+			double Z11 = 0, Z12 = 0, Z22 = 0;
 
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				Z11 += _ref->___dH[0][s] * _ref->buf_z[s];
+				Z12 += _ref->___dH[1][s] * _ref->buf_z[s];
+				Z22 += _ref->___dH[3][s] * _ref->buf_z[s];
+			}
+
+			double Z21 = Z12;
+
+			double E11 = Z22 * _ref->osc2;
+			double E22 = Z11 * _ref->osc2;
+			double E12 = -Z12 * _ref->osc2;
+			double E21 = E12;
 
 			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -29815,11 +29972,21 @@ if(add)
 		void align_mix2KX_eta(double* ptr)
 		{
 			double val = 0;
-			double E11 = _ref->__K11;
-			double E22 = _ref->__K22;
-			double E12 = _ref->__K12;
-			double E21 = _ref->__K12;
+			double Z11 = 0, Z12 = 0, Z22 = 0;
 
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				Z11 += _ref->___dH[0][s] * _ref->buf_z[s];
+				Z12 += _ref->___dH[1][s] * _ref->buf_z[s];
+				Z22 += _ref->___dH[3][s] * _ref->buf_z[s];
+			}
+
+			double Z21 = Z12;
+
+			double E11 = Z22 * _ref->osc2;
+			double E22 = Z11 * _ref->osc2;
+			double E12 = -Z12 * _ref->osc2;
+			double E21 = E12;
 
 			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -29872,11 +30039,21 @@ if(add)
 		void align_mix2KX_phi(double* ptr)
 		{
 			double val = 0;
-			double E11 = _ref->__K11;
-			double E22 = _ref->__K22;
-			double E12 = _ref->__K12;
-			double E21 = _ref->__K12;
+			double Z11 = 0, Z12 = 0, Z22 = 0;
 
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				Z11 += _ref->___dH[0][s] * _ref->buf_z[s];
+				Z12 += _ref->___dH[1][s] * _ref->buf_z[s];
+				Z22 += _ref->___dH[3][s] * _ref->buf_z[s];
+			}
+
+			double Z21 = Z12;
+
+			double E11 = Z22 * _ref->osc2;
+			double E22 = Z11 * _ref->osc2;
+			double E12 = -Z12 * _ref->osc2;
+			double E21 = E12;
 
 			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -29942,10 +30119,7 @@ if(add)
 			}
 
 			double X21 = X12;
-			double E11 = _ref->__K11;
-			double E22 = _ref->__K22;
-			double E12 = _ref->__K12;
-			double E21 = _ref->__K12;
+
 			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
@@ -29961,7 +30135,21 @@ if(add)
 			double e22 = xiv * xiv + etav * etav + phiv * phiv;
 			double e21 = e12;
 
-			
+			double Z11 = 0, Z12 = 0, Z22 = 0;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				Z11 += _ref->___dH[0][s] * _ref->buf_z[s];
+				Z12 += _ref->___dH[1][s] * _ref->buf_z[s];
+				Z22 += _ref->___dH[3][s] * _ref->buf_z[s];
+			}
+
+			double Z21 = Z12;
+
+			double E11 = Z22 * _ref->osc2;
+			double E22 = Z11 * _ref->osc2;
+			double E12 = -Z12 * _ref->osc2;
+			double E21 = E12;
 			double scale = 1.0 / _ref->orefDv;
 
 
@@ -29974,11 +30162,21 @@ if(add)
 		void align_mix2KY_y(double* ptr)
 		{
 			double val = 0;
-			double E11 = _ref->__K11;
-			double E22 = _ref->__K22;
-			double E12 = _ref->__K12;
-			double E21 = _ref->__K12;
+			double Z11 = 0, Z12 = 0, Z22 = 0;
 
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				Z11 += _ref->___dH[0][s] * _ref->buf_z[s];
+				Z12 += _ref->___dH[1][s] * _ref->buf_z[s];
+				Z22 += _ref->___dH[3][s] * _ref->buf_z[s];
+			}
+
+			double Z21 = Z12;
+
+			double E11 = Z22 * _ref->osc2;
+			double E22 = Z11 * _ref->osc2;
+			double E12 = -Z12 * _ref->osc2;
+			double E21 = E12;
 
 			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -30021,15 +30219,86 @@ if(add)
 			}
 
 		}
-		
+		void align_mix2KY_z(double* ptr)
+		{
+			double val = 0;
+
+			double X11 = 0, X12 = 0, X22 = 0;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				X11 += _ref->___dH[0][s] * _ref->node[s * 3 + 1];
+				X12 += _ref->___dH[1][s] * _ref->node[s * 3 + 1];
+				X22 += _ref->___dH[3][s] * _ref->node[s * 3 + 1];
+			}
+
+			double X21 = X12;
+
+
+
+			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				xiu += _ref->d1[0][s] * _ref->buf_xi[s];
+				xiv += _ref->d1[1][s] * _ref->buf_xi[s];
+				etau += _ref->d1[0][s] * _ref->buf_eta[s];
+				etav += _ref->d1[1][s] * _ref->buf_eta[s];
+				phiu += _ref->d1[0][s] * _ref->buf_phi[s];
+				phiv += _ref->d1[1][s] * _ref->buf_phi[s];
+			}
+			double e11 = xiu * xiu + etau * etau + phiu * phiu;
+			double e12 = xiu * xiv + etau * etav + phiu * phiv;
+			double e22 = xiv * xiv + etav * etav + phiv * phiv;
+			double e21 = e12;
+
+
+			double* ptr1 = ptr;
+
+			double scale = 1.0 / _ref->orefDv;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+
+				double _Z11 = _ref->___dH[0][s];// (_ref->___dH[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+				double _Z12 = _ref->___dH[1][s];//(_ref->___dH[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+				double _Z22 = _ref->___dH[3][s];//(_ref->___dH[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+
+
+
+
+				double _Z21 = _Z12;
+
+				double _E22 = _Z11 * _ref->osc2;
+				double _E12 = -_Z12 * _ref->osc2;
+				double _E11 = _Z22 * _ref->osc2;
+				double _E21 = _E12;
+
+				val = (e11 * _E11 * X12 + e11 * _E12 * X22 + e12 * _E21 * X12 + e12 * _E22 * X22) * scale;
+				val -= (e21 * _E11 * X11 + e21 * _E12 * X21 + e22 * _E21 * X11 + e22 * _E22 * X21) * scale;
+
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
+
 		void align_mix2KY_xi(double* ptr)
 		{
 			double val = 0;
-			double E11 = _ref->__K11;
-			double E22 = _ref->__K22;
-			double E12 = _ref->__K12;
-			double E21 = _ref->__K12;
+			double Z11 = 0, Z12 = 0, Z22 = 0;
 
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				Z11 += _ref->___dH[0][s] * _ref->buf_z[s];
+				Z12 += _ref->___dH[1][s] * _ref->buf_z[s];
+				Z22 += _ref->___dH[3][s] * _ref->buf_z[s];
+			}
+
+			double Z21 = Z12;
+
+			double E11 = Z22 * _ref->osc2;
+			double E22 = Z11 * _ref->osc2;
+			double E12 = -Z12 * _ref->osc2;
+			double E21 = E12;
 
 			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -30043,7 +30312,7 @@ if(add)
 			}
 
 			double X11 = 0, X12 = 0, X22 = 0;
-			
+
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				X11 += _ref->___dH[0][s] * _ref->node[s * 3 + 1];
@@ -30082,11 +30351,21 @@ if(add)
 		void align_mix2KY_eta(double* ptr)
 		{
 			double val = 0;
-			double E11 = _ref->__K11;
-			double E22 = _ref->__K22;
-			double E12 = _ref->__K12;
-			double E21 = _ref->__K12;
+			double Z11 = 0, Z12 = 0, Z22 = 0;
 
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				Z11 += _ref->___dH[0][s] * _ref->buf_z[s];
+				Z12 += _ref->___dH[1][s] * _ref->buf_z[s];
+				Z22 += _ref->___dH[3][s] * _ref->buf_z[s];
+			}
+
+			double Z21 = Z12;
+
+			double E11 = Z22 * _ref->osc2;
+			double E22 = Z11 * _ref->osc2;
+			double E12 = -Z12 * _ref->osc2;
+			double E21 = E12;
 
 			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -30100,7 +30379,7 @@ if(add)
 			}
 
 			double X11 = 0, X12 = 0, X22 = 0;
-			
+
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				X11 += _ref->___dH[0][s] * _ref->node[s * 3 + 1];
@@ -30139,11 +30418,21 @@ if(add)
 		void align_mix2KY_phi(double* ptr)
 		{
 			double val = 0;
-			double E11 = _ref->__K11;
-			double E22 = _ref->__K22;
-			double E12 = _ref->__K12;
-			double E21 = _ref->__K12;
+			double Z11 = 0, Z12 = 0, Z22 = 0;
 
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				Z11 += _ref->___dH[0][s] * _ref->buf_z[s];
+				Z12 += _ref->___dH[1][s] * _ref->buf_z[s];
+				Z22 += _ref->___dH[3][s] * _ref->buf_z[s];
+			}
+
+			double Z21 = Z12;
+
+			double E11 = Z22 * _ref->osc2;
+			double E22 = Z11 * _ref->osc2;
+			double E12 = -Z12 * _ref->osc2;
+			double E21 = E12;
 
 			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
@@ -30157,7 +30446,7 @@ if(add)
 			}
 
 			double X11 = 0, X12 = 0, X22 = 0;
-		
+
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				X11 += _ref->___dH[0][s] * _ref->node[s * 3 + 1];
@@ -30193,7 +30482,6 @@ if(add)
 
 
 		}
-		
 		double align_mix2KZ()
 		{
 			double val = 0;
@@ -36087,6 +36375,193 @@ if(add)
 				ptr1++;
 			}
 		}
+
+		double ztt(double v1, double v2)
+		{
+			double _length = sqrt(v1 * v1 * _ref->_og11 + 2 * v1 * v2 * _ref->_og12 + v2 * v2 * _ref->_og22);
+			v1 /= _length;
+			v2 /= _length;
+			double val = 0;
+
+			double X11 = 0, X12 = 0, X22 = 0;
+			double Y11 = 0, Y12 = 0, Y22 = 0;
+			double Z11 = 0, Z12 = 0, Z22 = 0;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+
+				Z11 += _ref->___dH[0][s] * _ref->buf_z[s];
+				Z12 += _ref->___dH[1][s] * _ref->buf_z[s];
+				Z22 += _ref->___dH[3][s] * _ref->buf_z[s];
+			}
+
+
+			double S11 = Z11;
+			double S12 = Z12;
+			double S22 = Z22;
+			double S21 = S12;
+
+			val = (S11 * v1 * v1 + S12 * v1 * v2 + S21 * v2 * v1 + S22 * v2 * v2);
+
+			return val;
+
+		}
+
+		void ztt_z(double* ptr, double v1, double v2)
+		{
+
+
+			double _length = sqrt(v1 * v1 * _ref->_og11 + 2 * v1 * v2 * _ref->_og12 + v2 * v2 * _ref->_og22);
+			v1 /= _length;
+			v2 /= _length;
+
+			
+
+
+			//double scale = 1.0 /_dv;
+			double* ptr1 = ptr;
+			double val = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+
+				double _S11 = _ref->___dH[0][s];// (_ref->___dH[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+				double _S12 = _ref->___dH[1][s];//(_ref->___dH[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+				double _S22 = _ref->___dH[3][s];//(_ref->___dH[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+				double _S21 = _S12;
+
+				val = (_S11 * v1 * v1 + _S12 * v1 * v2 + _S21 * v2 * v1 + _S22 * v2 * v2);
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
+
+
+		double xtt(double v1, double v2)
+		{
+
+			double val = 0;
+			double _length = sqrt(v1 * v1 * _ref->_og11 + 2 * v1 * v2 * _ref->_og12 + v2 * v2 * _ref->_og22);
+			v1 /= _length;
+			v2 /= _length;
+
+			double X11 = 0, X12 = 0, X22 = 0;
+			double Y11 = 0, Y12 = 0, Y22 = 0;
+			double Z11 = 0, Z12 = 0, Z22 = 0;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+
+				X11 += _ref->___dH[0][s] * _ref->node[s * 3 + 0];
+				X12 += _ref->___dH[1][s] * _ref->node[s * 3 + 0];
+				X22 += _ref->___dH[3][s] * _ref->node[s * 3 + 0];
+			}
+
+			double S11 = X11;
+			double S12 = X12;
+			double S22 = X22;
+			double S21 = S12;
+
+			val = (S11 * v1 * v1 + S12 * v1 * v2 + S21 * v2 * v1 + S22 * v2 * v2);
+
+			return val;
+
+		}
+		void xtt_x(double* ptr, double v1, double v2)
+		{
+			double _length = sqrt(v1 * v1 * _ref->_og11 + 2 * v1 * v2 * _ref->_og12 + v2 * v2 * _ref->_og22);
+			v1 /= _length;
+			v2 /= _length;
+
+			
+
+			//double scale = 1.0 /_dv;
+			double* ptr1 = ptr;
+			double val = 0;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+
+				double _S11 = _ref->___dH[0][s];// (_ref->___dH[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+				double _S12 = _ref->___dH[1][s];//(_ref->___dH[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+				double _S22 = _ref->___dH[3][s];//(_ref->___dH[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+
+				double _S21 = _S12;
+
+				val = (_S11 * v1 * v1 + _S12 * v1 * v2 + _S21 * v2 * v1 + _S22 * v2 * v2);
+
+
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
+
+
+		double ytt(double v1, double v2)
+		{
+			double _length = sqrt(v1 * v1 * _ref->_og11 + 2 * v1 * v2 * _ref->_og12 + v2 * v2 * _ref->_og22);
+			v1 /= _length;
+			v2 /= _length;
+
+			double val = 0;
+			double X11 = 0, X12 = 0, X22 = 0;
+			double Y11 = 0, Y12 = 0, Y22 = 0;
+			double Z11 = 0, Z12 = 0, Z22 = 0;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+
+				X11 += _ref->___dH[0][s] * _ref->node[s * 3 + 1];
+				X12 += _ref->___dH[1][s] * _ref->node[s * 3 + 1];
+				X22 += _ref->___dH[3][s] * _ref->node[s * 3 + 1];
+			}
+
+
+			double S11 = X11;
+			double S12 = X12;
+			double S22 = X22;
+			double S21 = S12;
+
+			val = (S11 * v1 * v1 + S12 * v1 * v2 + S21 * v2 * v1 + S22 * v2 * v2);
+
+			return val;
+
+		}
+
+		void ytt_y(double* ptr, double v1, double v2)
+		{
+			double _length = sqrt(v1 * v1 * _ref->_og11 + 2 * v1 * v2 * _ref->_og12 + v2 * v2 * _ref->_og22);
+			v1 /= _length;
+			v2 /= _length;
+
+			
+			//double scale = 1.0 /_dv;
+			double* ptr1 = ptr;
+			double val = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+
+				double _S11 = _ref->___dH[0][s];// (_ref->___dH[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+				double _S12 = _ref->___dH[1][s];//(_ref->___dH[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+				double _S22 = _ref->___dH[3][s];//(_ref->___dH[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+
+
+
+
+				double _S21 = _S12;
+
+
+				val = (_S11 * v1 *v1 + _S12 * v1 * v2 + _S21 * v2 * v1 + _S22 * v2 * v2);
+
+
+				*ptr1 = val;
+				ptr1++;
+			}
+
+		}
+
+
 			double ztn(double v1, double v2)
 		{
 				double _length = sqrt(v1 * v1 * _ref->_og11 + 2 * v1 * v2 * _ref->_og12 + v2 * v2 * _ref->_og22);
@@ -36866,165 +37341,21 @@ if(add)
 				Y11 += _ref->d2[0][s] * _ref->buf_eta[s];
 				Y12 += _ref->d2[1][s] * _ref->buf_eta[s];
 				Y22 += _ref->d2[3][s] * _ref->buf_eta[s];
-				Z11 += _ref->d2[0][s] * _ref->buf_phi[s];
-				Z12 += _ref->d2[1][s] * _ref->buf_phi[s];
-				Z22 += _ref->d2[3][s] * _ref->buf_phi[s];
+				Z11 += _ref->___dH[0][s] * _ref->buf_phi[s];
+				Z12 += _ref->___dH[1][s] * _ref->buf_phi[s];
+				Z22 += _ref->___dH[3][s] * _ref->buf_phi[s];
 			}
 			
 		
-			double S11 = X11 * Dx + Y11 * Dy + Z11 * Dz, S12 = X12 * Dx + Y12 * Dy + Z12 * Dz, S21 = X12 * Dx + Y12 * Dy + Z12 * Dz, S22 = X22 * Dx + Y22 * Dy + Z22 * Dz;
-
+			//double S11 = X11 * Dx + Y11 * Dy + Z11 * Dz, S12 = X12 * Dx + Y12 * Dy + Z12 * Dz, S21 = X12 * Dx + Y12 * Dy + Z12 * Dz, S22 = X22 * Dx + Y22 * Dy + Z22 * Dz;
+			double S11 = Z11, S12 = Z12, S22 = Z22;
+			double S21 = S12;
 			val = (S11 * w1 * w1 + S12 * w1 * w2 + S21 * w2 * w1 + S22 * w2 * w2) ;
 
 			return val;
 
 		}
-		void phinn_xi(double* ptr, double v1, double v2)
-		{
-
-			double _length = sqrt(v1 * v1 * _ref->_og11 + 2 * v1 * v2 * _ref->_og12 + v2 * v2 * _ref->_og22);
-			v1 /= _length;
-			v2 /= _length;
-
-			double w2 = -_ref->_og11 * v1 - _ref->_og12 * v2;
-			double w1 = _ref->_og12 * v1 + _ref->_og22 * v2;
-			_length = sqrt(w1 * w1 * _ref->_og11 + 2 * w1 * w2 * _ref->_og12 + w2 * w2 * _ref->_og22);
-			w1 /= _length;
-			w2 /= _length;
-			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				xiu += _ref->d1[0][s] * _ref->buf_xi[s];
-				xiv += _ref->d1[1][s] * _ref->buf_xi[s];
-				etau += _ref->d1[0][s] * _ref->buf_eta[s];
-				etav += _ref->d1[1][s] * _ref->buf_eta[s];
-				phiu += _ref->d1[0][s] * _ref->buf_phi[s];
-				phiv += _ref->d1[1][s] * _ref->buf_phi[s];
-			}
-
-			double _scale = 1.0 / _ref->orefDv;
-			double Dx = (etau * phiv - phiu * etav) * _scale;// / length;
-			double Dy = (phiu * xiv - xiu * phiv) * _scale;// / length;
-			double Dz = (xiu * etav - etau * xiv) * _scale;// / length;
-			double X11 = 0, X12 = 0, X22 = 0;
-			double Y11 = 0, Y12 = 0, Y22 = 0;
-			double Z11 = 0, Z12 = 0, Z22 = 0;
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				X11 += _ref->d2[0][s] * _ref->buf_xi[s];
-				X12 += _ref->d2[1][s] * _ref->buf_xi[s];
-				X22 += _ref->d2[3][s] * _ref->buf_xi[s];
-				Y11 += _ref->d2[0][s] * _ref->buf_eta[s];
-				Y12 += _ref->d2[1][s] * _ref->buf_eta[s];
-				Y22 += _ref->d2[3][s] * _ref->buf_eta[s];
-				Z11 += _ref->d2[0][s] * _ref->buf_phi[s];
-				Z12 += _ref->d2[1][s] * _ref->buf_phi[s];
-				Z22 += _ref->d2[3][s] * _ref->buf_phi[s];
-			}
-
-
-			
-			//double scale = 1.0 /_dv;
-			double* ptr1 = ptr;
-			double val = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-
-				double _S11 = _ref->d2[0][s] * Dx;// (_ref->___dH[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
-				double _S12 = _ref->d2[1][s] * Dx;//(_ref->___dH[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
-				double _S22 = _ref->d2[3][s] * Dx;//(_ref->___dH[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-
-				double _S21 = _S12;
-				double _Dx = 0;// / length;
-				double _Dy = (phiu * _ref->d1[1][s] - _ref->d1[0][s] * phiv) * _scale;// / length;
-				double _Dz = (_ref->d1[0][s] * etav - etau * _ref->d1[1][s]) * _scale;// / length;
-				_S11 += X11 * _Dx + Y11 * _Dy + Z11 * _Dz;
-				_S12 += X12 * _Dx + Y12 * _Dy + Z12 * _Dz;
-				_S21 += X12 * _Dx + Y12 * _Dy + Z12 * _Dz;
-				_S22 += X22 * _Dx + Y22 * _Dy + Z22 * _Dz;
-
-				val = (_S11 * w1 * w1 + _S12 * w1 * w2 + _S21 * w2 * w1 + _S22 * w2 * w2);
-			
-
-				*ptr1 = val;
-				ptr1++;
-			}
-
-		}void phinn_eta(double* ptr, double v1, double v2)
-		{
-
-			double _length = sqrt(v1 * v1 * _ref->_og11 + 2 * v1 * v2 * _ref->_og12 + v2 * v2 * _ref->_og22);
-			v1 /= _length;
-			v2 /= _length;
-
-			double w2 = -_ref->_og11 * v1 - _ref->_og12 * v2;
-			double w1 = _ref->_og12 * v1 + _ref->_og22 * v2;
-			_length = sqrt(w1 * w1 * _ref->_og11 + 2 * w1 * w2 * _ref->_og12 + w2 * w2 * _ref->_og22);
-			w1 /= _length;
-			w2 /= _length;
-			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				xiu += _ref->d1[0][s] * _ref->buf_xi[s];
-				xiv += _ref->d1[1][s] * _ref->buf_xi[s];
-				etau += _ref->d1[0][s] * _ref->buf_eta[s];
-				etav += _ref->d1[1][s] * _ref->buf_eta[s];
-				phiu += _ref->d1[0][s] * _ref->buf_phi[s];
-				phiv += _ref->d1[1][s] * _ref->buf_phi[s];
-			}
-			double X11 = 0, X12 = 0, X22 = 0;
-			double Y11 = 0, Y12 = 0, Y22 = 0;
-			double Z11 = 0, Z12 = 0, Z22 = 0;
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				X11 += _ref->d2[0][s] * _ref->buf_xi[s];
-				X12 += _ref->d2[1][s] * _ref->buf_xi[s];
-				X22 += _ref->d2[3][s] * _ref->buf_xi[s];
-				Y11 += _ref->d2[0][s] * _ref->buf_eta[s];
-				Y12 += _ref->d2[1][s] * _ref->buf_eta[s];
-				Y22 += _ref->d2[3][s] * _ref->buf_eta[s];
-				Z11 += _ref->d2[0][s] * _ref->buf_phi[s];
-				Z12 += _ref->d2[1][s] * _ref->buf_phi[s];
-				Z22 += _ref->d2[3][s] * _ref->buf_phi[s];
-			}
-			double _scale = 1.0 / _ref->orefDv;
-			double Dx = (etau * phiv - phiu * etav) * _scale;// / length;
-			double Dy = (phiu * xiv - xiu * phiv) * _scale;// / length;
-			double Dz = (xiu * etav - etau * xiv) * _scale;// / length;
-
-			//double scale = 1.0 /_dv;
-			double* ptr1 = ptr;
-			double val = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-
-				double _S11 = _ref->d2[0][s] * Dy;// (_ref->___dH[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
-				double _S12 = _ref->d2[1][s] * Dy;//(_ref->___dH[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
-				double _S22 = _ref->d2[3][s] * Dy;//(_ref->___dH[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-
-				double _S21 = _S12;
-				double _Dx = (_ref->d1[0][s] * phiv - phiu * _ref->d1[1][s]) * _scale;// / length;
-				double _Dy = 0;// / length;
-				double _Dz = (xiu * _ref->d1[1][s] - _ref->d1[0][s] * xiv) * _scale;// / length;
-
-
-				_S11 += X11 * _Dx + Y11 * _Dy + Z11 * _Dz;
-				_S12 += X12 * _Dx + Y12 * _Dy + Z12 * _Dz;
-				_S21 += X12 * _Dx + Y12 * _Dy + Z12 * _Dz;
-				_S22 += X22 * _Dx + Y22 * _Dy + Z22 * _Dz;
-
-				val = (_S11 * w1 * w1 + _S12 * w1 * w2 + _S21 * w2 * w1 + _S22 * w2 * w2);
-			
-				*ptr1 = val;
-				ptr1++;
-			}
-
-		}
-
+		
 		void phinn_phi(double* ptr, double v1, double v2)
 		{
 
@@ -37075,18 +37406,18 @@ if(add)
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 
-				double _S11 = _ref->d2[0][s]*Dz;// (_ref->___dH[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
-				double _S12 = _ref->d2[1][s]*Dz;//(_ref->___dH[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
-				double _S22 = _ref->d2[3][s]*Dz;//(_ref->___dH[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+				double _S11 = _ref->___dH[0][s];// *Dz;// (_ref->___dH[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+				double _S12 = _ref->___dH[1][s];// *Dz;//(_ref->___dH[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+				double _S22 = _ref->___dH[3][s];// *Dz;//(_ref->___dH[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
 
 				double _S21 = _S12;
 				double _Dx = (etau * _ref->d1[1][s] - _ref->d1[0][s] * etav) * _scale;// / length;
 				double _Dy = (_ref->d1[0][s] * xiv - xiu * _ref->d1[1][s]) * _scale;// / length;
 				double _Dz = 0;// / length;
-				_S11 += X11 * _Dx + Y11 * _Dy + Z11 * _Dz;
+				/*_S11 += X11 * _Dx + Y11 * _Dy + Z11 * _Dz;
 				_S12 += X12 * _Dx + Y12 * _Dy + Z12 * _Dz;
 				_S21 += X12 * _Dx + Y12 * _Dy + Z12 * _Dz;
-				_S22 += X22 * _Dx + Y22 * _Dy + Z22 * _Dz;
+				_S22 += X22 * _Dx + Y22 * _Dy + Z22 * _Dz;*/
 
 				val = (_S11 * w1 * w1 + _S12 * w1 * w2 + _S21 * w2 * w1 + _S22 * w2 * w2);
 
@@ -37142,166 +37473,21 @@ if(add)
 				Y11 += _ref->d2[0][s] * _ref->buf_eta[s];
 				Y12 += _ref->d2[1][s] * _ref->buf_eta[s];
 				Y22 += _ref->d2[3][s] * _ref->buf_eta[s];
-				Z11 += _ref->d2[0][s] * _ref->buf_phi[s];
-				Z12 += _ref->d2[1][s] * _ref->buf_phi[s];
-				Z22 += _ref->d2[3][s] * _ref->buf_phi[s];
+				Z11 += _ref->___dH[0][s] * _ref->buf_phi[s];
+				Z12 += _ref->___dH[1][s] * _ref->buf_phi[s];
+				Z22 += _ref->___dH[3][s] * _ref->buf_phi[s];
 			}
 
 
-			double S11 = X11 * Dx + Y11 * Dy + Z11 * Dz, S12 = X12 * Dx + Y12 * Dy + Z12 * Dz, S21 = X12 * Dx + Y12 * Dy + Z12 * Dz, S22 = X22 * Dx + Y22 * Dy + Z22 * Dz;
-
+			//double S11 = X11 * Dx + Y11 * Dy + Z11 * Dz, S12 = X12 * Dx + Y12 * Dy + Z12 * Dz, S21 = X12 * Dx + Y12 * Dy + Z12 * Dz, S22 = X22 * Dx + Y22 * Dy + Z22 * Dz;
+			double S11 = Z11, S12 = Z12, S22 = Z22;
+			double S21 = S12;
 			val = (S11 * v1 * w1 + S12 * v1 * w2 + S21 * v2 * w1 + S22 * v2 * w2);
 
 			return val;
 
 		}
-		void phitn_xi(double* ptr, double v1, double v2)
-		{
-
-			double _length = sqrt(v1 * v1 * _ref->_og11 + 2 * v1 * v2 * _ref->_og12 + v2 * v2 * _ref->_og22);
-			v1 /= _length;
-			v2 /= _length;
-
-			double w2 = -_ref->_og11 * v1 - _ref->_og12 * v2;
-			double w1 = _ref->_og12 * v1 + _ref->_og22 * v2;
-			_length = sqrt(w1 * w1 * _ref->_og11 + 2 * w1 * w2 * _ref->_og12 + w2 * w2 * _ref->_og22);
-			w1 /= _length;
-			w2 /= _length;
-			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				xiu += _ref->d1[0][s] * _ref->buf_xi[s];
-				xiv += _ref->d1[1][s] * _ref->buf_xi[s];
-				etau += _ref->d1[0][s] * _ref->buf_eta[s];
-				etav += _ref->d1[1][s] * _ref->buf_eta[s];
-				phiu += _ref->d1[0][s] * _ref->buf_phi[s];
-				phiv += _ref->d1[1][s] * _ref->buf_phi[s];
-			}
-
-			double _scale = 1.0 / _ref->orefDv;
-			double Dx = (etau * phiv - phiu * etav) * _scale;// / length;
-			double Dy = (phiu * xiv - xiu * phiv) * _scale;// / length;
-			double Dz = (xiu * etav - etau * xiv) * _scale;// / length;
-			double X11 = 0, X12 = 0, X22 = 0;
-			double Y11 = 0, Y12 = 0, Y22 = 0;
-			double Z11 = 0, Z12 = 0, Z22 = 0;
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				X11 += _ref->d2[0][s] * _ref->buf_xi[s];
-				X12 += _ref->d2[1][s] * _ref->buf_xi[s];
-				X22 += _ref->d2[3][s] * _ref->buf_xi[s];
-				Y11 += _ref->d2[0][s] * _ref->buf_eta[s];
-				Y12 += _ref->d2[1][s] * _ref->buf_eta[s];
-				Y22 += _ref->d2[3][s] * _ref->buf_eta[s];
-				Z11 += _ref->d2[0][s] * _ref->buf_phi[s];
-				Z12 += _ref->d2[1][s] * _ref->buf_phi[s];
-				Z22 += _ref->d2[3][s] * _ref->buf_phi[s];
-			}
-
-
-
-			//double scale = 1.0 /_dv;
-			double* ptr1 = ptr;
-			double val = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-
-				double _S11 = _ref->d2[0][s] * Dx;// (_ref->___dH[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
-				double _S12 = _ref->d2[1][s] * Dx;//(_ref->___dH[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
-				double _S22 = _ref->d2[3][s] * Dx;//(_ref->___dH[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-
-				double _S21 = _S12;
-				double _Dx = 0;// / length;
-				double _Dy = (phiu * _ref->d1[1][s] - _ref->d1[0][s] * phiv) * _scale;// / length;
-				double _Dz = (_ref->d1[0][s] * etav - etau * _ref->d1[1][s]) * _scale;// / length;
-				_S11 += X11 * _Dx + Y11 * _Dy + Z11 * _Dz;
-				_S12 += X12 * _Dx + Y12 * _Dy + Z12 * _Dz;
-				_S21 += X12 * _Dx + Y12 * _Dy + Z12 * _Dz;
-				_S22 += X22 * _Dx + Y22 * _Dy + Z22 * _Dz;
-
-				val = (_S11 * v1 * w1 + _S12 * v1 * w2 + _S21 * v2 * w1 + _S22 * v2 * w2);
-			
-
-				*ptr1 = val;
-				ptr1++;
-			}
-
-		}void phitn_eta(double* ptr, double v1, double v2)
-		{
-
-			double _length = sqrt(v1 * v1 * _ref->_og11 + 2 * v1 * v2 * _ref->_og12 + v2 * v2 * _ref->_og22);
-			v1 /= _length;
-			v2 /= _length;
-
-			double w2 = -_ref->_og11 * v1 - _ref->_og12 * v2;
-			double w1 = _ref->_og12 * v1 + _ref->_og22 * v2;
-			_length = sqrt(w1 * w1 * _ref->_og11 + 2 * w1 * w2 * _ref->_og12 + w2 * w2 * _ref->_og22);
-			w1 /= _length;
-			w2 /= _length;
-			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				xiu += _ref->d1[0][s] * _ref->buf_xi[s];
-				xiv += _ref->d1[1][s] * _ref->buf_xi[s];
-				etau += _ref->d1[0][s] * _ref->buf_eta[s];
-				etav += _ref->d1[1][s] * _ref->buf_eta[s];
-				phiu += _ref->d1[0][s] * _ref->buf_phi[s];
-				phiv += _ref->d1[1][s] * _ref->buf_phi[s];
-			}
-			double X11 = 0, X12 = 0, X22 = 0;
-			double Y11 = 0, Y12 = 0, Y22 = 0;
-			double Z11 = 0, Z12 = 0, Z22 = 0;
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				X11 += _ref->d2[0][s] * _ref->buf_xi[s];
-				X12 += _ref->d2[1][s] * _ref->buf_xi[s];
-				X22 += _ref->d2[3][s] * _ref->buf_xi[s];
-				Y11 += _ref->d2[0][s] * _ref->buf_eta[s];
-				Y12 += _ref->d2[1][s] * _ref->buf_eta[s];
-				Y22 += _ref->d2[3][s] * _ref->buf_eta[s];
-				Z11 += _ref->d2[0][s] * _ref->buf_phi[s];
-				Z12 += _ref->d2[1][s] * _ref->buf_phi[s];
-				Z22 += _ref->d2[3][s] * _ref->buf_phi[s];
-			}
-			double _scale = 1.0 / _ref->orefDv;
-			double Dx = (etau * phiv - phiu * etav) * _scale;// / length;
-			double Dy = (phiu * xiv - xiu * phiv) * _scale;// / length;
-			double Dz = (xiu * etav - etau * xiv) * _scale;// / length;
-
-			//double scale = 1.0 /_dv;
-			double* ptr1 = ptr;
-			double val = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-
-				double _S11 = _ref->d2[0][s] * Dy;// (_ref->___dH[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
-				double _S12 = _ref->d2[1][s] * Dy;//(_ref->___dH[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
-				double _S22 = _ref->d2[3][s] * Dy;//(_ref->___dH[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-
-				double _S21 = _S12;
-				double _Dx = (_ref->d1[0][s] * phiv - phiu * _ref->d1[1][s]) * _scale;// / length;
-				double _Dy = 0;// / length;
-				double _Dz = (xiu * _ref->d1[1][s] - _ref->d1[0][s] * xiv) * _scale;// / length;
-
-
-				_S11 += X11 * _Dx + Y11 * _Dy + Z11 * _Dz;
-				_S12 += X12 * _Dx + Y12 * _Dy + Z12 * _Dz;
-				_S21 += X12 * _Dx + Y12 * _Dy + Z12 * _Dz;
-				_S22 += X22 * _Dx + Y22 * _Dy + Z22 * _Dz;
-
-				val = (_S11 * v1 * w1 + _S12 * v1 * w2 + _S21 * v2 * w1 + _S22 * v2 * w2);
-			
-
-				*ptr1 = val;
-				ptr1++;
-			}
-
-		}
-
+		
 		void phitn_phi(double* ptr, double v1, double v2)
 		{
 
@@ -37337,9 +37523,9 @@ if(add)
 				Y11 += _ref->d2[0][s] * _ref->buf_eta[s];
 				Y12 += _ref->d2[1][s] * _ref->buf_eta[s];
 				Y22 += _ref->d2[3][s] * _ref->buf_eta[s];
-				Z11 += _ref->d2[0][s] * _ref->buf_phi[s];
-				Z12 += _ref->d2[1][s] * _ref->buf_phi[s];
-				Z22 += _ref->d2[3][s] * _ref->buf_phi[s];
+				Z11 += _ref->___dH[0][s] * _ref->buf_phi[s];
+				Z12 += _ref->___dH[1][s] * _ref->buf_phi[s];
+				Z22 += _ref->___dH[3][s] * _ref->buf_phi[s];
 			}
 			double _scale = 1.0 / _ref->orefDv;
 			double Dx = (etau * phiv - phiu * etav) * _scale;// / length;
@@ -37352,18 +37538,18 @@ if(add)
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 
-				double _S11 = _ref->d2[0][s] * Dz;// (_ref->___dH[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
-				double _S12 = _ref->d2[1][s] * Dz;//(_ref->___dH[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
-				double _S22 = _ref->d2[3][s] * Dz;//(_ref->___dH[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+				double _S11 = _ref->___dH[0][s];// *Dz;// (_ref->___dH[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+				double _S12 = _ref->___dH[1][s];// *Dz;//(_ref->___dH[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+				double _S22 = _ref->___dH[3][s];// *Dz;//(_ref->___dH[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
 
 				double _S21 = _S12;
 				double _Dx = (etau * _ref->d1[1][s] - _ref->d1[0][s] * etav) * _scale;// / length;
 				double _Dy = (_ref->d1[0][s] * xiv - xiu * _ref->d1[1][s]) * _scale;// / length;
 				double _Dz = 0;// / length;
-				_S11 += X11 * _Dx + Y11 * _Dy + Z11 * _Dz;
+				/*_S11 += X11 * _Dx + Y11 * _Dy + Z11 * _Dz;
 				_S12 += X12 * _Dx + Y12 * _Dy + Z12 * _Dz;
 				_S21 += X12 * _Dx + Y12 * _Dy + Z12 * _Dz;
-				_S22 += X22 * _Dx + Y22 * _Dy + Z22 * _Dz;
+				_S22 += X22 * _Dx + Y22 * _Dy + Z22 * _Dz;*/
 
 				val = (_S11 * v1 * w1 + _S12 * v1 * w2 + _S21 * v2 * w1 + _S22 * v2 * w2);
 			
@@ -37418,162 +37604,21 @@ if(add)
 				Y11 += _ref->d2[0][s] * _ref->buf_eta[s];
 				Y12 += _ref->d2[1][s] * _ref->buf_eta[s];
 				Y22 += _ref->d2[3][s] * _ref->buf_eta[s];
-				Z11 += _ref->d2[0][s] * _ref->buf_phi[s];
-				Z12 += _ref->d2[1][s] * _ref->buf_phi[s];
-				Z22 += _ref->d2[3][s] * _ref->buf_phi[s];
+				Z11 += _ref->___dH[0][s] * _ref->buf_phi[s];
+				Z12 += _ref->___dH[1][s] * _ref->buf_phi[s];
+				Z22 += _ref->___dH[3][s] * _ref->buf_phi[s];
 			}
 
 
-			double S11 = X11 * Dx + Y11 * Dy + Z11 * Dz, S12 = X12 * Dx + Y12 * Dy + Z12 * Dz, S21 = X12 * Dx + Y12 * Dy + Z12 * Dz, S22 = X22 * Dx + Y22 * Dy + Z22 * Dz;
-
+			//double S11 = X11 * Dx + Y11 * Dy + Z11 * Dz, S12 = X12 * Dx + Y12 * Dy + Z12 * Dz, S21 = X12 * Dx + Y12 * Dy + Z12 * Dz, S22 = X22 * Dx + Y22 * Dy + Z22 * Dz;
+			double S11 = Z11, S12 = Z12, S22 = Z22;
+			double S21 = S12;
 			val = (S11 * v1 *v1 + S12 * v1 * v2 + S21 * v2 *v1 + S22 * v2 * v2);
 
 			return val;
 
 		}
-		void phitt_xi(double* ptr, double v1, double v2)
-		{
-
-			double _length = sqrt(v1 * v1 * _ref->_og11 + 2 * v1 * v2 * _ref->_og12 + v2 * v2 * _ref->_og22);
-			v1 /= _length;
-			v2 /= _length;
-
-			double w2 = -_ref->_og11 * v1 - _ref->_og12 * v2;
-			double w1 = _ref->_og12 * v1 + _ref->_og22 * v2;
-			_length = sqrt(w1 * w1 * _ref->_og11 + 2 * w1 * w2 * _ref->_og12 + w2 * w2 * _ref->_og22);
-			w1 /= _length;
-			w2 /= _length;
-			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				xiu += _ref->d1[0][s] * _ref->buf_xi[s];
-				xiv += _ref->d1[1][s] * _ref->buf_xi[s];
-				etau += _ref->d1[0][s] * _ref->buf_eta[s];
-				etav += _ref->d1[1][s] * _ref->buf_eta[s];
-				phiu += _ref->d1[0][s] * _ref->buf_phi[s];
-				phiv += _ref->d1[1][s] * _ref->buf_phi[s];
-			}
-
-			double _scale = 1.0 / _ref->orefDv;
-			double Dx = (etau * phiv - phiu * etav) * _scale;// / length;
-			double Dy = (phiu * xiv - xiu * phiv) * _scale;// / length;
-			double Dz = (xiu * etav - etau * xiv) * _scale;// / length;
-			double X11 = 0, X12 = 0, X22 = 0;
-			double Y11 = 0, Y12 = 0, Y22 = 0;
-			double Z11 = 0, Z12 = 0, Z22 = 0;
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				X11 += _ref->d2[0][s] * _ref->buf_xi[s];
-				X12 += _ref->d2[1][s] * _ref->buf_xi[s];
-				X22 += _ref->d2[3][s] * _ref->buf_xi[s];
-				Y11 += _ref->d2[0][s] * _ref->buf_eta[s];
-				Y12 += _ref->d2[1][s] * _ref->buf_eta[s];
-				Y22 += _ref->d2[3][s] * _ref->buf_eta[s];
-				Z11 += _ref->d2[0][s] * _ref->buf_phi[s];
-				Z12 += _ref->d2[1][s] * _ref->buf_phi[s];
-				Z22 += _ref->d2[3][s] * _ref->buf_phi[s];
-			}
-
-
-
-			//double scale = 1.0 /_dv;
-			double* ptr1 = ptr;
-			double val = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-
-				double _S11 = _ref->d2[0][s] * Dx;// (_ref->___dH[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
-				double _S12 = _ref->d2[1][s] * Dx;//(_ref->___dH[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
-				double _S22 = _ref->d2[3][s] * Dx;//(_ref->___dH[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-
-				double _S21 = _S12;
-				double _Dx = 0;// / length;
-				double _Dy = (phiu * _ref->d1[1][s] - _ref->d1[0][s] * phiv) * _scale;// / length;
-				double _Dz = (_ref->d1[0][s] * etav - etau * _ref->d1[1][s]) * _scale;// / length;
-				_S11 += X11 * _Dx + Y11 * _Dy + Z11 * _Dz;
-				_S12 += X12 * _Dx + Y12 * _Dy + Z12 * _Dz;
-				_S21 += X12 * _Dx + Y12 * _Dy + Z12 * _Dz;
-				_S22 += X22 * _Dx + Y22 * _Dy + Z22 * _Dz;
-
-				val = (_S11 * v1 * v1 + _S12 * v1 * v2 + _S21 * v2 * v1 + _S22 * v2 * v2);
-				*ptr1 = val;
-				ptr1++;
-			}
-
-		}void phitt_eta(double* ptr, double v1, double v2)
-		{
-
-			double _length = sqrt(v1 * v1 * _ref->_og11 + 2 * v1 * v2 * _ref->_og12 + v2 * v2 * _ref->_og22);
-			v1 /= _length;
-			v2 /= _length;
-
-			double w2 = -_ref->_og11 * v1 - _ref->_og12 * v2;
-			double w1 = _ref->_og12 * v1 + _ref->_og22 * v2;
-			_length = sqrt(w1 * w1 * _ref->_og11 + 2 * w1 * w2 * _ref->_og12 + w2 * w2 * _ref->_og22);
-			w1 /= _length;
-			w2 /= _length;
-			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				xiu += _ref->d1[0][s] * _ref->buf_xi[s];
-				xiv += _ref->d1[1][s] * _ref->buf_xi[s];
-				etau += _ref->d1[0][s] * _ref->buf_eta[s];
-				etav += _ref->d1[1][s] * _ref->buf_eta[s];
-				phiu += _ref->d1[0][s] * _ref->buf_phi[s];
-				phiv += _ref->d1[1][s] * _ref->buf_phi[s];
-			}
-			double X11 = 0, X12 = 0, X22 = 0;
-			double Y11 = 0, Y12 = 0, Y22 = 0;
-			double Z11 = 0, Z12 = 0, Z22 = 0;
-
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				X11 += _ref->d2[0][s] * _ref->buf_xi[s];
-				X12 += _ref->d2[1][s] * _ref->buf_xi[s];
-				X22 += _ref->d2[3][s] * _ref->buf_xi[s];
-				Y11 += _ref->d2[0][s] * _ref->buf_eta[s];
-				Y12 += _ref->d2[1][s] * _ref->buf_eta[s];
-				Y22 += _ref->d2[3][s] * _ref->buf_eta[s];
-				Z11 += _ref->d2[0][s] * _ref->buf_phi[s];
-				Z12 += _ref->d2[1][s] * _ref->buf_phi[s];
-				Z22 += _ref->d2[3][s] * _ref->buf_phi[s];
-			}
-			double _scale = 1.0 / _ref->orefDv;
-			double Dx = (etau * phiv - phiu * etav) * _scale;// / length;
-			double Dy = (phiu * xiv - xiu * phiv) * _scale;// / length;
-			double Dz = (xiu * etav - etau * xiv) * _scale;// / length;
-
-			//double scale = 1.0 /_dv;
-			double* ptr1 = ptr;
-			double val = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-
-				double _S11 = _ref->d2[0][s] * Dy;// (_ref->___dH[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
-				double _S12 = _ref->d2[1][s] * Dy;//(_ref->___dH[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
-				double _S22 = _ref->d2[3][s] * Dy;//(_ref->___dH[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
-
-				double _S21 = _S12;
-				double _Dx = (_ref->d1[0][s] * phiv - phiu * _ref->d1[1][s]) * _scale;// / length;
-				double _Dy = 0;// / length;
-				double _Dz = (xiu * _ref->d1[1][s] - _ref->d1[0][s] * xiv) * _scale;// / length;
-
-
-				_S11 += X11 * _Dx + Y11 * _Dy + Z11 * _Dz;
-				_S12 += X12 * _Dx + Y12 * _Dy + Z12 * _Dz;
-				_S21 += X12 * _Dx + Y12 * _Dy + Z12 * _Dz;
-				_S22 += X22 * _Dx + Y22 * _Dy + Z22 * _Dz;
-
-				val = (_S11 * v1 * v1 + _S12 * v1 * v2 + _S21 * v2 * v1 + _S22 * v2 * v2);
-			
-				*ptr1 = val;
-				ptr1++;
-			}
-
-		}
+		
 
 		void phitt_phi(double* ptr, double v1, double v2)
 		{
@@ -37625,18 +37670,18 @@ if(add)
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 
-				double _S11 = _ref->d2[0][s] * Dz;// (_ref->___dH[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
-				double _S12 = _ref->d2[1][s] * Dz;//(_ref->___dH[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
-				double _S22 = _ref->d2[3][s] * Dz;//(_ref->___dH[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
+				double _S11 = _ref->___dH[0][s];// *Dz;// (_ref->___dH[0][s] - _ref->_Gammaijk[0] * _ref->d1[0][s] - _ref->_Gammaijk[1] * _ref->d1[1][s]);
+				double _S12 = _ref->___dH[1][s];// *Dz;//(_ref->___dH[1][s] - _ref->_Gammaijk[2] * _ref->d1[0][s] - _ref->_Gammaijk[3] * _ref->d1[1][s]);
+				double _S22 = _ref->___dH[3][s];// *Dz;//(_ref->___dH[3][s] - _ref->_Gammaijk[6] * _ref->d1[0][s] - _ref->_Gammaijk[7] * _ref->d1[1][s]);
 
 				double _S21 = _S12;
 				double _Dx = (etau * _ref->d1[1][s] - _ref->d1[0][s] * etav) * _scale;// / length;
 				double _Dy = (_ref->d1[0][s] * xiv - xiu * _ref->d1[1][s]) * _scale;// / length;
 				double _Dz = 0;// / length;
-				_S11 += X11 * _Dx + Y11 * _Dy + Z11 * _Dz;
+				/*_S11 += X11 * _Dx + Y11 * _Dy + Z11 * _Dz;
 				_S12 += X12 * _Dx + Y12 * _Dy + Z12 * _Dz;
 				_S21 += X12 * _Dx + Y12 * _Dy + Z12 * _Dz;
-				_S22 += X22 * _Dx + Y22 * _Dy + Z22 * _Dz;
+				_S22 += X22 * _Dx + Y22 * _Dy + Z22 * _Dz;*/
 
 				val = (_S11 * v1 * v1 + _S12 * v1 * v2 + _S21 * v2 * v1 + _S22 * v2 * v2);
 			
@@ -53909,7 +53954,11 @@ if(add)
 			__mem->crossZ_eta(__mem->__grad);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c);
 		}
-		
+		void crossZ_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c)
+		{
+			__mem->crossZ_phi(__mem->__grad);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c);
+		}
 		double crossX()
 		{
 			return __mem->crossX();
@@ -55561,7 +55610,11 @@ if(add)
 			__mem->align_mix2KX_x(__mem->__grad);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c1);
 		}
-		
+		void align_mix2KX_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool add)
+		{
+			__mem->align_mix2KX_z(__mem->__grad);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c1);
+		}
 		void align_mix2KX_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool add)
 		{
 			__mem->align_mix2KX_xi(__mem->__grad);
@@ -55589,7 +55642,11 @@ if(add)
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c1);
 		}
 
-		
+		void align_mix2KY_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool add)
+		{
+			__mem->align_mix2KY_z(__mem->__grad);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c1);
+		}
 		void align_mix2KY_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool add)
 		{
 			__mem->align_mix2KY_xi(__mem->__grad);
@@ -55968,6 +56025,39 @@ if(add)
 			__mem->ytn_y(__mem->__grad, v1, v2);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c1);
 		}
+
+		double ztt(double v1, double v2)
+		{
+			return __mem->ztt(v1, v2);
+		}
+
+		void ztt_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool add)
+		{
+			__mem->ztt_z(__mem->__grad, v1, v2);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c1);
+		}
+		double xtt(double v1, double v2)
+		{
+			return __mem->xtt(v1, v2);
+		}
+		void xtt_x(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool add)
+		{
+			__mem->xtt_x(__mem->__grad, v1, v2);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c1);
+		}
+
+		double ytt(double v1, double v2)
+		{
+			return __mem->ytt(v1, v2);
+		}
+
+		void ytt_y(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double v1, double v2, bool add)
+		{
+			__mem->ytt_y(__mem->__grad, v1, v2);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c1);
+		}
+
+
 		double _ztn(double v1, double v2)
 		{
 			return __mem->_ztn(v1, v2);
@@ -56022,16 +56112,7 @@ if(add)
 			return __mem->phinn(v1, v2);
 		}
 
-		void phinn_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, int shift, double v1, double v2, bool add)
-		{
-			__mem->phinn_xi(__mem->__grad, v1, v2);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_nNode, add, c1);
-		}
-			void phinn_eta(mySparse ^ mat, int ii, myIntArray ^ index, double sc, double c1, int shift, double v1, double v2, bool add)
-			{
-				__mem->phinn_eta(__mem->__grad, v1, v2);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_nNode, add, c1);
-			}
+		
 			void phinn_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, int shift, double v1, double v2, bool add)
 			{
 				__mem->phinn_phi(__mem->__grad, v1, v2);
@@ -56041,16 +56122,7 @@ if(add)
 		{
 			return __mem->phitt(v1, v2);
 		}
-		void phitt_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, int shift, double v1, double v2, bool add)
-		{
-			__mem->phitt_xi(__mem->__grad, v1, v2);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_nNode, add, c1);
-		}
-		void phitt_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, int shift, double v1, double v2, bool add)
-		{
-			__mem->phitt_eta(__mem->__grad, v1, v2);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_nNode, add, c1);
-		}
+		
 		void phitt_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, int shift, double v1, double v2, bool add)
 		{
 			__mem->phitt_phi(__mem->__grad, v1, v2);
@@ -56060,16 +56132,7 @@ if(add)
 		{
 			return __mem->phitn(v1, v2);
 		}
-		void phitn_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, int shift, double v1, double v2, bool add)
-		{
-			__mem->phitn_xi(__mem->__grad, v1, v2);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_nNode, add, c1);
-		}
-		void phitn_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, int shift, double v1, double v2, bool add)
-		{
-			__mem->phitn_eta(__mem->__grad, v1, v2);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_nNode, add, c1);
-		}
+		
 		void phitn_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, int shift, double v1, double v2, bool add)
 		{
 			__mem->phitn_phi(__mem->__grad, v1, v2);
