@@ -37013,8 +37013,8 @@ if(add)
 				double _Z22 = 0;
 
 				double _X = _xu * v1 + _xv * v2;
-				double _Y = _yu * v1 + _xv * v2;
-				double _Z = _zu * v1 + _xv * v2;
+				double _Y = _yu * v1 + _yv * v2;
+				double _Z = _zu * v1 + _zv * v2;
 
 
 				val = 0;
@@ -37082,8 +37082,8 @@ if(add)
 				double _Z22 = 0;
 
 				double _X = _xu * v1 + _xv * v2;
-				double _Y = _yu * v1 + _xv * v2;
-				double _Z = _zu * v1 + _xv * v2;
+				double _Y = _yu * v1 + _yv * v2;
+				double _Z = _zu * v1 + _zv * v2;
 
 
 				val = 0;
@@ -37150,8 +37150,8 @@ if(add)
 				double _Z22 = _ref->___dh[3][s];
 
 				double _X = _xu * v1 + _xv * v2;
-				double _Y = _yu * v1 + _xv * v2;
-				double _Z = _zu * v1 + _xv * v2;
+				double _Y = _yu * v1 + _yv * v2;
+				double _Z = _zu * v1 + _zv * v2;
 
 
 				val = 0;
