@@ -5861,6 +5861,9 @@ namespace KingOfMonsters {
 		double A() {
 			return this->dv;
 		}
+			double _A() {
+				return this->_dv;
+			}
 		double dA(int i) {
 			double da = 0;
 			for (int l = 0; l < 2; l++)
@@ -10385,6 +10388,38 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 				double _g12 = _ref->d1[0][s] * get_gi2(1, 1) + _ref->d1[1][s] * get_gi2(0, 1);
 				double _g21 = _g12;
 				double _g22 = 2 * _ref->d1[1][s] * get_gi2(1, 1);
+
+				double val = 0.5 * (_g11 * get_Gij(0, 0) + 2 * _g12 * get_Gij(0, 1) + _g22 * get_Gij(1, 1)) * _dv;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		void _A_x(double* ptr)
+		{
+			double* ptr1 = ptr;
+			double val = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 0);
+				double _g12 = _ref->d1[0][s] * get_gi(1, 0) + _ref->d1[1][s] * get_gi(0, 0);
+				double _g21 = _g12;c
+				double _g22 = 2 * _ref->d1[1][s] * get_gi(1, 0);
+
+				double val = 0.5 * (_g11 * get_Gij(0, 0) + 2 * _g12 * get_Gij(0, 1) + _g22 * get_Gij(1, 1)) * _dv;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		void _A_y(double* ptr)
+		{
+			double* ptr1 = ptr;
+			double val = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 1);
+				double _g12 = _ref->d1[0][s] * get_gi(1, 1) + _ref->d1[1][s] * get_gi(0, 1);
+				double _g21 = _g12;
+				double _g22 = 2 * _ref->d1[1][s] * get_gi(1, 1);
 
 				double val = 0.5 * (_g11 * get_Gij(0, 0) + 2 * _g12 * get_Gij(0, 1) + _g22 * get_Gij(1, 1)) * _dv;
 				*ptr1 = val;
@@ -57547,6 +57582,9 @@ if(add)
 		double A() {
 			return __mem->A();
 		}
+		double _A() {
+			return __mem->_A();
+		}
 		double dA(int i) {
 			return __mem->dA(i);
 		}
@@ -57828,6 +57866,16 @@ if(add)
 		{
 			__mem->__area_v(__mem->__grad);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c);
+		}
+		void _A_x(myDoubleArray^ vec, myIntArray^ index, double sc)
+		{
+			__mem->_A_x(__mem->__grad);
+			vec->_arr->plus_useindex(__mem->__grad, sc, __mem->_nNode, index->_arr);
+		}
+		void _A_y(myDoubleArray^ vec, myIntArray^ index, double sc)
+		{
+			__mem->_A_y(__mem->__grad);
+			vec->_arr->plus_useindex(__mem->__grad, sc, __mem->_nNode, index->_arr);
 		}
 		void A_x(myDoubleArray^ vec, myIntArray^ index, double sc)
 		{
