@@ -10402,7 +10402,7 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 			{
 				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 0);
 				double _g12 = _ref->d1[0][s] * get_gi(1, 0) + _ref->d1[1][s] * get_gi(0, 0);
-				double _g21 = _g12;c
+				double _g21 = _g12;
 				double _g22 = 2 * _ref->d1[1][s] * get_gi(1, 0);
 
 				double val = 0.5 * (_g11 * get_Gij(0, 0) + 2 * _g12 * get_Gij(0, 1) + _g22 * get_Gij(1, 1)) * _dv;
