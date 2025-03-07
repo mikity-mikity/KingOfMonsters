@@ -15018,6 +15018,302 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 		}
 
 
+		double ConformalC()
+		{
+
+
+			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				xiu += _ref->d1[0][s] * _ref->buf_xi[s];
+				xiv += _ref->d1[1][s] * _ref->buf_xi[s];
+				etau += _ref->d1[0][s] * _ref->buf_eta[s];
+				etav += _ref->d1[1][s] * _ref->buf_eta[s];
+
+			}
+			double e11 = xiu * xiu + etau * etau;
+			double e12 = xiu * xiv + etau * etav;
+			double e22 = xiv * xiv + etav * etav;
+
+
+			double _scale = _ref->osc2;
+			double val = (e11 * get_gij(0, 1) - e12 * get_gij(0, 0)) * _scale;// *scale* scale2;
+			return val;
+		}
+		void ConformalC_x(double* ptr)
+		{
+			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				xiu += _ref->d1[0][s] * _ref->buf_xi[s];
+				xiv += _ref->d1[1][s] * _ref->buf_xi[s];
+				etau += _ref->d1[0][s] * _ref->buf_eta[s];
+				etav += _ref->d1[1][s] * _ref->buf_eta[s];
+
+			}
+			double e11 = xiu * xiu + etau * etau;
+			double e12 = xiu * xiv + etau * etav;
+			double e22 = xiv * xiv + etav * etav;
+
+			double _scale = _ref->osc2;
+			double* ptr1 = ptr;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 0);
+				double _g12 = _ref->d1[0][s] * get_gi(1, 0) + _ref->d1[1][s] * get_gi(0, 0);
+				double _g22 = 2 * _ref->d1[1][s] * get_gi(1, 0);
+				double val = (e11 * _g12 - e12 * _g11) * _scale;// *scale* scale2;
+				//val += (e11 * get_gij2(0, 1) - e12 * get_gij2(0, 0)) * dscale * scale2;
+
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		void ConformalC_y(double* ptr)
+		{
+			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				xiu += _ref->d1[0][s] * _ref->buf_xi[s];
+				xiv += _ref->d1[1][s] * _ref->buf_xi[s];
+				etau += _ref->d1[0][s] * _ref->buf_eta[s];
+				etav += _ref->d1[1][s] * _ref->buf_eta[s];
+
+			}
+			double e11 = xiu * xiu + etau * etau;
+			double e12 = xiu * xiv + etau * etav;
+			double e22 = xiv * xiv + etav * etav;
+
+			double _scale = _ref->osc2;
+
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 1);
+				double _g12 = _ref->d1[0][s] * get_gi(1, 1) + _ref->d1[1][s] * get_gi(0, 1);
+				double _g22 = 2 * _ref->d1[1][s] * get_gi(1, 1);
+
+				double val = (e11 * _g12 - e12 * _g11) * _scale;// *scale* scale2;
+				//val += (e11 * get_gij2(0, 1) - e12 * get_gij2(0, 0)) * dscale * scale2;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		
+		void ConformalC_xi(double* ptr)
+		{
+			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				xiu += _ref->d1[0][s] * _ref->buf_xi[s];
+				xiv += _ref->d1[1][s] * _ref->buf_xi[s];
+				etau += _ref->d1[0][s] * _ref->buf_eta[s];
+				etav += _ref->d1[1][s] * _ref->buf_eta[s];
+
+			}
+			double e11 = xiu * xiu + etau * etau;
+			double e12 = xiu * xiv + etau * etav;
+			double e22 = xiv * xiv + etav * etav;
+
+			double _scale = _ref->osc2;
+
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _e11 = 2 * _ref->d1[0][s] * xiu;
+				double _e12 = _ref->d1[0][s] * xiv + _ref->d1[1][s] * xiu;
+				double _e22 = 2 * _ref->d1[1][s] * xiv;
+
+
+
+				double val = (_e11 * get_gij(0, 1) - _e12 * get_gij(0, 0)) * _scale;// *scale* scale2;
+				//val += (e11 * get_gij2(0, 1) - e12 * get_gij2(0, 0)) * scale * dscale2;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		void ConformalC_eta(double* ptr)
+		{
+			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				xiu += _ref->d1[0][s] * _ref->buf_xi[s];
+				xiv += _ref->d1[1][s] * _ref->buf_xi[s];
+				etau += _ref->d1[0][s] * _ref->buf_eta[s];
+				etav += _ref->d1[1][s] * _ref->buf_eta[s];
+
+			}
+			double e11 = xiu * xiu + etau * etau;
+			double e12 = xiu * xiv + etau * etav;
+			double e22 = xiv * xiv + etav * etav;
+
+			double _scale = _ref->osc2;
+
+
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _e11 = 2 * _ref->d1[0][s] * etau;
+				double _e12 = _ref->d1[0][s] * etav + _ref->d1[1][s] * etau;
+				double _e22 = 2 * _ref->d1[1][s] * etav;
+
+				double val = (_e11 * get_gij(0, 1) - _e12 * get_gij(0, 0)) * _scale;// *scale* scale2;
+				//val += (e11 * get_gij2(0, 1) - e12 * get_gij2(0, 0)) * scale * dscale2;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+
+
+		double ConformalD()
+		{
+
+
+			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				xiu += _ref->d1[0][s] * _ref->buf_xi[s];
+				xiv += _ref->d1[1][s] * _ref->buf_xi[s];
+				etau += _ref->d1[0][s] * _ref->buf_eta[s];
+				etav += _ref->d1[1][s] * _ref->buf_eta[s];
+
+			}
+			double e11 = xiu * xiu + etau * etau;
+			double e12 = xiu * xiv + etau * etav;
+			double e22 = xiv * xiv + etav * etav;
+
+
+			double _scale = _ref->osc2;
+			double val = (e22 * get_gij(0, 1) - e12 * get_gij(1, 1)) * _scale;// *scale* scale2;
+			return val;
+		}
+		void ConformalD_x(double* ptr)
+		{
+			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				xiu += _ref->d1[0][s] * _ref->buf_xi[s];
+				xiv += _ref->d1[1][s] * _ref->buf_xi[s];
+				etau += _ref->d1[0][s] * _ref->buf_eta[s];
+				etav += _ref->d1[1][s] * _ref->buf_eta[s];
+
+			}
+			double e11 = xiu * xiu + etau * etau;
+			double e12 = xiu * xiv + etau * etav;
+			double e22 = xiv * xiv + etav * etav;
+
+			double _scale = _ref->osc2;
+			double* ptr1 = ptr;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 0);
+				double _g12 = _ref->d1[0][s] * get_gi(1, 0) + _ref->d1[1][s] * get_gi(0, 0);
+				double _g22 = 2 * _ref->d1[1][s] * get_gi(1, 0);
+				double val = (e22 * _g12 - e12 * _g22) * _scale;// *scale* scale2;
+				//val += (e11 * get_gij2(0, 1) - e12 * get_gij2(0, 0)) * dscale * scale2;
+
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		void ConformalD_y(double* ptr)
+		{
+			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				xiu += _ref->d1[0][s] * _ref->buf_xi[s];
+				xiv += _ref->d1[1][s] * _ref->buf_xi[s];
+				etau += _ref->d1[0][s] * _ref->buf_eta[s];
+				etav += _ref->d1[1][s] * _ref->buf_eta[s];
+
+			}
+			double e11 = xiu * xiu + etau * etau;
+			double e12 = xiu * xiv + etau * etav;
+			double e22 = xiv * xiv + etav * etav;
+
+			double _scale = _ref->osc2;
+
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _g11 = 2 * _ref->d1[0][s] * get_gi(0, 1);
+				double _g12 = _ref->d1[0][s] * get_gi(1, 1) + _ref->d1[1][s] * get_gi(0, 1);
+				double _g22 = 2 * _ref->d1[1][s] * get_gi(1, 1);
+
+				double val = (e22 * _g12 - e12 * _g22) * _scale;// *scale* scale2;
+				//val += (e11 * get_gij2(0, 1) - e12 * get_gij2(0, 0)) * dscale * scale2;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+	
+
+		void ConformalD_xi(double* ptr)
+		{
+			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				xiu += _ref->d1[0][s] * _ref->buf_xi[s];
+				xiv += _ref->d1[1][s] * _ref->buf_xi[s];
+				etau += _ref->d1[0][s] * _ref->buf_eta[s];
+				etav += _ref->d1[1][s] * _ref->buf_eta[s];
+
+			}
+			double e11 = xiu * xiu + etau * etau;
+			double e12 = xiu * xiv + etau * etav;
+			double e22 = xiv * xiv + etav * etav;
+
+			double _scale = _ref->osc2;
+
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _e11 = 2 * _ref->d1[0][s] * xiu;
+				double _e12 = _ref->d1[0][s] * xiv + _ref->d1[1][s] * xiu;
+				double _e22 = 2 * _ref->d1[1][s] * xiv;
+
+
+
+				double val = (_e22 * get_gij(0, 1) - _e12 * get_gij(1, 1)) * _scale;// *scale* scale2;
+				//val += (e11 * get_gij2(0, 1) - e12 * get_gij2(0, 0)) * scale * dscale2;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		void ConformalD_eta(double* ptr)
+		{
+			double xiu = 0, xiv = 0, etau = 0, etav = 0, phiu = 0, phiv = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				xiu += _ref->d1[0][s] * _ref->buf_xi[s];
+				xiv += _ref->d1[1][s] * _ref->buf_xi[s];
+				etau += _ref->d1[0][s] * _ref->buf_eta[s];
+				etav += _ref->d1[1][s] * _ref->buf_eta[s];
+
+			}
+			double e11 = xiu * xiu + etau * etau;
+			double e12 = xiu * xiv + etau * etav;
+			double e22 = xiv * xiv + etav * etav;
+
+			double _scale = _ref->osc2;
+
+
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _e11 = 2 * _ref->d1[0][s] * etau;
+				double _e12 = _ref->d1[0][s] * etav + _ref->d1[1][s] * etau;
+				double _e22 = 2 * _ref->d1[1][s] * etav;
+
+				double val = (_e22 * get_gij(0, 1) - _e12 * get_gij(1, 1)) * _scale;// *scale* scale2;
+				//val += (e11 * get_gij2(0, 1) - e12 * get_gij2(0, 0)) * scale * dscale2;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+
 
 		double conformal_x()
 		{
@@ -43489,6 +43785,61 @@ if(add)
 				ptr1++;
 			}
 		}
+		double __phin(double v1, double v2)
+		{
+			double _length = sqrt(v1 * v1 * _ref->_og11 + 2 * v1 * v2 * _ref->_og12 + v2 * v2 * _ref->_og22);
+			v1 /= _length;
+			v2 /= _length;
+			double val = 0;
+
+
+			double w2 = -_ref->_og11 * v1 - _ref->_og12 * v2;
+			double w1 = _ref->_og12 * v1 + _ref->_og22 * v2;
+			_length = sqrt(w1 * w1 * _ref->_og11 + 2 * w1 * w2 * _ref->_og12 + w2 * w2 * _ref->_og22);
+			w1 /= _length;
+			w2 /= _length;
+			double z1 = 0, z2 = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				z1 += _ref->d1[0][s] * _ref->buf_phi[s];
+				z2 += _ref->d1[1][s] * _ref->buf_phi[s];
+			}
+
+
+			val = (z1 * w1 + z2 * w2);
+
+			return val;
+
+		}
+
+		void __phin_phi(double* ptr, double v1, double v2)
+		{
+
+			double val = 0;
+			double _length = sqrt(v1 * v1 * _ref->_og11 + 2 * v1 * v2 * _ref->_og12 + v2 * v2 * _ref->_og22);
+			v1 /= _length;
+			v2 /= _length;
+
+
+			double w2 = -_ref->_og11 * v1 - _ref->_og12 * v2;
+			double w1 = _ref->_og12 * v1 + _ref->_og22 * v2;
+			_length = sqrt(w1 * w1 * _ref->_og11 + 2 * w1 * w2 * _ref->_og12 + w2 * w2 * _ref->_og22);
+			w1 /= _length;
+			w2 /= _length;
+
+
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _z1 = _ref->d1[0][s];
+				double _z2 = _ref->d1[1][s];
+
+
+				val = (_z1 * w1 + _z2 * w2);
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
 		double ztt(double v1, double v2)
 		{
 			double _length = sqrt(v1 * v1 * _ref->_og11 + 2 * v1 * v2 * _ref->_og12 + v2 * v2 * _ref->_og22);
@@ -64297,6 +64648,16 @@ if(add)
 			__mem->_phin_phi(__mem->__grad, v1, v2);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_nNode, add, c1);
 		}
+		double __phin(double v1, double v2)
+		{
+			return __mem->__phin(v1, v2);
+		}
+
+		void __phin_phi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, int shift, double v1, double v2, bool add)
+		{
+			__mem->__phin_phi(__mem->__grad, v1, v2);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad - shift, shift, sc, __mem->_nNode, add, c1);
+		}
 		double btt(double v1, double v2)
 		{
 			return __mem->btt(v1, v2);
@@ -66816,7 +67177,57 @@ if(add)
 				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
 			}
 			
+			double Conformal_C()
+			{
+				return __mem->ConformalC();
+			}
+			void Conformal_C_x(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->ConformalC_x(__mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
+			}
+			void Conformal_C_y(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->ConformalC_y(__mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
+			}
+			
+			void Conformal_C_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->ConformalC_xi(__mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
+			}
+			void Conformal_C_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->ConformalC_eta(__mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
+			}
 
+			double Conformal_D()
+			{
+				return __mem->ConformalD();
+			}
+			void Conformal_D_x(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->ConformalD_x(__mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
+			}
+			void Conformal_D_y(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->ConformalD_y(__mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
+			}
+			
+			void Conformal_D_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->ConformalD_xi(__mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
+			}
+			void Conformal_D_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			{
+				__mem->ConformalD_eta(__mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
+			}
 			double conformal_A()
 			{
 				return __mem->conformalA();
