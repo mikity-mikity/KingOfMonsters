@@ -1104,6 +1104,127 @@ namespace KingOfMonsters {
 			
 
 		}
+		void _assemble(mySparse^ A, mySparse^ B, mySparse^ C, bool transpose, bool topleft, bool bottomright, bool topright, bool bottomleft, double w1, double w2, int N1, int N2)
+		{
+			//if(A!=nullptr && C!=nullptr)
+			this->dat->_mat[0].resize(N1 + N2, N1 + N2);
+			//this->dat->_mat[0].setZero();
+
+			std::vector<Eigen::Triplet<double>> dat;
+			if (A != nullptr)
+			{
+				if (topleft)
+				{
+
+					for (Int64 k = 0; k < A->dat->_mat[0].outerSize(); ++k)
+					{
+						for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(A->dat->_mat[0], k); it; ++it)
+						{
+							dat.push_back(Eigen::Triplet<double>(it.row(), it.col(), it.value()));
+						}
+					}
+
+				}
+			}
+			if (C != nullptr)
+			{
+				if (bottomright)
+				{
+
+					for (Int64 k = 0; k < C->dat->_mat[0].outerSize(); ++k)
+					{
+						for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(C->dat->_mat[0], k); it; ++it)
+						{
+							dat.push_back(Eigen::Triplet<double>(it.row()+N1, it.col()+N1, it.value()));
+						}
+					}
+
+				}
+			}
+			if (B != nullptr)
+			{
+				if (transpose)
+				{
+					if (topright)
+					{
+
+						for (Int64 k = 0; k < B->dat->_mat[0].outerSize(); ++k)
+						{
+							for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(B->dat->_mat[0], k); it; ++it)
+							{
+								dat.push_back(Eigen::Triplet<double>(it.col(), it.row() + N1, it.value()));
+							
+							}
+						}
+
+					}
+
+					if (bottomleft)
+					{
+
+						for (Int64 k = 0; k < B->dat->_mat[0].outerSize(); ++k)
+						{
+							for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(B->dat->_mat[0], k); it; ++it)
+							{
+								dat.push_back(Eigen::Triplet<double>(it.row() +N1, it.col(), it.value()));
+								
+							}
+						}
+
+					}
+				}
+				else {
+					if (topright)
+					{
+
+						for (Int64 k = 0; k < B->dat->_mat[0].outerSize(); ++k)
+						{
+							for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(B->dat->_mat[0], k); it; ++it)
+							{
+								dat.push_back(Eigen::Triplet<double>(it.row() , it.col() + N1, it.value()));
+
+							}
+						}
+					}
+					if (bottomleft)
+					{
+
+						for (Int64 k = 0; k < B->dat->_mat[0].outerSize(); ++k)
+						{
+							for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(B->dat->_mat[0], k); it; ++it)
+							{
+								dat.push_back(Eigen::Triplet<double>(it.col() + N1, it.row() , it.value()));
+
+							}
+						}
+
+					}
+				}
+			}
+			this->dat->_mat[0].reserve(dat.size());
+			//this->dat->_mat[0].resize(A->dat->_mat[0].rows() + B->dat->_mat[0].rows(), A->dat->_mat[0].cols() + B->dat->_mat[0].rows());
+			this->dat->_mat[0].setZero();
+			this->dat->_mat[0].setFromTriplets(dat.begin(), dat.end());
+
+			/*
+			if (C != nullptr)
+				if (bottomright)this->dat->_mat[0].bottomRightCorner(N2, N2) = C->dat->_mat[0];
+			if (B != nullptr)
+			{
+				if (transpose)
+				{
+					if (topright)this->dat->_mat[0].topRightCorner(N1, N2) = B->dat->_mat[0].transpose();
+					if (bottomleft)this->dat->_mat[0].bottomLeftCorner(N2, N1) = B->dat->_mat[0];
+				}
+				else {
+					if (topright)this->dat->_mat[0].topRightCorner(N1, N2) = B->dat->_mat[0];
+					if (bottomleft)this->dat->_mat[0].bottomLeftCorner(N2, N1) = B->dat->_mat[0].transpose();
+				}
+
+			}*/
+
+
+		}
 		void ofStack3(mySparse^ A, mySparse^ B)
 		{
 			auto m1 = A->dat->_dmat;
@@ -2523,7 +2644,7 @@ namespace KingOfMonsters {
 				_str += "success";
 				
 			}
-			System::Console::WriteLine(gcnew System::String(_str.c_str()));
+			//System::Console::WriteLine(gcnew System::String(_str.c_str()));
 		}
 		void _solve0_lu_cpu_minN(myDoubleArray^ rhs, myDoubleArray^ ret, int ordering, bool meh, double nnn) {
 			mySparse^ m = nullptr;
@@ -2622,7 +2743,7 @@ namespace KingOfMonsters {
 				}
 			}
 			if (_str == "")_str = "success";
-			System::Console::WriteLine(gcnew System::String(_str.c_str()));
+			//System::Console::WriteLine(gcnew System::String(_str.c_str()));
 		}
 		void solve0_lu(myDoubleArray^ rhs, myDoubleArray^ ret) {
 			//pin_ptr<double> ptr = &rhs[0];
