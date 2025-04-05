@@ -884,11 +884,12 @@ return;
 	
 }
 
-
+#ifndef _CPU
 int* KingOfMonsters::cuda::devicelist()
 {
 	return _deviceList;
 }
+#endif
 /*
 double** KingOfMonsters::cuda::array_d_A()
 {
@@ -916,10 +917,12 @@ bool KingOfMonsters::cuda::canpeer()
 {
 	return _canpeer;
 }
+#ifndef _CPU
 cudaStream_t& KingOfMonsters::cuda::__streams(int64_t i, int64_t j)
 {
 	return _streams[i][j];
 }
+#endif
 void KingOfMonsters::cuda::dispose() {
 #ifndef _CPU
 	if (valid())
@@ -1167,6 +1170,7 @@ string  KingOfMonsters::cuda::device_name() {
 	return "CPU";
 #endif
 }
+#ifndef _CPU
 cusolverDnHandle_t& KingOfMonsters::cuda::solver(int64_t ii, int64_t kk) {
 	return solver_handle[ii][kk];
 }
@@ -1176,9 +1180,12 @@ cusolverDnHandle_t& KingOfMonsters::cuda::solver(int64_t ii, int64_t kk) {
 cublasHandle_t& KingOfMonsters::cuda::blas(int64_t ii) {
  	return cublas_handle[ii];
 }
+#endif
+
 int& KingOfMonsters::cuda::count() {
 	return _count;
 }
+
 int& KingOfMonsters::cuda::fastest() {
 #ifndef _CPU
 	return _fastest;
@@ -3059,8 +3066,10 @@ void KingOfMonsters::_mySparse::LSsolve(Eigen::VectorXd* rhs, Eigen::VectorXd* r
 	//Eigen::LLT<Eigen::MatrixXd> lu;
 	//MKL_Set_Num_Threads(16);
 	//MKL_Set_Dynamic(false);
-	Eigen::PardisoLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
-	lu.pardisoParameterArray()[59] = 1;
+	//Eigen::PardisoLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
+Eigen::SparseLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
+
+	//lu.pardisoParameterArray()[59] = 1;
 	//Eigen::BiCGSTAB< Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	//Eigen::MatrixXd m(this->_mat[0].rows(), this->_mat[0].cols());
 	//m = this->_mat[0];
@@ -3094,8 +3103,9 @@ void KingOfMonsters::_mySparse::Project(Eigen::VectorXd* rhs, Eigen::VectorXd* r
 	//MKL_Set_Num_Threads(16);
 	//MKL_Set_Dynamic(false);
 	#ifdef _CPU
-	Eigen::PardisoLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
-	lu.pardisoParameterArray()[59] = 1;
+	//Eigen::PardisoLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
+	Eigen::SparseLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
+	//lu.pardisoParameterArray()[59] = 1;
 	//Eigen::MatrixXd m(this->_mat[0].rows(), this->_mat[0].cols());
 	//m = this->_mat[0];
 	Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t> id;
@@ -3380,9 +3390,9 @@ std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs,
 	//MKL_Set_Num_Threads(16);
 	//MKL_Set_Dynamic(false);
 #ifdef _CPU
-	_mt = MKL_Get_Max_Threads();
-	if(_mt>1)
-	MKL_Set_Num_Threads(_mt - 1);
+	//_mt = MKL_Get_Max_Threads();
+	//if(_mt>1)
+	//MKL_Set_Num_Threads(_mt - 1);
 
 	Eigen::setNbThreads(_mt);
 	
@@ -3391,9 +3401,10 @@ std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs,
 	//Eigen::SparseQR< Eigen::SparseMatrix<double, 0, int64_t>, Eigen::COLAMDOrdering<int64_t>>lu;
 	//Eigen::BiCGSTAB< Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	
-	MKL_Set_Dynamic(true);
+	//MKL_Set_Dynamic(true);
 	
-	Eigen::PardisoLU < Eigen::SparseMatrix<double, 0, int64_t>> lu;
+	//Eigen::PardisoLU < Eigen::SparseMatrix<double, 0, int64_t>> lu;
+	Eigen::SparseLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	//lu.pardisoParameterArray()[59] = 1;
 	//pardiso.compute(this->_mat[0]);
 
@@ -3401,7 +3412,7 @@ std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs,
 	//lu.setPivotThreshold(0.0000000001);l;ll;
 	//lu.setMaxIterations(rhs->size() * 0.5);
 	lu.compute(this->_mat[0]);
-	if (lu.info() == Eigen::ComputationInfo::Success)
+	//if (lu.info() == Eigen::ComputationInfo::Success)
 	{
 		if (rhs->size() > this->_mat[0].rows())
 		{
@@ -3423,12 +3434,12 @@ std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs,
 		}
 		return "success";
 	}
-	else {
+	/*else {
 		std::stringstream ss;
 		ss << lu.info();
 		return ss.str();
 		;
-	}
+	}*/
 #endif
 	return "_cpu only";
 }
@@ -3669,8 +3680,8 @@ std::string KingOfMonsters::_mySparse::_solveI_gpu_single(KingOfMonsters::cuda* 
 {	std::stringstream sss;
 
 #ifdef _CPU
-MKL_Set_Num_Threads(16);
-MKL_Set_Dynamic(false);
+//MKL_Set_Num_Threads(16);
+//MKL_Set_Dynamic(false);
 ret->_dmat = this->_dmat.inverse();
 	sss << "cpu_mode";
 	return sss.str();

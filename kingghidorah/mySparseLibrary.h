@@ -52,6 +52,7 @@ namespace KingOfMonsters {
 		}
 		void toGPU()
 		{
+#ifndef _CPU
 			if (gpumat == 0)
 			{
 				double* ptr =0;
@@ -59,6 +60,7 @@ namespace KingOfMonsters {
 				gpumat = ptr;
 			}		
 			cudaMemcpy(gpumat, this->mat->data(), sizeof(double) * this->mat->rows() * this->mat->cols(), cudaMemcpyHostToDevice);
+#endif
 		}
 		Eigen::MatrixXd& get()
 		{
@@ -116,11 +118,13 @@ namespace KingOfMonsters {
 				delete mat;
 			}
 			mat = 0;
+#ifndef _CPU
 			if (gpumat != 0)
 			{
 				cudaFree(gpumat);
 			}
 			gpumat = 0;
+#endif
 		}
 	};
 	public ref class mySparseVector {
@@ -710,6 +714,7 @@ namespace KingOfMonsters {
 		
 		void toGpu()
 		{
+#ifndef _CPU
 			if (dat->gpumat == 0)
 			{
 				cudaMalloc(&dat->gpumat, sizeof(double) * this->dat->_dmat.rows() * this->dat->_dmat.cols());
@@ -722,6 +727,7 @@ namespace KingOfMonsters {
 				dat->gpusize = this->dat->_dmat.rows() * this->dat->_dmat.cols();
 			}
 			cudaMemcpy(dat->gpumat, this->dat->_dmat.data(), sizeof(double) * this->dat->_dmat.rows() * this->dat->_dmat.cols(), cudaMemcpyHostToDevice);
+#endif
 		}
 		void extend2(int N)
 		{
@@ -1418,11 +1424,13 @@ namespace KingOfMonsters {
 		}
 		void release()
 		{
+#ifndef _CPU
 			if (dat->gpumat != 0)
 			{
 				cudaFree(dat->gpumat);
 				dat->gpumat = 0;
 			}
+#endif 
 		}
 		void ofvv(myDoubleArray^ v,double sc)
 		{
@@ -1753,6 +1761,7 @@ namespace KingOfMonsters {
 			else {
 				double a = 1;
 				double b = 0;
+#ifndef _CPU
 				auto cublas = cuda->cuda()->blas(device);
 				double* result = cuda->cuda()->work_M(cuda->fastest());
 		
@@ -1776,11 +1785,14 @@ namespace KingOfMonsters {
 				sss += "dgemm:" + ((int)err).ToString();
 				this->dat->_dmat.resize(A->dat->_dmat.cols(), A->dat->_dmat.cols());
 				cudaMemcpy(this->dat->_dmat.data(), this->dat->gpumat, sizeof(double) * A->dat->_dmat.cols() * A->dat->_dmat.cols(), cudaMemcpyDeviceToHost);
+#endif
+
 			}
 			if (b != nullptr && ret != nullptr)
 			{
 				ret->_arr->__v = this->dat->_dmat * b->_arr->__v;
 			}
+
 			return sss;
 		}
 		void __AtBA(mySparse^ E, myCuda^ cuda)
@@ -1789,6 +1801,7 @@ namespace KingOfMonsters {
 		}
 		void AtBA(denseMatrix^ E, myCuda^ cuda)
 		{
+#ifndef _CPU
 			int device = cuda->fastest();
 			
 			if(this->dat->gpumat==0 || E->gpumat == 0)
@@ -1819,9 +1832,11 @@ namespace KingOfMonsters {
 				this->dat->_dmat.resize(E->get().cols(), E->get().cols());
 				cudaMemcpy(this->dat->_dmat.data(), this->dat->gpumat, sizeof(double) * E->get().cols() * E->get().cols(),cudaMemcpyDeviceToHost);
 			}
+#endif
 		}
 		void AtBA(mySparse^ E, myCuda^ cuda)
 		{
+#ifndef _CPU
 			int device = cuda->fastest();
 
 			if (this->dat->gpumat == 0 || E->dat->gpumat == 0)
@@ -1851,9 +1866,11 @@ namespace KingOfMonsters {
 				this->dat->_dmat.resize(E->dat->_dmat.cols(), E->dat->_dmat.cols());
 				cudaMemcpy(this->dat->_dmat.data(), this->dat->gpumat, sizeof(double) * E->dat->_dmat.cols() * E->dat->_dmat.cols(), cudaMemcpyDeviceToHost);
 			}
+#endif
 		}
 		void ABAt(denseMatrix^ E, myCuda^ cuda)
 		{
+#ifndef _CPU
 			int device = cuda->fastest();
 
 			if (this->dat->gpumat == 0 || E->gpumat == 0)
@@ -1883,9 +1900,11 @@ namespace KingOfMonsters {
 				this->dat->_dmat.resize(E->get().rows(), E->get().rows());
 				cudaMemcpy(this->dat->_dmat.data(), this->dat->gpumat, sizeof(double) * E->get().rows() * E->get().rows(), cudaMemcpyDeviceToHost);
 			}
+#endif
 		}
 		void ABAt(mySparse^ E, myCuda^ cuda)
 		{
+#ifndef _CPU
 			int device = cuda->fastest();
 
 			if (this->dat->gpumat == 0 || E->dat->gpumat == 0)
@@ -1916,6 +1935,7 @@ namespace KingOfMonsters {
 
 				cudaMemcpy(this->dat->_dmat.data(), this->dat->gpumat, sizeof(double) * E->dat->_dmat.rows() * E->dat->_dmat.rows(), cudaMemcpyDeviceToHost);
 			}
+#endif
 		}
 		void __AB(mySparse^ E)
 		{
@@ -1926,6 +1946,7 @@ namespace KingOfMonsters {
 		}
 		void AB(mySparse^ E, myCuda^ cuda)
 		{
+#ifndef _CPU
 			int device = cuda->fastest();
 
 			if (this->dat->gpumat == 0 || E->dat->gpumat == 0)
@@ -1947,6 +1968,7 @@ namespace KingOfMonsters {
 
 				cudaMemcpy(this->dat->_dmat.data(), result, sizeof(double) * E->dat->_dmat.rows() * this->dat->_dmat.cols(), cudaMemcpyDeviceToHost);
 			}
+#endif
 		}
 		void __ABCt(mySparse^ E, mySparse^ D)
 		{
@@ -1956,6 +1978,7 @@ namespace KingOfMonsters {
 		}
 		void ABCt(mySparse^ E, mySparse^ D, myCuda^ cuda)
 		{			
+#ifndef _CPU
 			int device = cuda->fastest();
 
 			if (this->dat->gpumat == 0 || E->dat->gpumat == 0)
@@ -1985,6 +2008,7 @@ namespace KingOfMonsters {
 				this->dat->_dmat.resize(E->dat->_dmat.rows(), D->dat->_dmat.rows());
 				cudaMemcpy(this->dat->_dmat.data(), this->dat->gpumat, sizeof(double) * E->dat->_dmat.rows() * D->dat->_dmat.rows(), cudaMemcpyDeviceToHost);
 			}
+#endif
 		}
 		
 		void AtB(myDoubleArray^ b)
@@ -2800,7 +2824,7 @@ namespace KingOfMonsters {
 			//ptr = nullptr;
 			//return ret;
 		}
-
+#ifndef _CPU
 		System::String^ _solve_gpu(myCuda^ gpu, myDoubleArray^ rhs, myDoubleArray^ ret, Int64 device) {
 			//pin_ptr<double> ptr = &rhs[0];
 
@@ -2841,6 +2865,7 @@ namespace KingOfMonsters {
 			//return ret;
 			return ee;
 		}
+#endif
 		System::String^ _solveLU_sparse_cpu(myDoubleArray^ rhs, myDoubleArray^ ret) {
 			//auto ss = dat->_solveLU_gpu(gpu->cuda(), &rhs->_arr->__v, &ret->_arr->__v, device);
 			//System::String^ ee = gcnew System::String(ss.c_str());
@@ -3728,6 +3753,7 @@ namespace KingOfMonsters {
 		}
 		static void GN(mySparse^ mat1, mySparse^ mat2, mySparse^ mat3, myDoubleArray^ rhs1, myDoubleArray^ rhs2, myDoubleArray^ ret1, myDoubleArray^ ret2,int L1phi,int L1Z,myCuda ^cuda)
 		{
+			#ifndef _CPU
 			Eigen::MatrixXd M(L1phi + L1Z, L1phi + L1Z);
 			M.topLeftCorner(L1phi, L1phi) = mat1->dat->_mat[0];
 			M.bottomRightCorner(L1Z, L1Z) = mat2->dat->_mat[0];
@@ -3753,6 +3779,7 @@ namespace KingOfMonsters {
 			ret1->_arr->__v = ret.topRows(L1phi);
 			ret2->_arr->__v = ret.bottomRows(L1Z);
 			*/
+#endif
 
 		}
 		static void GN2(mySparse^ mat1, mySparse^ mat2, mySparse^ mat3, myDoubleArray^ rhs1, myDoubleArray^ rhs2, myDoubleArray^ ret1, myDoubleArray^ ret2, int L1phi, int L1Z, myCuda^ cuda)

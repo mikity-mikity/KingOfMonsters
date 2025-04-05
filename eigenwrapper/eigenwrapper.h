@@ -2,8 +2,8 @@
 
 //#define EIGEN_DONT_PARALLELIZE
 #ifdef _CPU
-#define EIGEN_USE_MKL_ALL
-#define EIGEN_USE_LAPACK
+//#define EIGEN_USE_MKL_ALL
+//#define EIGEN_USE_LAPACK
 #include "eigen-3.4.0/Eigen/PardisoSupport"
 #endif
 #include "eigen-3.4.0/Eigen/Sparse"
@@ -25,9 +25,11 @@
 #endif
 #include <stdlib.h>
 #include <stdio.h>
+#ifndef _CPU
 #include <cusolverDn.h>
 #include <cusolverMg.h>
 #include <cublas_v2.h>
+#endif
 #include <chrono>
 #include <vector>
 #include <map>
@@ -54,6 +56,7 @@ namespace KingOfMonsters {
 		bool initialized;
 		int _count = 0;
 		int _fastest = 0;
+#ifndef _CPU
 		std::vector<std::vector<cusolverDnHandle_t>> solver_handle;
 		//std::vector<std::vector<cusolverSpHandle_t>> solver_handleSp;
 		//std::vector<std::vector<cusparseHandle_t>> cusparse_handle;
@@ -74,13 +77,14 @@ namespace KingOfMonsters {
 		//double* _array_d_work[MAXDEVICE];
 		int* __info[MAXDEVICE];
 		int _deviceList[MAXDEVICE];
+#endif
 		//double* _L=0;
 		std::vector<int> speed;
 
 		//cusolverMgHandle_t mg_solver = 0;
-
+#ifndef _CPU
 		std::vector< std::vector<cudaStream_t>> _streams;
-
+#endif
 	public:
 		//cudaLibMgMatrixDesc_t descrA;
 		//cudaLibMgGrid_t gridA;
@@ -92,9 +96,11 @@ namespace KingOfMonsters {
 		static void disable();
 		cuda(int64_t N);
 		~cuda();
+#ifndef _CPU
 		cusolverDnHandle_t& solver(int64_t ii, int64_t kk);
 		//cusolverSpHandle_t& solverSp(int64_t ii, int64_t kk);
 		cublasHandle_t& blas(int64_t ii);
+#endif
 		//cusolverMgHandle_t mgsolver();
 		//double* L();
 		bool valid();
@@ -113,7 +119,9 @@ namespace KingOfMonsters {
 		int& count();
 		int& fastest();
 		void dispose();
+#ifndef _CPU
 		cudaStream_t& __streams(int64_t i, int64_t j);
+#endif
 		//bool canpeeraccess(int64_t i, int64_t j);
 		//double** array_d_A();
 		//double** array_d_B();
