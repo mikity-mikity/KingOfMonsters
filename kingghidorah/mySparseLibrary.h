@@ -2791,10 +2791,11 @@ namespace KingOfMonsters {
 			//ptr = nullptr;
 			//return ret;
 		}
-		void _solve0_lu_cg(myDoubleArray^ rhs, myDoubleArray^ ret) {
+		
+		void _solve0_lu_cg(myDoubleArray^ rhs, myDoubleArray^ ret,int max,double threshold) {
 			//pin_ptr<double> ptr = &rhs[0];
 
-			dat->_solve0_lu_cg(&rhs->_arr->__v, &ret->_arr->__v);
+			dat->_solve0_lu_cg(&rhs->_arr->__v, &ret->_arr->__v,max,threshold);
 
 			//array<double>^ ret = gcnew array<double>(_ret.rows());
 			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
@@ -3118,6 +3119,10 @@ namespace KingOfMonsters {
 		Int64 numBlocks()
 		{
 			return this->dat->numBlocks();
+		}
+		static void clear()
+		{
+			KingOfMonsters::clear();
 		}
 		static System::String^ _testopenmp()
 		{

@@ -1958,7 +1958,12 @@ int64_t KingOfMonsters::_mySparse::numBlocks()
 	return this->dat.size();
 }
 
-
+void KingOfMonsters::clear()
+{
+	dict.clear();
+	dict2.clear();
+	map.clear();
+}
 std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 {	
 	//static std::vector<std::vector<int64_t>> index;
@@ -4336,7 +4341,7 @@ void KingOfMonsters::_mySparse::solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd*
 	*ret = lu.solve(*rhs);
 	//return x;
 }
-void KingOfMonsters::_mySparse::_solve0_lu_cg(Eigen::VectorXd* rhs, Eigen::VectorXd* ret) {
+void KingOfMonsters::_mySparse::_solve0_lu_cg(Eigen::VectorXd* rhs, Eigen::VectorXd* ret,int max,double threshold) {
 	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);
 	//Eigen::SparseLU<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>> lu;
 	Eigen::ConjugateGradient<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>, Eigen::Lower | Eigen::Upper> cg;
