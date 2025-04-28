@@ -42702,15 +42702,19 @@ if(add)
 			double S21 = S12;*/
 			
 
-			double S11 = 0, S12 = 0, S21 = 0, S22 = 0;
+			/*double S11 = 0, S12 = 0, S21 = 0, S22 = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				S11 += _ref->___dh[0][s] * _ref->buf_z[s];
 				S12 += _ref->___dh[1][s] * _ref->buf_z[s];
 				S22 += _ref->___dh[3][s] * _ref->buf_z[s];
-			}
-			S21 = S12;
-		
+			}*/
+			double S11 = get___Sij(0, 0);
+			double S12 = get___Sij(0, 1);
+			double S22 = get___Sij(1, 1); 
+			double S21 = S12;
+
+			
 			//double iJ = _ref->orefDv / _dv;
 
 			
@@ -42825,14 +42829,10 @@ if(add)
 			double E12 = w1 * (v1 * v2) + w2 * (s1 * s2);
 			double E21 = w1 * (v2 * v1) + w2 * (s2 * s1);
 			double E22 = w1 * (v2 * v2) + w2 * (s2 * s2);
-			double S11 = 0, S12 = 0, S21 = 0, S22 = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				S11 += _ref->___dh[0][s] * _ref->buf_z[s];
-				S12 += _ref->___dh[1][s] * _ref->buf_z[s];
-				S22 += _ref->___dh[3][s] * _ref->buf_z[s];
-			}
-			S21 = S12;
+			double S11 = get___Sij(0, 0);
+			double S12 = get___Sij(0, 1);
+			double S22 = get___Sij(1, 1);
+			double S21 = S12;
 
 			double scale = 1.0  /*/ trEij*/ / _ref->orefDv;
 			//double scale = 1.0 / _dv;
@@ -42862,14 +42862,10 @@ if(add)
 			double E12 = w1 * (v1 * v2) + w2 * (s1 * s2);
 			double E21 = w1 * (v2 * v1) + w2 * (s2 * s1);
 			double E22 = w1 * (v2 * v2) + w2 * (s2 * s2);
-			double S11 = 0, S12 = 0, S21 = 0, S22 = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				S11 += _ref->___dh[0][s] * _ref->buf_z[s];
-				S12 += _ref->___dh[1][s] * _ref->buf_z[s];
-				S22 += _ref->___dh[3][s] * _ref->buf_z[s];
-			}
-			S21 = S12;
+			double S11 = get___Sij(0, 0);
+			double S12 = get___Sij(0, 1);
+			double S22 = get___Sij(1, 1);
+			double S21 = S12;
 
 			double scale = 1.0  /*/ trEij*/ / _ref->orefDv;
 			//double scale = 1.0 / _dv;
@@ -42917,14 +42913,10 @@ if(add)
 			double E12 = w1 * (v1 * v2) + w2 * (s1 * s2);
 			double E21 = w1 * (v2 * v1) + w2 * (s2 * s1);
 			double E22 = w1 * (v2 * v2) + w2 * (s2 * s2);
-			double S11 = 0, S12 = 0, S21 = 0, S22 = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				S11 += _ref->___dh[0][s] * _ref->buf_z[s];
-				S12 += _ref->___dh[1][s] * _ref->buf_z[s];
-				S22 += _ref->___dh[3][s] * _ref->buf_z[s];
-			}
-			S21 = S12;
+			double S11 = get___Sij(0, 0);
+			double S12 = get___Sij(0, 1);
+			double S22 = get___Sij(1, 1);
+			double S21 = S12;
 
 			double scale = 1.0  /*/ trEij*/ / _ref->orefDv;
 			//double scale = 1.0 / _dv;
