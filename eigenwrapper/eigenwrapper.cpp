@@ -3408,8 +3408,8 @@ std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs,
 	
 	//MKL_Set_Dynamic(true);
 	
-	//Eigen::PardisoLU < Eigen::SparseMatrix<double, 0, int64_t>> lu;
-	Eigen::SparseLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
+	Eigen::PardisoLU < Eigen::SparseMatrix<double, 0, int64_t>> lu;
+	//Eigen::SparseLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	//lu.pardisoParameterArray()[59] = 1;
 	//pardiso.compute(this->_mat[0]);
 

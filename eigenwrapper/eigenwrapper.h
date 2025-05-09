@@ -1,11 +1,14 @@
 #pragma once
 
 //#define EIGEN_DONT_PARALLELIZE
-#ifdef _CPU
+//#ifdef _CPU
 //#define EIGEN_USE_MKL_ALL
 //#define EIGEN_USE_LAPACK
+//#define EIGEN_USE_BLAS
+//#define EIGEN_USE_MKL_VML
+//#define  EIGEN_USE_LAPACKE
 #include "eigen-3.4.0/Eigen/PardisoSupport"
-#endif
+//#endif
 #include "eigen-3.4.0/Eigen/Sparse"
 #include "eigen-3.4.0/Eigen/Dense"
 #include "eigen-3.4.0/Eigen/SparseQR"

@@ -128,13 +128,13 @@ namespace KingOfMonsters {
 		//double* ___ZXdh[4]{ 0,0,0,0 };
 		double _N[3];
 		
-		double* __mat = 0;
+		/*double* __mat = 0;
 		double* __matF_xi = 0;
 		double* __matF_eta = 0;
 		double* __matF_phi = 0;
 		double* __matD_xi = 0;
 		double* __matD_eta = 0;
-		double* __matD_phi = 0;
+		double* __matD_phi = 0;*/
 		double** M[2]{ 0,0 };
 		int** dd = 0;
 		double* d0 = 0;
@@ -353,7 +353,7 @@ namespace KingOfMonsters {
 					delete[] dd;
 					dd = 0;
 				}
-				if (__mat != 0) { delete[] __mat; }
+				/*if (__mat != 0) { delete[] __mat; }
 				__mat = 0;
 
 				if (__matF_phi != 0) { delete[] __matF_phi; }
@@ -369,7 +369,7 @@ namespace KingOfMonsters {
 				if (__matD_xi != 0) { delete[] __matD_xi; }
 				__matD_xi = 0;
 				if (__matD_eta != 0) { delete[] __matD_eta; }
-				__matD_eta = 0;
+				__matD_eta = 0;*/
 
 				if (__dh[0] != 0)delete[] __dh[0];
 				if (__dh[1] != 0)delete[] __dh[1];
@@ -603,7 +603,7 @@ namespace KingOfMonsters {
 				dim[1] = _vDim;
 				if (RAM == MAX)
 				{
-					__mat = new double[_nNode * _nNode];
+					//__mat = new double[_nNode * _nNode];
 					
 					__dh[0] = new double[_nNode];
 					__dh[1] = new double[_nNode];
@@ -4926,7 +4926,7 @@ namespace KingOfMonsters {
 			}
 		}
 	
-		void getMat(int64_t* index, std::vector<_Triplet<double>>* _dat)
+		/*void getMat(int64_t* index, std::vector<_Triplet<double>>* _dat)
 		{
 			//mat->_mat[0].setZero();
 			//mat->_mat[0].reserve(_nNode * _nNode);
@@ -4954,7 +4954,7 @@ namespace KingOfMonsters {
 			}
 			norm = std::sqrt(norm);
 			//mat->_mat[0].setFromTriplets(_dat->begin(), _dat->end());
-		}
+		}*/
 		void getMat_Galerkin(int64_t* index, std::vector<_Triplet<double>>* _dat, int I, double w)
 		{
 
@@ -5059,7 +5059,7 @@ namespace KingOfMonsters {
 			}
 			//mat->_mat[0].setFromTriplets(_dat->begin(), _dat->end());
 		}
-		double detZ()
+	   /*	double detZ()
 		{
 			double* pptr = &_ref->__mat[0];
 			double* pptr1 = &_ref->buf_z[0];
@@ -5068,14 +5068,14 @@ namespace KingOfMonsters {
 			{
 				double* pptr2 = &_ref->buf_z[0];
 				for (int j = 0; j < _ref->_nNode; j++) {
-					val3 += *pptr * (*pptr1) */*_ref->buf_z[j] **/ (*pptr2);//_ref->buf_phi[i];
+					val3 += *pptr * (*pptr1) *(*pptr2);//_ref->buf_phi[i];
 					pptr++;
 					pptr2++;
 				}
 				pptr1++;
 			}
 			return val3;
-		}
+		}*/
 
 		double _detZ()
 		{
@@ -5401,7 +5401,7 @@ namespace KingOfMonsters {
 				ptr1++;
 			}
 		}
-		double detphi()
+		/*double detphi()
 		{
 			double* pptr = &_ref->__mat[0];
 			double* pptr1 = &_ref->buf_phi[0];
@@ -5410,14 +5410,14 @@ namespace KingOfMonsters {
 			{
 				double* pptr2 = &_ref->buf_phi[0];
 				for (int j = 0; j < _ref->_nNode; j++) {
-					val3 += *pptr * (*pptr1) */*_ref->buf_z[j] **/ (*pptr2);//_ref->buf_phi[i];
+					val3 += *pptr * (*pptr1) *_ref->buf_z[j] * (*pptr2);//_ref->buf_phi[i];
 					pptr++;
 					pptr2++;
 				}
 				pptr1++;
 			}
 			return val3;
-		}
+		}*/
 		//stress function L2
 		double F2(int i, int j) {
 			return
@@ -21069,7 +21069,7 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 			}
 
 		}
-		void __mix22_mat_phi(double v1, double v2, double s1, double s2, double w1, double w2)
+		/*void __mix22_mat_phi(double v1, double v2, double s1, double s2, double w1, double w2)
 		{
 		
 
@@ -21210,7 +21210,7 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 					}
 				}
 			}
-		}
+		}*/
 		double align_mix22(double v1, double v2, double s1, double s2, double w1, double w2, double globalratio, bool add)
 		{
 			double val = 0;
@@ -67705,20 +67705,12 @@ if(add)
 				ptr1++;
 			}
 		}
-		double U(int I, int J) {
+		/*double U(int I, int J) {
 			double val = 0;
 			//double sc = 1.0 / _ref->_refDv / _ref->_refDv;
-			/*for (int i = 0; i < 2; i++)
-			{
-				for (int j = 0; j < 2; j++)
-				{
-					int ij = i * 2 + j;
-					val += sc*star2[ij]*(d2[star(ij)][I]-Gammaijk[(star(ij))*2+0]*d1[0][I] - Gammaijk[(star(ij)) * 2 + 1] * d1[1][I]) *
-						(d2[ij][J] - Gammaijk[(ij) * 2 + 0] * d1[0][J] - Gammaijk[(ij) * 2 + 1] * d1[1][J]);
-				}
-			}*/
+			
 			return sc * _ref->__mat[I * _nNode + J];
-		}
+		}*/
 		/*double U2(int I, int J) {
 			double sc = 1 / _ref->_refDv / _ref->_refDv;
 			return sc * sc * __mat2[I * _nNode + J];
@@ -67768,7 +67760,7 @@ if(add)
 				}
 			}
 		}
-		void D_phi_z(_mySparse* mat, long long* index, int N, long long* map, double sc)
+		/*void D_phi_z(_mySparse* mat, long long* index, int N, long long* map, double sc)
 		{
 			if (map == 0)
 			{
@@ -67798,7 +67790,7 @@ if(add)
 					}
 				}
 			}
-		}
+		}*/
 		double U_z(int I) {
 			//double val = 0;
 			//double sc = 1.0 / _ref->_refDv / _ref->_refDv;
@@ -68916,9 +68908,9 @@ if(add)
 		double area() {
 			return __mem->area();
 		}
-		double U(int I, int J) {
+		/*double U(int I, int J) {
 			return __mem->U(I, J);
-		}
+		}*/
 		double U_z(int I) {
 			return __mem->U_z(I);
 		}
@@ -68932,14 +68924,14 @@ if(add)
 			else
 				__mem->U_phi_z(mat->dat, index->_arr, N, map->_arr, R);
 		}
-		void D_phi_z(mySparse^ mat, myIntArray^ index, int N, myIntArray2^ map, double sc)
+		/*void D_phi_z(mySparse^ mat, myIntArray^ index, int N, myIntArray2^ map, double sc)
 		{
 			if (map == nullptr)
 				__mem->D_phi_z(mat->dat, index->_arr, N, 0, sc);
 			else
 				__mem->D_phi_z(mat->dat, index->_arr, N, map->_arr, sc);
 		}
-
+		*/
 
 
 		double guideBC(double v1, double v2, bool accurate)
@@ -70420,7 +70412,7 @@ if(add)
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
 		}
 
-		void mix22_mat_xi(mySparse^ mat, myIntArray^ index1, myIntArray^ index2, double sc, double v1, double v2, double s1, double s2, double w1, double w2)
+		/*void mix22_mat_xi(mySparse^ mat, myIntArray^ index1, myIntArray^ index2, double sc, double v1, double v2, double s1, double s2, double w1, double w2)
 		{
 			__mem->__mix22_mat_xi(v1,v2,s1,s2,w1,w2);
 			for (int s = 0; s < __mem->_nNode; s++)
@@ -70452,7 +70444,7 @@ if(add)
 					mat->dat->adddat(index1->at(s), index2->at(t), __mem->_ref->__matD_phi[s * __mem->_nNode + t] * sc);
 				}
 			}
-		}
+		}*/
 		double alignzxi(double v1, double v2, double s1, double s2, double w1, double w2)
 		{
 			return __mem->alignzxi(v1, v2, s1, s2, w1, w2);
@@ -76062,9 +76054,9 @@ if(add)
 		void S(double val1, double val2, double val3) {
 			__mem->set_Sij(val1, val2, val3);
 		}
-		void getmat(myIntArray^ index, workspace^ _dat) {
+		/*void getmat(myIntArray^ index, workspace^ _dat) {
 			__mem->getMat(index->data(), _dat->_dat);
-		}
+		}*/
 		void getmat_Galerkin(myIntArray^ index, workspace^ _dat, int i, double w) {
 			__mem->getMat_Galerkin(index->data(), _dat->_dat, i, w);
 		}
@@ -76077,14 +76069,14 @@ if(add)
 		void getmat_slope(myIntArray^ index, workspace^ _dat, double dcdt1, double dcdt2, bool airy) {
 			__mem->getMat_slope(index->data(), _dat->_dat, dcdt1, dcdt2, airy);
 		}
-		double detZ()
+		/*double detZ()
 		{
 			return __mem->detZ();
 		}
 		double detphi()
 		{
 			return __mem->detphi();
-		}
+		}*/
 		double _detZ()
 		{
 			return __mem->_detZ();
@@ -76157,7 +76149,7 @@ if(add)
 		double compute(String ^simple) {		
 			if (__mem->RAM == SAVE)
 			{
-				__mem->_ref->__mat = __mem->__mat;
+				//__mem->_ref->__mat = __mem->__mat;
 				__mem->_ref->d0 = __mem->d0;
 				
 				__mem->_ref->d1 = __mem->d1;
