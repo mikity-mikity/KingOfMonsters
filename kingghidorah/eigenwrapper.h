@@ -4,9 +4,9 @@
 //#ifdef _CPU
 //#define EIGEN_USE_MKL_ALL
 //#define EIGEN_USE_LAPACK
+//#define EIGEN_USE_BLAS
 //#define EIGEN_USE_MKL_VML
 //#define  EIGEN_USE_LAPACKE
-
 #include "eigen-3.4.0/Eigen/PardisoSupport"
 //#endif
 #include "eigen-3.4.0/Eigen/Sparse"
