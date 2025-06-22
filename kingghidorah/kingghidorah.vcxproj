@@ -170,6 +170,8 @@
       <OmitFramePointers>false</OmitFramePointers>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <SupportJustMyCode>true</SupportJustMyCode>
     </ClCompile>
     <Link>
       <AdditionalDependencies> mkl_intel_ilp64.lib; mkl_sequential.lib; mkl_core.lib</AdditionalDependencies>
