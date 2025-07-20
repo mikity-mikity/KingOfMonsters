@@ -3448,6 +3448,7 @@ std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs,
 #endif
 	return "_cpu only";
 }
+
 std::string KingOfMonsters::_mySparse::_solveCG_sparse_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret)
 {
 	//MKL_Set_Num_Threads(16);
@@ -4315,6 +4316,26 @@ std::string KingOfMonsters::_mySparse::_solve0_lu_cpu(Eigen::VectorXd* rhs, Eige
 	}
 
 }
+std::string KingOfMonsters::_mySparse::_solve0_qr_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering) {
+	Eigen::SparseQR<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>, Eigen::COLAMDOrdering<int64_t>> lu;
+	//Eigen::SimplicialLDLT< Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>, Eigen::Lower, Eigen::COLAMDOrdering<int64_t>> lu;
+	lu.compute(_mat[0]);
+
+	if (lu.info() == Eigen::ComputationInfo::Success) {
+
+		ret->conservativeResize(_mat[0].cols());
+		ret->setZero();
+		*ret = lu.solve(*rhs);
+		//solver->solve(rhs->data(), ret->data());
+		return "SUCCESS";
+	}
+	else {
+
+		return ("FAILED ");
+
+	}
+
+}
 void KingOfMonsters::_mySparse::solve0_qr(Eigen::VectorXd* rhs, Eigen::VectorXd* ret) {
 	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);
 	//Eigen::SparseLU<Eigen::SparseMatrix<double,Eigen::ColMajor>> lu;
@@ -4345,6 +4366,22 @@ void KingOfMonsters::_mySparse::_solve0_lu_cg(Eigen::VectorXd* rhs, Eigen::Vecto
 	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);
 	//Eigen::SparseLU<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>> lu;
 	Eigen::ConjugateGradient<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>, Eigen::Lower | Eigen::Upper> cg;
+	cg.setMaxIterations(20000);
+	cg.setTolerance(0.00000000000000000001);
+	cg.compute(_mat[0]);
+
+	//Eigen::Map<Eigen::VectorXd> b(rhs, N);
+	ret->conservativeResize(_mat[0].cols());
+	ret->setZero();
+	//Eigen::VectorXd x(_mat[0].rows());
+	//x.setZero();
+	*ret = cg.solve(*rhs);
+	//return x;
+}
+void KingOfMonsters::_mySparse::_solve0_lu_lscg(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int max, double threshold) {
+	//_mat[0] = _dmat.sparseView(1.0, 0.00000000001);
+	//Eigen::SparseLU<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>> lu;
+	Eigen::LeastSquaresConjugateGradient<Eigen::SparseMatrix<double,Eigen::ColMajor,int64_t>> cg;
 	cg.setMaxIterations(20000);
 	cg.setTolerance(0.00000000000000000001);
 	cg.compute(_mat[0]);

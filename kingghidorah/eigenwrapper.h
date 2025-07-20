@@ -320,11 +320,13 @@ namespace KingOfMonsters {
 		//void _solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		//Eigen::MatrixXd _solve0(_myLLT* LLT, _mySparse* mat);
 		std::string _solve0_lu_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering);
+		std::string _solve0_qr_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering);
 		std::string _solve0_lu_cpu2(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
-		std::string _solve0_chol_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering);
+		//std::string _solve0_chol_cpu(Eigen::VectorXd * rhs, Eigen::VectorXd * ret, int ordering);
 		void solve0_lu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void solve0_qr(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void _solve0_lu_cg(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int max, double threshold);
+		void _solve0_lu_lscg(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int max, double threshold);
 		std::string _solve0_gpu(KingOfMonsters::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int64_t device);
 		//std::string _QR_gpu(KingOfMonsters::cuda* cuda, Eigen::MatrixXd* Q, Eigen::MatrixXd* R, int64_t device);
 		std::string _solveLU_gpu(KingOfMonsters::cuda* cuda, Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int64_t device);
@@ -337,8 +339,8 @@ namespace KingOfMonsters {
 		int64_t _solveI(_mySparse* ret);
 		std::string _solveI_dense(_mySparse* ret);
 		std::string _solveI_gpu_sparse(KingOfMonsters::cuda* cuda, _mySparse* ret);
-		std::string _solveI_gpu(KingOfMonsters::cuda* cuda, _mySparse* ret);
-		std::string _solveI_cpu(_mySparse* ret);
+		//std::string _solveI_gpu(KingOfMonsters::cuda* cuda, _mySparse* ret);
+		//std::string _solveI_cpu(_mySparse* ret);
 		std::string _solveI_gpu_omp(KingOfMonsters::cuda* cuda, _mySparse* ret);
 		//std::string AinvBA(KingOfMonsters::cuda* cuda, _mySparse* A, _mySparse* ret);
 		std::string _solveI_gpu_single(KingOfMonsters::cuda* cuda, _mySparse* ret);

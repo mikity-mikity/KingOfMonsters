@@ -208,6 +208,17 @@ namespace KingOfMonsters {
 			this->_arr->__v.bottomRows(w->_arr->__v.rows()) = w->_arr->__v;
 
 		}
+		void assemble(myDoubleArray^ v, myDoubleArray^ w,int extra)
+		{
+			if (v != nullptr && w != nullptr)
+				this->_arr->__v.resize(v->_arr->__v.rows() + w->_arr->__v.rows()+extra);
+			if (v != nullptr)
+				this->_arr->__v.topRows(v->_arr->__v.rows()) = v->_arr->__v;
+			if (w != nullptr && v!=nullptr)
+				this->_arr->__v.middleRows(v->_arr->__v.rows(),w->_arr->__v.rows()) = w->_arr->__v;
+
+			this->_arr->__v.bottomRows(extra) = Eigen::VectorXd::Zero(extra);
+		}
 		void assemble(myDoubleArray^ v, array<myDoubleArray^> ^w)
 		{
 			if (v != nullptr && w != nullptr)
@@ -228,7 +239,7 @@ namespace KingOfMonsters {
 		{
 			v->_arr->__v = this->_arr->__v.topRows(N);
 			
-			w->_arr->__v = this->_arr->__v.bottomRows(this->_arr->__v.rows()-N);
+			w->_arr->__v = this->_arr->__v.middleRows(N,this->_arr->__v.rows()-N);
 
 		}
 		void split(myDoubleArray^ v, array<myDoubleArray^> ^w, int N)
@@ -1234,6 +1245,7 @@ namespace KingOfMonsters {
 					}
 				}
 			}
+			
 			this->dat->_mat[0].reserve(dat.size());
 			//this->dat->_mat[0].resize(A->dat->_mat[0].rows() + B->dat->_mat[0].rows(), A->dat->_mat[0].cols() + B->dat->_mat[0].rows());
 			this->dat->_mat[0].setZero();
@@ -1257,6 +1269,255 @@ namespace KingOfMonsters {
 			}*/
 
 
+		}
+
+
+		void _assemble(mySparse^ A, mySparse^ B, mySparse^ C, array<myDoubleArray^>^ rhsx, array<myDoubleArray^>^ rhsX, int numLC, bool transpose, bool topleft, bool bottomright, bool topright, bool bottomleft, double w1, double w2, int N1, int N2,bool initialize)
+		{
+			//if(A!=nullptr && C!=nullptr)
+			int ncol = N1 + N2 + numLC - 1;
+			int nrow = N1 + N2 + numLC - 1;
+			if (initialize)
+			{
+				this->dat->_mat[0].resize(nrow, ncol);
+
+				std::vector<Eigen::Triplet<double>> dat;
+				if (A != nullptr)
+				{
+					if (topleft)
+					{
+
+						for (Int64 k = 0; k < A->dat->_mat[0].outerSize(); ++k)
+						{
+							for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(A->dat->_mat[0], k); it; ++it)
+							{
+								dat.push_back(Eigen::Triplet<double>(it.row(), it.col(), it.value()));
+							}
+						}
+
+					}
+				}
+				if (C != nullptr)
+				{
+					if (bottomright)
+					{
+
+						for (Int64 k = 0; k < C->dat->_mat[0].outerSize(); ++k)
+						{
+							for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(C->dat->_mat[0], k); it; ++it)
+							{
+								dat.push_back(Eigen::Triplet<double>(it.row() + N1, it.col() + N1, it.value()));
+							}
+						}
+
+					}
+				}
+				if (B != nullptr)
+				{
+					if (transpose)
+					{
+						if (topright)
+						{
+
+							for (Int64 k = 0; k < B->dat->_mat[0].outerSize(); ++k)
+							{
+								for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(B->dat->_mat[0], k); it; ++it)
+								{
+									dat.push_back(Eigen::Triplet<double>(it.col(), it.row() + N1, it.value()));
+
+								}
+							}
+
+						}
+
+						if (bottomleft)
+						{
+
+							for (Int64 k = 0; k < B->dat->_mat[0].outerSize(); ++k)
+							{
+								for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(B->dat->_mat[0], k); it; ++it)
+								{
+									dat.push_back(Eigen::Triplet<double>(it.row() + N1, it.col(), it.value()));
+
+								}
+							}
+
+						}
+					}
+					else {
+						if (topright)
+						{
+
+							for (Int64 k = 0; k < B->dat->_mat[0].outerSize(); ++k)
+							{
+								for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(B->dat->_mat[0], k); it; ++it)
+								{
+									dat.push_back(Eigen::Triplet<double>(it.row(), it.col() + N1, it.value()));
+
+								}
+							}
+						}
+						if (bottomleft)
+						{
+
+							for (Int64 k = 0; k < B->dat->_mat[0].outerSize(); ++k)
+							{
+								for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(B->dat->_mat[0], k); it; ++it)
+								{
+									dat.push_back(Eigen::Triplet<double>(it.col() + N1, it.row(), it.value()));
+
+								}
+							}
+
+						}
+					}
+				}
+				for (int i = 1; i < numLC; i++)
+				{
+					if (rhsx[i] != nullptr)
+					{
+						for (Int64 k = 0; k < rhsx[i]->_arr->__v.size(); ++k)
+						{
+							dat.push_back(Eigen::Triplet<double>(N1 + N2 + i - 1, k + N1, rhsx[i]->_arr->__v(k)));
+						}
+					}
+					if (rhsX[i] != nullptr)
+					{
+						for (Int64 k = 0; k < rhsX[i]->_arr->__v.size(); ++k)
+						{
+							dat.push_back(Eigen::Triplet<double>(N1 + N2 + i - 1, k, rhsX[i]->_arr->__v(k)));
+						}
+					}
+				}
+				this->dat->_mat[0].reserve(dat.size());
+				//this->dat->_mat[0].resize(A->dat->_mat[0].rows() + B->dat->_mat[0].rows(), A->dat->_mat[0].cols() + B->dat->_mat[0].rows());
+				this->dat->_mat[0].setZero();
+				this->dat->_mat[0].setFromTriplets(dat.begin(), dat.end());
+			}
+			else {
+
+
+
+
+				if (A != nullptr)
+				{
+					if (topleft)
+					{
+#pragma omp parallel for schedule(static, 10)
+						for (Int64 k = 0; k < A->dat->_mat[0].outerSize(); ++k)
+						{
+							for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(A->dat->_mat[0], k); it; ++it)
+							{
+								this->dat->_mat[0].coeffRef(it.row(), it.col()) = it.value();
+								//						dat.push_back(Eigen::Triplet<double>(it.row(), it.col(), it.value()));
+							}
+						}
+
+					}
+				}
+				if (C != nullptr)
+				{
+					if (bottomright)
+					{
+
+#pragma omp parallel for schedule(static, 10)
+						for (Int64 k = 0; k < C->dat->_mat[0].outerSize(); ++k)
+						{
+							for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(C->dat->_mat[0], k); it; ++it)
+							{
+								this->dat->_mat[0].coeffRef(it.row() + N1, it.col() + N1) = it.value();
+							}
+						}
+
+					}
+				}
+				if (B != nullptr)
+				{
+					if (transpose)
+					{
+						if (topright)
+						{
+
+#pragma omp parallel for schedule(static, 10)
+							for (Int64 k = 0; k < B->dat->_mat[0].outerSize(); ++k)
+							{
+								for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(B->dat->_mat[0], k); it; ++it)
+								{
+									this->dat->_mat[0].coeffRef(it.col(), it.row() + N1) = it.value();
+									//dat.push_back(Eigen::Triplet<double>(it.col(), it.row() + N1, it.value()));
+
+								}
+							}
+
+						}
+
+						if (bottomleft)
+						{
+#pragma omp parallel for schedule(static, 10)
+							for (Int64 k = 0; k < B->dat->_mat[0].outerSize(); ++k)
+							{
+								for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(B->dat->_mat[0], k); it; ++it)
+								{
+									this->dat->_mat[0].coeffRef(it.row() + N1, it.col()) = it.value();
+									//dat.push_back(Eigen::Triplet<double>(it.row() + N1, it.col(), it.value()));
+								}
+							}
+
+						}
+					}
+					else {
+						if (topright)
+						{
+
+#pragma omp parallel for schedule(static, 10)
+							for (Int64 k = 0; k < B->dat->_mat[0].outerSize(); ++k)
+							{
+								for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(B->dat->_mat[0], k); it; ++it)
+								{
+									this->dat->_mat[0].coeffRef(it.row(), it.col() + N1) = it.value();
+									//dat.push_back(Eigen::Triplet<double>(it.row(), it.col() + N1, it.value()));
+								}
+							}
+						}
+						if (bottomleft)
+						{
+#pragma omp parallel for schedule(static, 10)
+
+							for (Int64 k = 0; k < B->dat->_mat[0].outerSize(); ++k)
+							{
+								for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(B->dat->_mat[0], k); it; ++it)
+								{
+									this->dat->_mat[0].coeffRef(it.col() + N1, it.row()) = it.value();
+									//dat.push_back(Eigen::Triplet<double>(it.col() + N1, it.row(), it.value()));
+								}
+							}
+
+						}
+					}
+				}
+				for (int i = 1; i < numLC; i++)
+				{
+					if (rhsx[i] != nullptr)
+					{
+						for (Int64 k = 0; k < rhsx[i]->_arr->__v.size(); ++k)
+						{
+							this->dat->_mat[0].coeffRef(N1 + N2 + i - 1, k + N1) = rhsx[i]->_arr->__v(k);
+							//dat.push_back(Eigen::Triplet<double>(N1 + N2 + i - 1, k + N1, rhsx[i]->_arr->__v(k)));
+						}
+					}
+					if (rhsX[i] != nullptr)
+					{
+						for (Int64 k = 0; k < rhsX[i]->_arr->__v.size(); ++k)
+						{
+							this->dat->_mat[0].coeffRef(N1 + N2 + i - 1, k) = rhsX[i]->_arr->__v(k);
+							//dat.push_back(Eigen::Triplet<double>(N1 + N2 + i - 1, k, rhsX[i]->_arr->__v(k)));
+						}
+					}
+
+				}
+
+
+			}
 		}
 		void _assemble(mySparse^ A, array<mySparse^> ^B, array<mySparse^> ^C, bool transpose, bool topleft, bool bottomright, bool topright, bool bottomleft, double w1, double w2, int N1, int N2)
 		{
@@ -1306,12 +1567,15 @@ namespace KingOfMonsters {
 					{
 						for (int cc = 0; cc < count; cc++)
 						{
-							for (Int64 k = 0; k < B[cc]->dat->_mat[0].outerSize(); ++k)
+							if (cc == 0)
 							{
-								for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(B[cc]->dat->_mat[0], k); it; ++it)
+								for (Int64 k = 0; k < B[cc]->dat->_mat[0].outerSize(); ++k)
 								{
-									dat.push_back(Eigen::Triplet<double>(it.col(), it.row() + N1+N2*cc, it.value()));
+									for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(B[cc]->dat->_mat[0], k); it; ++it)
+									{
+										dat.push_back(Eigen::Triplet<double>(it.col(), it.row() + N1 + N2 * cc, it.value()));
 
+									}
 								}
 							}
 						}
@@ -1339,12 +1603,15 @@ namespace KingOfMonsters {
 					{
 						for (int cc = 0; cc < count; cc++)
 						{
-							for (Int64 k = 0; k < B[cc]->dat->_mat[0].outerSize(); ++k)
+							if (cc == 0)
 							{
-								for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(B[cc]->dat->_mat[0], k); it; ++it)
+								for (Int64 k = 0; k < B[cc]->dat->_mat[0].outerSize(); ++k)
 								{
-									dat.push_back(Eigen::Triplet<double>(it.row(), it.col() + N1+N2*cc, it.value()));
+									for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(B[cc]->dat->_mat[0], k); it; ++it)
+									{
+										dat.push_back(Eigen::Triplet<double>(it.row(), it.col() + N1 + N2 * cc, it.value()));
 
+									}
 								}
 							}
 						}
@@ -1390,6 +1657,7 @@ namespace KingOfMonsters {
 
 
 		}
+
 		void ofStack3(mySparse^ A, mySparse^ B)
 		{
 			auto m1 = A->dat->_dmat;
@@ -2950,11 +3218,32 @@ namespace KingOfMonsters {
 			//ptr = nullptr;
 			//return ret;
 		}
-		
+		void _solve0_qr_cpu(myDoubleArray^ rhs, myDoubleArray^ ret,int ordering) {
+			//pin_ptr<double> ptr = &rhs[0];
+
+			dat->_solve0_qr_cpu(&rhs->_arr->__v, &ret->_arr->__v,ordering);
+
+			//array<double>^ ret = gcnew array<double>(_ret.rows());
+			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
+
+			//ptr = nullptr;
+			//return ret;
+		}
 		void _solve0_lu_cg(myDoubleArray^ rhs, myDoubleArray^ ret,int max,double threshold) {
 			//pin_ptr<double> ptr = &rhs[0];
 
 			dat->_solve0_lu_cg(&rhs->_arr->__v, &ret->_arr->__v,max,threshold);
+
+			//array<double>^ ret = gcnew array<double>(_ret.rows());
+			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
+
+			//ptr = nullptr;
+			//return ret;
+		}
+		void _solve0_lu_lscg(myDoubleArray^ rhs, myDoubleArray^ ret, int max, double threshold) {
+			//pin_ptr<double> ptr = &rhs[0];
+
+			dat->_solve0_lu_lscg(&rhs->_arr->__v, &ret->_arr->__v, max, threshold);
 
 			//array<double>^ ret = gcnew array<double>(_ret.rows());
 			//System::Runtime::InteropServices::Marshal::Copy((IntPtr)_ret.data(), ret, 0, _ret.rows());
@@ -3033,6 +3322,7 @@ namespace KingOfMonsters {
 
 			return gcnew System::String(ss.c_str());
 		}
+		
 		System::String^ _solveCG_sparse_cpu(myDoubleArray^ rhs, myDoubleArray^ ret) {
 			//auto ss = dat->_solveLU_gpu(gpu->cuda(), &rhs->_arr->__v, &ret->_arr->__v, device);
 			//System::String^ ee = gcnew System::String(ss.c_str());
