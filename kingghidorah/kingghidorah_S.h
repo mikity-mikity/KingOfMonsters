@@ -41720,8 +41720,8 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				d1x += _ref->d1[0][s] * _ref->buf_u[s];
-				d1y += _ref->d1[0][s] * _ref->buf_v[s];
 				d2x += _ref->d1[1][s] * _ref->buf_u[s];
+				d1y += _ref->d1[0][s] * _ref->buf_v[s];
 				d2y += _ref->d1[1][s] * _ref->buf_v[s];
 			}
 			double d11 = d1x * _ref->_ogi[0] + d1y * _ref->_ogi[1];
@@ -41955,7 +41955,7 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 				e1y += _ref->d1[0][s] * _ref->node[s * 3 + 1];
 				e1z += _ref->d1[0][s] * _ref->buf_w[s];
 				e2x += _ref->d1[1][s] * _ref->node[s * 3 + 0];
-				e2y += _ref->d1[1][s] * _ref->node[s * 3 + 1];
+				e2y += _ref->d1[1][s] * _ref->node[s * 3 + 1];	
 				e2z += _ref->d1[1][s] * _ref->buf_w[s];
 			}
 			e11 = e1x * e1x + e1y * e1y + e1z * e1z;
@@ -77439,29 +77439,29 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 			{
 				return __mem->normalX();
 			}
-			void normalX_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			void normalX_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff,bool add)
 			{
 				__mem->normalX_z(__mem->__grad);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
 			}
-			void normalX_u(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			void normalX_u(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff,bool add)
 			{
 				__mem->normalX_u(__mem->__grad);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode,true, coeff);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode,add, coeff);
 			}
 			double normalY()
 			{
 				return __mem->normalY();
 			}
-			void normalY_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			void normalY_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff,bool add)
 			{
 				__mem->normalY_z(__mem->__grad);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, coeff);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
 			}
-			void normalY_v(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff)
+			void normalY_v(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff,bool add)
 			{
 				__mem->normalY_v(__mem->__grad);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
 			}
 			double rot_free()
 			{
