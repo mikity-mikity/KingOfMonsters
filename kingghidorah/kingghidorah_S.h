@@ -41715,10 +41715,12 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 			double g22 = get_gij2(1, 1);
 			double g21 = g12;
 
-			double d1x = 0, d1y = 0;
-			double d2x = 0, d2y = 0;
+			double d1x = 0, d1y = 0, d1z = 0;
+			double d2x = 0, d2y = 0, d2z = 0;
+			
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
+				
 				d1x += _ref->d1[0][s] * _ref->buf_u[s];
 				d2x += _ref->d1[1][s] * _ref->buf_u[s];
 				d1y += _ref->d1[0][s] * _ref->buf_v[s];
@@ -41867,6 +41869,8 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 				ptr1++;
 			}
 		}
+
+		
 		void align_mix6NNZ_w(double* ptr, bool add)
 		{
 
@@ -41897,13 +41901,15 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 			double g22 = get_gij2(1, 1);
 			double g21 = g12;
 
-			double d1x = 0, d1y = 0;
-			double d2x = 0, d2y = 0;
+			double d1x = 0, d1y = 0, d1z = 0;
+			double d2x = 0, d2y = 0, d2z = 0;
+			
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
+				
 				d1x += _ref->d1[0][s] * _ref->buf_u[s];
-				d1y += _ref->d1[0][s] * _ref->buf_v[s];
 				d2x += _ref->d1[1][s] * _ref->buf_u[s];
+				d1y += _ref->d1[0][s] * _ref->buf_v[s];
 				d2y += _ref->d1[1][s] * _ref->buf_v[s];
 			}
 			double d11 = d1x * _ref->_ogi[0] + d1y * _ref->_ogi[1];
@@ -41968,14 +41974,15 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 			double E21 = -e12 * _ref->osc;
 			double E22 = e11 * _ref->osc;
 
-
-			double d1x = 0, d1y = 0;
-			double d2x = 0, d2y = 0;
+			double d1x = 0, d1y = 0, d1z = 0;
+			double d2x = 0, d2y = 0, d2z = 0;
+			
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
+				
 				d1x += _ref->d1[0][s] * _ref->buf_u[s];
-				d1y += _ref->d1[0][s] * _ref->buf_v[s];
 				d2x += _ref->d1[1][s] * _ref->buf_u[s];
+				d1y += _ref->d1[0][s] * _ref->buf_v[s];
 				d2y += _ref->d1[1][s] * _ref->buf_v[s];
 			}
 			double d11 = d1x * _ref->_ogi[0] + d1y * _ref->_ogi[1];
@@ -41983,6 +41990,10 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 			double d12 = d2x * _ref->_ogi[0] + d2y * _ref->_ogi[1];
 			double d22 = d2x * _ref->_ogi[3] + d2y * _ref->_ogi[4];
 
+			double g11 = get_gij2(0, 0);
+			double g12 = get_gij2(0, 1);
+			double g22 = get_gij2(1, 1);
+			double g21 = g12;
 
 			double scale = 1.0 / _ref->orefDv;
 			//double scale = 1.0 / _dv;
@@ -41995,6 +42006,8 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 				double _g22 = 2 * _ref->d1[1][s] * get_gi2(1, 2);
 				double _g21 = _g12;
 
+
+
 				val = (d11 * E11 * _g12 +
 					d11 * E12 * _g22 +
 					d12 * E21 * _g12 +
@@ -42003,12 +42016,11 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 					d21 * E12 * _g21 +
 					d22 * E21 * _g11 +
 					d22 * E22 * _g21) * scale;
-
 				*ptr1 = val;
 				ptr1++;
 			}
 		}
-
+		
 		double align_mix8NNZ(bool add)
 		{
 			double val = 0;
@@ -42033,6 +42045,7 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 
 			double d1x = 0, d1y = 0;
 			double d2x = 0, d2y = 0;
+
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				d1x += _ref->d1[0][s] * _ref->buf_u[s];
@@ -42187,11 +42200,13 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 				d1y += _ref->d1[0][s] * _ref->buf_v[s];
 				d2x += _ref->d1[1][s] * _ref->buf_u[s];
 				d2y += _ref->d1[1][s] * _ref->buf_v[s];
+				
 			}
 			double d11 = d1x * _ref->_ogi[0] + d1y * _ref->_ogi[1];
 			double d21 = d1x * _ref->_ogi[3] + d1y * _ref->_ogi[4];
 			double d12 = d2x * _ref->_ogi[0] + d2y * _ref->_ogi[1];
 			double d22 = d2x * _ref->_ogi[3] + d2y * _ref->_ogi[4];
+
 
 
 			double scale = 1.0 / _ref->orefDv;
@@ -42208,7 +42223,10 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 				double _E12 = -_e12 * _ref->osc;
 				double _E21 = -_e12 * _ref->osc;
 				double _E22 = _e11 * _ref->osc;
+				double _g1z = _ref->d1[0][s];
+				double _g2z = _ref->d1[1][s];
 
+				
 
 				double _g11 = 2 * _ref->d1[0][s] * get_gi2(0, 2);
 				double _g12 = _ref->d1[0][s] * get_gi2(1, 2) + _ref->d1[1][s] * get_gi2(0, 2);
@@ -42232,6 +42250,7 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 					d22 * _E21 * g11 +
 					d22 * _E22 * g21) * scale;
 
+				
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -57080,84 +57099,6 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 				ptr1++;
 			}
 		}
-		double trace()
-		{
-			double val = get_Eij(0, 0) * _ref->og11 + 2 * get_Eij(0, 1) * _ref->og12 + get_Eij(1, 1) * _ref->og22;
-
-			return val;
-		}
-		void trace_xi(double* ptr)
-		{
-			double* ptr1 = ptr;
-			double val = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-
-
-				double _f11 = __dsigma_11[0][s];
-				double _f12 = __dsigma_12[0][s];
-				double _f22 = __dsigma_22[0][s];
-				double _f21 = _f12;
-
-				double _E11 = _f22 * sc;
-				double _E22 = _f11 * sc;
-				double _E12 = -_f12 * sc;
-				double _E21 = -_f12 * sc;
-				double val = _E11 * _ref->og11 + 2 * _E12 * _ref->og12 + _E22 * _ref->og22;
-
-				*ptr1 = val;
-				ptr1++;
-			}
-
-		}
-		void trace_eta(double* ptr)
-		{
-			double* ptr1 = ptr;
-			double val = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-
-
-				double _f11 = __dsigma_11[1][s];
-				double _f12 = __dsigma_12[1][s];
-				double _f22 = __dsigma_22[1][s];
-				double _f21 = _f12;
-
-				double _E11 = _f22 * sc;
-				double _E22 = _f11 * sc;
-				double _E12 = -_f12 * sc;
-				double _E21 = -_f12 * sc;
-				double val = _E11 * _ref->og11 + 2 * _E12 * _ref->og12 + _E22 * _ref->og22;
-
-				*ptr1 = val;
-				ptr1++;
-			}
-
-		}
-		void trace_nu(double* ptr)
-		{
-			double* ptr1 = ptr;
-			double val = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-
-
-				double _f11 = __dsigma_11[2][s];
-				double _f12 = __dsigma_12[2][s];
-				double _f22 = __dsigma_22[2][s];
-				double _f21 = _f12;
-
-				double _E11 = _f22 * sc;
-				double _E22 = _f11 * sc;
-				double _E12 = -_f12 * sc;
-				double _E21 = -_f12 * sc;
-				double val = _E11 * _ref->og11 + 2 * _E12 * _ref->og12 + _E22 * _ref->og22;
-
-				*ptr1 = val;
-				ptr1++;
-			}
-
-		}
 	
 		
 		
@@ -71031,20 +70972,34 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 			}
 
 		}
-		void update_phi2_xi2_eta2(int nNode, KingOfMonsters::myDoubleArray^ phi, KingOfMonsters::myDoubleArray^ xi, KingOfMonsters::myDoubleArray^ eta) {
-			if (phi != nullptr)
-			{
-				__mem->set_buf_phi2(phi ->_arr->__v.data(), nNode);
-			}
+		void update_u_v_w_xi_eta_nu(int nNode, KingOfMonsters::myDoubleArray^ u, KingOfMonsters::myDoubleArray^ v, KingOfMonsters::myDoubleArray^ w, KingOfMonsters::myDoubleArray^ xi, KingOfMonsters::myDoubleArray^ eta, KingOfMonsters::myDoubleArray^ nu) {
 			if (xi != nullptr)
 			{
-				__mem->set_buf_xi2(xi->_arr->__v.data(), nNode);
+				__mem->set_buf_xi(xi->_arr->__v.data(), nNode);
 			}
 			if (eta != nullptr)
 			{
-				__mem->set_buf_eta2(eta->_arr->__v.data(), nNode);
+				__mem->set_buf_eta(eta->_arr->__v.data(), nNode);
 			}
-
+			if (nu != nullptr)
+			{
+				__mem->set_buf_eta(nu->_arr->__v.data(), nNode);
+			}
+			if (u != nullptr)
+			{
+				__mem->set_buf_u(u->_arr->__v.data(), nNode);
+			}
+			if (v != nullptr)
+			{
+				__mem->set_buf_v(v->_arr->__v.data(), nNode);
+			}
+			if (w != nullptr)
+			{
+				__mem->set_buf_w(w->_arr->__v.data(), nNode);
+			}
+			else {
+				__mem->clear_buf_w(nNode);
+			}
 
 		}
 		void update3(int nNode, KingOfMonsters::myDoubleArray^ node, KingOfMonsters::myDoubleArray^ weights, KingOfMonsters::myDoubleArray^ def, bool ignoreZ) {
@@ -72653,28 +72608,7 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c1);
 		}
 
-		double trace()
-		{
-			return __mem->trace();
-		}
-
-
 		
-		void trace_xi(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1)
-		{
-			__mem->trace_xi(__mem->__grad);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, c1);
-		}
-		void trace_eta(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1)
-		{
-			__mem->trace_eta(__mem->__grad);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
-		}
-		void trace_nu(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1)
-		{
-			__mem->trace_nu(__mem->__grad);
-			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, false, c1);
-		}
 
 		double sigma_flat(double v1, double v2, double s1, double s2)
 		{
@@ -73839,6 +73773,7 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 			__mem->align_mix6NNZ_y(__mem->__grad, add2);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c1);
 		}
+		
 		void align_mix6NNZ_w(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool add2, bool add)
 		{
 			__mem->align_mix6NNZ_w(__mem->__grad, add2);
