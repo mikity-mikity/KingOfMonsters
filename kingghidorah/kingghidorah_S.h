@@ -41679,6 +41679,95 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 			}
 
 		}
+		double trace()
+		{
+			double val = 0;
+
+			double d1x = 0, d1y = 0, d1z = 0;
+			double d2x = 0, d2y = 0, d2z = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+
+				d1x += _ref->d1[0][s] * _ref->buf_u[s];
+				d2x += _ref->d1[1][s] * _ref->buf_u[s];
+				d1y += _ref->d1[0][s] * _ref->buf_v[s];
+				d2y += _ref->d1[1][s] * _ref->buf_v[s];
+			}
+			double d11 = d1x * _ref->_ogi[0] + d1y * _ref->_ogi[1];
+			double d21 = d1x * _ref->_ogi[3] + d1y * _ref->_ogi[4];
+			double d12 = d2x * _ref->_ogi[0] + d2y * _ref->_ogi[1];
+			double d22 = d2x * _ref->_ogi[3] + d2y * _ref->_ogi[4];
+
+			val = d11 * _ref->oG11 + d12 * _ref->oG12 + d21 * _ref->oG12 + d22 * _ref->oG22;
+
+			double S11 = get___Sij(0, 0);
+			double S12 = get___Sij(0, 1);
+			double S21 = get___Sij(1, 0);
+			double S22 = get___Sij(1, 1);
+
+			val -= S11 * _ref->oG11 + S12 * _ref->oG12 + S21 * _ref->oG12 + S22 * _ref->oG22;
+			return val;
+
+		}
+		void trace_z(double* ptr)
+		{
+			double* ptr1 = ptr;
+			for(int s= 0; s < _ref->_nNode; s++)
+			{
+				double _S11 = _ref->___dh[0][s];
+				double _S12 = _ref->___dh[1][s];
+				double _S22 = _ref->___dh[3][s];
+				double _S21 = _S12;
+				double val = -(_S11 *_ref->oG11
+					+ _S12 * _ref->oG12
+					+ _S21 * _ref->oG12
+					+ _S22 * _ref->oG22);
+				*ptr = val;
+				ptr++;
+			}
+		}
+		void trace_u(double* ptr)
+		{
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _d1x = _ref->d1[0][s];
+				double _d1y = 0;
+				double _d2x = _ref->d1[1][s];
+				double _d2y = 0;
+
+				double _d11 = _d1x * _ref->_ogi[0] + _d1y * _ref->_ogi[1];
+				double _d21 = _d1x * _ref->_ogi[3] + _d1y * _ref->_ogi[4];
+				double _d12 = _d2x * _ref->_ogi[0] + _d2y * _ref->_ogi[1];
+				double _d22 = _d2x * _ref->_ogi[3] + _d2y * _ref->_ogi[4];
+
+				double val = _d11 * _ref->oG11 + _d12 * _ref->oG12 + _d21 * _ref->oG12 + _d22 * _ref->oG22;
+
+				*ptr = val;
+				ptr++;
+			}
+		}
+		void trace_v(double* ptr)
+		{
+			double* ptr1 = ptr;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _d1x = 0;
+				double _d1y = _ref->d1[0][s];
+				double _d2x = 0;
+				double _d2y = _ref->d1[1][s];
+
+				double _d11 = _d1x * _ref->_ogi[0] + _d1y * _ref->_ogi[1];
+				double _d21 = _d1x * _ref->_ogi[3] + _d1y * _ref->_ogi[4];
+				double _d12 = _d2x * _ref->_ogi[0] + _d2y * _ref->_ogi[1];
+				double _d22 = _d2x * _ref->_ogi[3] + _d2y * _ref->_ogi[4];
+
+				double val = _d11 * _ref->oG11 + _d12 * _ref->oG12 + _d21 * _ref->oG12 + _d22 * _ref->oG22;
+
+				*ptr = val;
+				ptr++;
+			}
+		}
 		
 
 		double align_mix6NNZ(bool add)
@@ -73754,6 +73843,25 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 		void align_mix5NNZ_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool add2, bool add)
 		{
 			__mem->align_mix5NNZ_z(__mem->__grad, add2);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c1);
+		}
+		double trace()
+		{
+			return __mem->trace();
+		}
+		void trace_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool add)
+		{
+			__mem->trace_z(__mem->__grad);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c1);
+		}
+		void trace_u(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool add)
+		{
+			__mem->trace_u(__mem->__grad);
+			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c1);
+		}
+		void trace_v(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, bool add)
+		{
+			__mem->trace_v(__mem->__grad);
 			mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, c1);
 		}
 
