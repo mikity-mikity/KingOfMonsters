@@ -7642,7 +7642,24 @@ namespace KingOfMonsters {
 			return _x * sy - _y * sx;
 
 		}
-		
+		double symm3(double sx, double sy, double __x, double __y)
+		{
+			double length = sqrt(sx * sx + sy * sy);
+			sx /= length;
+			sy /= length;
+			double u = 0, v = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				u += _ref->d0[s] * _ref->buf_u[s];
+				v += _ref->d0[s] * _ref->buf_v[s];
+			}
+
+			double _x = u - __x;
+			double _y = v - __y;
+
+			return _x * sy - _y * sx;
+
+		}
 		void symm_x(double* ptr, double sx, double sy)
 		{
 			double length = sqrt(sx * sx + sy * sy);
@@ -72647,6 +72664,10 @@ void crossDY_z(_memS* other, double* ptr, double* ptr2)
 		double symm(double sx, double sy, double __x, double __y)
 		{
 			return __mem->symm(sx, sy, __x, __y);
+		}
+		double symm3(double sx, double sy, double __x, double __y)
+		{
+			return __mem->symm3(sx, sy, __x, __y);
 		}
 		void symm_x(mySparse^ mat, int ii, myIntArray^ index, double sc, double c1, double sx, double sy)
 		{
