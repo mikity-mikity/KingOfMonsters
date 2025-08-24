@@ -7,6 +7,9 @@
 //#define EIGEN_USE_BLAS
 //#define EIGEN_USE_MKL_VML
 //#define  EIGEN_USE_LAPACKE
+#define EIGEN_DONT_ALIGN_STATICALLY
+#define EIGEN_MAX_ALIGN_BYTES 0
+#define EIGEN_DONT_VECTORIZE
 #include "eigen-3.4.0/Eigen/PardisoSupport"
 //#endif
 #include "eigen-3.4.0/Eigen/Sparse"

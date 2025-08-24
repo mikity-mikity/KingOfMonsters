@@ -892,7 +892,7 @@ namespace KingOfMonsters {
 		///////shared memory//////
 		double** M[2];
 		int** dd;
-		double* __mat = 0;
+		//double* __mat = 0;
 		//double* __dsigma_11[3]{ 0,0,0 };
 		//double* __dsigma_12[3]{ 0,0,0 };
 		//double* __dsigma_22[3]{ 0,0,0 };
@@ -1224,8 +1224,8 @@ namespace KingOfMonsters {
 			this->RAM = RAM;
 			if (mode == "U") 
 			{
-				/*__grad = 0;
-				__grad2 = 0;
+				__grad = 0;
+				/*__grad2 = 0;
 				__grad_z = 0;
 				__grad_phi = 0;
 				__mix_phi = 0;
@@ -1253,7 +1253,7 @@ namespace KingOfMonsters {
 
 			if (RAM == SAVE)
 			{
-				__mat = 0;
+				//__mat = 0;
 				//__dh[0] = 0;
 				//__dh[1] = 0;
 				//__dh[2] = 0;
@@ -2146,8 +2146,8 @@ namespace KingOfMonsters {
 								/*val = 0;
 								val += bij[eee + 0] * get_gi2(k, 0);
 								val += bij[eee + 1] * get_gi2(k, 1);
-								gammaijk[ccc] = val;
-								ccc++;*/
+								gammaijk[ccc] = val;*/
+								ccc++;
 							}
 							eee += 3;
 						}
@@ -2204,8 +2204,8 @@ namespace KingOfMonsters {
 								/*val = 0;
 								val += bij[eee + 0] * get_gi2(k, 0);
 								val += bij[eee + 1] * get_gi2(k, 1);
-								gammaijk[ccc] = val;
-								ccc++;*/
+								gammaijk[ccc] = val;*/
+								ccc++;
 							}
 							eee += 3;
 						}
@@ -2263,21 +2263,15 @@ namespace KingOfMonsters {
 								/*val = 0;
 								val += bij[eee + 0] * get_gi(k, 0);
 								val += bij[eee + 1] * get_gi(k, 1);
-								gammaijk[ccc] = val;
-								ccc++;*/
+								gammaijk[ccc] = val;*/
+								ccc++;
 							}
 							eee += 3;
 						}
 					}
 				}
 			}
-
-			if (__mode == "STANDARD") {
-				_ref->initialized = true;
-				return;
-			}
-
-			if (!_ref->initialized||RAM==SAVE)
+			if (!_ref->initialized || RAM == SAVE)
 			{
 				for (int i = 0; i < _nNode; i++)
 				{
@@ -2285,10 +2279,17 @@ namespace KingOfMonsters {
 					_ref->___dh[1][i] = _ref->d2[1][i] - Gammaijk[2] * _ref->d1[0][i] - Gammaijk[3] * _ref->d1[1][i];
 					_ref->___dh[2][i] = _ref->d2[2][i] - Gammaijk[4] * _ref->d1[0][i] - Gammaijk[5] * _ref->d1[1][i];
 					_ref->___dh[3][i] = _ref->d2[3][i] - Gammaijk[6] * _ref->d1[0][i] - Gammaijk[7] * _ref->d1[1][i];
-				
+
 				}
 			}
 
+
+			if (__mode == "STANDARD") {
+				_ref->initialized = true;
+				return;
+			}
+
+		
 
 			/*if (mode == "U")*/ {
 
@@ -2483,12 +2484,12 @@ namespace KingOfMonsters {
 				if (__grad_C_z != 0)delete[] __grad_C_z;
 				if (__grad_C_phi != 0)delete[] __grad_C_phi;
 				if (__grad_D_z != 0)delete[] __grad_D_z;
-				if (__grad_D_phi != 0)delete[] __grad_D_phi;
+				if (__grad_D_phi != 0)delete[] __grad_D_phi;*/
 				if (__grad != 0)delete[] __grad;
-				if (__grad2 != 0)delete[] __grad2;
-				if (_K != 0)delete[] _K;
+				/*if (__grad2 != 0)delete[] __grad2;
+				if (_K != 0)delete[] _K;*/
 				__grad = 0;
-				__grad2 = 0;
+				/*__grad2 = 0;
 				__grad_z = 0;
 				__grad_phi = 0;
 				__mix_phi = 0;
@@ -2581,7 +2582,7 @@ namespace KingOfMonsters {
 			if (RAM == SAVE)
 			{
 				if (tt0[0] != 0) {
-					delete[] __mat;
+					//delete[] __mat;
 					/*delete[] __dsigma_11[0];
 					delete[] __dsigma_11[1];
 					delete[] __dsigma_11[2];
@@ -2595,7 +2596,7 @@ namespace KingOfMonsters {
 					//delete[] __dh[1];
 					//delete[] __dh[2];
 					//delete[] __dh[3];
-					__mat = 0;
+					//__mat = 0;
 					/*__dsigma_11[0] = 0;
 					__dsigma_11[1] = 0;
 					__dsigma_11[2] = 0;
@@ -2777,11 +2778,11 @@ namespace KingOfMonsters {
 					__dsigma_12[2] = new double[nNode];
 					__dsigma_22[0] = new double[nNode];
 					__dsigma_22[1] = new double[nNode];
-					__dsigma_22[2] = new double[nNode];
+					__dsigma_22[2] = new double[nNode];*/
 
 
 					__grad = new double[nNode];
-					__grad2 = new double[nNode];
+					/*__grad2 = new double[nNode];
 					__grad_z = new double[nNode];
 					__mix_z = new double [nNode];
 					__mix_phi = new double[ nNode];
