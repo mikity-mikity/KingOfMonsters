@@ -357,6 +357,7 @@ namespace KingOfMonsters {
 		void clearcoeff();
 		void addsmallidentity(double salt, bool sparse, bool dense, int m);
 		void addsmallidentity(double salt, bool sparse, bool dense);
+		void addsmallidentity2(double salt);
 		void begin_construct();
 		void end_construct(int64_t c);
 		void end_construct2();

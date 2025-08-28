@@ -25904,8 +25904,53 @@ void crossDD_phi(_memS* other, double* ptr, double* ptr2)
 			}
 
 		}
-		
+		double normalZ()
+		{
+			double z1 = 0, z2 = 0, nu = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				nu += _ref->d0[s] * _ref->buf_nu[s];
+				z1 += _ref->d1[0][s] * _ref->buf_z[s];
+				z2 += _ref->d1[1][s] * _ref->buf_z[s];
+			}
+			double length = sqrt(1 + z1 * z1 * _ref->oG11 + 2 * z1 * z2 * _ref->oG12 + z2 * z2 * _ref->oG22);
+			double val = (-1 / length) - nu;
+			return val;
+		}
+		void normalZ_z(double* ptr)
+		{
+			double* ptr1 = ptr;
+			double z1 = 0, z2 = 0, nu = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				nu += _ref->d0[s] * _ref->buf_nu[s];
+				z1 += _ref->d1[0][s] * _ref->buf_z[s];
+				z2 += _ref->d1[1][s] * _ref->buf_z[s];
+			}
+			double length = sqrt(1 + z1 * z1 * _ref->oG11 + 2 * z1 * z2 * _ref->oG12 + z2 * z2 * _ref->oG22);
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _z1 = _ref->d1[0][s];
+				double _z2 = _ref->d1[1][s];
+				double _length = 0.5 / length * (2 * z1 * _z1 * _ref->oG11 + 2 * _z1 * z2 * _ref->oG12 + 2 * _z2 * z1 * _ref->oG12 + 2 * _z2 * z2 * _ref->oG22);
 
+				double val = -(-1)  / (length * length) * _length;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
+		void normalZ_nu(double* ptr)
+		{
+			double* ptr1 = ptr;
+
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				double _nu = _ref->d0[s];
+				double val = -_nu;
+				*ptr1 = val;
+				ptr1++;
+			}
+		}
 		double normalX()
 		{
 			double z1=0, z2 = 0,u=0;
@@ -25915,19 +25960,30 @@ void crossDD_phi(_memS* other, double* ptr, double* ptr2)
 				z1 += _ref->d1[0][s] * _ref->buf_z[s];
 				z2 += _ref->d1[1][s] * _ref->buf_z[s];
 			}
-			double val = z1 * _ref->_oGi[0]+z2 * _ref->_oGi[3]-u;
+			double length = sqrt(1+z1 * z1 * _ref->oG11 + 2 * z1 * z2 * _ref->oG12 + z2 * z2 * _ref->oG22);
+			double val = (z1 * _ref->_oGi[0]+z2 * _ref->_oGi[3] ) / length -u;
 			return val;
 		}
 		
 		void normalX_z(double* ptr)
 		{
 			double* ptr1 = ptr;
+			double z1 = 0, z2 = 0, u = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				u += _ref->d0[s] * _ref->buf_u[s];
+				z1 += _ref->d1[0][s] * _ref->buf_z[s];
+				z2 += _ref->d1[1][s] * _ref->buf_z[s];
+			}
+			double length = sqrt(1 + z1 * z1 * _ref->oG11 + 2 * z1 * z2 * _ref->oG12 + z2 * z2 * _ref->oG22);
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				double _z1 = _ref->d1[0][s];
 				double _z2 = _ref->d1[1][s];
+				double _length = 0.5 / length * (2 * z1*_z1 * _ref->oG11 + 2 * _z1*z2 * _ref->oG12 + 2 * _z2*z1 * _ref->oG12 + 2 * _z2*z2 * _ref->oG22);
 
-				double val = _z1 * _ref->_oGi[0] + _z2 * _ref->_oGi[3];
+				double val = (_z1 * _ref->_oGi[0] + _z2 * _ref->_oGi[3])/length;
+				val += -(z1 * _ref->_oGi[0] + z2 * _ref->_oGi[3] )  / (length * length )*_length;
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -25935,6 +25991,7 @@ void crossDD_phi(_memS* other, double* ptr, double* ptr2)
 		void normalX_u(double* ptr)
 		{
 			double* ptr1 = ptr;
+			
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				double _u = _ref->d0[s];
@@ -25945,6 +26002,7 @@ void crossDD_phi(_memS* other, double* ptr, double* ptr2)
 		}
 		double normalY()
 		{
+			
 			double z1 = 0, z2 = 0, v = 0;
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
@@ -25952,17 +26010,34 @@ void crossDD_phi(_memS* other, double* ptr, double* ptr2)
 				z1 += _ref->d1[0][s] * _ref->buf_z[s];
 				z2 += _ref->d1[1][s] * _ref->buf_z[s];
 			}
-			double val = z1 * _ref->_oGi[1] + z2 * _ref->_oGi[4] - v;
+			double length = sqrt(1 + z1 * z1 * _ref->oG11 + 2 * z1 * z2 * _ref->oG12 + z2 * z2 * _ref->oG22);
+
+			double val = (z1 * _ref->_oGi[1] + z2 * _ref->_oGi[4]) / length - v;
 			return val;
 		}
 		void normalY_z(double* ptr)
 		{
 			double* ptr1 = ptr;
+			double z1 = 0, z2 = 0, v = 0;
+			for (int s = 0; s < _ref->_nNode; s++)
+			{
+				v += _ref->d0[s] * _ref->buf_v[s];
+				z1 += _ref->d1[0][s] * _ref->buf_z[s];
+				z2 += _ref->d1[1][s] * _ref->buf_z[s];
+			}
+			double length = sqrt(1 + z1 * z1 * _ref->oG11 + 2 * z1 * z2 * _ref->oG12 + z2 * z2 * _ref->oG22);
+
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				double _z1 = _ref->d1[0][s];
 				double _z2 = _ref->d1[1][s];
-				double val = _z1 * _ref->_oGi[1] + _z2 * _ref->_oGi[4];
+				
+				double _length = 0.5 / length * (2 * z1 * _z1 * _ref->oG11 + 2 * _z1 * z2 * _ref->oG12 + 2 * _z2 * z1 * _ref->oG12 + 2 * _z2 * z2 * _ref->oG22);
+
+				double val = (_z1 * _ref->_oGi[1] + _z2 * _ref->_oGi[4]) / length;
+				val += -(z1 * _ref->_oGi[1] + z2 * _ref->_oGi[4])  / (length * length) * _length;
+
+
 				*ptr1 = val;
 				ptr1++;
 			}
@@ -25970,6 +26045,7 @@ void crossDD_phi(_memS* other, double* ptr, double* ptr2)
 		void  normalY_v(double* ptr)
 		{
 			double* ptr1 = ptr;
+			
 			for (int s = 0; s < _ref->_nNode; s++)
 			{
 				double _v = _ref->d0[s];
@@ -25979,78 +26055,7 @@ void crossDD_phi(_memS* other, double* ptr, double* ptr2)
 			}
 		}
 
-		double normalX2()
-		{
-			double w1 = 0, w2 = 0, u = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				u += _ref->d0[s] * _ref->buf_u[s];
-				w1 += _ref->d1[0][s] * _ref->buf_w[s];
-				w2 += _ref->d1[1][s] * _ref->buf_w[s];
-			}
-			double val = w1 * _ref->_oGi[0] + w2 * _ref->_oGi[3] - u;
-			return val;
-		}
-
-		void normalX2_w(double* ptr)
-		{
-			double* ptr1 = ptr;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				double _w1 = _ref->d1[0][s];
-				double _w2 = _ref->d1[1][s];
-
-				double val = _w1 * _ref->_oGi[0] + _w2 * _ref->_oGi[3];
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
-		void normalX2_u(double* ptr)
-		{
-			double* ptr1 = ptr;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				double _u = _ref->d0[s];
-				double val = -_u;
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
-		double normalY2()
-		{
-			double w1 = 0, w2 = 0, v = 0;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				v += _ref->d0[s] * _ref->buf_v[s];
-				w1 += _ref->d1[0][s] * _ref->buf_w[s];
-				w2 += _ref->d1[1][s] * _ref->buf_w[s];
-			}
-			double val = w1 * _ref->_oGi[1] + w2 * _ref->_oGi[4] - v;
-			return val;
-		}
-		void normalY2_w(double* ptr)
-		{
-			double* ptr1 = ptr;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				double _w1 = _ref->d1[0][s];
-				double _w2 = _ref->d1[1][s];
-				double val = _w1 * _ref->_oGi[1] + _w2 * _ref->_oGi[4];
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
-		void  normalY2_v(double* ptr)
-		{
-			double* ptr1 = ptr;
-			for (int s = 0; s < _ref->_nNode; s++)
-			{
-				double _v = _ref->d0[s];
-				double val = -_v;
-				*ptr1 = val;
-				ptr1++;
-			}
-		}
+		
 		double align_mix2NNZ( bool add)
 		{
 			double val = 0;
@@ -50394,6 +50399,21 @@ void crossDD_phi(_memS* other, double* ptr, double* ptr2)
 				__mem->harmonic_Y_v( __mem->__grad);
 				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, true, coeff);
 			}
+			double normalZ()
+			{
+				return __mem->normalZ();
+			}
+			void normalZ_z(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, bool add)
+			{
+				__mem->normalZ_z(__mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
+			}
+			void normalZ_nu(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, bool add)
+			{
+				__mem->normalZ_nu(__mem->__grad);
+				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
+			}
+
 			double normalX()
 			{
 				return __mem->normalX();
@@ -50424,35 +50444,7 @@ void crossDD_phi(_memS* other, double* ptr, double* ptr2)
 			}
 
 
-			double normalX2()
-			{
-				return __mem->normalX2();
-			}
-			void normalX2_w(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, bool add)
-			{
-				__mem->normalX2_w(__mem->__grad);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
-			}
-			void normalX2_u(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, bool add)
-			{
-				__mem->normalX2_u(__mem->__grad);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
-			}
-			double normalY2()
-			{
-				return __mem->normalY2();
-			}
-			void normalY2_w(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, bool add)
-			{
-				__mem->normalY2_w(__mem->__grad);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
-			}
-			void normalY2_v(mySparse^ mat, int ii, myIntArray^ index, double sc, double coeff, bool add)
-			{
-				__mem->normalY2_v(__mem->__grad);
-				mat->dat->addrow(ii, index->_arr, __mem->__grad, 0, sc, __mem->_nNode, add, coeff);
-			}
-
+			
 
 			double rot_free()
 			{

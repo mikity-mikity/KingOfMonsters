@@ -4515,3 +4515,14 @@ void KingOfMonsters::_mySparse::addsmallidentity(double salt, bool sparse, bool 
 		}
 	}
 }
+void KingOfMonsters::_mySparse::addsmallidentity2(double salt) {
+
+
+	{
+		if (this->_mat.size() >= 1)
+		{
+			
+			this->_mat[0] += salt * this->_mat[0].diagonal().asDiagonal();
+		}
+	}
+}

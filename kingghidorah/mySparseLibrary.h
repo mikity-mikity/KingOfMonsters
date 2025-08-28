@@ -3554,6 +3554,9 @@ namespace KingOfMonsters {
 		void addsmallidentity(double salt, bool sparse, bool dense,int m) {
 			this->dat->addsmallidentity(salt, sparse, dense,m);
 		}
+		void addsmallidentity2(double salt) {
+			this->dat->addsmallidentity2(salt);
+		}
 		void addsmallones(double salt)
 		{
 			this->dat->_dmat += salt * Eigen::MatrixXd::Ones(this->dat->_dmat.rows(), this->dat->_dmat.cols());
