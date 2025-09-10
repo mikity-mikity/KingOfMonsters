@@ -282,6 +282,9 @@ namespace KingOfMonsters {
 		void OfDuplicate(_mySparse* mat);
 		void _OfDuplicate(_mySparse* mat);
 		void ofDat();
+		void build(_mySparse* second);
+		void solve(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
+		void solve2(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void freezecoeff();
 		std::string ofAtA(_mySparse* A, bool sparse);
 

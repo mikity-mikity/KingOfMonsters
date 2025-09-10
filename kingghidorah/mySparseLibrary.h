@@ -2516,6 +2516,18 @@ namespace KingOfMonsters {
 			}
 
 		}
+		void build(mySparse ^second)
+		{
+			this->dat->build(second->dat);
+		}
+		void solve(myDoubleArray ^grad,myDoubleArray ^ret)
+		{
+			this->dat->solve(&grad->_arr->__v, &ret->_arr->__v);
+		}
+		void solve2(myDoubleArray^ grad, myDoubleArray^ ret)
+		{
+			this->dat->solve2(&grad->_arr->__v, &ret->_arr->__v);
+		}
 		System::String^ ofAtA(mySparse^ m, bool sparse) {
 			return gcnew System::String(dat->ofAtA(m->dat, sparse).c_str());
 		}

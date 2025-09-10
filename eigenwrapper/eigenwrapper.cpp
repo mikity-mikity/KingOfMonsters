@@ -1899,7 +1899,52 @@ void KingOfMonsters::_mySparse::ofDat()
 		}
 	}
 }
+void KingOfMonsters::_mySparse::build(_mySparse* second)
+{
+	std::vector<Eigen::Triplet<double>> _dat;
+	int offset = 0;
+	for (int64_t ii = 0; ii < _nt; ii++)
+	{
+		for (int64_t k = 0; k < _mat[ii].outerSize(); ++k) {
+			for (Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>::InnerIterator it(_mat[ii], k); it; ++it) {
+				_dat.push_back(Eigen::Triplet<double>(it.row() + offset, it.col(), it.value()));
+			}
+		}
+		offset += _mat[ii].rows();
+	}
+	int offset2 = 0;
+	for (int64_t ii = 0; ii < second->_nt; ii++)
+	{
+		for (int64_t k = 0; k < second->_mat[ii].outerSize(); ++k) {
+			for (Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>::InnerIterator it(second->_mat[ii], k); it; ++it) {
+				_dat.push_back(Eigen::Triplet<double>(it.row() + offset2, it.col()+_mat[0].cols(), it.value()));
+			}
+		}
+		offset2 += _mat[ii].rows();
+	}
+	this->_mat[0].resize(offset, _mat[0].cols()+second->_mat[0].cols());
+	this->_mat[0].setFromTriplets(_dat.begin(), _dat.end());
+	this->_mat[0].makeCompressed();
+	_nt = 1;
+}
+void KingOfMonsters::_mySparse::solve(Eigen::VectorXd *rhs, Eigen::VectorXd* ret)
+{
+	Eigen::SparseQR<Eigen::SparseMatrix<double, Eigen::RowMajor, int64_t>, Eigen::COLAMDOrdering<int64_t>> solve;
+	solve.compute(this->_mat[0].transpose());
+	solve.setPivotThreshold(0.00000000001);
+	auto _ret=solve.solve(*rhs);
 
+	*ret =*rhs- this->_mat[0].transpose() * _ret;
+}
+void KingOfMonsters::_mySparse::solve2(Eigen::VectorXd* rhs, Eigen::VectorXd* ret)
+{
+	Eigen::SparseQR<Eigen::SparseMatrix<double, Eigen::RowMajor, int64_t>, Eigen::COLAMDOrdering<int64_t>> solve;
+	solve.compute(this->_mat[0]);
+	solve.setPivotThreshold(0.00000000001);
+	auto _ret = solve.solve(*rhs);
+
+	*ret = _ret;
+}
 std::map<Eigen::SparseMatrix<double, 0, int64_t>*, std::map<std::tuple<int64_t, int64_t>,int>> map2;
 void KingOfMonsters::_mySparse::makePattern()
 {
