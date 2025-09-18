@@ -1920,9 +1920,28 @@ void KingOfMonsters::_mySparse::build(_mySparse* second)
 				_dat.push_back(Eigen::Triplet<double>(it.row() + offset2, it.col()+_mat[0].cols(), it.value()));
 			}
 		}
-		offset2 += _mat[ii].rows();
+		offset2 += /*second->*/_mat[ii].rows();
 	}
 	this->_mat[0].resize(offset, _mat[0].cols()+second->_mat[0].cols());
+	this->_mat[0].setFromTriplets(_dat.begin(), _dat.end());
+	this->_mat[0].makeCompressed();
+	_nt = 1;
+}
+void KingOfMonsters::_mySparse::build()
+{
+	std::vector<Eigen::Triplet<double>> _dat;
+	int offset = 0;
+	for (int64_t ii = 0; ii < _nt; ii++)
+	{
+		for (int64_t k = 0; k < _mat[ii].outerSize(); ++k) {
+			for (Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>::InnerIterator it(_mat[ii], k); it; ++it) {
+				_dat.push_back(Eigen::Triplet<double>(it.row() + offset, it.col(), it.value()));
+			}
+		}
+		offset += _mat[ii].rows();
+	}
+	
+	this->_mat[0].resize(offset, _mat[0].cols());
 	this->_mat[0].setFromTriplets(_dat.begin(), _dat.end());
 	this->_mat[0].makeCompressed();
 	_nt = 1;
@@ -3116,8 +3135,8 @@ void KingOfMonsters::_mySparse::LSsolve(Eigen::VectorXd* rhs, Eigen::VectorXd* r
 	//Eigen::LLT<Eigen::MatrixXd> lu;
 	//MKL_Set_Num_Threads(16);
 	//MKL_Set_Dynamic(false);
-	//Eigen::PardisoLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
-Eigen::SparseLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
+	Eigen::PardisoLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
+//Eigen::SparseLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
 
 	//lu.pardisoParameterArray()[59] = 1;
 	//Eigen::BiCGSTAB< Eigen::SparseMatrix<double, 0, int64_t>> lu;
@@ -3148,27 +3167,27 @@ Eigen::SparseLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
 #endif
 }
 
-void KingOfMonsters::_mySparse::Project(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, double salt) {
+void KingOfMonsters::_mySparse::Project(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, double salt,double lambda) {
 	//Eigen::LLT<Eigen::MatrixXd> lu;
 	//MKL_Set_Num_Threads(16);
 	//MKL_Set_Dynamic(false);
 	#ifdef _CPU
-	//Eigen::PardisoLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
-	Eigen::SparseLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
+	Eigen::PardisoLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
+	//Eigen::SparseQR< Eigen::SparseMatrix<double, 0, int64_t>,Eigen::COLAMDOrdering<int64_t>> lu;
 	//lu.pardisoParameterArray()[59] = 1;
 	//Eigen::MatrixXd m(this->_mat[0].rows(), this->_mat[0].cols());
 	//m = this->_mat[0];
 	Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t> id;
-	if (this->_mat[0].rows() <= this->_mat[0].cols())
+	//if (this->_mat[0].rows() <= this->_mat[0].cols())
 	{
 		id.resize(_mat[0].rows(), _mat[0].rows());
 		lu.compute(this->_mat[0] * this->_mat[0].transpose() + id * salt);
 		ret->resize(this->_mat[0].cols());
 		Eigen::VectorXd v(this->_mat[0] * *rhs);
-		*ret = *rhs-this->_mat[0].transpose() * lu.solve(v);
+		*ret = *rhs-lambda*this->_mat[0].transpose() * lu.solve(v);
 		return;
 }
-	if (this->_mat[0].rows() > this->_mat[0].cols())
+	/*if (this->_mat[0].rows() > this->_mat[0].cols())
 	{
 		id.resize(_mat[0].cols(), _mat[0].cols());
 		lu.compute(this->_mat[0].transpose() * this->_mat[0] + id * salt) ;
@@ -3176,7 +3195,7 @@ void KingOfMonsters::_mySparse::Project(Eigen::VectorXd* rhs, Eigen::VectorXd* r
 		Eigen::VectorXd v(((*rhs).transpose() * this->_mat[0]).transpose());
 		*ret = lu.solve(v).transpose() * this->_mat[0].transpose();
 		return;
-	}
+	}*/
 #endif
 }
 
@@ -3457,7 +3476,7 @@ std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs,
 	//Eigen::SparseLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	//lu.pardisoParameterArray()[59] = 1;
 	//pardiso.compute(this->_mat[0]);
-
+	
 
 	//lu.setPivotThreshold(0.0000000001);l;ll;
 	//lu.setMaxIterations(rhs->size() * 0.5);

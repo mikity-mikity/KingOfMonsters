@@ -283,6 +283,7 @@ namespace KingOfMonsters {
 		void _OfDuplicate(_mySparse* mat);
 		void ofDat();
 		void build(_mySparse* second);
+		void build();
 		void solve(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void solve2(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void freezecoeff();
@@ -322,7 +323,7 @@ namespace KingOfMonsters {
 		void setmiddlecolum(Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>& f, int64_t start, int64_t end);
 		void solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void LSsolve(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, double, int mode);
-		void Project(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, double);
+		void Project(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, double,double);
 		//void _solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		//Eigen::MatrixXd _solve0(_myLLT* LLT, _mySparse* mat);
 		std::string _solve0_lu_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering);

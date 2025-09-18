@@ -2520,6 +2520,10 @@ namespace KingOfMonsters {
 		{
 			this->dat->build(second->dat);
 		}
+		void build()
+		{
+			this->dat->build();
+		}
 		void solve(myDoubleArray ^grad,myDoubleArray ^ret)
 		{
 			this->dat->solve(&grad->_arr->__v, &ret->_arr->__v);
@@ -2937,11 +2941,12 @@ namespace KingOfMonsters {
 			dat->LSsolve(&rhs->_arr->__v, &ret->_arr->__v,salt,mode);
 
 		}
-		void Project(myDoubleArray^ rhs, myDoubleArray^ ret, double salt) {
+		void Project(myDoubleArray^ rhs, myDoubleArray^ ret, double salt,double lambda) {
 
-			dat->Project(&rhs->_arr->__v, &ret->_arr->__v,salt);
+			dat->Project(&rhs->_arr->__v, &ret->_arr->__v,salt,lambda);
 
 		}
+		
 		void trimCols(System::Collections::Generic::List<int> ^ index)
 		{
 			int N = this->dat->_mat[0].cols();
