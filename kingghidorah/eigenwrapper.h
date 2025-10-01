@@ -7,6 +7,7 @@
 //#define EIGEN_USE_BLAS
 //#define EIGEN_USE_MKL_VML
 //#define  EIGEN_USE_LAPACKE
+#define EIGEN_DEFAULT_DENSE_INDEX_TYPE int64_t
 #define EIGEN_DONT_ALIGN_STATICALLY
 #define EIGEN_MAX_ALIGN_BYTES 0
 #define EIGEN_DONT_VECTORIZE
@@ -323,7 +324,7 @@ namespace KingOfMonsters {
 		void setmiddlecolum(Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>& f, int64_t start, int64_t end);
 		void solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		void LSsolve(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, double, int mode);
-		void Project(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, double,double);
+		void Project(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, double, double);
 		//void _solve0(Eigen::VectorXd* rhs, Eigen::VectorXd* ret);
 		//Eigen::MatrixXd _solve0(_myLLT* LLT, _mySparse* mat);
 		std::string _solve0_lu_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret, int ordering);

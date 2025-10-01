@@ -2026,7 +2026,9 @@ void KingOfMonsters::clear()
 {
 	dict.clear();
 	dict2.clear();
-	map.clear();
+	
+
+	
 }
 std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 {	
@@ -3454,6 +3456,7 @@ void KingOfMonsters::_mySparse::turnDense()
 {
 	this->_dmat = this->_mat[0];
 }
+
 std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs, Eigen::VectorXd* ret)
 {
 	//MKL_Set_Num_Threads(16);
@@ -3465,23 +3468,17 @@ std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs,
 
 	Eigen::setNbThreads(_mt);
 	
-	this->_mat[0].makeCompressed();
-	//Eigen::SparseLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
-	//Eigen::SparseQR< Eigen::SparseMatrix<double, 0, int64_t>, Eigen::COLAMDOrdering<int64_t>>lu;
-	//Eigen::BiCGSTAB< Eigen::SparseMatrix<double, 0, int64_t>> lu;
+    this->_mat[0].makeCompressed();
 	
-	//MKL_Set_Dynamic(true);
 	
-	Eigen::PardisoLU < Eigen::SparseMatrix<double, 0, int64_t>> lu;
-	//Eigen::SparseLU< Eigen::SparseMatrix<double, 0, int64_t>> lu;
-	//lu.pardisoParameterArray()[59] = 1;
-	//pardiso.compute(this->_mat[0]);
+	Eigen::PardisoLLT< Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	
+		lu.analyzePattern(this->_mat[0]);
 
-	//lu.setPivotThreshold(0.0000000001);l;ll;
-	//lu.setMaxIterations(rhs->size() * 0.5);
-	lu.compute(this->_mat[0]);
-	//if (lu.info() == Eigen::ComputationInfo::Success)
+
+	
+	lu.factorize(this->_mat[0]);
+	if (lu.info() == Eigen::ComputationInfo::Success)
 	{
 		if (rhs->size() > this->_mat[0].rows())
 		{
@@ -3501,14 +3498,15 @@ std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs,
 		else {
 			*ret = lu.solve(*rhs);
 		}
+		
 		return "success";
 	}
-	/*else {
+	else {
 		std::stringstream ss;
 		ss << lu.info();
 		return ss.str();
 		;
-	}*/
+	}
 #endif
 	return "_cpu only";
 }
