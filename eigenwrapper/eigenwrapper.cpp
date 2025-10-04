@@ -2148,9 +2148,8 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 							//int64_t* ptr = &index[_ii][0];
 							for (int64_t k = 0; k < mm; ++k) {
 								for (Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>::InnerIterator it((*e2)[_ii], k); it; ++it) {
-									//e[0].coeffRef(it.row(), it.col()) += it.value();
-									*((*e)[_ii].valuePtr() + (*_map)[it.row() * mm + it.col()]) += it.value();
-									//ptr++;
+									(*e)[_ii].coeffRef(it.row(), it.col()) += it.value();
+									//*((*e)[_ii].valuePtr() + (*_map)[it.row() * mm + it.col()]) += it.value();
 								}
 							}
 						}
@@ -2223,7 +2222,7 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 			}
 			//build map
 			std::vector<int64_t> __map;
-			__map.resize(nn*nn);
+			/*__map.resize(nn* nn);
 			for (int64_t k = 0; k < prevmat->outerSize(); ++k) {
 				for (Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>::InnerIterator it(*prevmat, k); it; ++it) {
 					int64_t S = prevmat->outerIndexPtr()[k];
@@ -2235,7 +2234,7 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 							__map[it.row()*mm+it.col()] = tt;
 					}
 				}
-			}
+			}*/
 			{
 				
 				{
@@ -2851,9 +2850,8 @@ void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse,bool AorB)
 								//int64_t* ptr = &index[_ii][0];
 								for (int64_t k = 0; k < mm; ++k) {
 									for (Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>::InnerIterator it((*e2)[_ii], k); it; ++it) {
-										//e[0].coeffRef(it.row(), it.col()) += it.value();
-										*((*e)[_ii].valuePtr() + (*_map)[it.row() * mm + it.col()]) += it.value();
-										//ptr++;
+										(*e)[_ii].coeffRef(it.row(), it.col()) += it.value();
+										//*((*e)[_ii].valuePtr() + (*_map)[it.row() * mm + it.col()]) += it.value();
 									}
 								}
 							}
@@ -2925,8 +2923,8 @@ void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse,bool AorB)
 			}
 			//build map
 			std::vector<int64_t> __map;
-			__map.resize(nn * mm);
-			for (int64_t k = 0; k < prevmat->outerSize(); ++k) {
+			//__map.resize(nn * mm);
+			/*for (int64_t k = 0; k < prevmat->outerSize(); ++k) {
 				for (Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>::InnerIterator it(*prevmat, k); it; ++it) {
 					int64_t S = prevmat->outerIndexPtr()[k];
 					int64_t E = prevmat->outerIndexPtr()[k + 1];
@@ -2937,7 +2935,7 @@ void KingOfMonsters::_mySparse::ofAtB(_mySparse* B, bool sparse,bool AorB)
 							__map[it.row() * mm + it.col()] = tt;
 					}
 				}
-			}
+			}*/
 			{
 			
 				{
