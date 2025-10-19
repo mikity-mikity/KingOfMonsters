@@ -3469,7 +3469,7 @@ std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs,
     this->_mat[0].makeCompressed();
 	
 	
-	Eigen::PardisoLLT< Eigen::SparseMatrix<double, 0, int64_t>> lu;
+	Eigen::PardisoLDLT< Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	
 		lu.analyzePattern(this->_mat[0]);
 
