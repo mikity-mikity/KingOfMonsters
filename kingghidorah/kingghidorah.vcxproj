@@ -31,21 +31,21 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_CPU|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_CPU|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_CPU|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
     <UseInteloneMKL>No</UseInteloneMKL>
@@ -55,7 +55,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_CPU|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
     <UseInteloneMKL>No</UseInteloneMKL>
@@ -80,7 +80,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_CPU|x64'">
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(oneMKLIncludeDir)</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(oneMKLIncludeDir);C:\Program Files %28x86%29\Intel\oneAPI\mkl\2025.3\include</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(oneMKLLibDir);$(oneMKLOmpLibDir)</LibraryPath>
     <linkage-MKL-static-win-x64>static</linkage-MKL-static-win-x64>
     <threading-MKL-static-win-x64>tbb</threading-MKL-static-win-x64>
@@ -91,7 +91,7 @@
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_CPU|x64'">
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(oneMKLIncludeDir)</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(oneMKLIncludeDir);;C:\Program Files %28x86%29\Intel\oneAPI\mkl\2025.3\include</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(oneMKLLibDir);$(oneMKLOmpLibDir);</LibraryPath>
     <linkage-MKL-static-win-x64>static</linkage-MKL-static-win-x64>
     <threading-MKL-static-win-x64>tbb</threading-MKL-static-win-x64>
@@ -145,6 +145,7 @@
     <Link>
       <AdditionalDependencies>mkl_intel_ilp64.lib; mkl_sequential.lib; mkl_core.lib</AdditionalDependencies>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Intel\oneAPI\mkl\2025.3\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <CudaLink>
       <Optimization>O3</Optimization>
@@ -176,6 +177,7 @@
     <Link>
       <AdditionalDependencies> mkl_intel_ilp64.lib; mkl_sequential.lib; mkl_core.lib</AdditionalDependencies>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Intel\oneAPI\mkl\2025.3\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <CudaLink>
       <Optimization>O3</Optimization>

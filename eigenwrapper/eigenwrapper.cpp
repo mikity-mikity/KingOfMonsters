@@ -2026,7 +2026,7 @@ void KingOfMonsters::clear()
 {
 	dict.clear();
 	dict2.clear();
-	
+	map.clear();
 
 	
 }
