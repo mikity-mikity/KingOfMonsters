@@ -2108,9 +2108,16 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 	ss << duration.count() << "ms" << std::endl;
 	now = high_resolution_clock::now();
 	//index.resize(__mt);
+	std::vector<std::vector<Eigen::Triplet<double>>> index;
+	index.clear();
+	for (int64_t _ii = 0; _ii < __mt; _ii++)
+	{
+		index.push_back(std::vector<Eigen::Triplet<double>>());
+	}
 	#pragma omp parallel for num_threads(_mt)
 	for (int64_t _ii = 0; _ii < __mt; _ii++)
 	{
+		auto _index = index[_ii];
 		int64_t S = 0;
 		int64_t E = 0;
 
@@ -2148,10 +2155,12 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 							//int64_t* ptr = &index[_ii][0];
 							for (int64_t k = 0; k < mm; ++k) {
 								for (Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>::InnerIterator it((*e2)[_ii], k); it; ++it) {
-									(*e)[_ii].coeffRef(it.row(), it.col()) += it.value();
+									//(*e)[_ii].coeffRef(it.row(), it.col()) += it.value();
+									_index.push_back(Eigen::Triplet<double>(it.row(), it.col(), it.value()));
 									//*((*e)[_ii].valuePtr() + (*_map)[it.row() * mm + it.col()]) += it.value();
 								}
 							}
+							//(*e)[_ii].setFromTriplets(_index.begin(), _index.end());
 						}
 						//e[_ii].makeCompressed();
 					}				
@@ -2159,54 +2168,67 @@ std::string KingOfMonsters::_mySparse::ofAtA( _mySparse* A, bool sparse)
 		}
 		//e[_ii].makeCompressed();
 	}
+	if (_map != 0)
+	{
+		std::vector<Eigen::Triplet<double>> tripletList;
+		tripletList.clear();
+		for (const auto& _index : index) {
+			tripletList.insert(tripletList.end(), _index.begin(), _index.end());
+		}
+		(*e)[0].setZero();
+		(*e)[0].setFromTriplets(tripletList.begin(), tripletList.end());
+	}
 	//this->_mat[0] = *prevmat;
 	end = high_resolution_clock::now();
 	duration = duration_cast<milliseconds>(now - end);
 	ss << duration.count() << "ms" << std::endl;
 	now = high_resolution_clock::now();
 	//Eigen::setNbThreads(_mt);
-
-	for (int64_t tt = 0; tt < 4000; tt++)
+	if (_map == 0)
 	{
+		for (int64_t tt = 0; tt < 4000; tt++)
+		{
 #pragma omp parallel for schedule(static,1) num_threads(_mt)
-		for (int64_t i = 0; i < __mt; i += 2)
-		{
-			if (i + 1 < __mt) {
-				if (_map == 0 || (*e)[i].nonZeros() != (*e)[i + 1].nonZeros())
-				{
-					(*e)[i] += (*e)[i + 1];
-				}
-				else {
-					Eigen::Map<Eigen::VectorXd> map1((*e)[i].valuePtr(), (*e)[i].nonZeros());
-					Eigen::Map<Eigen::VectorXd> map2((*e)[i + 1].valuePtr(), (*e)[i].nonZeros());
-					map1 += map2;
+			for (int64_t i = 0; i < __mt; i += 2)
+			{
+				if (i + 1 < __mt) {
+					//if (_map == 0 || (*e)[i].nonZeros() != (*e)[i + 1].nonZeros())
+					{
+						(*e)[i] += (*e)[i + 1];
+					}
+					//else {
+						//Eigen::Map<Eigen::VectorXd> map1((*e)[i].valuePtr(), (*e)[i].nonZeros());
+						//Eigen::Map<Eigen::VectorXd> map2((*e)[i + 1].valuePtr(), (*e)[i].nonZeros());
+						//map1 += map2;
+					//}
 				}
 			}
-		}
-		int64_t _ct = 0;
+			int64_t _ct = 0;
 #pragma omp parallel for ordered schedule(static,1) num_threads(_mt)
-		for (int64_t i = 0; i < __mt; i += 2)
-		{
+			for (int64_t i = 0; i < __mt; i += 2)
+			{
 #pragma omp ordered
-			if (_map == 0 || (*e)[i].nonZeros() != (*e)[i / 2].nonZeros())
-			{
-				(*e)[i / 2] = (*e)[i];
-			}
-			else
-			{
-				memcpy((*e)[i / 2].valuePtr(), (*e)[i].valuePtr(), sizeof(double) * (*e)[i].nonZeros());
-			}
+				//if (_map == 0 || (*e)[i].nonZeros() != (*e)[i / 2].nonZeros())
+				{
+					(*e)[i / 2] = (*e)[i];
+				}
+				//else
+				//{
+					//memcpy((*e)[i / 2].valuePtr(), (*e)[i].valuePtr(), sizeof(double) * (*e)[i].nonZeros());
+				//}
 #pragma omp atomic
-			_ct++;
+				_ct++;
+			}
+			__mt = _ct;
+			if (__mt == 1)break;
 		}
-		__mt = _ct;
-		if (__mt == 1)break;
 	}
 	if (true) {
 		if (this->_mat.size() == 0)this->_mat.resize(1);
 		this->_mat[0].resize(nn, nn);
 		this->_mat[0].reserve(nn * nn / 20);
 		this->_mat[0] = (*e)[0];
+
 		//for (int64_t i = 1; i < __mt; i++) {
 		//	this->_mat[0] += e[i];
 		//}
@@ -3469,9 +3491,12 @@ std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs,
     this->_mat[0].makeCompressed();
 	
 	
-	Eigen::PardisoLDLT< Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	
+	
+	if (!luinitialized) {
+		luinitialized = true;
 		lu.analyzePattern(this->_mat[0]);
+	}
 
 
 	

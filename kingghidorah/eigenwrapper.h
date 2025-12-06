@@ -11,19 +11,14 @@
 #define EIGEN_DONT_ALIGN_STATICALLY
 #define EIGEN_MAX_ALIGN_BYTES 0
 #define EIGEN_DONT_VECTORIZE
-#include "eigen-3.4.0/Eigen/PardisoSupport"
+#include "eigen-5.0.0/Eigen/PardisoSupport"
 //#endif
-#include "eigen-3.4.0/Eigen/Sparse"
-#include "eigen-3.4.0/Eigen/Dense"
-#include "eigen-3.4.0/Eigen/SparseQR"
-#include "eigen-3.4.0/Eigen/SparseLU"
-#include "eigen-3.4.0/Eigen/SparseCholesky"	
-/*#include "eigen-3.3.8/Eigen/Sparse"
-#include "eigen-3.3.8/Eigen/Dense"
-#include "eigen-3.3.8/Eigen/SparseQR"
-#include "eigen-3.3.8/Eigen/SparseLU"
-#include "eigen-3.3.8/Eigen/SparseCholesky"
-*/
+#include "eigen-5.0.0/Eigen/Sparse"
+#include "eigen-5.0.0/Eigen/Dense"
+#include "eigen-5.0.0/Eigen/SparseQR"
+#include "eigen-5.0.0/Eigen/SparseLU"
+#include "eigen-5.0.0/Eigen/SparseCholesky"	
+
 #ifndef _CPU
 #include <cuda_runtime.h>
 #include <device_launch_paraMeters.h>
@@ -205,7 +200,8 @@ namespace KingOfMonsters {
 		std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>> _mat;
 		Eigen::MatrixXd _dmat;
 		Eigen::MatrixXd _prevmat;
-
+		Eigen::PardisoLDLT< Eigen::SparseMatrix<double, 0, int64_t>> lu;
+		bool luinitialized = false;
 		vector<Eigen::VectorXd> coeff;
 	private:
 		int64_t space = 0;

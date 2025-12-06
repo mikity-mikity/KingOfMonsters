@@ -889,12 +889,15 @@ namespace KingOfMonsters {
 		
 
 		}
-		void __assemble(mySparse^ ML, myPermutation^ mXY, mySparse^ EE, myPermutation^ mZ, int C) {
+		void __assemble(mySparse^ ML, myPermutation^ mXY, mySparse^ EE, myPermutation^ mZ, int C,int num,double val) {
 			Eigen::SparseMatrix<double, 0, int64_t> D(mZ->p->perm.size(), EE->dat->_mat[0].cols());
 			D.setZero();
 			for (int i = 0; i < mZ->p->perm.size();i++)
 			{
-				D.coeffRef(i, i) = 1;
+				if(i<num)
+					D.coeffRef(i, i) = 1;
+				else
+					D.coeffRef(i, i) = val;
 			}
 			Eigen::SparseMatrix<double, 0, int64_t> D2(C, mZ->p->perm.size());
 			D2.setZero();
@@ -1403,7 +1406,7 @@ namespace KingOfMonsters {
 					for (int i = 0; i < numLC; i++)
 					{
 						auto _A = A[i];
-#pragma omp parallel for schedule(static, 10)
+#pragma omp parallel for schedule(static, 30)
 						for (Int64 k = 0; k < _A->dat->_mat[0].outerSize(); ++k)
 						{
 							for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(_A->dat->_mat[0], k); it; ++it)
@@ -1419,7 +1422,7 @@ namespace KingOfMonsters {
 					for (int i = 0; i < numLC; i++)
 					{
 						auto _C = C[i];
-#pragma omp parallel for schedule(static, 10)
+#pragma omp parallel for schedule(static, 30)
 						for (Int64 k = 0; k < _C->dat->_mat[0].outerSize(); ++k)
 						{
 							for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(_C->dat->_mat[0], k); it; ++it)
@@ -1437,7 +1440,7 @@ namespace KingOfMonsters {
 						{
 							auto _B = B[i];
 
-#pragma omp parallel for schedule(static, 10)
+#pragma omp parallel for schedule(static, 30)
 							for (Int64 k = 0; k < _B->dat->_mat[0].outerSize(); ++k)
 							{
 								for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(_B->dat->_mat[0], k); it; ++it)
@@ -1447,7 +1450,7 @@ namespace KingOfMonsters {
 							}
 
 
-#pragma omp parallel for schedule(static, 10)
+#pragma omp parallel for schedule(static, 30)
 							for (Int64 k = 0; k < _B->dat->_mat[0].outerSize(); ++k)
 							{
 								for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(_B->dat->_mat[0], k); it; ++it)
@@ -1464,7 +1467,7 @@ namespace KingOfMonsters {
 						for(int i = 0; i < numLC; i++)
 						{
 							auto _B = B[i];
-#pragma omp parallel for schedule(static, 10)
+#pragma omp parallel for schedule(static, 30)
 							for (Int64 k = 0; k < _B->dat->_mat[0].outerSize(); ++k)
 							{
 								for (Eigen::SparseMatrix<double, Eigen::ColMajor, Int64>::InnerIterator it(_B->dat->_mat[0], k); it; ++it)
@@ -1474,7 +1477,7 @@ namespace KingOfMonsters {
 								}
 							}
 
-#pragma omp parallel for schedule(static, 10)
+#pragma omp parallel for schedule(static, 30)
 
 							for (Int64 k = 0; k < _B->dat->_mat[0].outerSize(); ++k)
 							{
