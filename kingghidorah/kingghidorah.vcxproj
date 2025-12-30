@@ -144,7 +144,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>mkl_intel_ilp64.lib; mkl_sequential.lib; mkl_core.lib</AdditionalDependencies>
-      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Intel\oneAPI\mkl\2025.3\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <CudaLink>

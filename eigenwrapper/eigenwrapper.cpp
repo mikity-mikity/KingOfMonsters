@@ -3469,14 +3469,18 @@ std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs,
     this->_mat[0].makeCompressed();
 	
 	
-	Eigen::PardisoLDLT< Eigen::SparseMatrix<double, 0, int64_t>> lu;
 	
-		lu.analyzePattern(this->_mat[0]);
+	
+	if (!initialized)
+	{
+		lu_pardiso.analyzePattern(this->_mat[0]);
+		initialized = true;
+	}
 
 
 	
-	lu.factorize(this->_mat[0]);
-	if (lu.info() == Eigen::ComputationInfo::Success)
+	lu_pardiso.factorize(this->_mat[0]);
+	if (lu_pardiso.info() == Eigen::ComputationInfo::Success)
 	{
 		if (rhs->size() > this->_mat[0].rows())
 		{
@@ -3485,7 +3489,7 @@ std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs,
 			{
 				_rhs.col(i/this->_mat[0].rows())= rhs->segment(i, this->_mat[0].rows());
 			}
-			Eigen::MatrixXd _ret = lu.solve(_rhs);
+			Eigen::MatrixXd _ret = lu_pardiso.solve(_rhs);
 			ret->resize(rhs->size());
 			ret->setZero();
 			for (int i = 0; i < rhs->size(); i += this->_mat[0].rows())
@@ -3494,14 +3498,14 @@ std::string KingOfMonsters::_mySparse::_solveLU_sparse_cpu(Eigen::VectorXd* rhs,
 			}
 		}
 		else {
-			*ret = lu.solve(*rhs);
+			*ret = lu_pardiso.solve(*rhs);
 		}
 		
 		return "success";
 	}
 	else {
 		std::stringstream ss;
-		ss << lu.info();
+		ss << lu_pardiso.info();
 		return ss.str();
 		;
 	}

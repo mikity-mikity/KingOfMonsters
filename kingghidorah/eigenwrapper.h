@@ -197,10 +197,12 @@ namespace KingOfMonsters {
 	class _mySparse {
 
 	public:
+		bool initialized = false;
+		Eigen::PardisoLDLT< Eigen::SparseMatrix<double, 0, int64_t>> lu_pardiso;
 		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	public:
-		double* gpumat = 0;
-		int gpusize = 0;
+		//double* gpumat = 0;
+		//int gpusize = 0;
 		vector<vector<double>> _coeff;
 		std::vector<Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>> _mat;
 		Eigen::MatrixXd _dmat;
@@ -233,7 +235,7 @@ namespace KingOfMonsters {
 		_mySparse();
 		~_mySparse();
 		void freeze(bool _do);
-		void freeze2();
+		//void freeze2();
 		void _freeze();
 		double L2Norm(Eigen::VectorXd* a, Eigen::VectorXd* b);
 		Eigen::VectorXd Vector(double* ptr1, int64_t N1);
