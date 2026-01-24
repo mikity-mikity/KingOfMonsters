@@ -75,7 +75,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>C:\Program Files %28x86%29\Intel\oneAPI\mkl\2025.3\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files %28x86%29\Intel\oneAPI\mkl\2025.3\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\Program Files (x86)\Intel\oneAPI\compiler\latest\lib;C:\Program Files %28x86%29\Intel\oneAPI\mkl\2025.3\lib;$(LibraryPath)</LibraryPath>
     <EnableManagedIncrementalBuild>false</EnableManagedIncrementalBuild>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -86,9 +86,16 @@
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <OpenMPSupport>false</OpenMPSupport>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>mkl_intel_ilp64.lib; mkl_sequential.lib; mkl_core.lib</AdditionalDependencies>
+      <AdditionalDependencies>mkl_intel_ilp64.lib; mkl_intel_thread.lib; mkl_core.lib;libiomp5md.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -128,6 +135,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="sparse_solver.h" />
+    <ClInclude Include="_sparse_solver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
@@ -149,6 +157,11 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\_sparse_solver\_sparse_solver.vcxproj">
+      <Project>{c5fa0553-55ab-44b5-8794-c810911b31b8}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

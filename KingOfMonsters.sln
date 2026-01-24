@@ -12,6 +12,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kingghidorah", "kingghidora
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sparse_solver", "sparse_solver\sparse_solver.vcxproj", "{8B9349A3-38AA-A870-2B4A-98D80D9A1A64}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_sparse_solver", "_sparse_solver\_sparse_solver.vcxproj", "{C5FA0553-55AB-44B5-8794-C810911B31B8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		DebugCPU|x64 = DebugCPU|x64
@@ -41,6 +43,14 @@ Global
 		{8B9349A3-38AA-A870-2B4A-98D80D9A1A64}.ReleaseCPU|x64.Build.0 = Release|x64
 		{8B9349A3-38AA-A870-2B4A-98D80D9A1A64}.ReleaseCPU|x86.ActiveCfg = Release|Win32
 		{8B9349A3-38AA-A870-2B4A-98D80D9A1A64}.ReleaseCPU|x86.Build.0 = Release|Win32
+		{C5FA0553-55AB-44B5-8794-C810911B31B8}.DebugCPU|x64.ActiveCfg = Debug|x64
+		{C5FA0553-55AB-44B5-8794-C810911B31B8}.DebugCPU|x64.Build.0 = Debug|x64
+		{C5FA0553-55AB-44B5-8794-C810911B31B8}.DebugCPU|x86.ActiveCfg = Debug|Win32
+		{C5FA0553-55AB-44B5-8794-C810911B31B8}.DebugCPU|x86.Build.0 = Debug|Win32
+		{C5FA0553-55AB-44B5-8794-C810911B31B8}.ReleaseCPU|x64.ActiveCfg = Release|x64
+		{C5FA0553-55AB-44B5-8794-C810911B31B8}.ReleaseCPU|x64.Build.0 = Release|x64
+		{C5FA0553-55AB-44B5-8794-C810911B31B8}.ReleaseCPU|x86.ActiveCfg = Release|Win32
+		{C5FA0553-55AB-44B5-8794-C810911B31B8}.ReleaseCPU|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
