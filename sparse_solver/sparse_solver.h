@@ -15,7 +15,7 @@ namespace sparse_solver {
 	{
 	public:
 		
-		static int solve_CHOLESKY(int n, array<int>^ columnptr, array<int>^ rowindices, array<double>^ values, array<double>^ rhs, array<double>^ ret)
+		static int solve_CHOLESKY(int n, array<int>^ columnptr, array<int>^ rowindices, array<double>^ values, array<double>^ rhs, array<double>^ ret,double salt)
 		{
 			
 
@@ -42,7 +42,11 @@ namespace sparse_solver {
 					//	tripletList.push_back(Eigen::Triplet<double, int64_t>(i, row, val));
 				}
 			}
-			
+			for (int i = 0; i < n; i++)
+			{
+				tripletList.push_back(Eigen::Triplet<double, int64_t>(i, i, salt));
+				
+			}
 			mat.resize(n, n);
 			mat.setFromTriplets(tripletList.begin(), tripletList.end());
 			mat.makeCompressed();
