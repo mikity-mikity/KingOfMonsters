@@ -6,6 +6,10 @@
 #include "eigen-3.4.0/Eigen/SparseLU"
 #include "eigen-3.4.0/Eigen/SparseCholesky"	
 
+#include <limits>
+#include <cmath>
+#include <algorithm>
+
 #define EIGEN_NO_DEBUG
 #define EIGEN_NO_STATIC_ASSERT
 #define EIGEN_USE_LAPACK
@@ -17,6 +21,6 @@
 namespace _sparse_solver
 {
 	Eigen::MatrixXcd genEigen2(Eigen::MatrixXd ma, Eigen::MatrixXd mb, double* l1, double* l2, double* l1i, double* l2i);
-	
-	Eigen::VectorXd solve_CHOLECKY(Eigen::SparseMatrix<double, 0, int64_t> mat, Eigen::VectorXd rhs);
+	Eigen::VectorXd  findSearchDirection(Eigen::SparseMatrix<double, 0, int64_t> mat, std::vector<Eigen::VectorXd> vecs,Eigen::VectorXd rhs,double salt);
+	Eigen::VectorXd solve_CHOLECKY(Eigen::SparseMatrix<double, 0, int64_t> mat, Eigen::VectorXd rhs,double salt);
 }
