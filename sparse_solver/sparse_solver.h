@@ -105,53 +105,7 @@ namespace sparse_solver {
 			return 1;
 		}
 
-		static int solve_projection(int n, array<int>^ columnptr, array<int>^ rowindices, array<double>^ values,
-			
-			
-			array<double>^ rhs, array<double>^ ret, double salt)
-		{
-
-
-			Eigen::SparseMatrix<double> mat,mat2;
-			Eigen::VectorXd b(n);
-			Eigen::VectorXd _r(n);
-			for (int i = 0; i < n; i++)
-			{
-				double v = rhs[i];
-				b(i) = v;
-			}
-			std::vector<Eigen::Triplet<double, int64_t>> tripletList;
-			tripletList.reserve(values->Length);
-			for (int i = 0; i < n; i++)
-			{
-				int start = columnptr[i];
-				int end = columnptr[i + 1];
-				for (int j = start; j < end; j++)
-				{
-					int row = rowindices[j];
-					double val = values[j];
-					tripletList.push_back(Eigen::Triplet<double, int64_t>(row, i, val));
-					
-				}
-			}
-			/*for (int i = 0; i < n; i++)
-			{
-				tripletList.push_back(Eigen::Triplet<double, int64_t>(i, i, salt));
-
-			}*/
-			mat.resize(n, n);
-			mat.setFromTriplets(tripletList.begin(), tripletList.end());
-			mat.makeCompressed();
-
-
-			_r = _sparse_solver::apply_near_null_filter(mat, b,salt);
-			for (int i = 0; i < n; i++)
-			{
-				ret[i] = _r(i);
-			}
-
-			return 1;
-		}
+		
 
 		static void genEigen2(double a, double b, double d, double A, double B, double D,
 			[Runtime::InteropServices::Out]double% aa, [Runtime::InteropServices::Out]double% bb,

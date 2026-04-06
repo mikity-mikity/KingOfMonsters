@@ -182,53 +182,6 @@ namespace _sparse_solver {
 		_r = chol.solve(rhs);
 		return _r;
 	}
-    Eigen::VectorXd solve_projection(Eigen::SparseMatrix<double, 0, int64_t> mat, Eigen::SparseMatrix<double, 0, int64_t> P, Eigen::VectorXd rhs)
-    {
-        Eigen::PardisoLDLT< Eigen::SparseMatrix<double, 0, int64_t>> chol;
+  
 
-        int n = P.cols();
-
-
-       
-            Eigen::SparseMatrix<double, 0, int64_t>  T = mat * P;
-            Eigen::SparseMatrix<double, 0, int64_t> M = P.transpose() * T;
-
-            chol.compute(M);
-            Eigen::VectorXd _r(n);
-            Eigen::VectorXd rhsx2=P.transpose()*rhs;
-
-        _r = chol.solve(rhsx2);
-        Eigen::VectorXd ret=P* _r;
-
-        return ret;
-    }
-
-    Vec apply_near_null_filter(const SpMat& A, const Vec& v, double mu)
-    {
-        Eigen::PardisoLDLT<SpMat> chol;
-
-        const int m = A.rows();
-
-        // M = A A^T + mu I
-        SpMat M = A * A.transpose();
-        M.makeCompressed();
-
-        for (int k = 0; k < m; ++k) {
-            M.coeffRef(k, k) += mu;
-        }
-        M.makeCompressed();
-
-        chol.compute(M);
-        if (chol.info() != Eigen::Success) {
-            throw std::runtime_error("factorization failed");
-        }
-
-        Vec Av = A * v;
-        Vec u = chol.solve(Av);
-        if (chol.info() != Eigen::Success) {
-            throw std::runtime_error("solve failed");
-        }
-
-        return v - A.transpose() * u;
-    }
 }
