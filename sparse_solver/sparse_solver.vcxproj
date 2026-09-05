@@ -81,6 +81,10 @@
     <LibraryPath>C:\Program Files (x86)\Intel\oneAPI\compiler\latest\lib;C:\Program Files %28x86%29\Intel\oneAPI\mkl\2025.3\lib;$(LibraryPath)</LibraryPath>
     <EnableManagedIncrementalBuild>false</EnableManagedIncrementalBuild>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>C:\Program Files %28x86%29\Intel\oneAPI\mkl\2025.3\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files (x86)\Intel\oneAPI\compiler\latest\lib;C:\Program Files %28x86%29\Intel\oneAPI\mkl\2025.3\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -120,7 +124,7 @@
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies />
+      <AdditionalDependencies>mkl_intel_ilp64.lib;mkl_intel_thread.lib;mkl_core.lib;libiomp5md.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

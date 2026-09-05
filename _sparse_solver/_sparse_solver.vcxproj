@@ -78,6 +78,10 @@
     <IncludePath>C:\Program Files %28x86%29\Intel\oneAPI\mkl\2025.3\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Program Files %28x86%29\Intel\oneAPI\mkl\2025.3\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>C:\Program Files %28x86%29\Intel\oneAPI\mkl\2025.3\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files %28x86%29\Intel\oneAPI\mkl\2025.3\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -121,6 +125,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>
