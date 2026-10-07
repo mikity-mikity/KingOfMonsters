@@ -27,12 +27,5 @@ namespace _sparse_solver
 
 
 	Eigen::MatrixXcd genEigen2(Eigen::MatrixXd ma, Eigen::MatrixXd mb, double* l1, double* l2, double* l1i, double* l2i);
-    std::vector<Eigen::VectorXd>
-        buildOrthonormalBasis(
-            const std::vector<Eigen::VectorXd>& inputVecs,
-            Eigen::Index fullSize,
-            double relativeThreshold);
-    Eigen::VectorXd solve_CHOLECKY(Eigen::SparseMatrix<double, 0, int64_t> mat, Eigen::VectorXd rhs);
-	Eigen::VectorXd solve_projection(Eigen::SparseMatrix<double, 0, int64_t> mat, Eigen::SparseMatrix<double, 0, int64_t> , Eigen::VectorXd rhs);
-	Vec apply_near_null_filter(const SpMat& A, const Vec& v, double mu);
+  
 }

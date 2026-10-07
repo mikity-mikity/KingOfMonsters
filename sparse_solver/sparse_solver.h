@@ -18,61 +18,314 @@ namespace sparse_solver {
 	public ref class sparse_solver abstract sealed
 	{
 	public:
-        static array<double>^ findSearchDirection6(
+        static array<double>^ removePAndAPComponents(
             int n,
 
+            // Primary matrix A (CSC)
+            array<int>^ columnptrA,
+            array<int>^ rowindicesA,
+            array<double>^ valuesA,
+
+            // P = [vecs[0] vecs[1] ...]
+            array<array<double>^>^ vecs,
+
+            // Vector from which the P and AP components are removed
+            array<double>^ rhsb,
+
+            // Relative threshold for determining rank([P, AP]).
+            // For example: 1.0e-12.
+            double tsvdThreshold)
+        {
+            using SparseMatrix64 =
+                Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>;
+
+            using Triplet64 =
+                Eigen::Triplet<double, int64_t>;
+
+
+            // =====================================================
+            // Validation
+            // =====================================================
+
+            if (n <= 0)
+                throw gcnew ArgumentException("n must be positive");
+
+            if (columnptrA == nullptr)
+                throw gcnew ArgumentNullException("columnptrA");
+
+            if (rowindicesA == nullptr)
+                throw gcnew ArgumentNullException("rowindicesA");
+
+            if (valuesA == nullptr)
+                throw gcnew ArgumentNullException("valuesA");
+
+            if (vecs == nullptr)
+                throw gcnew ArgumentNullException("vecs");
+
+            if (rhsb == nullptr)
+                throw gcnew ArgumentNullException("rhsb");
+
+            if (rhsb->Length != n)
+                throw gcnew ArgumentException("rhsb has incompatible size");
+
+            if (columnptrA->Length != n + 1 ||
+                columnptrA[0] != 0 ||
+                columnptrA[n] != valuesA->Length ||
+                rowindicesA->Length != valuesA->Length)
+            {
+                throw gcnew ArgumentException("Invalid CSC arrays for A");
+            }
+
+            if (!std::isfinite(tsvdThreshold) ||
+                tsvdThreshold < 0.0)
+            {
+                throw gcnew ArgumentException(
+                    "tsvdThreshold must be finite and nonnegative");
+            }
+
+
+            // =====================================================
+            // Build sparse primary matrix A.
+            // =====================================================
+
+            SparseMatrix64 matA(n, n);
+
+            std::vector<Triplet64> tripletsA;
+            tripletsA.reserve(static_cast<std::size_t>(valuesA->Length));
+
+            for (int column = 0; column < n; ++column)
+            {
+                const int start = columnptrA[column];
+                const int end = columnptrA[column + 1];
+
+                if (start < 0 || end < start || end > valuesA->Length)
+                    throw gcnew ArgumentException(
+                        "columnptrA contains an invalid range");
+
+                for (int index = start; index < end; ++index)
+                {
+                    const int row = rowindicesA[index];
+                    const double value = valuesA[index];
+
+                    if (row < 0 || row >= n)
+                        throw gcnew ArgumentException(
+                            "rowindicesA contains an invalid row index");
+
+                    if (!std::isfinite(value))
+                        throw gcnew ArgumentException(
+                            "valuesA contains NaN or infinity");
+
+                    tripletsA.emplace_back(
+                        static_cast<int64_t>(row),
+                        static_cast<int64_t>(column),
+                        value);
+                }
+            }
+
+            matA.setFromTriplets(tripletsA.begin(), tripletsA.end());
+            matA.makeCompressed();
+
+
+            // =====================================================
+            // Build P directly from vecs and compute AP = A P.
+            // =====================================================
+
+            const Eigen::Index pCount =
+                static_cast<Eigen::Index>(vecs->Length);
+
+            Eigen::MatrixXd P(n, pCount);
+
+            for (Eigen::Index j = 0; j < pCount; ++j)
+            {
+                array<double>^ source = vecs[static_cast<int>(j)];
+
+                if (source == nullptr)
+                    throw gcnew ArgumentException("vecs contains a null vector");
+
+                if (source->Length != n)
+                    throw gcnew ArgumentException(
+                        "vecs contains a vector with incompatible size");
+
+                for (int i = 0; i < n; ++i)
+                {
+                    const double value = source[i];
+
+                    if (!std::isfinite(value))
+                        throw gcnew ArgumentException(
+                            "vecs contains NaN or infinity");
+
+                    P(i, j) = value;
+                }
+            }
+
+            Eigen::MatrixXd AP(n, pCount);
+            AP.noalias() = matA * P;
+
+            if (!AP.allFinite())
+                throw gcnew InvalidOperationException(
+                    "A * P contains NaN or infinity");
+
+
+            // =====================================================
+            // Build the forbidden subspace
+            //
+            //     span(C) = span(P, AP).
+            //
+            // Each nonzero column is normalized first.  Therefore the
+            // rank decision does not depend on the arbitrary magnitudes
+            // of individual vectors in P or AP.
+            // =====================================================
+
+            Eigen::MatrixXd C(n, 2 * pCount);
+
+            for (Eigen::Index j = 0; j < pCount; ++j)
+            {
+                C.col(j) = P.col(j);
+                C.col(pCount + j) = AP.col(j);
+            }
+
+            for (Eigen::Index j = 0; j < C.cols(); ++j)
+            {
+                const double columnNorm = C.col(j).norm();
+
+                if (!std::isfinite(columnNorm))
+                    throw gcnew InvalidOperationException(
+                        "P or A * P has an invalid column norm");
+
+                if (columnNorm > 0.0)
+                    C.col(j) /= columnNorm;
+            }
+
+
+            // =====================================================
+            // Construct an orthonormal basis Q for span(P, AP).
+            //
+            // Only this temporary constraint basis is orthonormalized.
+            // The original vecs are not modified.
+            // =====================================================
+
+            Eigen::MatrixXd Q(n, 0);
+
+            if (C.cols() > 0)
+            {
+                Eigen::JacobiSVD<Eigen::MatrixXd> svd(
+                    C,
+                    Eigen::ComputeThinU);
+
+                const Eigen::VectorXd singularValues =
+                    svd.singularValues();
+
+                Eigen::Index rank = 0;
+
+                if (singularValues.size() > 0 && singularValues(0) > 0.0)
+                {
+                    const double cutoff =
+                        tsvdThreshold * singularValues(0);
+
+                    for (Eigen::Index i = 0;
+                        i < singularValues.size();
+                        ++i)
+                    {
+                        if (singularValues(i) > cutoff)
+                            ++rank;
+                    }
+                }
+
+                Q = svd.matrixU().leftCols(rank);
+            }
+
+
+            // =====================================================
+            // Copy rhsb and remove its components in span(P, AP):
+            //
+            //     direction = (I - Q Q^T) rhsb.
+            //
+            // Thus, up to floating-point error,
+            //
+            //     P^T direction    = 0,
+            //     (AP)^T direction = 0.
+            // =====================================================
+
+            Eigen::VectorXd direction(n);
+
+            for (int i = 0; i < n; ++i)
+            {
+                const double value = rhsb[i];
+
+                if (!std::isfinite(value))
+                    throw gcnew ArgumentException(
+                        "rhsb contains NaN or infinity");
+
+                direction(i) = value;
+            }
+
+            if (Q.cols() > 0)
+            {
+                Eigen::VectorXd coefficients = Q.transpose() * direction;
+                direction -= Q * coefficients;
+
+                // Reproject once to remove accumulated roundoff error.
+                coefficients.noalias() = Q.transpose() * direction;
+                direction -= Q * coefficients;
+            }
+
+            if (!direction.allFinite())
+                throw gcnew InvalidOperationException(
+                    "Projected direction contains NaN or infinity");
+
+
+            // =====================================================
+            // Return the projected vector.
+            // =====================================================
+
+            array<double>^ ret = gcnew array<double>(n);
+
+            for (int i = 0; i < n; ++i)
+                ret[i] = direction(i);
+
+            return ret;
+        }
+
+
+        static array<double>^ findSearchDirection(
+            int n,
+
+            // =====================================================
+            // Matrix A
+            // CSC format
+            // =====================================================
             array<int>^ columnptr,
             array<int>^ rowindices,
             array<double>^ values,
 
-            array<int>^ columnptr2,
-            array<int>^ rowindices2,
-            array<double>^ values2,
-
-            // Original basis:
+            // =====================================================
+            // Original basis vectors
             //
-            //     P0 = [p0 p1 ...]
+            //     P = [p0 p1 ...]
             //
-            // q is appended internally:
-            //
-            //     P = [P0 q]
-            //
+            // NO orthonormalization is performed.
+            // =====================================================
             array<array<double>^>^ vecs,
 
-            // Only the LAST vector is used:
-            //
-            //     q = vecs2[vecs2->Length - 1]
-            //
-            array<array<double>^>^ vecs2,
-
+            // =====================================================
+            // RHS
+            // =====================================================
             array<double>^ rhs,
-            array<double>^ rhs2,
 
-            // M = a A + b B
-            // R = c rhs + d rhs2
-            double a,
-            double b,
-            double c,
-            double d,
-
-            // Relative TSVD threshold
+            // =====================================================
+            // Relative TSVD threshold for
+            //
+            //     P^T A P
+            // =====================================================
             double epsilon,
 
-            // Soft constraint weight:
+            // =====================================================
+            // Output:
             //
-            // rho / 2 *
+            // coefficients alpha with respect to ORIGINAL basis P
             //
-            //     ( q^T direction / q^T q - 1 )^2
-            //
-            // qDotWeight = 0:
-            //     ordinary reduced GN
-            //
-            double qDotWeight,
-
-            // Reduced coefficients.
-            //
-            // Last entry = coefficient of q.
-            //
+            //     direction = P alpha
+            // =====================================================
             array<double>^% parameters)
         {
             using SparseMatrix64 =
@@ -97,31 +350,34 @@ namespace sparse_solver {
                     "n must be positive");
             }
 
+            if (columnptr == nullptr)
+            {
+                throw gcnew ArgumentNullException(
+                    "columnptr");
+            }
+
+            if (rowindices == nullptr)
+            {
+                throw gcnew ArgumentNullException(
+                    "rowindices");
+            }
+
+            if (values == nullptr)
+            {
+                throw gcnew ArgumentNullException(
+                    "values");
+            }
+
             if (vecs == nullptr)
             {
                 throw gcnew ArgumentNullException(
                     "vecs");
             }
 
-            if (vecs2 == nullptr)
+            if (rhs == nullptr)
             {
                 throw gcnew ArgumentNullException(
-                    "vecs2");
-            }
-
-            if (vecs2->Length == 0)
-            {
-                throw gcnew ArgumentException(
-                    "vecs2 must contain at least one vector");
-            }
-
-            if (!std::isfinite(a) ||
-                !std::isfinite(b) ||
-                !std::isfinite(c) ||
-                !std::isfinite(d))
-            {
-                throw gcnew ArgumentException(
-                    "a, b, c, and d must be finite");
+                    "rhs");
             }
 
             if (!std::isfinite(epsilon) ||
@@ -131,135 +387,68 @@ namespace sparse_solver {
                     "epsilon must be finite and non-negative");
             }
 
-            if (!std::isfinite(qDotWeight) ||
-                qDotWeight < 0.0)
+            if (rhs->Length != n)
             {
                 throw gcnew ArgumentException(
-                    "qDotWeight must be finite and non-negative");
+                    "rhs has incompatible size");
             }
 
-            parameters = nullptr;
+            if (columnptr->Length != n + 1)
+            {
+                throw gcnew ArgumentException(
+                    "columnptr must have length n + 1");
+            }
+
+            if (rowindices->Length != values->Length)
+            {
+                throw gcnew ArgumentException(
+                    "rowindices and values have incompatible sizes");
+            }
+
+            if (columnptr[0] != 0 ||
+                columnptr[n] != values->Length)
+            {
+                throw gcnew ArgumentException(
+                    "columnptr has invalid start or end");
+            }
 
 
             // =====================================================
-            // Available inputs
+            // Number of basis vectors
             // =====================================================
 
-            const bool hasA =
-                columnptr != nullptr &&
-                rowindices != nullptr &&
-                values != nullptr;
-
-            const bool hasB =
-                columnptr2 != nullptr &&
-                rowindices2 != nullptr &&
-                values2 != nullptr;
-
-            const bool hasRhs =
-                rhs != nullptr;
-
-            const bool hasRhs2 =
-                rhs2 != nullptr;
-
-
-            const double effectiveA =
-                hasA ? a : 0.0;
-
-            const double effectiveB =
-                hasB ? b : 0.0;
-
-            const double effectiveC =
-                hasRhs ? c : 0.0;
-
-            const double effectiveD =
-                hasRhs2 ? d : 0.0;
-
-
-            // =====================================================
-            // Basis dimensions
-            //
-            // P = [P0 q]
-            // =====================================================
-
-            const Eigen::Index originalSize =
+            const Eigen::Index reducedSize =
                 static_cast<Eigen::Index>(
                     vecs->Length);
 
-            const Eigen::Index reducedSize =
-                originalSize + 1;
-
-            const Eigen::Index qIndex =
-                originalSize;
-
 
             // =====================================================
-            // Read q
+            // Empty basis
             // =====================================================
 
-            array<double>^ qSrc =
-                vecs2[
-                    vecs2->Length - 1];
-
-            if (qSrc == nullptr)
+            if (reducedSize == 0)
             {
-                throw gcnew ArgumentException(
-                    "last vector of vecs2 is null");
-            }
+                parameters =
+                    gcnew array<double>(0);
 
-            if (qSrc->Length != n)
-            {
-                throw gcnew ArgumentException(
-                    "last vector of vecs2 has incompatible size");
-            }
-
-
-            Eigen::VectorXd q(n);
-
-            for (int i = 0; i < n; ++i)
-            {
-                const double value =
-                    qSrc[i];
-
-                if (!std::isfinite(value))
-                {
-                    throw gcnew ArgumentException(
-                        "last vector of vecs2 contains NaN or infinity");
-                }
-
-                q(i) =
-                    value;
-            }
-
-
-            const double qNorm2 =
-                q.squaredNorm();
-
-            if (!std::isfinite(qNorm2))
-            {
-                throw gcnew ArgumentException(
-                    "q has invalid squared norm");
-            }
-
-            if (qNorm2 <= 0.0)
-            {
-                throw gcnew ArgumentException(
-                    "q must be nonzero");
+                return gcnew array<double>(n);
             }
 
 
             // =====================================================
-            // Build augmented basis
+            // Build original dense basis
             //
-            //     P = [P0 q]
+            //     P = [p0 p1 ...]
+            //
+            // NO QR / orthonormalization.
             // =====================================================
 
             Eigen::MatrixXd P(
                 n,
                 reducedSize);
 
-
             for (Eigen::Index j = 0;
-                j < originalSize;
+                j < reducedSize;
                 ++j)
             {
                 array<double>^ src =
@@ -278,8 +467,9 @@ namespace sparse_solver {
                         "vecs contains a vector with incompatible size");
                 }
 
-
-                for (int i = 0; i < n; ++i)
+                for (int i = 0;
+                    i < n;
+                    ++i)
                 {
                     const double value =
                         src[i];
@@ -296,2121 +486,27 @@ namespace sparse_solver {
             }
 
 
-            // q is the LAST basis vector
-
-            P.col(qIndex) =
-                q;
+            if (!P.allFinite())
+            {
+                throw gcnew InvalidOperationException(
+                    "Basis matrix contains NaN or infinity");
+            }
 
 
             // =====================================================
-            // Sparse matrices
+            // Build sparse matrix A
             // =====================================================
 
             SparseMatrix64 matA(
                 n,
                 n);
 
-            SparseMatrix64 matB(
-                n,
-                n);
-
-            SparseMatrix64 matM(
-                n,
-                n);
-
-
             std::vector<Triplet64> tripletsA;
-            std::vector<Triplet64> tripletsB;
-
-
-            const int nnzA =
-                hasA
-                ? values->Length
-                : 0;
-
-            const int nnzB =
-                hasB
-                ? values2->Length
-                : 0;
-
 
             tripletsA.reserve(
                 static_cast<std::size_t>(
-                    nnzA));
+                    values->Length));
 
-            tripletsB.reserve(
-                static_cast<std::size_t>(
-                    nnzB));
-
-
-            // =====================================================
-            // Build A
-            // =====================================================
-
-            if (effectiveA != 0.0)
-            {
-                if (columnptr->Length != n + 1)
-                {
-                    throw gcnew ArgumentException(
-                        "columnptr must have length n + 1");
-                }
-
-                if (rowindices->Length !=
-                    values->Length)
-                {
-                    throw gcnew ArgumentException(
-                        "rowindices and values have incompatible sizes");
-                }
-
-                if (columnptr[0] != 0 ||
-                    columnptr[n] != values->Length)
-                {
-                    throw gcnew ArgumentException(
-                        "columnptr has invalid start or end");
-                }
-
-
-                for (int column = 0;
-                    column < n;
-                    ++column)
-                {
-                    const int start =
-                        columnptr[column];
-
-                    const int end =
-                        columnptr[column + 1];
-
-
-                    if (start < 0 ||
-                        end < start ||
-                        end > values->Length)
-                    {
-                        throw gcnew ArgumentException(
-                            "columnptr contains an invalid range");
-                    }
-
-
-                    for (int index = start;
-                        index < end;
-                        ++index)
-                    {
-                        const int row =
-                            rowindices[index];
-
-                        if (row < 0 ||
-                            row >= n)
-                        {
-                            throw gcnew ArgumentException(
-                                "rowindices contains an invalid row index");
-                        }
-
-
-                        const double value =
-                            values[index];
-
-                        if (!std::isfinite(value))
-                        {
-                            throw gcnew ArgumentException(
-                                "values contains NaN or infinity");
-                        }
-
-
-                        tripletsA.emplace_back(
-                            static_cast<int64_t>(
-                                row),
-                            static_cast<int64_t>(
-                                column),
-                            value);
-                    }
-                }
-
-
-                matA.setFromTriplets(
-                    tripletsA.begin(),
-                    tripletsA.end());
-
-                matA.makeCompressed();
-            }
-            else
-            {
-                matA.setZero();
-            }
-
-
-            // =====================================================
-            // Build B
-            // =====================================================
-
-            if (effectiveB != 0.0)
-            {
-                if (columnptr2->Length != n + 1)
-                {
-                    throw gcnew ArgumentException(
-                        "columnptr2 must have length n + 1");
-                }
-
-                if (rowindices2->Length !=
-                    values2->Length)
-                {
-                    throw gcnew ArgumentException(
-                        "rowindices2 and values2 have incompatible sizes");
-                }
-
-                if (columnptr2[0] != 0 ||
-                    columnptr2[n] != values2->Length)
-                {
-                    throw gcnew ArgumentException(
-                        "columnptr2 has invalid start or end");
-                }
-
-
-                for (int column = 0;
-                    column < n;
-                    ++column)
-                {
-                    const int start =
-                        columnptr2[column];
-
-                    const int end =
-                        columnptr2[column + 1];
-
-
-                    if (start < 0 ||
-                        end < start ||
-                        end > values2->Length)
-                    {
-                        throw gcnew ArgumentException(
-                            "columnptr2 contains an invalid range");
-                    }
-
-
-                    for (int index = start;
-                        index < end;
-                        ++index)
-                    {
-                        const int row =
-                            rowindices2[index];
-
-                        if (row < 0 ||
-                            row >= n)
-                        {
-                            throw gcnew ArgumentException(
-                                "rowindices2 contains an invalid row index");
-                        }
-
-
-                        const double value =
-                            values2[index];
-
-                        if (!std::isfinite(value))
-                        {
-                            throw gcnew ArgumentException(
-                                "values2 contains NaN or infinity");
-                        }
-
-
-                        tripletsB.emplace_back(
-                            static_cast<int64_t>(
-                                row),
-                            static_cast<int64_t>(
-                                column),
-                            value);
-                    }
-                }
-
-
-                matB.setFromTriplets(
-                    tripletsB.begin(),
-                    tripletsB.end());
-
-                matB.makeCompressed();
-            }
-            else
-            {
-                matB.setZero();
-            }
-
-
-            // =====================================================
-            // M = a A + b B
-            // =====================================================
-
-            if (effectiveA != 0.0 &&
-                effectiveB != 0.0)
-            {
-                matM =
-                    effectiveA * matA +
-                    effectiveB * matB;
-            }
-            else if (effectiveA != 0.0)
-            {
-                matM =
-                    effectiveA * matA;
-            }
-            else if (effectiveB != 0.0)
-            {
-                matM =
-                    effectiveB * matB;
-            }
-            else
-            {
-                matM.setZero();
-            }
-
-            matM.makeCompressed();
-
-
-            // =====================================================
-            // R = c rhs + d rhs2
-            // =====================================================
-
-            Eigen::VectorXd combinedRhs(n);
-
-            combinedRhs.setZero();
-
-
-            if (effectiveC != 0.0)
-            {
-                if (rhs->Length != n)
-                {
-                    throw gcnew ArgumentException(
-                        "rhs has incompatible size");
-                }
-
-
-                for (int i = 0; i < n; ++i)
-                {
-                    const double value =
-                        rhs[i];
-
-                    if (!std::isfinite(value))
-                    {
-                        throw gcnew ArgumentException(
-                            "rhs contains NaN or infinity");
-                    }
-
-                    combinedRhs(i) +=
-                        effectiveC *
-                        value;
-                }
-            }
-
-
-            if (effectiveD != 0.0)
-            {
-                if (rhs2->Length != n)
-                {
-                    throw gcnew ArgumentException(
-                        "rhs2 has incompatible size");
-                }
-
-
-                for (int i = 0; i < n; ++i)
-                {
-                    const double value =
-                        rhs2[i];
-
-                    if (!std::isfinite(value))
-                    {
-                        throw gcnew ArgumentException(
-                            "rhs2 contains NaN or infinity");
-                    }
-
-                    combinedRhs(i) +=
-                        effectiveD *
-                        value;
-                }
-            }
-
-
-            // =====================================================
-            // MP = M P
-            // =====================================================
-
-            Eigen::MatrixXd MP(
-                n,
-                reducedSize);
-
-
-            if (effectiveA == 0.0 &&
-                effectiveB == 0.0)
-            {
-                MP.setZero();
-            }
-            else
-            {
-                MP.noalias() =
-                    matM *
-                    P;
-            }
-
-
-            if (!MP.allFinite())
-            {
-                throw gcnew InvalidOperationException(
-                    "M * P contains NaN or infinity");
-            }
-
-
-            // =====================================================
-            // Reduced GN
-            //
-            // direction = P x
-            //
-            // Base:
-            //
-            //     H0 = P^T M P
-            //     g0 = P^T R
-            //
-            //
-            // Soft constraint:
-            //
-            //     rho / 2 *
-            //
-            //       ( q^T direction / q^T q - 1 )^2
-            //
-            //
-            // Define:
-            //
-            //     u = P^T q / (q^T q)
-            //
-            // Then:
-            //
-            //     H = H0 + rho u u^T
-            //
-            //     g = g0 + rho u
-            //
-            // =====================================================
-
-            Eigen::MatrixXd H(
-                reducedSize,
-                reducedSize);
-
-            Eigen::VectorXd g(
-                reducedSize);
-
-
-            // Base primary / mixed GN
-
-            H.noalias() =
-                P.transpose() *
-                MP;
-
-            g.noalias() =
-                P.transpose() *
-                combinedRhs;
-
-
-            // =====================================================
-            // q projection
-            //
-            //     rawProjectedQ = P^T q
-            //
-            //     projectedQ =
-            //         P^T q / (q^T q)
-            // =====================================================
-
-            Eigen::VectorXd rawProjectedQ(
-                reducedSize);
-
-            rawProjectedQ.noalias() =
-                P.transpose() *
-                q;
-
-
-            Eigen::VectorXd projectedQ(
-                reducedSize);
-
-            projectedQ.noalias() =
-                rawProjectedQ /
-                qNorm2;
-
-
-            // =====================================================
-            // Soft:
-            //
-            //     q^T direction ~= q^T q
-            //
-            // normalized as
-            //
-            //     q^T direction / q^T q ~= 1
-            // =====================================================
-
-            if (qDotWeight != 0.0)
-            {
-                H.noalias() +=
-                    qDotWeight *
-                    projectedQ *
-                    projectedQ.transpose();
-
-                g.noalias() +=
-                    qDotWeight *
-                    projectedQ;
-            }
-
-
-            if (!H.allFinite())
-            {
-                throw gcnew InvalidOperationException(
-                    "Reduced matrix contains NaN or infinity");
-            }
-
-            if (!g.allFinite())
-            {
-                throw gcnew InvalidOperationException(
-                    "Reduced rhs contains NaN or infinity");
-            }
-
-
-            // =====================================================
-            // TSVD
-            // =====================================================
-
-            Eigen::JacobiSVD<
-                Eigen::MatrixXd>
-                svd(
-                    H,
-                    Eigen::ComputeThinU |
-                    Eigen::ComputeThinV);
-
-
-            const Eigen::VectorXd singularValues =
-                svd.singularValues();
-
-
-            if (!singularValues.allFinite())
-            {
-                throw gcnew InvalidOperationException(
-                    "Reduced SVD returned NaN or infinity");
-            }
-
-
-            Eigen::VectorXd solution(
-                reducedSize);
-
-            Eigen::VectorXd transformedRhs(
-                reducedSize);
-
-            solution.setZero();
-
-
-            if (singularValues.size() > 0)
-            {
-                const double sigmaMax =
-                    singularValues(0);
-
-
-                if (!std::isfinite(sigmaMax) ||
-                    sigmaMax < 0.0)
-                {
-                    throw gcnew InvalidOperationException(
-                        "Largest singular value is invalid");
-                }
-
-
-                if (sigmaMax > 0.0)
-                {
-                    const double threshold =
-                        epsilon *
-                        sigmaMax;
-
-
-                    transformedRhs.noalias() =
-                        svd.matrixU().transpose() *
-                        g;
-
-
-                    for (Eigen::Index i = 0;
-                        i < singularValues.size();
-                        ++i)
-                    {
-                        const double sigma =
-                            singularValues(i);
-
-
-                        if (sigma > threshold)
-                        {
-                            transformedRhs(i) /=
-                                sigma;
-                        }
-                        else
-                        {
-                            transformedRhs(i) =
-                                0.0;
-                        }
-                    }
-
-
-                    solution.noalias() =
-                        svd.matrixV() *
-                        transformedRhs;
-                }
-            }
-
-
-            if (!solution.allFinite())
-            {
-                throw gcnew InvalidOperationException(
-                    "Reduced solution contains NaN or infinity");
-            }
-
-
-            // =====================================================
-            // Recover full direction
-            //
-            //     direction = P solution
-            //
-            // Since
-            //
-            //     P = [P0 q]
-            //
-            // direction =
-            //
-            //     P0 alpha + beta q
-            //
-            // =====================================================
-
-            Eigen::VectorXd direction(n);
-
-            direction.noalias() =
-                P *
-                solution;
-
-
-            if (!direction.allFinite())
-            {
-                throw gcnew InvalidOperationException(
-                    "Full-space direction contains NaN or infinity");
-            }
-
-
-            // =====================================================
-            // Return
-            //
-            // parameters[last]
-            //     = coefficient beta of q
-            // =====================================================
-
-            array<double>^ ret =
-                gcnew array<double>(n);
-
-
-            parameters =
-                gcnew array<double>(
-                    static_cast<int>(
-                        reducedSize));
-
-
-            for (int i = 0; i < n; ++i)
-            {
-                ret[i] =
-                    direction(i);
-            }
-
-
-            for (Eigen::Index j = 0;
-                j < reducedSize;
-                ++j)
-            {
-                parameters[
-                    static_cast<int>(j)] =
-                    solution(j);
-            }
-
-
-            return ret;
-        }
-        static array<double>^ findSearchDirection5(
-            int n,
-
-            // =====================================================
-            // Matrix A
-            // =====================================================
-            array<int>^ columnptr,
-            array<int>^ rowindices,
-            array<double>^ values,
-
-            // =====================================================
-            // Matrix B
-            // =====================================================
-            array<int>^ columnptr2,
-            array<int>^ rowindices2,
-            array<double>^ values2,
-
-            // =====================================================
-            // Basis
-            //
-            // Each basis vector:
-            //
-            //     [ vecs[i]  ]
-            //     [ vecs2[i] ]
-            //
-            // size = 2N
-            // =====================================================
-            array<array<double>^>^ vecs,
-            array<array<double>^>^ vecs2,
-
-            // =====================================================
-            // RHS
-            // =====================================================
-            array<double>^ rhs,
-            array<double>^ rhs2,
-
-            // =====================================================
-            // CHOLESKY3 epsilon
-            // =====================================================
-            double epsilon)
-        {
-            using SparseMatrix64 =
-                Eigen::SparseMatrix<
-                double,
-                Eigen::ColMajor,
-                int64_t>;
-
-            using Triplet64 =
-                Eigen::Triplet<
-                double,
-                int64_t>;
-
-
-            // =====================================================
-            // TSVD threshold
-            //
-            // Separate from CHOLESKY3 epsilon.
-            // =====================================================
-
-            const double tsvdEpsilon =
-                1.0E-12;
-
-
-            const Eigen::Index fullSize =
-                static_cast<Eigen::Index>(
-                    2 * n);
-
-
-            // =====================================================
-            // Validate
-            // =====================================================
-
-            if (n <= 0)
-            {
-                throw gcnew ArgumentException(
-                    "n must be positive");
-            }
-
-            if (vecs == nullptr)
-            {
-                throw gcnew ArgumentNullException(
-                    "vecs");
-            }
-
-            if (vecs2 == nullptr)
-            {
-                throw gcnew ArgumentNullException(
-                    "vecs2");
-            }
-
-            if (vecs->Length != vecs2->Length)
-            {
-                throw gcnew ArgumentException(
-                    "vecs and vecs2 must contain the same number of vectors");
-            }
-
-            if (rhs == nullptr ||
-                rhs2 == nullptr)
-            {
-                throw gcnew ArgumentNullException(
-                    "rhs and rhs2 must not be null");
-            }
-
-            if (rhs->Length != n ||
-                rhs2->Length != n)
-            {
-                throw gcnew ArgumentException(
-                    "rhs and rhs2 must have length n");
-            }
-
-            if (!std::isfinite(epsilon) ||
-                epsilon < 0.0)
-            {
-                throw gcnew ArgumentException(
-                    "epsilon must be finite and non-negative");
-            }
-
-
-            // =====================================================
-            // Number of basis vectors
-            // =====================================================
-
-            const Eigen::Index reducedSize =
-                static_cast<Eigen::Index>(
-                    vecs->Length);
-
-            if (reducedSize == 0)
-            {
-                return gcnew array<double>(
-                    2 * n);
-            }
-
-
-            // =====================================================
-            // Build 2N-dimensional basis
-            //
-            // P =
-            //
-            // [ vecs[0]   vecs[1]   ... ]
-            // [ vecs2[0]  vecs2[1]  ... ]
-            //
-            // size = 2N x reducedSize
-            //
-            // No QR / orthonormalization.
-            // =====================================================
-
-            Eigen::MatrixXd P(
-                fullSize,
-                reducedSize);
-
-            for (Eigen::Index j = 0;
-                j < reducedSize;
-                ++j)
-            {
-                array<double>^ upper =
-                    vecs[
-                        static_cast<int>(j)];
-
-                array<double>^ lower =
-                    vecs2[
-                        static_cast<int>(j)];
-
-
-                if (upper == nullptr ||
-                    lower == nullptr)
-                {
-                    throw gcnew ArgumentException(
-                        "vecs or vecs2 contains a null vector");
-                }
-
-                if (upper->Length != n ||
-                    lower->Length != n)
-                {
-                    throw gcnew ArgumentException(
-                        "All basis vectors must have length n");
-                }
-
-
-                for (int i = 0;
-                    i < n;
-                    ++i)
-                {
-                    const double v1 =
-                        upper[i];
-
-                    const double v2 =
-                        lower[i];
-
-
-                    if (!std::isfinite(v1) ||
-                        !std::isfinite(v2))
-                    {
-                        throw gcnew ArgumentException(
-                            "Basis contains NaN or infinity");
-                    }
-
-
-                    P(i, j) =
-                        v1;
-
-                    P(n + i, j) =
-                        v2;
-                }
-            }
-
-
-            // =====================================================
-            // Full 2N x 2N matrix
-            //
-            // M =
-            //
-            // [ I       A          ]
-            // [ A      -epsilon B  ]
-            //
-            // =====================================================
-
-            SparseMatrix64 M(
-                fullSize,
-                fullSize);
-
-            std::vector<Triplet64> triplets;
-
-            triplets.reserve(
-                static_cast<std::size_t>(
-                    n +
-                    2 * values->Length +
-                    values2->Length));
-
-
-            // =====================================================
-            // Upper-left: I
-            // =====================================================
-
-            for (int i = 0;
-                i < n;
-                ++i)
-            {
-                triplets.emplace_back(
-                    static_cast<int64_t>(i),
-                    static_cast<int64_t>(i),
-                    1.0);
-            }
-
-
-            // =====================================================
-            // A blocks
-            //
-            // Upper-right: A
-            // Lower-left : A
-            // =====================================================
-
-            if (columnptr == nullptr ||
-                rowindices == nullptr ||
-                values == nullptr)
-            {
-                throw gcnew ArgumentNullException(
-                    "Matrix A is null");
-            }
-
-            if (columnptr->Length != n + 1)
-            {
-                throw gcnew ArgumentException(
-                    "columnptr must have length n + 1");
-            }
-
-            if (rowindices->Length !=
-                values->Length)
-            {
-                throw gcnew ArgumentException(
-                    "rowindices and values have incompatible sizes");
-            }
-
-
-            for (int col = 0;
-                col < n;
-                ++col)
-            {
-                const int start =
-                    columnptr[col];
-
-                const int end =
-                    columnptr[col + 1];
-
-
-                for (int index = start;
-                    index < end;
-                    ++index)
-                {
-                    const int row =
-                        rowindices[index];
-
-                    const double value =
-                        values[index];
-
-
-                    if (row < 0 ||
-                        row >= n)
-                    {
-                        throw gcnew ArgumentException(
-                            "Matrix A contains invalid row index");
-                    }
-
-                    if (!std::isfinite(value))
-                    {
-                        throw gcnew ArgumentException(
-                            "Matrix A contains NaN or infinity");
-                    }
-
-
-                    // ---------------------------------------------
-                    // Upper-right A
-                    // ---------------------------------------------
-
-                    triplets.emplace_back(
-                        static_cast<int64_t>(row),
-                        static_cast<int64_t>(n + col),
-                        value);
-
-
-                    // ---------------------------------------------
-                    // Lower-left A
-                    // ---------------------------------------------
-
-                    triplets.emplace_back(
-                        static_cast<int64_t>(n + row),
-                        static_cast<int64_t>(col),
-                        value);
-                }
-            }
-
-
-            // =====================================================
-            // Lower-right: -epsilon B
-            // =====================================================
-
-            if (columnptr2 == nullptr ||
-                rowindices2 == nullptr ||
-                values2 == nullptr)
-            {
-                throw gcnew ArgumentNullException(
-                    "Matrix B is null");
-            }
-
-            if (columnptr2->Length != n + 1)
-            {
-                throw gcnew ArgumentException(
-                    "columnptr2 must have length n + 1");
-            }
-
-            if (rowindices2->Length !=
-                values2->Length)
-            {
-                throw gcnew ArgumentException(
-                    "rowindices2 and values2 have incompatible sizes");
-            }
-
-
-            for (int col = 0;
-                col < n;
-                ++col)
-            {
-                const int start =
-                    columnptr2[col];
-
-                const int end =
-                    columnptr2[col + 1];
-
-
-                for (int index = start;
-                    index < end;
-                    ++index)
-                {
-                    const int row =
-                        rowindices2[index];
-
-                    const double value =
-                        values2[index];
-
-
-                    if (row < 0 ||
-                        row >= n)
-                    {
-                        throw gcnew ArgumentException(
-                            "Matrix B contains invalid row index");
-                    }
-
-                    if (!std::isfinite(value))
-                    {
-                        throw gcnew ArgumentException(
-                            "Matrix B contains NaN or infinity");
-                    }
-
-
-                    triplets.emplace_back(
-                        static_cast<int64_t>(n + row),
-                        static_cast<int64_t>(n + col),
-                        -epsilon * value);
-                }
-            }
-
-
-            // =====================================================
-            // Build full matrix
-            // =====================================================
-
-            M.setFromTriplets(
-                triplets.begin(),
-                triplets.end());
-
-            M.makeCompressed();
-
-
-            // =====================================================
-            // Full RHS
-            //
-            // R =
-            //
-            // [ rhs           ]
-            // [ -epsilon rhs2 ]
-            //
-            // =====================================================
-
-            Eigen::VectorXd R(
-                fullSize);
-
-
-            for (int i = 0;
-                i < n;
-                ++i)
-            {
-                const double r1 =
-                    rhs[i];
-
-                const double r2 =
-                    rhs2[i];
-
-
-                if (!std::isfinite(r1) ||
-                    !std::isfinite(r2))
-                {
-                    throw gcnew ArgumentException(
-                        "RHS contains NaN or infinity");
-                }
-
-
-                R(i) =
-                    r1;
-
-                R(n + i) =
-                    -epsilon * r2;
-            }
-
-
-            // =====================================================
-            // Reduced problem
-            //
-            // MP = M P
-            //
-            // H = P^T M P
-            //
-            // g = P^T R
-            //
-            // =====================================================
-
-            Eigen::MatrixXd MP(
-                fullSize,
-                reducedSize);
-
-            MP.noalias() =
-                M * P;
-
-
-            if (!MP.allFinite())
-            {
-                throw gcnew InvalidOperationException(
-                    "M * P contains NaN or infinity");
-            }
-
-
-            Eigen::MatrixXd H(
-                reducedSize,
-                reducedSize);
-
-            H.noalias() =
-                P.transpose() *
-                MP;
-
-
-            Eigen::VectorXd g(
-                reducedSize);
-
-            g.noalias() =
-                P.transpose() *
-                R;
-
-
-            if (!H.allFinite())
-            {
-                throw gcnew InvalidOperationException(
-                    "Reduced matrix contains NaN or infinity");
-            }
-
-            if (!g.allFinite())
-            {
-                throw gcnew InvalidOperationException(
-                    "Reduced RHS contains NaN or infinity");
-            }
-
-
-            // =====================================================
-            // TSVD
-            //
-            // H c = g
-            // =====================================================
-
-            Eigen::JacobiSVD<
-                Eigen::MatrixXd>
-                svd(
-                    H,
-                    Eigen::ComputeThinU |
-                    Eigen::ComputeThinV);
-
-
-            const Eigen::VectorXd singularValues =
-                svd.singularValues();
-
-
-            if (!singularValues.allFinite())
-            {
-                throw gcnew InvalidOperationException(
-                    "Reduced SVD returned NaN or infinity");
-            }
-
-
-            Eigen::VectorXd coefficients(
-                reducedSize);
-
-            coefficients.setZero();
-
-
-            if (singularValues.size() > 0)
-            {
-                const double sigmaMax =
-                    singularValues(0);
-
-
-                if (sigmaMax > 0.0)
-                {
-                    const double threshold =
-                        tsvdEpsilon *
-                        sigmaMax;
-
-
-                    Eigen::VectorXd transformedRhs =
-                        svd.matrixU().transpose() *
-                        g;
-
-
-                    for (Eigen::Index i = 0;
-                        i < singularValues.size();
-                        ++i)
-                    {
-                        const double sigma =
-                            singularValues(i);
-
-
-                        if (sigma > threshold)
-                        {
-                            transformedRhs(i) /=
-                                sigma;
-                        }
-                        else
-                        {
-                            transformedRhs(i) =
-                                0.0;
-                        }
-                    }
-
-
-                    coefficients.noalias() =
-                        svd.matrixV() *
-                        transformedRhs;
-                }
-            }
-
-
-            if (!coefficients.allFinite())
-            {
-                throw gcnew InvalidOperationException(
-                    "Reduced solution contains NaN or infinity");
-            }
-
-
-            // =====================================================
-            // Full 2N-dimensional result
-            //
-            // direction = P c
-            //
-            // Do NOT split lambda/x.
-            // =====================================================
-
-            Eigen::VectorXd direction(
-                fullSize);
-
-            direction.noalias() =
-                P * coefficients;
-
-
-            if (!direction.allFinite())
-            {
-                throw gcnew InvalidOperationException(
-                    "Full-space direction contains NaN or infinity");
-            }
-
-
-            // =====================================================
-            // Return one 2N-dimensional vector
-            // =====================================================
-
-            array<double>^ ret =
-                gcnew array<double>(
-                    2 * n);
-
-
-            for (int i = 0;
-                i < 2 * n;
-                ++i)
-            {
-                ret[i] =
-                    direction(i);
-            }
-
-
-            return ret;
-        }
-        static array<double>^ findSearchDirection4(
-            int n,
-
-            // =====================================================
-            // Matrix A
-            // =====================================================
-            array<int>^ columnptr,
-            array<int>^ rowindices,
-            array<double>^ values,
-
-            // =====================================================
-            // Matrix B
-            // =====================================================
-            array<int>^ columnptr2,
-            array<int>^ rowindices2,
-            array<double>^ values2,
-
-            // =====================================================
-            // Basis
-            //
-            // vecs[i]  : upper N components
-            // vecs2[i] : lower N components
-            //
-            // Each basis vector is
-            //
-            //       [ vecs[i]  ]
-            //       [ vecs2[i] ]
-            //
-            // =====================================================
-            array<array<double>^>^ vecs,
-            array<array<double>^>^ vecs2,
-
-            // =====================================================
-            // RHS
-            // =====================================================
-            array<double>^ rhs,
-            array<double>^ rhs2,
-            array<double>^ rhs3,
-
-            // =====================================================
-            // Parameters
-            // =====================================================
-            double mu,
-            double lambda)
-        {
-            using SparseMatrix64 =
-                Eigen::SparseMatrix<
-                double,
-                Eigen::ColMajor,
-                int64_t>;
-
-            using Triplet64 =
-                Eigen::Triplet<
-                double,
-                int64_t>;
-
-
-            // =====================================================
-            // Settings
-            // =====================================================
-
-            const double epsilon = 1.0E-12;
-
-            const Eigen::Index fullSize =
-                static_cast<Eigen::Index>(2 * n);
-
-
-            // =====================================================
-            // Validate
-            // =====================================================
-
-            if (n <= 0)
-            {
-                throw gcnew ArgumentException(
-                    "n must be positive");
-            }
-
-            if (vecs == nullptr)
-            {
-                throw gcnew ArgumentNullException(
-                    "vecs");
-            }
-
-            if (vecs2 == nullptr)
-            {
-                throw gcnew ArgumentNullException(
-                    "vecs2");
-            }
-
-            if (vecs->Length != vecs2->Length)
-            {
-                throw gcnew ArgumentException(
-                    "vecs and vecs2 must contain the same number of vectors");
-            }
-
-            if (rhs == nullptr ||
-                rhs2 == nullptr ||
-                rhs3 == nullptr)
-            {
-                throw gcnew ArgumentNullException(
-                    "rhs, rhs2, and rhs3 must not be null");
-            }
-
-            if (rhs->Length != n ||
-                rhs2->Length != n ||
-                rhs3->Length != n)
-            {
-                throw gcnew ArgumentException(
-                    "rhs, rhs2, and rhs3 must have length n");
-            }
-
-            if (!std::isfinite(mu) ||
-                !std::isfinite(lambda))
-            {
-                throw gcnew ArgumentException(
-                    "mu and lambda must be finite");
-            }
-
-            if (mu < 0.0)
-            {
-                throw gcnew ArgumentException(
-                    "mu must be non-negative");
-            }
-
-            if (lambda < 0.0)
-            {
-                throw gcnew ArgumentException(
-                    "lambda must be non-negative");
-            }
-
-
-            // =====================================================
-            // Number of basis vectors
-            // =====================================================
-
-            const Eigen::Index reducedSize =
-                static_cast<Eigen::Index>(
-                    vecs->Length);
-
-            if (reducedSize == 0)
-            {
-                return gcnew array<double>(2 * n);
-            }
-
-
-            // =====================================================
-            // Dense basis matrix
-            //
-            // P =
-            //
-            // [ vecs[0]   vecs[1]   ... ]
-            // [ vecs2[0]  vecs2[1]  ... ]
-            //
-            // size = 2N x reducedSize
-            //
-            // No QR / orthonormalization.
-            // =====================================================
-
-            Eigen::MatrixXd P(
-                fullSize,
-                reducedSize);
-
-            for (Eigen::Index j = 0;
-                j < reducedSize;
-                ++j)
-            {
-                array<double>^ upper =
-                    vecs[static_cast<int>(j)];
-
-                array<double>^ lower =
-                    vecs2[static_cast<int>(j)];
-
-                if (upper == nullptr ||
-                    lower == nullptr)
-                {
-                    throw gcnew ArgumentException(
-                        "vecs or vecs2 contains a null vector");
-                }
-
-                if (upper->Length != n ||
-                    lower->Length != n)
-                {
-                    throw gcnew ArgumentException(
-                        "All basis vectors must have length n");
-                }
-
-                for (int i = 0; i < n; ++i)
-                {
-                    const double v1 =
-                        upper[i];
-
-                    const double v2 =
-                        lower[i];
-
-                    if (!std::isfinite(v1) ||
-                        !std::isfinite(v2))
-                    {
-                        throw gcnew ArgumentException(
-                            "Basis contains NaN or infinity");
-                    }
-
-                    P(i, j) =
-                        v1;
-
-                    P(n + i, j) =
-                        v2;
-                }
-            }
-
-
-            // =====================================================
-            // Build full 2N x 2N sparse matrix
-            //
-            // M =
-            //
-            // [ A + lambda I       -lambda I      ]
-            // [ -lambda I       mu B + lambda I   ]
-            //
-            // =====================================================
-
-            SparseMatrix64 M(
-                fullSize,
-                fullSize);
-
-            std::vector<Triplet64> triplets;
-
-            triplets.reserve(
-                static_cast<std::size_t>(
-                    values->Length +
-                    values2->Length +
-                    4 * n));
-
-
-            // -----------------------------------------------------
-            // Upper-left block: A
-            // -----------------------------------------------------
-
-            if (columnptr == nullptr ||
-                rowindices == nullptr ||
-                values == nullptr)
-            {
-                throw gcnew ArgumentNullException(
-                    "Matrix A is null");
-            }
-
-            if (columnptr->Length != n + 1)
-            {
-                throw gcnew ArgumentException(
-                    "columnptr must have length n + 1");
-            }
-
-            if (rowindices->Length != values->Length)
-            {
-                throw gcnew ArgumentException(
-                    "rowindices and values have incompatible sizes");
-            }
-
-            for (int col = 0;
-                col < n;
-                ++col)
-            {
-                const int start =
-                    columnptr[col];
-
-                const int end =
-                    columnptr[col + 1];
-
-                for (int index = start;
-                    index < end;
-                    ++index)
-                {
-                    const int row =
-                        rowindices[index];
-
-                    const double value =
-                        values[index];
-
-                    if (row < 0 ||
-                        row >= n)
-                    {
-                        throw gcnew ArgumentException(
-                            "Matrix A contains invalid row index");
-                    }
-
-                    if (!std::isfinite(value))
-                    {
-                        throw gcnew ArgumentException(
-                            "Matrix A contains NaN or infinity");
-                    }
-
-                    triplets.emplace_back(
-                        static_cast<int64_t>(row),
-                        static_cast<int64_t>(col),
-                        value);
-                }
-            }
-
-
-            // -----------------------------------------------------
-            // Lower-right block: mu B
-            // -----------------------------------------------------
-
-            if (columnptr2 == nullptr ||
-                rowindices2 == nullptr ||
-                values2 == nullptr)
-            {
-                throw gcnew ArgumentNullException(
-                    "Matrix B is null");
-            }
-
-            if (columnptr2->Length != n + 1)
-            {
-                throw gcnew ArgumentException(
-                    "columnptr2 must have length n + 1");
-            }
-
-            if (rowindices2->Length != values2->Length)
-            {
-                throw gcnew ArgumentException(
-                    "rowindices2 and values2 have incompatible sizes");
-            }
-
-            for (int col = 0;
-                col < n;
-                ++col)
-            {
-                const int start =
-                    columnptr2[col];
-
-                const int end =
-                    columnptr2[col + 1];
-
-                for (int index = start;
-                    index < end;
-                    ++index)
-                {
-                    const int row =
-                        rowindices2[index];
-
-                    const double value =
-                        values2[index];
-
-                    if (row < 0 ||
-                        row >= n)
-                    {
-                        throw gcnew ArgumentException(
-                            "Matrix B contains invalid row index");
-                    }
-
-                    if (!std::isfinite(value))
-                    {
-                        throw gcnew ArgumentException(
-                            "Matrix B contains NaN or infinity");
-                    }
-
-                    triplets.emplace_back(
-                        static_cast<int64_t>(n + row),
-                        static_cast<int64_t>(n + col),
-                        mu * value);
-                }
-            }
-
-
-            // -----------------------------------------------------
-            // lambda ||x-y||^2
-            //
-            // [ +lambda I   -lambda I ]
-            // [ -lambda I   +lambda I ]
-            // -----------------------------------------------------
-
-            for (int i = 0;
-                i < n;
-                ++i)
-            {
-                // upper-left
-                triplets.emplace_back(
-                    static_cast<int64_t>(i),
-                    static_cast<int64_t>(i),
-                    lambda);
-
-                // lower-right
-                triplets.emplace_back(
-                    static_cast<int64_t>(n + i),
-                    static_cast<int64_t>(n + i),
-                    lambda);
-
-                // upper-right
-                triplets.emplace_back(
-                    static_cast<int64_t>(i),
-                    static_cast<int64_t>(n + i),
-                    -lambda);
-
-                // lower-left
-                triplets.emplace_back(
-                    static_cast<int64_t>(n + i),
-                    static_cast<int64_t>(i),
-                    -lambda);
-            }
-
-
-            M.setFromTriplets(
-                triplets.begin(),
-                triplets.end());
-
-            M.makeCompressed();
-
-
-            // =====================================================
-            // Full RHS
-            //
-            // R =
-            //
-            // [ rhs       + lambda rhs3 ]
-            // [ mu rhs2   - lambda rhs3 ]
-            //
-            // Here rhs3 = current x-y.
-            //
-            // This sign convention assumes that the returned
-            // direction is later SUBTRACTED from the variables:
-            //
-            //     x_new = x_old - alpha * direction
-            //
-            // =====================================================
-
-            Eigen::VectorXd R(fullSize);
-
-            for (int i = 0;
-                i < n;
-                ++i)
-            {
-                const double r1 =
-                    rhs[i];
-
-                const double r2 =
-                    rhs2[i];
-
-                const double r3 =
-                    rhs3[i];
-
-                if (!std::isfinite(r1) ||
-                    !std::isfinite(r2) ||
-                    !std::isfinite(r3))
-                {
-                    throw gcnew ArgumentException(
-                        "RHS contains NaN or infinity");
-                }
-
-                R(i) =
-                    r1 +
-                    lambda * r3;
-
-                R(n + i) =
-                    mu * r2 -
-                    lambda * r3;
-            }
-
-
-            // =====================================================
-            // Reduced matrix
-            //
-            // MP = M P
-            //
-            // H = P^T M P
-            //
-            // g = P^T R
-            // =====================================================
-
-            Eigen::MatrixXd MP(
-                fullSize,
-                reducedSize);
-
-            MP.noalias() =
-                M * P;
-
-            if (!MP.allFinite())
-            {
-                throw gcnew InvalidOperationException(
-                    "M * P contains NaN or infinity");
-            }
-
-
-            Eigen::MatrixXd H(
-                reducedSize,
-                reducedSize);
-
-            H.noalias() =
-                P.transpose() *
-                MP;
-
-
-            Eigen::VectorXd g(
-                reducedSize);
-
-            g.noalias() =
-                P.transpose() *
-                R;
-
-
-            if (!H.allFinite())
-            {
-                throw gcnew InvalidOperationException(
-                    "Reduced matrix contains NaN or infinity");
-            }
-
-            if (!g.allFinite())
-            {
-                throw gcnew InvalidOperationException(
-                    "Reduced RHS contains NaN or infinity");
-            }
-
-
-            // =====================================================
-            // TSVD
-            //
-            // H c = g
-            // =====================================================
-
-            Eigen::JacobiSVD<Eigen::MatrixXd> svd(
-                H,
-                Eigen::ComputeThinU |
-                Eigen::ComputeThinV);
-
-            const Eigen::VectorXd singularValues =
-                svd.singularValues();
-
-            if (!singularValues.allFinite())
-            {
-                throw gcnew InvalidOperationException(
-                    "Reduced SVD returned NaN or infinity");
-            }
-
-
-            Eigen::VectorXd coefficients(
-                reducedSize);
-
-            coefficients.setZero();
-
-
-            if (singularValues.size() > 0)
-            {
-                const double sigmaMax =
-                    singularValues(0);
-
-                if (sigmaMax > 0.0)
-                {
-                    const double threshold =
-                        epsilon *
-                        sigmaMax;
-
-                    Eigen::VectorXd transformedRhs =
-                        svd.matrixU().transpose() *
-                        g;
-
-                    for (Eigen::Index i = 0;
-                        i < singularValues.size();
-                        ++i)
-                    {
-                        const double sigma =
-                            singularValues(i);
-
-                        if (sigma > threshold)
-                        {
-                            transformedRhs(i) /=
-                                sigma;
-                        }
-                        else
-                        {
-                            transformedRhs(i) =
-                                0.0;
-                        }
-                    }
-
-                    coefficients.noalias() =
-                        svd.matrixV() *
-                        transformedRhs;
-                }
-            }
-
-
-            if (!coefficients.allFinite())
-            {
-                throw gcnew InvalidOperationException(
-                    "Reduced solution contains NaN or infinity");
-            }
-
-
-            // =====================================================
-            // Full 2N-dimensional direction
-            //
-            // direction = P coefficients
-            // =====================================================
-
-            Eigen::VectorXd direction(
-                fullSize);
-
-            direction.noalias() =
-                P * coefficients;
-
-
-            if (!direction.allFinite())
-            {
-                throw gcnew InvalidOperationException(
-                    "Full-space direction contains NaN or infinity");
-            }
-
-
-            // =====================================================
-            // Return one 2N vector.
-            //
-            // No splitting into x/y vectors.
-            // =====================================================
-
-            array<double>^ ret =
-                gcnew array<double>(2 * n);
-
-            for (int i = 0;
-                i < 2 * n;
-                ++i)
-            {
-                ret[i] =
-                    direction(i);
-            }
-
-            return ret;
-        }
-        static array<array<double>^>^ findSearchDirection3(
-            int n,
-            array<int>^ columnptr,
-            array<int>^ rowindices,
-            array<double>^ values,
-
-            int n2,
-            array<int>^ columnptr2,
-            array<int>^ rowindices2,
-            array<double>^ values2,
-
-            array<array<double>^>^ vecs,
-            array<array<double>^>^ nearNullVecs,
-
-            array<double>^ rhs,
-            array<double>^ rhs2,
-            double mu,
-            double tau,
-            double lambda,
-            double epsilon,
-            bool removeNearNullFromPrimary,
-        int method)
-        {
-            array<double>  ^ projectedBasisNorms =
-                gcnew array<double>(0);
-
-            if (n <= 0 ||
-                n2 <= 0)
-            {
-                throw gcnew ArgumentException(
-                    "n and n2 must be positive");
-            }
-
-            if (n != n2)
-            {
-                throw gcnew ArgumentException(
-                    "mat and mat2 must have the same size");
-            }
-
-            if (columnptr == nullptr ||
-                rowindices == nullptr ||
-                values == nullptr ||
-                columnptr2 == nullptr ||
-                rowindices2 == nullptr ||
-                values2 == nullptr ||
-                vecs == nullptr ||
-                nearNullVecs == nullptr ||
-                rhs == nullptr ||
-                rhs2 == nullptr)
-            {
-                throw gcnew ArgumentNullException(
-                    "Input array is null");
-            }
-
-            if (columnptr->Length != n + 1)
-            {
-                throw gcnew ArgumentException(
-                    "columnptr must have length n + 1");
-            }
-
-            if (columnptr2->Length != n2 + 1)
-            {
-                throw gcnew ArgumentException(
-                    "columnptr2 must have length n2 + 1");
-            }
-
-            if (rowindices->Length !=
-                values->Length)
-            {
-                throw gcnew ArgumentException(
-                    "rowindices and values have incompatible sizes");
-            }
-
-            if (rowindices2->Length !=
-                values2->Length)
-            {
-                throw gcnew ArgumentException(
-                    "rowindices2 and values2 have incompatible sizes");
-            }
-
-            if (rhs->Length != n)
-            {
-                throw gcnew ArgumentException(
-                    "rhs has incompatible size");
-            }
-
-            if (rhs2->Length != n2)
-            {
-                throw gcnew ArgumentException(
-                    "rhs2 has incompatible size");
-            }
-
-            if (!std::isfinite(epsilon) ||
-                epsilon < 0.0)
-            {
-                throw gcnew ArgumentException(
-                    "epsilon must be finite and non-negative");
-            }
-
-            if (!std::isfinite(mu) ||
-                mu < 0.0)
-            {
-                throw gcnew ArgumentException(
-                    "mu must be finite and non-negative");
-            }
-
-            if (columnptr[0] != 0 ||
-                columnptr[n] != values->Length)
-            {
-                throw gcnew ArgumentException(
-                    "columnptr has invalid start or end");
-            }
-
-            if (columnptr2[0] != 0 ||
-                columnptr2[n2] != values2->Length)
-            {
-                throw gcnew ArgumentException(
-                    "columnptr2 has invalid start or end");
-            }
-
-            using SparseMatrix64 =
-                Eigen::SparseMatrix<
-                double,
-                Eigen::ColMajor,
-                int64_t>;
-
-            // =================================================
-            // Primary basis
-            // =================================================
-
-            std::vector<Eigen::VectorXd>
-                nativeVecs(vecs->Length);
-
-            for (int i = 0;
-                i < vecs->Length;
-                ++i)
-            {
-                if (vecs[i] == nullptr)
-                {
-                    throw gcnew ArgumentException(
-                        "vecs contains a null vector");
-                }
-
-                if (vecs[i]->Length != n)
-                {
-                    throw gcnew ArgumentException(
-                        "vecs contains a vector with incompatible size");
-                }
-
-                Eigen::VectorXd v(n);
-
-                for (int j = 0;
-                    j < n;
-                    ++j)
-                {
-                    const double value =
-                        vecs[i][j];
-
-                    if (!std::isfinite(value))
-                    {
-                        throw gcnew ArgumentException(
-                            "vecs contains NaN or infinity");
-                    }
-
-                    v(j) =
-                        value;
-                }
-
-                nativeVecs[i] =
-                    std::move(v);
-            }
-
-            // =================================================
-            // Near-null basis
-            // =================================================
-
-            std::vector<Eigen::VectorXd>
-                nativeNearNullVecs(
-                    nearNullVecs->Length);
-
-            for (int i = 0;
-                i < nearNullVecs->Length;
-                ++i)
-            {
-                if (nearNullVecs[i] == nullptr)
-                {
-                    throw gcnew ArgumentException(
-                        "nearNullVecs contains a null vector");
-                }
-
-                if (nearNullVecs[i]->Length != n)
-                {
-                    throw gcnew ArgumentException(
-                        "nearNullVecs contains a vector with incompatible size");
-                }
-
-                Eigen::VectorXd v(n);
-
-                for (int j = 0;
-                    j < n;
-                    ++j)
-                {
-                    const double value =
-                        nearNullVecs[i][j];
-
-                    if (!std::isfinite(value))
-                    {
-                        throw gcnew ArgumentException(
-                            "nearNullVecs contains NaN or infinity");
-                    }
-
-                    v(j) =
-                        value;
-                }
-
-                nativeNearNullVecs[i] =
-                    std::move(v);
-            }
-
-            // =================================================
-            // First sparse matrix
-            // =================================================
-
-            SparseMatrix64 mat(n, n);
-
-            std::vector<
-                Eigen::Triplet<double, int64_t>>
-                triplets;
-
-            triplets.reserve(
-                values->Length);
 
             for (int column = 0;
                 column < n;
@@ -2430,6 +526,7 @@ namespace sparse_solver {
                         "columnptr contains an invalid range");
                 }
 
+
                 for (int index = start;
                     index < end;
                     ++index)
@@ -2444,6 +541,7 @@ namespace sparse_solver {
                             "rowindices contains an invalid row index");
                     }
 
+
                     const double value =
                         values[index];
 
@@ -2453,6 +551,355 @@ namespace sparse_solver {
                             "values contains NaN or infinity");
                     }
 
+
+                    tripletsA.emplace_back(
+                        static_cast<int64_t>(row),
+                        static_cast<int64_t>(column),
+                        value);
+                }
+            }
+
+
+            matA.setFromTriplets(
+                tripletsA.begin(),
+                tripletsA.end());
+
+            matA.makeCompressed();
+
+
+            // =====================================================
+            // RHS
+            // =====================================================
+
+            Eigen::VectorXd b(
+                n);
+
+            for (int i = 0;
+                i < n;
+                ++i)
+            {
+                const double value =
+                    rhs[i];
+
+                if (!std::isfinite(value))
+                {
+                    throw gcnew ArgumentException(
+                        "rhs contains NaN or infinity");
+                }
+
+                b(i) =
+                    value;
+            }
+
+
+            // =====================================================
+            // Compute
+            //
+            //     AP = A P
+            // =====================================================
+
+            Eigen::MatrixXd AP(
+                n,
+                reducedSize);
+
+            AP.noalias() =
+                matA * P;
+
+
+            if (!AP.allFinite())
+            {
+                throw gcnew InvalidOperationException(
+                    "A * P contains NaN or infinity");
+            }
+
+
+            // =====================================================
+            // Reduced primary system
+            //
+            //     H = P^T A P
+            //
+            //     g = P^T rhs
+            //
+            // Solve
+            //
+            //     H alpha = g
+            //
+            // =====================================================
+
+            Eigen::MatrixXd H(
+                reducedSize,
+                reducedSize);
+
+            Eigen::VectorXd g(
+                reducedSize);
+
+
+            H.noalias() =
+                P.transpose() * AP;
+
+            g.noalias() =
+                P.transpose() * b;
+
+
+            if (!H.allFinite())
+            {
+                throw gcnew InvalidOperationException(
+                    "Reduced matrix contains NaN or infinity");
+            }
+
+            if (!g.allFinite())
+            {
+                throw gcnew InvalidOperationException(
+                    "Reduced rhs contains NaN or infinity");
+            }
+
+
+            // =====================================================
+            // TSVD solve
+            //
+            //     (P^T A P) alpha = P^T rhs
+            //
+            // No basis orthonormalization is performed.
+            //
+            // If P contains linearly dependent or nearly dependent
+            // vectors, TSVD handles the rank deficiency here.
+            // =====================================================
+
+            Eigen::JacobiSVD<
+                Eigen::MatrixXd>
+                svd(
+                    H,
+                    Eigen::ComputeThinU |
+                    Eigen::ComputeThinV);
+
+
+            const Eigen::VectorXd singularValues =
+                svd.singularValues();
+
+
+            if (!singularValues.allFinite())
+            {
+                throw gcnew InvalidOperationException(
+                    "Reduced SVD returned NaN or infinity");
+            }
+
+
+            Eigen::VectorXd alpha(
+                reducedSize);
+
+            alpha.setZero();
+
+
+            if (singularValues.size() > 0)
+            {
+                const double sigmaMax =
+                    singularValues(0);
+
+
+                if (!std::isfinite(sigmaMax) ||
+                    sigmaMax < 0.0)
+                {
+                    throw gcnew InvalidOperationException(
+                        "Largest singular value is invalid");
+                }
+
+
+                if (sigmaMax > 0.0)
+                {
+                    const double threshold =
+                        epsilon* sigmaMax;
+
+
+                    Eigen::VectorXd transformedRhs =
+                        svd.matrixU().transpose() *
+                        g;
+
+
+                    for (Eigen::Index i = 0;
+                        i < singularValues.size();
+                        ++i)
+                    {
+                        const double sigma =
+                            singularValues(i);
+
+
+                        if (sigma > threshold)
+                        {
+                            transformedRhs(i) /=
+                                sigma;
+                        }
+                        else
+                        {
+                            transformedRhs(i) =
+                                0.0;
+                        }
+                    }
+
+
+                    alpha.noalias() =
+                        svd.matrixV() *
+                        transformedRhs;
+                }
+            }
+
+
+            if (!alpha.allFinite())
+            {
+                throw gcnew InvalidOperationException(
+                    "Reduced solution contains NaN or infinity");
+            }
+
+
+            // =====================================================
+            // Full-space direction
+            //
+            //     direction = P alpha
+            //
+            // Since P is the ORIGINAL basis,
+            // alpha is directly the coefficient vector that we want.
+            // =====================================================
+
+            Eigen::VectorXd direction(
+                n);
+
+            direction.noalias() =
+                P * alpha;
+
+
+            if (!direction.allFinite())
+            {
+                throw gcnew InvalidOperationException(
+                    "Full-space direction contains NaN or infinity");
+            }
+
+
+            // =====================================================
+            // Return
+            // =====================================================
+
+            array<double>^ ret =
+                gcnew array<double>(n);
+
+            parameters =
+                gcnew array<double>(
+                    static_cast<int>(
+                        reducedSize));
+
+
+            for (int i = 0;
+                i < n;
+                ++i)
+            {
+                ret[i] =
+                    direction(i);
+            }
+
+
+            for (Eigen::Index j = 0;
+                j < reducedSize;
+                ++j)
+            {
+                parameters[
+                    static_cast<int>(j)] =
+                    alpha(j);
+            }
+
+
+            return ret;
+        }
+        static array<double>^ findSearchDirectionFixed(
+            int n,
+            array<int>^ columnptr,
+            array<int>^ rowindices,
+            array<double>^ values,
+            array<array<double>^>^ vecs,
+            array<double>^ rhs,
+            double epsilon,
+            int fixedIndex,
+            double fixedValue,
+            array<double>^% parameters)
+        {
+            using SparseMatrix64 =
+                Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>;
+            using Triplet64 =
+                Eigen::Triplet<double, int64_t>;
+
+            if (n <= 0)
+                throw gcnew ArgumentException("n must be positive");
+            if (columnptr == nullptr)
+                throw gcnew ArgumentNullException("columnptr");
+            if (rowindices == nullptr)
+                throw gcnew ArgumentNullException("rowindices");
+            if (values == nullptr)
+                throw gcnew ArgumentNullException("values");
+            if (vecs == nullptr)
+                throw gcnew ArgumentNullException("vecs");
+            if (rhs == nullptr)
+                throw gcnew ArgumentNullException("rhs");
+            if (!std::isfinite(epsilon) || epsilon < 0.0)
+                throw gcnew ArgumentException("epsilon must be finite and non-negative");
+            if (!std::isfinite(fixedValue))
+                throw gcnew ArgumentException("fixedValue must be finite");
+            if (fixedIndex < 0 || fixedIndex >= vecs->Length)
+                throw gcnew ArgumentOutOfRangeException("fixedIndex");
+            if (rhs->Length != n)
+                throw gcnew ArgumentException("rhs has incompatible size");
+            if (columnptr->Length != n + 1)
+                throw gcnew ArgumentException("columnptr must have length n + 1");
+            if (rowindices->Length != values->Length)
+                throw gcnew ArgumentException("rowindices and values have incompatible sizes");
+            if (columnptr[0] != 0 || columnptr[n] != values->Length)
+                throw gcnew ArgumentException("columnptr has invalid start or end");
+
+            const Eigen::Index basisCount =
+                static_cast<Eigen::Index>(vecs->Length);
+            const Eigen::Index freeCount = basisCount - 1;
+
+            Eigen::MatrixXd P(n, basisCount);
+            for (Eigen::Index j = 0; j < basisCount; ++j)
+            {
+                array<double>^ src = vecs[static_cast<int>(j)];
+                if (src == nullptr || src->Length != n)
+                    throw gcnew ArgumentException("vecs contains an invalid vector");
+
+                for (int i = 0; i < n; ++i)
+                {
+                    if (!std::isfinite(src[i]))
+                        throw gcnew ArgumentException("vecs contains NaN or infinity");
+                    P(i, j) = src[i];
+                }
+            }
+
+            Eigen::VectorXd b(n);
+            for (int i = 0; i < n; ++i)
+            {
+                if (!std::isfinite(rhs[i]))
+                    throw gcnew ArgumentException("rhs contains NaN or infinity");
+                b(i) = rhs[i];
+            }
+
+            SparseMatrix64 matA(n, n);
+            std::vector<Triplet64> triplets;
+            triplets.reserve(static_cast<std::size_t>(values->Length));
+
+            for (int column = 0; column < n; ++column)
+            {
+                const int start = columnptr[column];
+                const int end = columnptr[column + 1];
+
+                if (start < 0 || end < start || end > values->Length)
+                    throw gcnew ArgumentException("columnptr contains an invalid range");
+
+                for (int index = start; index < end; ++index)
+                {
+                    const int row = rowindices[index];
+                    const double value = values[index];
+
+                    if (row < 0 || row >= n)
+                        throw gcnew ArgumentException("rowindices contains an invalid index");
+                    if (!std::isfinite(value))
+                        throw gcnew ArgumentException("values contains NaN or infinity");
+
                     triplets.emplace_back(
                         static_cast<int64_t>(row),
                         static_cast<int64_t>(column),
@@ -2460,29 +907,2743 @@ namespace sparse_solver {
                 }
             }
 
-            mat.setFromTriplets(
-                triplets.begin(),
-                triplets.end());
+            matA.setFromTriplets(triplets.begin(), triplets.end());
+            matA.makeCompressed();
 
-            mat.makeCompressed();
+            Eigen::MatrixXd AP = matA * P;
+            if (!AP.allFinite())
+                throw gcnew InvalidOperationException("A * P contains NaN or infinity");
 
-            // =================================================
-            // Second sparse matrix
-            // =================================================
+            // å≈íËåWêîÇÃäÒó^ÇâEï”Ç©ÇÁç∑Çµà¯Ç≠ÅB
+            Eigen::VectorXd adjustedRhs =
+                b - fixedValue * AP.col(fixedIndex);
 
-            SparseMatrix64 mat2(n2, n2);
+            Eigen::MatrixXd Pfree(n, freeCount);
+            Eigen::MatrixXd APfree(n, freeCount);
 
-            std::vector<
-                Eigen::Triplet<double, int64_t>>
-                triplets2;
+            for (Eigen::Index j = 0, k = 0; j < basisCount; ++j)
+            {
+                if (j == fixedIndex)
+                    continue;
 
-            triplets2.reserve(
-                values2->Length );
+                Pfree.col(k) = P.col(j);
+                APfree.col(k) = AP.col(j);
+                ++k;
+            }
 
-          
+            Eigen::VectorXd alpha =
+                Eigen::VectorXd::Zero(basisCount);
+            alpha(fixedIndex) = fixedValue;
+
+            if (freeCount > 0)
+            {
+                Eigen::MatrixXd H = Pfree.transpose() * APfree;
+                Eigen::VectorXd g = Pfree.transpose() * adjustedRhs;
+
+                if (!H.allFinite() || !g.allFinite())
+                    throw gcnew InvalidOperationException(
+                        "Reduced system contains NaN or infinity");
+
+                Eigen::JacobiSVD<Eigen::MatrixXd> svd(
+                    H, Eigen::ComputeThinU | Eigen::ComputeThinV);
+
+                const Eigen::VectorXd singularValues = svd.singularValues();
+                if (!singularValues.allFinite())
+                    throw gcnew InvalidOperationException(
+                        "Reduced SVD returned NaN or infinity");
+
+                Eigen::VectorXd alphaFree =
+                    Eigen::VectorXd::Zero(freeCount);
+
+                if (singularValues.size() > 0 && singularValues(0) > 0.0)
+                {
+                    const double threshold =
+                        epsilon * singularValues(0);
+
+                    Eigen::VectorXd transformedRhs =
+                        svd.matrixU().transpose() * g;
+
+                    for (Eigen::Index i = 0; i < singularValues.size(); ++i)
+                    {
+                        if (singularValues(i) > threshold)
+                            transformedRhs(i) /= singularValues(i);
+                        else
+                            transformedRhs(i) = 0.0;
+                    }
+
+                    alphaFree = svd.matrixV() * transformedRhs;
+                }
+
+                for (Eigen::Index j = 0, k = 0; j < basisCount; ++j)
+                {
+                    if (j != fixedIndex)
+                        alpha(j) = alphaFree(k++);
+                }
+            }
+
+            Eigen::VectorXd direction = P * alpha;
+            if (!alpha.allFinite() || !direction.allFinite())
+                throw gcnew InvalidOperationException(
+                    "Solution contains NaN or infinity");
+
+            parameters = gcnew array<double>(static_cast<int>(basisCount));
+            array<double>^ ret = gcnew array<double>(n);
+
+            for (Eigen::Index j = 0; j < basisCount; ++j)
+                parameters[static_cast<int>(j)] = alpha(j);
+
+            for (int i = 0; i < n; ++i)
+                ret[i] = direction(i);
+
+            return ret;
+        }
+        static array<double>^ findSearchDirection2(
+            int n,
+
+            // =====================================================
+            // Matrix A
+            // CSC format
+            // =====================================================
+            array<int>^ columnptr,
+            array<int>^ rowindices,
+            array<double>^ values,
+
+            // =====================================================
+            // Original basis vectors
+            //
+            //     P = [p0 p1 ...]
+            //
+            // NO orthonormalization is performed.
+            // =====================================================
+            array<array<double>^>^ vecs,
+
+            // =====================================================
+            // RHS
+            // =====================================================
+            array<double>^ rhs,
+
+            // =====================================================
+            // Reduced-space LM damping for
+            //
+            //     P^T A P + lambda P^T P
+            // =====================================================
+            double lambda,
+
+            // =====================================================
+            // Output:
+            //
+            // coefficients alpha with respect to ORIGINAL basis P
+            //
+            //     direction = P alpha
+            // =====================================================
+            array<double>^% parameters)
+        {
+            using SparseMatrix64 =
+                Eigen::SparseMatrix<
+                double,
+                Eigen::ColMajor,
+                int64_t>;
+
+            using Triplet64 =
+                Eigen::Triplet<
+                double,
+                int64_t>;
+
+
+            // =====================================================
+            // Validate
+            // =====================================================
+
+            if (n <= 0)
+            {
+                throw gcnew ArgumentException(
+                    "n must be positive");
+            }
+
+            if (columnptr == nullptr)
+            {
+                throw gcnew ArgumentNullException(
+                    "columnptr");
+            }
+
+            if (rowindices == nullptr)
+            {
+                throw gcnew ArgumentNullException(
+                    "rowindices");
+            }
+
+            if (values == nullptr)
+            {
+                throw gcnew ArgumentNullException(
+                    "values");
+            }
+
+            if (vecs == nullptr)
+            {
+                throw gcnew ArgumentNullException(
+                    "vecs");
+            }
+
+            if (rhs == nullptr)
+            {
+                throw gcnew ArgumentNullException(
+                    "rhs");
+            }
+
+            if (!std::isfinite(lambda) ||
+                lambda <= 0.0)
+            {
+                throw gcnew ArgumentException(
+                    "lambda must be finite and positive");
+            }
+
+            if (rhs->Length != n)
+            {
+                throw gcnew ArgumentException(
+                    "rhs has incompatible size");
+            }
+
+            if (columnptr->Length != n + 1)
+            {
+                throw gcnew ArgumentException(
+                    "columnptr must have length n + 1");
+            }
+
+            if (rowindices->Length != values->Length)
+            {
+                throw gcnew ArgumentException(
+                    "rowindices and values have incompatible sizes");
+            }
+
+            if (columnptr[0] != 0 ||
+                columnptr[n] != values->Length)
+            {
+                throw gcnew ArgumentException(
+                    "columnptr has invalid start or end");
+            }
+
+
+            // =====================================================
+            // Number of basis vectors
+            // =====================================================
+
+            const Eigen::Index reducedSize =
+                static_cast<Eigen::Index>(
+                    vecs->Length);
+
+
+            // =====================================================
+            // Empty basis
+            // =====================================================
+
+            if (reducedSize == 0)
+            {
+                parameters =
+                    gcnew array<double>(0);
+
+                return gcnew array<double>(n);
+            }
+
+
+            // =====================================================
+            // Build original dense basis
+            //
+            //     P = [p0 p1 ...]
+            //
+            // NO QR / orthonormalization.
+            // =====================================================
+
+            Eigen::MatrixXd P(
+                n,
+                reducedSize);
+
+            for (Eigen::Index j = 0;
+                j < reducedSize;
+                ++j)
+            {
+                array<double>^ src =
+                    vecs[
+                        static_cast<int>(j)];
+
+                if (src == nullptr)
+                {
+                    throw gcnew ArgumentException(
+                        "vecs contains a null vector");
+                }
+
+                if (src->Length != n)
+                {
+                    throw gcnew ArgumentException(
+                        "vecs contains a vector with incompatible size");
+                }
+
+                for (int i = 0;
+                    i < n;
+                    ++i)
+                {
+                    const double value =
+                        src[i];
+
+                    if (!std::isfinite(value))
+                    {
+                        throw gcnew ArgumentException(
+                            "vecs contains NaN or infinity");
+                    }
+
+                    P(i, j) =
+                        value;
+                }
+            }
+
+
+            if (!P.allFinite())
+            {
+                throw gcnew InvalidOperationException(
+                    "Basis matrix contains NaN or infinity");
+            }
+
+
+            // =====================================================
+            // Build sparse matrix A
+            // =====================================================
+
+            SparseMatrix64 matA(
+                n,
+                n);
+
+            std::vector<Triplet64> tripletsA;
+
+            tripletsA.reserve(
+                static_cast<std::size_t>(
+                    values->Length));
+
 
             for (int column = 0;
-                column < n2;
+                column < n;
+                ++column)
+            {
+                const int start =
+                    columnptr[column];
+
+                const int end =
+                    columnptr[column + 1];
+
+                if (start < 0 ||
+                    end < start ||
+                    end > values->Length)
+                {
+                    throw gcnew ArgumentException(
+                        "columnptr contains an invalid range");
+                }
+
+
+                for (int index = start;
+                    index < end;
+                    ++index)
+                {
+                    const int row =
+                        rowindices[index];
+
+                    if (row < 0 ||
+                        row >= n)
+                    {
+                        throw gcnew ArgumentException(
+                            "rowindices contains an invalid row index");
+                    }
+
+
+                    const double value =
+                        values[index];
+
+                    if (!std::isfinite(value))
+                    {
+                        throw gcnew ArgumentException(
+                            "values contains NaN or infinity");
+                    }
+
+
+                    tripletsA.emplace_back(
+                        static_cast<int64_t>(row),
+                        static_cast<int64_t>(column),
+                        value);
+                }
+            }
+
+
+            matA.setFromTriplets(
+                tripletsA.begin(),
+                tripletsA.end());
+
+            matA.makeCompressed();
+
+
+            // =====================================================
+            // RHS
+            // =====================================================
+
+            Eigen::VectorXd b(
+                n);
+
+            for (int i = 0;
+                i < n;
+                ++i)
+            {
+                const double value =
+                    rhs[i];
+
+                if (!std::isfinite(value))
+                {
+                    throw gcnew ArgumentException(
+                        "rhs contains NaN or infinity");
+                }
+
+                b(i) =
+                    value;
+            }
+
+
+            // =====================================================
+            // Compute
+            //
+            //     AP = A P
+            // =====================================================
+
+            Eigen::MatrixXd AP(
+                n,
+                reducedSize);
+
+            AP.noalias() =
+                matA * P;
+
+
+            if (!AP.allFinite())
+            {
+                throw gcnew InvalidOperationException(
+                    "A * P contains NaN or infinity");
+            }
+
+
+            // =====================================================
+            // Reduced primary system
+            //
+            //     H = P^T A P + lambda P^T P
+            //
+            //     g = P^T rhs
+            //
+            // Solve
+            //
+            //     H alpha = g
+            //
+            // =====================================================
+
+            Eigen::MatrixXd H(
+                reducedSize,
+                reducedSize);
+
+            Eigen::VectorXd g(
+                reducedSize);
+
+
+            H.noalias() =
+                P.transpose() * AP;
+
+            H.noalias() +=
+                lambda * (P.transpose() * P);
+
+            // Remove very small asymmetry caused by floating-point
+            // accumulation. Eigen::LLT expects a symmetric matrix.
+            H =
+                0.5 * (H + H.transpose());
+
+            g.noalias() =
+                P.transpose() * b;
+
+
+            if (!H.allFinite())
+            {
+                throw gcnew InvalidOperationException(
+                    "Reduced matrix contains NaN or infinity");
+            }
+
+            if (!g.allFinite())
+            {
+                throw gcnew InvalidOperationException(
+                    "Reduced rhs contains NaN or infinity");
+            }
+
+
+            // =====================================================
+            // Cholesky solve
+            //
+            //     (P^T A P + lambda P^T P) alpha
+            //         = P^T rhs
+            //
+            // No basis orthonormalization is performed.
+            //
+            // If P has full column rank and lambda > 0,
+            // lambda P^T P makes the reduced matrix positive
+            // definite even when A is rank deficient.
+            // =====================================================
+
+            Eigen::LLT<Eigen::MatrixXd> cholesky;
+
+            cholesky.compute(H);
+
+            if (cholesky.info() != Eigen::Success)
+            {
+                throw gcnew InvalidOperationException(
+                    "Cholesky factorization failed. "
+                    "The basis P may be linearly dependent, "
+                    "or lambda may be too small.");
+            }
+
+
+            Eigen::VectorXd alpha =
+                cholesky.solve(g);
+
+
+            if (cholesky.info() != Eigen::Success)
+            {
+                throw gcnew InvalidOperationException(
+                    "Cholesky solve failed");
+            }
+
+
+            if (!alpha.allFinite())
+            {
+                throw gcnew InvalidOperationException(
+                    "Reduced solution contains NaN or infinity");
+            }
+
+
+            // =====================================================
+            // Full-space direction
+            //
+            //     direction = P alpha
+            //
+            // Since P is the ORIGINAL basis,
+            // alpha is directly the coefficient vector that we want.
+            // =====================================================
+
+            Eigen::VectorXd direction(
+                n);
+
+            direction.noalias() =
+                P * alpha;
+
+
+            if (!direction.allFinite())
+            {
+                throw gcnew InvalidOperationException(
+                    "Full-space direction contains NaN or infinity");
+            }
+
+
+            // =====================================================
+            // Return
+            // =====================================================
+
+            array<double>^ ret =
+                gcnew array<double>(n);
+
+            parameters =
+                gcnew array<double>(
+                    static_cast<int>(
+                        reducedSize));
+
+
+            for (int i = 0;
+                i < n;
+                ++i)
+            {
+                ret[i] =
+                    direction(i);
+            }
+
+
+            for (Eigen::Index j = 0;
+                j < reducedSize;
+                ++j)
+            {
+                parameters[
+                    static_cast<int>(j)] =
+                    alpha(j);
+            }
+
+
+            return ret;
+        }
+        static array<double>^ findSearchDirection3(
+            int n,
+
+            // =====================================================
+            // Matrix A
+            // CSC format
+            // =====================================================
+            array<int>^ columnptr,
+            array<int>^ rowindices,
+            array<double>^ values,
+
+            // =====================================================
+            // Original basis vectors
+            //
+            //     P = [p0 p1 ...]
+            //
+            // NO orthonormalization is performed.
+            // =====================================================
+            array<array<double>^>^ vecs,
+
+            // =====================================================
+            // RHS
+            // =====================================================
+            array<double>^ rhs,
+
+            // =====================================================
+            // Radius of the coefficient-space ball constraint
+            //
+            //     ||alpha|| <= trustRadius
+            // =====================================================
+            double trustRadius,
+
+            // =====================================================
+            // Output:
+            //
+            // coefficients alpha with respect to ORIGINAL basis P
+            //
+            //     direction = P alpha
+            // =====================================================
+            array<double>^% parameters,
+
+            // LM multiplier selected by the trust-region solve.
+            // Zero means that the unconstrained step was accepted.
+            double% lambdaUsed)
+        {
+            using SparseMatrix64 =
+                Eigen::SparseMatrix<
+                double,
+                Eigen::ColMajor,
+                int64_t>;
+
+            using Triplet64 =
+                Eigen::Triplet<
+                double,
+                int64_t>;
+
+
+            // =====================================================
+            // Validate
+            // =====================================================
+
+            if (n <= 0)
+            {
+                throw gcnew ArgumentException(
+                    "n must be positive");
+            }
+
+            if (columnptr == nullptr)
+            {
+                throw gcnew ArgumentNullException(
+                    "columnptr");
+            }
+
+            if (rowindices == nullptr)
+            {
+                throw gcnew ArgumentNullException(
+                    "rowindices");
+            }
+
+            if (values == nullptr)
+            {
+                throw gcnew ArgumentNullException(
+                    "values");
+            }
+
+            if (vecs == nullptr)
+            {
+                throw gcnew ArgumentNullException(
+                    "vecs");
+            }
+
+            if (rhs == nullptr)
+            {
+                throw gcnew ArgumentNullException(
+                    "rhs");
+            }
+
+            if (!std::isfinite(trustRadius) ||
+                trustRadius <= 0.0)
+            {
+                throw gcnew ArgumentException(
+                    "trustRadius must be finite and positive");
+            }
+
+            if (rhs->Length != n)
+            {
+                throw gcnew ArgumentException(
+                    "rhs has incompatible size");
+            }
+
+            if (columnptr->Length != n + 1)
+            {
+                throw gcnew ArgumentException(
+                    "columnptr must have length n + 1");
+            }
+
+            if (rowindices->Length != values->Length)
+            {
+                throw gcnew ArgumentException(
+                    "rowindices and values have incompatible sizes");
+            }
+
+            if (columnptr[0] != 0 ||
+                columnptr[n] != values->Length)
+            {
+                throw gcnew ArgumentException(
+                    "columnptr has invalid start or end");
+            }
+
+
+            // =====================================================
+            // Number of basis vectors
+            // =====================================================
+
+            const Eigen::Index reducedSize =
+                static_cast<Eigen::Index>(
+                    vecs->Length);
+
+
+            // =====================================================
+            // Empty basis
+            // =====================================================
+
+            if (reducedSize == 0)
+            {
+                parameters =
+                    gcnew array<double>(0);
+
+                lambdaUsed =
+                    0.0;
+
+                return gcnew array<double>(n);
+            }
+
+
+            // =====================================================
+            // Build original dense basis
+            //
+            //     P = [p0 p1 ...]
+            //
+            // NO QR / orthonormalization.
+            // =====================================================
+
+            Eigen::MatrixXd P(
+                n,
+                reducedSize);
+
+            for (Eigen::Index j = 0;
+                j < reducedSize;
+                ++j)
+            {
+                array<double>^ src =
+                    vecs[
+                        static_cast<int>(j)];
+
+                if (src == nullptr)
+                {
+                    throw gcnew ArgumentException(
+                        "vecs contains a null vector");
+                }
+
+                if (src->Length != n)
+                {
+                    throw gcnew ArgumentException(
+                        "vecs contains a vector with incompatible size");
+                }
+
+                for (int i = 0;
+                    i < n;
+                    ++i)
+                {
+                    const double value =
+                        src[i];
+
+                    if (!std::isfinite(value))
+                    {
+                        throw gcnew ArgumentException(
+                            "vecs contains NaN or infinity");
+                    }
+
+                    P(i, j) =
+                        value;
+                }
+            }
+
+
+            if (!P.allFinite())
+            {
+                throw gcnew InvalidOperationException(
+                    "Basis matrix contains NaN or infinity");
+            }
+
+
+            // =====================================================
+            // Build sparse matrix A
+            // =====================================================
+
+            SparseMatrix64 matA(
+                n,
+                n);
+
+            std::vector<Triplet64> tripletsA;
+
+            tripletsA.reserve(
+                static_cast<std::size_t>(
+                    values->Length));
+
+
+            for (int column = 0;
+                column < n;
+                ++column)
+            {
+                const int start =
+                    columnptr[column];
+
+                const int end =
+                    columnptr[column + 1];
+
+                if (start < 0 ||
+                    end < start ||
+                    end > values->Length)
+                {
+                    throw gcnew ArgumentException(
+                        "columnptr contains an invalid range");
+                }
+
+
+                for (int index = start;
+                    index < end;
+                    ++index)
+                {
+                    const int row =
+                        rowindices[index];
+
+                    if (row < 0 ||
+                        row >= n)
+                    {
+                        throw gcnew ArgumentException(
+                            "rowindices contains an invalid row index");
+                    }
+
+
+                    const double value =
+                        values[index];
+
+                    if (!std::isfinite(value))
+                    {
+                        throw gcnew ArgumentException(
+                            "values contains NaN or infinity");
+                    }
+
+
+                    tripletsA.emplace_back(
+                        static_cast<int64_t>(row),
+                        static_cast<int64_t>(column),
+                        value);
+                }
+            }
+
+
+            matA.setFromTriplets(
+                tripletsA.begin(),
+                tripletsA.end());
+
+            matA.makeCompressed();
+
+
+            // =====================================================
+            // RHS
+            // =====================================================
+
+            Eigen::VectorXd b(
+                n);
+
+            for (int i = 0;
+                i < n;
+                ++i)
+            {
+                const double value =
+                    rhs[i];
+
+                if (!std::isfinite(value))
+                {
+                    throw gcnew ArgumentException(
+                        "rhs contains NaN or infinity");
+                }
+
+                b(i) =
+                    value;
+            }
+
+
+            // =====================================================
+            // Compute
+            //
+            //     AP = A P
+            // =====================================================
+
+            Eigen::MatrixXd AP(
+                n,
+                reducedSize);
+
+            AP.noalias() =
+                matA * P;
+
+
+            if (!AP.allFinite())
+            {
+                throw gcnew InvalidOperationException(
+                    "A * P contains NaN or infinity");
+            }
+
+
+            // =====================================================
+            // Reduced primary system
+            //
+            //     H0 = P^T A P
+            //
+            //     g = P^T rhs
+            //
+            // Solve
+            //
+            //     (H0 + lambda I) alpha = g
+            //
+            // =====================================================
+
+            Eigen::MatrixXd H0(
+                reducedSize,
+                reducedSize);
+
+            Eigen::VectorXd g(
+                reducedSize);
+
+
+            H0.noalias() =
+                P.transpose() * AP;
+
+            // Remove very small asymmetry caused by floating-point
+            // accumulation. Eigen::LLT expects a symmetric matrix.
+            H0 =
+                0.5 * (H0 + H0.transpose());
+
+            g.noalias() =
+                P.transpose() * b;
+
+
+            if (!H0.allFinite())
+            {
+                throw gcnew InvalidOperationException(
+                    "Reduced matrix contains NaN or infinity");
+            }
+
+            if (!g.allFinite())
+            {
+                throw gcnew InvalidOperationException(
+                    "Reduced rhs contains NaN or infinity");
+            }
+
+
+            // =====================================================
+            // Coefficient-space ball trust-region solve
+            //
+            //     minimize 0.5 alpha^T H0 alpha - g^T alpha
+            //
+            //     subject to
+            //
+            //         alpha^T alpha <= trustRadius^2
+            //
+            // Its KKT equation is
+            //
+            //     (H0 + lambda I) alpha = g,
+            //
+            // with lambda >= 0.  If the unconstrained Cholesky
+            // solution exists and is inside the ball, lambda = 0.
+            // Otherwise lambda is bracketed and found by bisection.
+            // =====================================================
+
+            const double radiusSquared =
+                trustRadius * trustRadius;
+
+            const double radiusTolerance =
+                1.0e-10;
+
+            Eigen::VectorXd alpha(
+                reducedSize);
+
+            alpha.setZero();
+
+            bool acceptedUnconstrained =
+                false;
+
+            Eigen::LLT<Eigen::MatrixXd> cholesky;
+
+            cholesky.compute(H0);
+
+            if (cholesky.info() == Eigen::Success)
+            {
+                Eigen::VectorXd candidate =
+                    cholesky.solve(g);
+
+                if (cholesky.info() == Eigen::Success &&
+                    candidate.allFinite())
+                {
+                    const double normSquared =
+                        candidate.squaredNorm();
+
+                    if (std::isfinite(normSquared) &&
+                        normSquared <=
+                        radiusSquared *
+                        (1.0 + radiusTolerance))
+                    {
+                        alpha =
+                            candidate;
+
+                        lambdaUsed =
+                            0.0;
+
+                        acceptedUnconstrained =
+                            true;
+                    }
+                }
+            }
+
+
+            if (!acceptedUnconstrained)
+            {
+                // Obtain a scale only for the initial bracketing value.
+                // The final lambda is determined by the requested radius.
+                double hScale =
+                    0.0;
+
+                for (Eigen::Index i = 0;
+                    i < reducedSize;
+                    ++i)
+                {
+                    hScale =
+                        std::max(
+                            hScale,
+                            std::abs(H0(i, i)));
+
+                }
+
+                double lambdaLow =
+                    0.0;
+
+                double lambdaHigh =
+                    1.0e-12;
+
+                if (hScale > 0.0)
+                {
+                    lambdaHigh =
+                        1.0e-12 * hScale;
+                }
+
+                if (!std::isfinite(lambdaHigh) ||
+                    lambdaHigh <= 0.0)
+                {
+                    lambdaHigh =
+                        1.0e-12;
+                }
+
+                bool bracketed =
+                    false;
+
+                Eigen::VectorXd candidate(
+                    reducedSize);
+
+                for (int iteration = 0;
+                    iteration < 100;
+                    ++iteration)
+                {
+                    Eigen::MatrixXd H =
+                        H0;
+
+                    H.diagonal().array() +=
+                        lambdaHigh;
+
+                    H =
+                        0.5 * (H + H.transpose());
+
+                    cholesky.compute(H);
+
+                    if (cholesky.info() == Eigen::Success)
+                    {
+                        candidate =
+                            cholesky.solve(g);
+
+                        if (cholesky.info() == Eigen::Success &&
+                            candidate.allFinite())
+                        {
+                            const double normSquared =
+                                candidate.squaredNorm();
+
+                            if (std::isfinite(normSquared) &&
+                                normSquared <= radiusSquared)
+                            {
+                                alpha =
+                                    candidate;
+
+                                bracketed =
+                                    true;
+
+                                break;
+                            }
+                        }
+                    }
+
+                    lambdaLow =
+                        lambdaHigh;
+
+                    lambdaHigh *=
+                        10.0;
+
+                    if (!std::isfinite(lambdaHigh))
+                    {
+                        break;
+                    }
+                }
+
+                if (!bracketed)
+                {
+                    throw gcnew InvalidOperationException(
+                        "Failed to bracket the trust-region multiplier");
+                }
+
+
+                // For lambda > 0, ||alpha(lambda)|| decreases
+                // monotonically.  Bisect until the boundary is reached.
+                for (int iteration = 0;
+                    iteration < 80;
+                    ++iteration)
+                {
+                    const double lambdaMiddle =
+                        0.5 * (lambdaLow + lambdaHigh);
+
+                    Eigen::MatrixXd H =
+                        H0;
+
+                    H.diagonal().array() +=
+                        lambdaMiddle;
+
+                    H =
+                        0.5 * (H + H.transpose());
+
+                    cholesky.compute(H);
+
+                    if (cholesky.info() != Eigen::Success)
+                    {
+                        lambdaLow =
+                            lambdaMiddle;
+
+                        continue;
+                    }
+
+                    candidate =
+                        cholesky.solve(g);
+
+                    if (cholesky.info() != Eigen::Success ||
+                        !candidate.allFinite())
+                    {
+                        lambdaLow =
+                            lambdaMiddle;
+
+                        continue;
+                    }
+
+                    const double normSquared =
+                        candidate.squaredNorm();
+
+                    if (!std::isfinite(normSquared) ||
+                        normSquared > radiusSquared)
+                    {
+                        lambdaLow =
+                            lambdaMiddle;
+                    }
+                    else
+                    {
+                        lambdaHigh =
+                            lambdaMiddle;
+
+                        alpha =
+                            candidate;
+                    }
+
+                    const double relativeRadiusError =
+                        std::abs(normSquared - radiusSquared) /
+                        radiusSquared;
+
+                    if (relativeRadiusError <=
+                        radiusTolerance)
+                    {
+                        break;
+                    }
+                }
+
+                lambdaUsed =
+                    lambdaHigh;
+            }
+
+
+            if (!alpha.allFinite())
+            {
+                throw gcnew InvalidOperationException(
+                    "Reduced solution contains NaN or infinity");
+            }
+
+
+            // =====================================================
+            // Full-space direction
+            //
+            //     direction = P alpha
+            //
+            // Since P is the ORIGINAL basis,
+            // alpha is directly the coefficient vector that we want.
+            // =====================================================
+
+            Eigen::VectorXd direction(
+                n);
+
+            direction.noalias() =
+                P * alpha;
+
+
+            if (!direction.allFinite())
+            {
+                throw gcnew InvalidOperationException(
+                    "Full-space direction contains NaN or infinity");
+            }
+
+
+            // =====================================================
+            // Return
+            // =====================================================
+
+            array<double>^ ret =
+                gcnew array<double>(n);
+
+            parameters =
+                gcnew array<double>(
+                    static_cast<int>(
+                        reducedSize));
+
+
+            for (int i = 0;
+                i < n;
+                ++i)
+            {
+                ret[i] =
+                    direction(i);
+            }
+
+
+            for (Eigen::Index j = 0;
+                j < reducedSize;
+                ++j)
+            {
+                parameters[
+                    static_cast<int>(j)] =
+                    alpha(j);
+            }
+
+
+            return ret;
+        }
+        static array<double>^ findSearchDirection3(
+            int n,
+
+            // =====================================================
+            // Matrix A
+            // CSC format
+            // =====================================================
+            array<int>^ columnptr,
+            array<int>^ rowindices,
+            array<double>^ values,
+
+            // =====================================================
+            // Original basis vectors
+            //
+            //     P = [p0 p1 ...]
+            //
+            // No orthonormalization is performed.
+            // =====================================================
+            array<array<double>^>^ vecs,
+
+            // =====================================================
+            // RHS
+            // =====================================================
+            array<double>^ rhs,
+
+            // =====================================================
+            // Independent trust radius for each basis coefficient
+            //
+            //     |alpha_i| <= trustRadii[i]
+            //
+            // =====================================================
+            array<double>^ trustRadii,
+
+            // =====================================================
+            // Output:
+            // coefficients alpha with respect to ORIGINAL basis P
+            //
+            //     direction = P alpha
+            // =====================================================
+            array<double>^% parameters,
+
+            // =====================================================
+            // Maximum diagonal regularization actually used
+            // =====================================================
+            double% lambdaUsed)
+        {
+            using SparseMatrix64 =
+                Eigen::SparseMatrix<
+                double,
+                Eigen::ColMajor,
+                int64_t>;
+
+            using Triplet64 =
+                Eigen::Triplet<
+                double,
+                int64_t>;
+
+
+            // =====================================================
+            // Input validation
+            // =====================================================
+
+            if (n <= 0)
+                throw gcnew ArgumentException(
+                    "n must be positive");
+
+            if (columnptr == nullptr)
+                throw gcnew ArgumentNullException(
+                    "columnptr");
+
+            if (rowindices == nullptr)
+                throw gcnew ArgumentNullException(
+                    "rowindices");
+
+            if (values == nullptr)
+                throw gcnew ArgumentNullException(
+                    "values");
+
+            if (vecs == nullptr)
+                throw gcnew ArgumentNullException(
+                    "vecs");
+
+            if (rhs == nullptr)
+                throw gcnew ArgumentNullException(
+                    "rhs");
+
+            if (trustRadii == nullptr)
+                throw gcnew ArgumentNullException(
+                    "trustRadii");
+
+
+            if (rhs->Length != n)
+                throw gcnew ArgumentException(
+                    "rhs has incompatible size");
+
+            if (columnptr->Length != n + 1)
+                throw gcnew ArgumentException(
+                    "columnptr must have length n + 1");
+
+            if (rowindices->Length != values->Length)
+                throw gcnew ArgumentException(
+                    "rowindices and values have incompatible sizes");
+
+            if (columnptr[0] != 0 ||
+                columnptr[n] != values->Length)
+            {
+                throw gcnew ArgumentException(
+                    "columnptr has invalid start or end");
+            }
+
+
+            const Eigen::Index basisCount =
+                static_cast<Eigen::Index>(
+                    vecs->Length);
+
+
+            if (basisCount <= 0)
+                throw gcnew ArgumentException(
+                    "vecs must contain at least one basis vector");
+
+
+            if (trustRadii->Length !=
+                static_cast<int>(basisCount))
+            {
+                throw gcnew ArgumentException(
+                    "trustRadii must have the same length as vecs");
+            }
+
+
+            for (int j = 0;
+                j < trustRadii->Length;
+                ++j)
+            {
+                if (!std::isfinite(trustRadii[j]) ||
+                    trustRadii[j] <= 0.0)
+                {
+                    throw gcnew ArgumentException(
+                        "Every trust radius must be finite and positive");
+                }
+            }
+
+
+            // =====================================================
+            // Build basis matrix P
+            //
+            //     P = [p0 p1 ...]
+            // =====================================================
+
+            Eigen::MatrixXd P(
+                n,
+                basisCount);
+
+
+            for (Eigen::Index j = 0;
+                j < basisCount;
+                ++j)
+            {
+                array<double>^ src =
+                    vecs[
+                        static_cast<int>(j)];
+
+
+                if (src == nullptr ||
+                    src->Length != n)
+                {
+                    throw gcnew ArgumentException(
+                        "vecs contains an invalid vector");
+                }
+
+
+                for (int i = 0;
+                    i < n;
+                    ++i)
+                {
+                    if (!std::isfinite(src[i]))
+                    {
+                        throw gcnew ArgumentException(
+                            "vecs contains NaN or infinity");
+                    }
+
+
+                    P(i, j) =
+                        src[i];
+                }
+            }
+
+
+            // =====================================================
+            // Build RHS
+            // =====================================================
+
+            Eigen::VectorXd b(n);
+
+
+            for (int i = 0;
+                i < n;
+                ++i)
+            {
+                if (!std::isfinite(rhs[i]))
+                {
+                    throw gcnew ArgumentException(
+                        "rhs contains NaN or infinity");
+                }
+
+
+                b(i) =
+                    rhs[i];
+            }
+
+
+            // =====================================================
+            // Build sparse matrix A
+            // =====================================================
+
+            SparseMatrix64 matA(
+                n,
+                n);
+
+
+            std::vector<Triplet64>
+                tripletList;
+
+
+            tripletList.reserve(
+                static_cast<std::size_t>(
+                    values->Length));
+
+
+            for (int column = 0;
+                column < n;
+                ++column)
+            {
+                const int start =
+                    columnptr[column];
+
+                const int end =
+                    columnptr[column + 1];
+
+
+                if (start < 0 ||
+                    end < start ||
+                    end > values->Length)
+                {
+                    throw gcnew ArgumentException(
+                        "columnptr contains an invalid range");
+                }
+
+
+                for (int index = start;
+                    index < end;
+                    ++index)
+                {
+                    const int row =
+                        rowindices[index];
+
+                    const double value =
+                        values[index];
+
+
+                    if (row < 0 ||
+                        row >= n)
+                    {
+                        throw gcnew ArgumentException(
+                            "rowindices contains an invalid row index");
+                    }
+
+
+                    if (!std::isfinite(value))
+                    {
+                        throw gcnew ArgumentException(
+                            "values contains NaN or infinity");
+                    }
+
+
+                    tripletList.emplace_back(
+                        static_cast<int64_t>(row),
+                        static_cast<int64_t>(column),
+                        value);
+                }
+            }
+
+
+            matA.setFromTriplets(
+                tripletList.begin(),
+                tripletList.end());
+
+            matA.makeCompressed();
+
+
+            // =====================================================
+            // Compute A P
+            // =====================================================
+
+            Eigen::MatrixXd AP =
+                matA * P;
+
+
+            if (!AP.allFinite())
+            {
+                throw gcnew InvalidOperationException(
+                    "A * P contains NaN or infinity");
+            }
+
+
+            // =====================================================
+            // Reduced system
+            //
+            //     H = P^T A P
+            //
+            //     g = P^T rhs
+            //
+            //
+            // Solve
+            //
+            //     min 1/2 alpha^T H alpha - g^T alpha
+            //
+            // subject to
+            //
+            //     -trustRadii[i]
+            //         <= alpha_i
+            //         <= trustRadii[i]
+            //
+            // =====================================================
+
+            Eigen::MatrixXd H =
+                P.transpose() * AP;
+
+
+            // enforce symmetry
+            H =
+                0.5 *
+                (H + H.transpose());
+
+
+            Eigen::VectorXd g =
+                P.transpose() * b;
+
+
+            if (!H.allFinite() ||
+                !g.allFinite())
+            {
+                throw gcnew InvalidOperationException(
+                    "Reduced system contains NaN or infinity");
+            }
+
+
+            // =====================================================
+            // Initial solution
+            // =====================================================
+
+            Eigen::VectorXd alpha =
+                Eigen::VectorXd::Zero(
+                    basisCount);
+
+
+            // =====================================================
+            // Active set status
+            //
+            //  0 : free
+            //
+            // +1 : alpha_i = +trustRadii[i]
+            //
+            // -1 : alpha_i = -trustRadii[i]
+            // =====================================================
+
+            std::vector<int> status(
+                static_cast<std::size_t>(
+                    basisCount),
+                0);
+
+
+            lambdaUsed =
+                0.0;
+
+
+            // =====================================================
+            // Active-set parameters
+            // =====================================================
+
+            const int maxIterations =
+                20 *
+                static_cast<int>(
+                    basisCount)
+                + 100;
+
+
+            const double boundTolerance =
+                1.0e-10;
+
+
+            const double kktTolerance =
+                1.0e-10;
+
+
+            bool converged =
+                false;
+
+
+            // =====================================================
+            // Active-set loop
+            // =====================================================
+
+            for (int outer = 0;
+                outer < maxIterations;
+                ++outer)
+            {
+                // =================================================
+                // Collect free and active variables
+                // =================================================
+
+                std::vector<int>
+                    freeIndices;
+
+
+                std::vector<int>
+                    activeIndices;
+
+
+                freeIndices.reserve(
+                    static_cast<std::size_t>(
+                        basisCount));
+
+
+                activeIndices.reserve(
+                    static_cast<std::size_t>(
+                        basisCount));
+
+
+                for (int i = 0;
+                    i < static_cast<int>(
+                        basisCount);
+                    ++i)
+                {
+                    if (status[
+                        static_cast<std::size_t>(i)]
+                        == 0)
+                    {
+                        freeIndices.push_back(i);
+                    }
+                    else
+                    {
+                        activeIndices.push_back(i);
+                    }
+                }
+
+
+                // =================================================
+                // Solve free variables
+                //
+                //
+                // Partition:
+                //
+                //     H_FF alpha_F
+                //       + H_FA alpha_A
+                //       = g_F
+                //
+                //
+                // therefore
+                //
+                //     H_FF alpha_F
+                //       =
+                //     g_F - H_FA alpha_A
+                //
+                // =================================================
+
+                if (!freeIndices.empty())
+                {
+                    const Eigen::Index freeCount =
+                        static_cast<Eigen::Index>(
+                            freeIndices.size());
+
+
+                    Eigen::MatrixXd Hff(
+                        freeCount,
+                        freeCount);
+
+
+                    Eigen::VectorXd gf(
+                        freeCount);
+
+
+                    // =============================================
+                    // Construct Hff and reduced RHS
+                    // =============================================
+
+                    for (Eigen::Index ii = 0;
+                        ii < freeCount;
+                        ++ii)
+                    {
+                        const int i =
+                            freeIndices[
+                                static_cast<std::size_t>(
+                                    ii)];
+
+
+                        double rhsReduced =
+                            g(i);
+
+
+                        for (int j :
+                        activeIndices)
+                        {
+                            rhsReduced -=
+                                H(i, j) *
+                                alpha(j);
+                        }
+
+
+                        gf(ii) =
+                            rhsReduced;
+
+
+                        for (Eigen::Index jj = 0;
+                            jj < freeCount;
+                            ++jj)
+                        {
+                            const int j =
+                                freeIndices[
+                                    static_cast<std::size_t>(
+                                        jj)];
+
+
+                            Hff(ii, jj) =
+                                H(i, j);
+                        }
+                    }
+
+
+                    // enforce symmetry
+                    Hff =
+                        0.5 *
+                        (Hff +
+                            Hff.transpose());
+
+
+                    if (!Hff.allFinite() ||
+                        !gf.allFinite())
+                    {
+                        throw gcnew
+                            InvalidOperationException(
+                                "Free reduced system contains NaN or infinity");
+                    }
+
+
+                    // =============================================
+                    // Solve
+                    //
+                    //     Hff x = gf
+                    //
+                    //
+                    // Try LLT first.
+                    //
+                    // If Hff is numerically singular,
+                    // add the smallest diagonal damping needed.
+                    // =============================================
+
+                    Eigen::LLT<
+                        Eigen::MatrixXd>
+                        cholesky;
+
+
+                    Eigen::VectorXd solution(
+                        freeCount);
+
+
+                    bool solved =
+                        false;
+
+
+                    double hScale =
+                        0.0;
+
+
+                    for (Eigen::Index i = 0;
+                        i < freeCount;
+                        ++i)
+                    {
+                        hScale =
+                            std::max(
+                                hScale,
+                                std::abs(
+                                    Hff(i, i)));
+                    }
+
+
+                    double lambda =
+                        0.0;
+
+
+                    for (int attempt = 0;
+                        attempt < 30;
+                        ++attempt)
+                    {
+                        Eigen::MatrixXd Hsolve =
+                            Hff;
+
+
+                        if (lambda > 0.0)
+                        {
+                            Hsolve
+                                .diagonal()
+                                .array()
+                                += lambda;
+                        }
+
+
+                        cholesky.compute(
+                            Hsolve);
+
+
+                        if (cholesky.info() ==
+                            Eigen::Success)
+                        {
+                            solution =
+                                cholesky.solve(
+                                    gf);
+
+
+                            if (cholesky.info() ==
+                                Eigen::Success &&
+                                solution.allFinite())
+                            {
+                                solved =
+                                    true;
+
+                                if (lambda > lambdaUsed)
+                                    lambdaUsed = lambda;
+//                                    std::max(
+  //                                      lambdaUsed,
+    //                                    lambda);
+
+
+                                break;
+                            }
+                        }
+
+
+                        // =========================================
+                        // Increase damping only if necessary
+                        // =========================================
+
+                        if (lambda == 0.0)
+                        {
+                            lambda =
+                                std::max(
+                                    1.0e-14,
+                                    1.0e-12 *
+                                    std::max(
+                                        1.0,
+                                        hScale));
+                        }
+                        else
+                        {
+                            lambda *=
+                                10.0;
+                        }
+                    }
+
+
+                    if (!solved)
+                    {
+                        throw gcnew
+                            InvalidOperationException(
+                                "Failed to solve reduced active-set system");
+                    }
+
+
+                    // =============================================
+                    // Insert solution into alpha
+                    // =============================================
+
+                    for (Eigen::Index ii = 0;
+                        ii < freeCount;
+                        ++ii)
+                    {
+                        const int index =
+                            freeIndices[
+                                static_cast<std::size_t>(
+                                    ii)];
+
+
+                        alpha(index) =
+                            solution(ii);
+                    }
+                }
+
+
+                // =================================================
+                // Find trust-radius violations
+                //
+                //
+                // We activate ONE bound at a time.
+                //
+                // Choose the coefficient with the largest
+                // relative violation.
+                // =================================================
+
+                int violatingIndex =
+                    -1;
+
+
+                int violatingSide =
+                    0;
+
+
+                double largestViolation =
+                    0.0;
+
+
+                for (int i = 0;
+                    i < static_cast<int>(
+                        basisCount);
+                    ++i)
+                {
+                    if (status[
+                        static_cast<std::size_t>(i)]
+                        != 0)
+                    {
+                        continue;
+                    }
+
+
+                    const double radius =
+                        trustRadii[i];
+
+
+                    // =============================================
+                    // upper bound violation
+                    // =============================================
+
+                    if (alpha(i) >
+                        radius *
+                        (1.0 +
+                            boundTolerance))
+                    {
+                        const double violation =
+                            alpha(i) /
+                            radius
+                            - 1.0;
+
+
+                        if (violation >
+                            largestViolation)
+                        {
+                            largestViolation =
+                                violation;
+
+
+                            violatingIndex =
+                                i;
+
+
+                            violatingSide =
+                                +1;
+                        }
+                    }
+
+
+                    // =============================================
+                    // lower bound violation
+                    // =============================================
+
+                    if (alpha(i) <
+                        -radius *
+                        (1.0 +
+                            boundTolerance))
+                    {
+                        const double violation =
+                            -alpha(i) /
+                            radius
+                            - 1.0;
+
+
+                        if (violation >
+                            largestViolation)
+                        {
+                            largestViolation =
+                                violation;
+
+
+                            violatingIndex =
+                                i;
+
+
+                            violatingSide =
+                                -1;
+                        }
+                    }
+                }
+
+
+                // =================================================
+                // Activate violated bound
+                // =================================================
+
+                if (violatingIndex >= 0)
+                {
+                    const double radius =
+                        trustRadii[
+                            violatingIndex];
+
+
+                    if (violatingSide > 0)
+                    {
+                        alpha(
+                            violatingIndex)
+                            =
+                            radius;
+
+
+                        status[
+                            static_cast<std::size_t>(
+                                violatingIndex)]
+                            =
+                            +1;
+                    }
+                    else
+                    {
+                        alpha(
+                            violatingIndex)
+                            =
+                            -radius;
+
+
+                        status[
+                            static_cast<std::size_t>(
+                                violatingIndex)]
+                            =
+                            -1;
+                    }
+
+
+                    continue;
+                }
+
+
+                // =================================================
+                // Current alpha is feasible.
+                //
+                // Check KKT conditions.
+                //
+                //
+                // Objective:
+                //
+                //     f(alpha)
+                //       =
+                //     1/2 alpha^T H alpha
+                //       - g^T alpha
+                //
+                //
+                // Gradient:
+                //
+                //     grad = H alpha - g
+                //
+                //
+                // At upper bound:
+                //
+                //     grad_i <= 0
+                //
+                //
+                // At lower bound:
+                //
+                //     grad_i >= 0
+                //
+                // =================================================
+
+                Eigen::VectorXd gradient =
+                    H * alpha
+                    - g;
+
+
+                if (!gradient.allFinite())
+                {
+                    throw gcnew
+                        InvalidOperationException(
+                            "Gradient contains NaN or infinity");
+                }
+
+
+                int releaseIndex =
+                    -1;
+
+
+                double largestKktViolation =
+                    0.0;
+
+
+                for (int i = 0;
+                    i < static_cast<int>(
+                        basisCount);
+                    ++i)
+                {
+                    const int currentStatus =
+                        status[
+                            static_cast<std::size_t>(i)];
+
+
+                    // =============================================
+                    // Upper bound
+                    //
+                    // Need:
+                    //
+                    //     gradient(i) <= 0
+                    // =============================================
+
+                    if (currentStatus == +1)
+                    {
+                        const double violation =
+                            gradient(i);
+
+
+                        if (violation >
+                            kktTolerance &&
+                            violation >
+                            largestKktViolation)
+                        {
+                            largestKktViolation =
+                                violation;
+
+
+                            releaseIndex =
+                                i;
+                        }
+                    }
+
+
+                    // =============================================
+                    // Lower bound
+                    //
+                    // Need:
+                    //
+                    //     gradient(i) >= 0
+                    // =============================================
+
+                    else if (
+                        currentStatus == -1)
+                    {
+                        const double violation =
+                            -gradient(i);
+
+
+                        if (violation >
+                            kktTolerance &&
+                            violation >
+                            largestKktViolation)
+                        {
+                            largestKktViolation =
+                                violation;
+
+
+                            releaseIndex =
+                                i;
+                        }
+                    }
+                }
+
+
+                // =================================================
+                // Release an incorrectly active bound
+                // =================================================
+
+                if (releaseIndex >= 0)
+                {
+                    status[
+                        static_cast<std::size_t>(
+                            releaseIndex)]
+                        =
+                        0;
+
+
+                    continue;
+                }
+
+
+                // =================================================
+                // Feasible and KKT satisfied
+                // =================================================
+
+                converged =
+                    true;
+
+
+                break;
+            }
+
+
+            // =====================================================
+            // Active-set convergence check
+            // =====================================================
+
+            if (!converged)
+            {
+                throw gcnew
+                    InvalidOperationException(
+                        "Box trust-region active-set solver did not converge");
+            }
+
+
+            // =====================================================
+            // Numerical safety clamp
+            //
+            // This only removes tiny floating point violations.
+            // =====================================================
+
+            for (int i = 0;
+                i < static_cast<int>(
+                    basisCount);
+                ++i)
+            {
+                const double radius =
+                    trustRadii[i];
+
+
+                if (alpha(i) >
+                    radius)
+                {
+                    alpha(i) =
+                        radius;
+                }
+
+
+                if (alpha(i) <
+                    -radius)
+                {
+                    alpha(i) =
+                        -radius;
+                }
+            }
+
+
+            // =====================================================
+            // Full-space direction
+            //
+            //     direction = P alpha
+            // =====================================================
+
+            Eigen::VectorXd direction =
+                P * alpha;
+
+
+            if (!alpha.allFinite() ||
+                !direction.allFinite())
+            {
+                throw gcnew
+                    InvalidOperationException(
+                        "Solution contains NaN or infinity");
+            }
+
+
+            // =====================================================
+            // Output coefficients
+            // =====================================================
+
+            parameters =
+                gcnew array<double>(
+                    static_cast<int>(
+                        basisCount));
+
+
+            for (Eigen::Index j = 0;
+                j < basisCount;
+                ++j)
+            {
+                parameters[
+                    static_cast<int>(j)]
+                    =
+                    alpha(j);
+            }
+
+
+            // =====================================================
+            // Output full-space direction
+            // =====================================================
+
+            array<double>^ ret =
+                gcnew array<double>(
+                    n);
+
+
+            for (int i = 0;
+                i < n;
+                ++i)
+            {
+                ret[i] =
+                    direction(i);
+            }
+
+
+            return ret;
+        }
+        static array<double>^ findSearchDirection4(
+            int n,
+
+            // =====================================================
+            // Matrix A
+            // CSC format
+            // =====================================================
+            array<int>^ columnptr,
+            array<int>^ rowindices,
+            array<double>^ values,
+
+            // =====================================================
+            // Matrix B (secondary)
+            // CSC format
+            // =====================================================
+            array<int>^ columnptr2,
+            array<int>^ rowindices2,
+            array<double>^ values2,
+
+            // =====================================================
+            // Original basis vectors
+            //
+            //     P = [p0 p1 ...]
+            //
+            // NO orthonormalization is performed.
+            // =====================================================
+            array<array<double>^>^ vecs,
+
+            // =====================================================
+            // RHS
+            // =====================================================
+            array<double>^ rhs,
+
+            // Secondary RHS
+            array<double>^ rhs2,
+
+            // =====================================================
+            // Mixing weight
+            //
+            //     M = A + mu B
+            //     b = rhs + mu rhs2
+            // =====================================================
+            double mu,
+
+            // =====================================================
+            // Radius of the coefficient-space ball constraint
+            //
+            //     ||alpha|| <= trustRadius
+            // =====================================================
+            double trustRadius,
+
+            // Index of the full-problem GN direction in vecs.
+            int fullDirectionIndex,
+
+            // Relative full-direction anchor weight.
+            //
+            //     gamma = anchorRelativeWeight * max_i |H0_ii|
+            //
+            // The added objective is
+            //
+            //     0.5 * gamma * ||alpha - e_full||^2.
+            //
+            // A typical initial value is 1.0e-6.
+            double anchorRelativeWeight,
+
+            // Relative eigenvalue threshold for the unconstrained
+            // reduced TSVD solve.  A typical value is 1.0e-10.
+            double tsvdThreshold,
+
+            // =====================================================
+            // Output:
+            //
+            // coefficients alpha with respect to ORIGINAL basis P
+            //
+            //     direction = P alpha
+            // =====================================================
+            array<double>^% parameters,
+
+            // LM multiplier selected by the trust-region solve.
+            // Zero means that the unconstrained step was accepted.
+            double% lambdaUsed)
+        {
+            using SparseMatrix64 =
+                Eigen::SparseMatrix<
+                double,
+                Eigen::ColMajor,
+                int64_t>;
+
+            using Triplet64 =
+                Eigen::Triplet<
+                double,
+                int64_t>;
+
+
+            // =====================================================
+            // Validate
+            // =====================================================
+
+            if (n <= 0)
+            {
+                throw gcnew ArgumentException(
+                    "n must be positive");
+            }
+
+            if (columnptr == nullptr)
+            {
+                throw gcnew ArgumentNullException(
+                    "columnptr");
+            }
+
+            if (rowindices == nullptr)
+            {
+                throw gcnew ArgumentNullException(
+                    "rowindices");
+            }
+
+            if (values == nullptr)
+            {
+                throw gcnew ArgumentNullException(
+                    "values");
+            }
+
+            if (columnptr2 == nullptr)
+            {
+                throw gcnew ArgumentNullException(
+                    "columnptr2");
+            }
+
+            if (rowindices2 == nullptr)
+            {
+                throw gcnew ArgumentNullException(
+                    "rowindices2");
+            }
+
+            if (values2 == nullptr)
+            {
+                throw gcnew ArgumentNullException(
+                    "values2");
+            }
+
+            if (vecs == nullptr)
+            {
+                throw gcnew ArgumentNullException(
+                    "vecs");
+            }
+
+            if (rhs == nullptr)
+            {
+                throw gcnew ArgumentNullException(
+                    "rhs");
+            }
+
+            if (rhs2 == nullptr)
+            {
+                throw gcnew ArgumentNullException(
+                    "rhs2");
+            }
+
+            if (!std::isfinite(mu) ||
+                mu < 0.0)
+            {
+                throw gcnew ArgumentException(
+                    "mu must be finite and nonnegative");
+            }
+
+            if (!std::isfinite(trustRadius) ||
+                trustRadius <= 0.0)
+            {
+                throw gcnew ArgumentException(
+                    "trustRadius must be finite and positive");
+            }
+
+            if (!std::isfinite(anchorRelativeWeight) ||
+                anchorRelativeWeight < 0.0)
+            {
+                throw gcnew ArgumentException(
+                    "anchorRelativeWeight must be finite and nonnegative");
+            }
+
+            if (!std::isfinite(tsvdThreshold) ||
+                tsvdThreshold <= 0.0)
+            {
+                throw gcnew ArgumentException(
+                    "tsvdThreshold must be finite and positive");
+            }
+
+            if (rhs->Length != n)
+            {
+                throw gcnew ArgumentException(
+                    "rhs has incompatible size");
+            }
+
+            if (rhs2->Length != n)
+            {
+                throw gcnew ArgumentException(
+                    "rhs2 has incompatible size");
+            }
+
+            if (columnptr->Length != n + 1)
+            {
+                throw gcnew ArgumentException(
+                    "columnptr must have length n + 1");
+            }
+
+            if (rowindices->Length != values->Length)
+            {
+                throw gcnew ArgumentException(
+                    "rowindices and values have incompatible sizes");
+            }
+
+            if (columnptr2->Length != n + 1)
+            {
+                throw gcnew ArgumentException(
+                    "columnptr2 must have length n + 1");
+            }
+
+            if (rowindices2->Length != values2->Length)
+            {
+                throw gcnew ArgumentException(
+                    "rowindices2 and values2 have incompatible sizes");
+            }
+
+            if (columnptr[0] != 0 ||
+                columnptr[n] != values->Length)
+            {
+                throw gcnew ArgumentException(
+                    "columnptr has invalid start or end");
+            }
+
+            if (columnptr2[0] != 0 ||
+                columnptr2[n] != values2->Length)
+            {
+                throw gcnew ArgumentException(
+                    "columnptr2 has invalid start or end");
+            }
+
+
+            // =====================================================
+            // Number of basis vectors
+            // =====================================================
+
+            const Eigen::Index reducedSize =
+                static_cast<Eigen::Index>(
+                    vecs->Length);
+
+            // =====================================================
+            // Empty basis
+            // =====================================================
+
+            if (reducedSize == 0)
+            {
+                parameters =
+                    gcnew array<double>(0);
+
+                lambdaUsed =
+                    0.0;
+
+                return gcnew array<double>(n);
+            }
+
+            if (fullDirectionIndex < 0 ||
+                fullDirectionIndex >= vecs->Length)
+            {
+                throw gcnew ArgumentOutOfRangeException(
+                    "fullDirectionIndex");
+            }
+
+
+            // =====================================================
+            // Build original dense basis
+            //
+            //     P = [p0 p1 ...]
+            //
+            // NO QR / orthonormalization.
+            // =====================================================
+
+            Eigen::MatrixXd P(
+                n,
+                reducedSize);
+
+            for (Eigen::Index j = 0;
+                j < reducedSize;
+                ++j)
+            {
+                array<double>^ src =
+                    vecs[
+                        static_cast<int>(j)];
+
+                if (src == nullptr)
+                {
+                    throw gcnew ArgumentException(
+                        "vecs contains a null vector");
+                }
+
+                if (src->Length != n)
+                {
+                    throw gcnew ArgumentException(
+                        "vecs contains a vector with incompatible size");
+                }
+
+                for (int i = 0;
+                    i < n;
+                    ++i)
+                {
+                    const double value =
+                        src[i];
+
+                    if (!std::isfinite(value))
+                    {
+                        throw gcnew ArgumentException(
+                            "vecs contains NaN or infinity");
+                    }
+
+                    P(i, j) =
+                        value;
+                }
+            }
+
+
+            if (!P.allFinite())
+            {
+                throw gcnew InvalidOperationException(
+                    "Basis matrix contains NaN or infinity");
+            }
+
+
+            // =====================================================
+            // Build mixed sparse matrix
+            //
+            //     M = A + mu B
+            // =====================================================
+
+            SparseMatrix64 matM(
+                n,
+                n);
+
+            std::vector<Triplet64> tripletsM;
+
+            tripletsM.reserve(
+                static_cast<std::size_t>(
+                    values->Length + values2->Length));
+
+
+            for (int column = 0;
+                column < n;
+                ++column)
+            {
+                const int start =
+                    columnptr[column];
+
+                const int end =
+                    columnptr[column + 1];
+
+                if (start < 0 ||
+                    end < start ||
+                    end > values->Length)
+                {
+                    throw gcnew ArgumentException(
+                        "columnptr contains an invalid range");
+                }
+
+
+                for (int index = start;
+                    index < end;
+                    ++index)
+                {
+                    const int row =
+                        rowindices[index];
+
+                    if (row < 0 ||
+                        row >= n)
+                    {
+                        throw gcnew ArgumentException(
+                            "rowindices contains an invalid row index");
+                    }
+
+
+                    const double value =
+                        values[index];
+
+                    if (!std::isfinite(value))
+                    {
+                        throw gcnew ArgumentException(
+                            "values contains NaN or infinity");
+                    }
+
+
+                    tripletsM.emplace_back(
+                        static_cast<int64_t>(row),
+                        static_cast<int64_t>(column),
+                        value);
+                }
+            }
+
+
+            for (int column = 0;
+                column < n;
                 ++column)
             {
                 const int start =
@@ -2499,6 +3660,7 @@ namespace sparse_solver {
                         "columnptr2 contains an invalid range");
                 }
 
+
                 for (int index = start;
                     index < end;
                     ++index)
@@ -2507,11 +3669,12 @@ namespace sparse_solver {
                         rowindices2[index];
 
                     if (row < 0 ||
-                        row >= n2)
+                        row >= n)
                     {
                         throw gcnew ArgumentException(
                             "rowindices2 contains an invalid row index");
                     }
+
 
                     const double value =
                         values2[index];
@@ -2522,1067 +3685,118 @@ namespace sparse_solver {
                             "values2 contains NaN or infinity");
                     }
 
-                    triplets2.emplace_back(
+
+                    tripletsM.emplace_back(
                         static_cast<int64_t>(row),
                         static_cast<int64_t>(column),
-                        value);
+                        mu * value);
                 }
             }
 
-            mat2.setFromTriplets(
-                triplets2.begin(),
-                triplets2.end());
-                
-       
 
-            mat2.makeCompressed();
+            // Duplicate entries are summed here, so overlapping
+            // nonzeros of A and B are combined correctly.
+            matM.setFromTriplets(
+                tripletsM.begin(),
+                tripletsM.end());
 
-            // =================================================
-            // First RHS
-            // =================================================
+            matM.makeCompressed();
 
-            Eigen::VectorXd nativeRhs(n);
+
+            // =====================================================
+            // Mixed RHS
+            //
+            //     b = rhs + mu rhs2
+            // =====================================================
+
+            Eigen::VectorXd b(
+                n);
 
             for (int i = 0;
                 i < n;
                 ++i)
             {
-                const double value =
+                const double value1 =
                     rhs[i];
 
-                if (!std::isfinite(value))
+                const double value2 =
+                    rhs2[i];
+
+                if (!std::isfinite(value1))
                 {
                     throw gcnew ArgumentException(
                         "rhs contains NaN or infinity");
                 }
 
-                nativeRhs(i) =
-                    value;
-            }
-
-            // =================================================
-            // Second RHS
-            // =================================================
-
-            Eigen::VectorXd nativeRhs2(n2);
-
-            for (int i = 0;
-                i < n2;
-                ++i)
-            {
-                const double value =
-                    rhs2[i];
-
-                if (!std::isfinite(value))
+                if (!std::isfinite(value2))
                 {
                     throw gcnew ArgumentException(
                         "rhs2 contains NaN or infinity");
                 }
 
-                nativeRhs2(i) =
-                    value;
-            }
-
-            // =================================================
-            // Rebuild the system used by the secondary solve:
-            //
-            //     A_secondary <- A_first + mu * A_secondary
-            //     b_secondary <- b_first + mu * b_secondary
-            //
-            // The first system itself remains unchanged.
-            // =================================================
-
-           
-            mat2 *= mu;
-            mat2 += mat;
-            
-            mat2.makeCompressed();
-
-           
-
-            nativeRhs2 =
-            // nativeRhs + 
-             mu * nativeRhs2;
-
-            // =================================================
-            // Call the native Eigen function
-            // =================================================
-
-            std::vector<double>
-                nativeProjectedBasisNorms;
-            std::array<Eigen::VectorXd, 4> result;
-            if (method == 0) {
-                result =
-                    _sparse_solver::findSearchDirection3(
-                        mat,
-                        mat2,
-                        nativeVecs,
-                        nativeNearNullVecs,
-                        nativeRhs,
-                        nativeRhs2,
-                        nativeProjectedBasisNorms,
-                        mu,
-                        tau,
-                        epsilon,
-                        false
-                    );
-            }
-            else if(method == 1){
-                 result =
-                    _sparse_solver::findSearchDirection4(
-                        mat,
-                        mat2,
-                        nativeVecs,
-                        nativeNearNullVecs,
-                        nativeRhs,
-                        nativeRhs2,
-                        nativeProjectedBasisNorms,
-                        mu,
-                        tau,
-                        epsilon,
-                        false
-                    );
-            }
-            else if (method==2) {
-                result =
-                    _sparse_solver::findSearchDirection5(
-                        mat,
-                        mat2,
-                        nativeVecs,
-                        nativeNearNullVecs,
-                        nativeRhs,
-                        nativeRhs2,
-                        nativeProjectedBasisNorms,
-                        mu,
-                        tau,
-                        epsilon,
-                        false
-                    );
-            }
-            else if (method == 3) {
-                result =
-                    _sparse_solver::findSearchDirection6(
-                        mat,
-                        mat2,
-                        nativeVecs,
-                        nativeNearNullVecs,
-                        nativeRhs,
-                        nativeRhs2,
-                        nativeProjectedBasisNorms,
-                        mu,
-                        tau,
-                        epsilon,
-                        false
-                    );
-			}
-			else if (method==4){
-				result =
-                    _sparse_solver::findSearchDirection7(
-                        mat,
-                        mat2,
-                        nativeVecs,
-                        nativeNearNullVecs,
-                        nativeRhs,
-                        nativeRhs2,
-                        nativeProjectedBasisNorms,
-                        mu,
-                        tau,
-                        epsilon,
-                        false
-                    );
-			}
-else if (method == 5) {
-    result =
-        _sparse_solver::findSearchDirection8(
-            mat,
-            mat2,
-            nativeVecs,
-            nativeNearNullVecs,
-            nativeRhs,
-            nativeRhs2,
-            nativeProjectedBasisNorms,
-            mu,
-            tau,
-            epsilon,
-            false
-        );
-        }
-else if(method==6){
-            result =
-                _sparse_solver::findSearchDirection9(
-                    mat,
-                    mat2,
-                    nativeVecs,
-                    nativeNearNullVecs,
-                    nativeRhs,
-                    nativeRhs2,
-                    nativeProjectedBasisNorms,
-                    lambda,
-                    tau,
-                    epsilon,
-                    false
-                );
-                }
-else if(method==7) {
-  
-        result =
-            _sparse_solver::findSearchDirection10(
-                mat,
-                mat2,
-                nativeVecs,
-                nativeNearNullVecs,
-                nativeRhs,
-                nativeRhs2,
-                nativeProjectedBasisNorms,
-                lambda,
-                tau,
-                epsilon,
-                false
-            );
- 
-                }
-else if(method==8) {
-                    result =
-                        _sparse_solver::findSearchDirection11(
-                            mat,
-                            mat2,
-                            nativeVecs,
-                            nativeNearNullVecs,
-                            nativeRhs,
-                            nativeRhs2,
-                            nativeProjectedBasisNorms,
-                            lambda,
-                            tau,
-                            epsilon,
-                            false
-                        );
-
-                        }
-else if(method==9) {
-                            result =
-                                _sparse_solver::findSearchDirection12(
-                                    mat,
-                                    mat2,
-                                    nativeVecs,
-                                    nativeNearNullVecs,
-                                    nativeRhs,
-                                    nativeRhs2,
-                                    nativeProjectedBasisNorms,
-                                    lambda,
-                                    tau,
-                                    epsilon,
-                                    false
-                                );
-
-                                }
-else {
-    result =
-        _sparse_solver::findSearchDirection13(
-            mat,
-            mat2,
-            nativeVecs,
-            nativeNearNullVecs,
-            nativeRhs,
-            nativeRhs2,
-            nativeProjectedBasisNorms,
-            lambda,
-            tau,
-            epsilon,
-            false
-        );
-
-        }
-                        
-                
-
-            if (result.size() != 4)
-            {
-                throw gcnew InvalidOperationException(
-                    "findSearchDirection3 must return two vectors");
-            }
-
-            
-
-
-          
-  
-          
-
-            // =================================================
-            // Convert projected gradient norm
-            // =================================================
-
-            projectedBasisNorms =
-                gcnew array<double>(3);
-
-            projectedBasisNorms[0] =
-                nativeProjectedBasisNorms[0];
-            projectedBasisNorms[1] =
-                nativeProjectedBasisNorms[1];
-            projectedBasisNorms[2] =
-                nativeProjectedBasisNorms[2];
-            // =================================================
-            // Convert search direction
-            // =================================================
-
-            array<array<double>^>^ ret =
-                gcnew array<array<double>^>(4);
-
-            for (int i = 0;
-                i < 4;
-                ++i)
-            {
-                ret[i] =
-					gcnew array<double>(result[i].size());
-				for (int j = 0;
-					j < result[i].size();
-					++j)
-				{
-					ret[i][j] =
-						result[i](j);
-				}
-            }
-
-            return ret;
-        }
-        
-
-        static array<double>^ findSearchDirection(
-            int n,
-
-            // =====================================================
-            // Matrix A
-            //
-            // CSC format
-            //
-            // If unavailable, coefficient a is forced to zero.
-            // =====================================================
-
-            array<int>^ columnptr,
-            array<int>^ rowindices,
-            array<double>^ values,
-
-            // =====================================================
-            // Matrix B
-            //
-            // CSC format
-            //
-            // If unavailable, coefficient b is forced to zero.
-            // =====================================================
-
-            array<int>^ columnptr2,
-            array<int>^ rowindices2,
-            array<double>^ values2,
-
-            // =====================================================
-            // Basis vectors
-            //
-            //     P = [p0 p1 ...]
-            //
-            // Used exactly as supplied.
-            //
-            // No QR or orthonormalization is performed.
-            // Linear dependence is handled by the TSVD of
-            // the reduced matrix P^T M P.
-            // =====================================================
-
-            array<array<double>^>^ vecs,
-
-            // =====================================================
-            // RHS vectors
-            // =====================================================
-
-            array<double>^ rhs,
-            array<double>^ rhs2,
-
-            // =====================================================
-            // Mixing coefficients
-            //
-            //     M = a A + b B
-            //
-            //     R = c rhs + d rhs2
-            // =====================================================
-
-            double a,
-            double b,
-            double c,
-            double d,
-
-            // =====================================================
-            // Relative TSVD threshold
-            // =====================================================
-
-            double epsilon,
-
-            // =====================================================
-            // Previous reduced coefficients
-            //
-            // If nullptr, temporal regularization is disabled.
-            // No normalization or orthogonalization is applied.
-            // =====================================================
-
-            array<double>^ previousParameters,
-
-            // =====================================================
-            // Temporal regularization weight
-            //
-            // Adds
-            //
-            //   previousParameterWeight / 2
-            //       * ||x - previousParameters||^2
-            //
-            // to the reduced quadratic objective.
-            // =====================================================
-
-            double previousParameterWeight,
-
-            // =====================================================
-            // Output reduced coefficients used for this direction
-            // =====================================================
-
-            array<double>^% parameters)
-        {
-            using SparseMatrix64 =
-                Eigen::SparseMatrix<
-                double,
-                Eigen::ColMajor,
-                int64_t>;
-
-            using Triplet64 =
-                Eigen::Triplet<
-                double,
-                int64_t>;
-
-
-            // =====================================================
-            // Validate common parameters
-            // =====================================================
-
-            if (n <= 0)
-            {
-                throw gcnew ArgumentException(
-                    "n must be positive");
-            }
-
-            if (vecs == nullptr)
-            {
-                throw gcnew ArgumentNullException(
-                    "vecs");
-            }
-
-            if (!std::isfinite(a) ||
-                !std::isfinite(b) ||
-                !std::isfinite(c) ||
-                !std::isfinite(d))
-            {
-                throw gcnew ArgumentException(
-                    "a, b, c, and d must be finite");
-            }
-
-            if (!std::isfinite(epsilon) ||
-                epsilon < 0.0)
-            {
-                throw gcnew ArgumentException(
-                    "epsilon must be finite and non-negative");
-            }
-
-            if (!std::isfinite(previousParameterWeight) ||
-                previousParameterWeight < 0.0)
-            {
-                throw gcnew ArgumentException(
-                    "previousParameterWeight must be finite and non-negative");
-            }
-
-            parameters = nullptr;
-
-
-            // =====================================================
-            // Determine available inputs
-            // =====================================================
-
-            const bool hasA =
-                columnptr != nullptr &&
-                rowindices != nullptr &&
-                values != nullptr;
-
-            const bool hasB =
-                columnptr2 != nullptr &&
-                rowindices2 != nullptr &&
-                values2 != nullptr;
-
-            const bool hasRhs =
-                rhs != nullptr;
-
-            const bool hasRhs2 =
-                rhs2 != nullptr;
-
-
-            const double effectiveA =
-                hasA ? a : 0.0;
-
-            const double effectiveB =
-                hasB ? b : 0.0;
-
-            const double effectiveC =
-                hasRhs ? c : 0.0;
-
-            const double effectiveD =
-                hasRhs2 ? d : 0.0;
-
-
-            // =====================================================
-            // Convert managed basis vectors to Eigen vectors
-            // =====================================================
-
-            std::vector<Eigen::VectorXd> inputBasis;
-
-            inputBasis.reserve(
-                static_cast<std::size_t>(
-                    vecs->Length));
-
-            for (int j = 0;
-                j < vecs->Length;
-                ++j)
-            {
-                array<double>^ src =
-                    vecs[j];
-
-                if (src == nullptr)
-                {
-                    throw gcnew ArgumentException(
-                        "vecs contains a null vector");
-                }
-
-                if (src->Length != n)
-                {
-                    throw gcnew ArgumentException(
-                        "vecs contains a vector with incompatible size");
-                }
-
-                inputBasis.emplace_back(n);
-
-                Eigen::VectorXd& vector =
-                    inputBasis.back();
-
-                for (int i = 0;
-                    i < n;
-                    ++i)
-                {
-                    const double value =
-                        src[i];
-
-                    if (!std::isfinite(value))
-                    {
-                        throw gcnew ArgumentException(
-                            "vecs contains NaN or infinity");
-                    }
-
-                    vector(i) =
-                        value;
-                }
+                b(i) =
+                    value1 + mu * value2;
             }
 
 
             // =====================================================
-            // Keep the original basis exactly as supplied
-            // =====================================================
-
-            const Eigen::Index reducedSize =
-                static_cast<Eigen::Index>(
-                    inputBasis.size());
-
-            if (reducedSize == 0)
-            {
-                parameters = gcnew array<double>(0);
-                return gcnew array<double>(n);
-            }
-
-
-            // =====================================================
-            // Previous coefficient vector
+            // Compute
             //
-            // The coefficient coordinates are meaningful across
-            // iterations because P is used exactly as supplied:
-            // NO QR, NO normalization, NO orthogonalization.
+            //     MP = (A + mu B) P
             // =====================================================
-
-            Eigen::VectorXd previous =
-                Eigen::VectorXd::Zero(reducedSize);
-
-            const bool hasPrevious =
-                previousParameters != nullptr;
-
-            if (hasPrevious)
-            {
-                if (previousParameters->Length !=
-                    static_cast<int>(reducedSize))
-                {
-                    throw gcnew ArgumentException(
-                        "previousParameters has incompatible size");
-                }
-
-                for (Eigen::Index j = 0;
-                    j < reducedSize;
-                    ++j)
-                {
-                    const double value =
-                        previousParameters[
-                            static_cast<int>(j)];
-
-                    if (!std::isfinite(value))
-                    {
-                        throw gcnew ArgumentException(
-                            "previousParameters contains NaN or infinity");
-                    }
-
-                    previous(j) =
-                        value;
-                }
-            }
-
-
-            // =====================================================
-            // Number of nonzeros
-            // =====================================================
-
-            const int nnzA =
-                hasA
-                ? values->Length
-                : 0;
-
-            const int nnzB =
-                hasB
-                ? values2->Length
-                : 0;
-
-
-            // =====================================================
-            // Local working storage
-            //
-            // Every invocation owns all mutable buffers. Therefore,
-            // concurrent calls do not share Eigen matrices, vectors,
-            // sparse matrices, or triplet arrays.
-            // =====================================================
-
-            Eigen::MatrixXd P(
-                n,
-                reducedSize);
 
             Eigen::MatrixXd MP(
                 n,
                 reducedSize);
 
-            Eigen::MatrixXd H(
+            MP.noalias() =
+                matM * P;
+
+
+            if (!MP.allFinite())
+            {
+                throw gcnew InvalidOperationException(
+                    "(A + mu B) * P contains NaN or infinity");
+            }
+
+
+            // =====================================================
+            // Reduced mixed system
+            //
+            //     H0 = P^T (A + mu B) P
+            //
+            //     g = P^T (rhs + mu rhs2)
+            //
+            // Full-direction anchor
+            //
+            //     gamma = anchorRelativeWeight * max_i |H0_ii|
+            //
+            //     H = H0 + gamma I
+            //     gAnchor = g + gamma e_full
+            //
+            // =====================================================
+
+            Eigen::MatrixXd H0(
                 reducedSize,
                 reducedSize);
 
             Eigen::VectorXd g(
                 reducedSize);
 
-            Eigen::VectorXd combinedRhs(
-                n);
 
-            Eigen::VectorXd solution(
-                reducedSize);
+            H0.noalias() =
+                P.transpose() * MP;
 
-            Eigen::VectorXd transformedRhs(
-                reducedSize);
-
-            SparseMatrix64 matA(
-                n,
-                n);
-
-            SparseMatrix64 matB(
-                n,
-                n);
-
-            SparseMatrix64 matM(
-                n,
-                n);
-
-            std::vector<Triplet64> tripletsA;
-            std::vector<Triplet64> tripletsB;
-
-            tripletsA.reserve(
-                static_cast<std::size_t>(
-                    nnzA));
-
-            tripletsB.reserve(
-                static_cast<std::size_t>(
-                    nnzB));
-
-
-            // =====================================================
-            // Build dense basis matrix without QR
-            //
-            //     P = [p0 p1 ...]
-            //
-            // The original order, scale, zero columns, and linear
-            // dependence are preserved. Rank deficiency is handled
-            // later by the TSVD of H = P^T M P.
-            // =====================================================
-
-            for (Eigen::Index j = 0;
-                j < reducedSize;
-                ++j)
-            {
-                P.col(j) =
-                    inputBasis[
-                        static_cast<std::size_t>(j)];
-            }
-
-
-            // =====================================================
-            // Build matrix A
-            //
-            // Triplet storage is local to this invocation.
-            // =====================================================
-
-            if (effectiveA != 0.0)
-            {
-                if (columnptr->Length != n + 1)
-                {
-                    throw gcnew ArgumentException(
-                        "columnptr must have length n + 1");
-                }
-
-                if (rowindices->Length !=
-                    values->Length)
-                {
-                    throw gcnew ArgumentException(
-                        "rowindices and values have incompatible sizes");
-                }
-
-                if (columnptr[0] != 0 ||
-                    columnptr[n] != values->Length)
-                {
-                    throw gcnew ArgumentException(
-                        "columnptr has invalid start or end");
-                }
-
-                tripletsA.clear();
-
-                for (int column = 0;
-                    column < n;
-                    ++column)
-                {
-                    const int start =
-                        columnptr[column];
-
-                    const int end =
-                        columnptr[column + 1];
-
-                    if (start < 0 ||
-                        end < start ||
-                        end > values->Length)
-                    {
-                        throw gcnew ArgumentException(
-                            "columnptr contains an invalid range");
-                    }
-
-                    for (int index = start;
-                        index < end;
-                        ++index)
-                    {
-                        const int row =
-                            rowindices[index];
-
-                        if (row < 0 ||
-                            row >= n)
-                        {
-                            throw gcnew ArgumentException(
-                                "rowindices contains an invalid row index");
-                        }
-
-                        const double value =
-                            values[index];
-
-                        if (!std::isfinite(value))
-                        {
-                            throw gcnew ArgumentException(
-                                "values contains NaN or infinity");
-                        }
-
-                        tripletsA.emplace_back(
-                            static_cast<int64_t>(
-                                row),
-
-                            static_cast<int64_t>(
-                                column),
-
-                            value);
-                    }
-                }
-
-                // -------------------------------------------------
-                // Rebuild numerical sparse matrix.
-                //
-                // Triplet buffer itself is reused.
-                // -------------------------------------------------
-
-                matA.setZero();
-
-                matA.setFromTriplets(
-                    tripletsA.begin(),
-                    tripletsA.end());
-
-                matA.makeCompressed();
-            }
-            else
-            {
-                matA.setZero();
-            }
-
-
-            // =====================================================
-            // Build matrix B
-            // =====================================================
-
-            if (effectiveB != 0.0)
-            {
-                if (columnptr2->Length != n + 1)
-                {
-                    throw gcnew ArgumentException(
-                        "columnptr2 must have length n + 1");
-                }
-
-                if (rowindices2->Length !=
-                    values2->Length)
-                {
-                    throw gcnew ArgumentException(
-                        "rowindices2 and values2 have incompatible sizes");
-                }
-
-                if (columnptr2[0] != 0 ||
-                    columnptr2[n] != values2->Length)
-                {
-                    throw gcnew ArgumentException(
-                        "columnptr2 has invalid start or end");
-                }
-
-                tripletsB.clear();
-
-                for (int column = 0;
-                    column < n;
-                    ++column)
-                {
-                    const int start =
-                        columnptr2[column];
-
-                    const int end =
-                        columnptr2[column + 1];
-
-                    if (start < 0 ||
-                        end < start ||
-                        end > values2->Length)
-                    {
-                        throw gcnew ArgumentException(
-                            "columnptr2 contains an invalid range");
-                    }
-
-                    for (int index = start;
-                        index < end;
-                        ++index)
-                    {
-                        const int row =
-                            rowindices2[index];
-
-                        if (row < 0 ||
-                            row >= n)
-                        {
-                            throw gcnew ArgumentException(
-                                "rowindices2 contains an invalid row index");
-                        }
-
-                        const double value =
-                            values2[index];
-
-                        if (!std::isfinite(value))
-                        {
-                            throw gcnew ArgumentException(
-                                "values2 contains NaN or infinity");
-                        }
-
-                        tripletsB.emplace_back(
-                            static_cast<int64_t>(
-                                row),
-
-                            static_cast<int64_t>(
-                                column),
-
-                            value);
-                    }
-                }
-
-                matB.setZero();
-
-                matB.setFromTriplets(
-                    tripletsB.begin(),
-                    tripletsB.end());
-
-                matB.makeCompressed();
-            }
-            else
-            {
-                matB.setZero();
-            }
-
-
-            // =====================================================
-            // Build mixed matrix
-            //
-            //     M = a A + b B
-            // =====================================================
-
-            if (effectiveA != 0.0 &&
-                effectiveB != 0.0)
-            {
-                matM =
-                    effectiveA * matA +
-                    effectiveB * matB;
-            }
-            else if (effectiveA != 0.0)
-            {
-                matM =
-                    effectiveA * matA;
-            }
-            else if (effectiveB != 0.0)
-            {
-                matM =
-                    effectiveB * matB;
-            }
-            else
-            {
-                matM.setZero();
-            }
-
-            matM.makeCompressed();
-
-
-            // =====================================================
-            // Build mixed RHS
-            //
-            //     R = c rhs + d rhs2
-            //
-            // combinedRhs is local to this invocation.
-            // =====================================================
-
-            combinedRhs.setZero();
-
-            if (effectiveC != 0.0)
-            {
-                if (rhs->Length != n)
-                {
-                    throw gcnew ArgumentException(
-                        "rhs has incompatible size");
-                }
-
-                double* dst =
-                    combinedRhs.data();
-
-                for (int i = 0;
-                    i < n;
-                    ++i)
-                {
-                    const double value =
-                        rhs[i];
-
-                    if (!std::isfinite(value))
-                    {
-                        throw gcnew ArgumentException(
-                            "rhs contains NaN or infinity");
-                    }
-
-                    dst[i] +=
-                        effectiveC *
-                        value;
-                }
-            }
-
-            if (effectiveD != 0.0)
-            {
-                if (rhs2->Length != n)
-                {
-                    throw gcnew ArgumentException(
-                        "rhs2 has incompatible size");
-                }
-
-                double* dst =
-                    combinedRhs.data();
-
-                for (int i = 0;
-                    i < n;
-                    ++i)
-                {
-                    const double value =
-                        rhs2[i];
-
-                    if (!std::isfinite(value))
-                    {
-                        throw gcnew ArgumentException(
-                            "rhs2 contains NaN or infinity");
-                    }
-
-                    dst[i] +=
-                        effectiveD *
-                        value;
-                }
-            }
-
-
-            // =====================================================
-            // FAST sparse-dense multiplication
-            //
-            //     MP = M P
-            //
-            // MP is local to this invocation.
-            // =====================================================
-
-            if (effectiveA == 0.0 &&
-                effectiveB == 0.0)
-            {
-                MP.setZero();
-            }
-            else
-            {
-                MP.noalias() =
-                    matM * P;
-            }
-
-
-            if (!MP.allFinite())
-            {
-                throw gcnew InvalidOperationException(
-                    "M * P contains NaN or infinity");
-            }
-
-
-            // =====================================================
-            // FAST reduced matrix
-            //
-            //     H = P^T M P
-            //
-            // This replaces reducedSize^2 explicit VectorXd::dot()
-            // operations with one dense matrix multiplication.
-            // =====================================================
-
-            H.noalias() =
-                P.transpose() *
-                MP;
-
-
-            // =====================================================
-            // Reduced RHS
-            //
-            //     g = P^T R
-            // =====================================================
+            // Remove very small asymmetry caused by floating-point
+            // accumulation. Eigen::LLT expects a symmetric matrix.
+            H0 =
+                0.5 * (H0 + H0.transpose());
 
             g.noalias() =
-                P.transpose() *
-                combinedRhs;
+                P.transpose() * b;
 
 
-            if (!H.allFinite())
+            if (!H0.allFinite())
             {
                 throw gcnew InvalidOperationException(
                     "Reduced matrix contains NaN or infinity");
@@ -3595,941 +3809,344 @@ else {
             }
 
 
-            // =====================================================
-            // Weak temporal regularization in coefficient space
-            //
-            // Original reduced objective:
-            //
-            //     1/2 x^T H x - g^T x
-            //
-            // Add:
-            //
-            //     w/2 ||x - x_prev||^2
-            //
-            // Therefore:
-            //
-            //     (H + w I) x = g + w x_prev
-            //
-            // If previousParameters == nullptr, no temporal
-            // regularization is applied even when w > 0.
-            // =====================================================
+            double hScale =
+                0.0;
 
-            if (hasPrevious &&
-                previousParameterWeight > 0.0)
-            {
-                H.diagonal().array() +=
-                    previousParameterWeight;
-
-                g.noalias() +=
-                    previousParameterWeight *
-                    previous;
-            }
-
-
-            // =====================================================
-            // TSVD
-            //
-            //     H = U S V^T
-            //
-            // Solve
-            //
-            //     H x = g
-            //
-            // with
-            //
-            //     sigma_i > epsilon * sigma_max
-            // =====================================================
-
-            Eigen::JacobiSVD<
-                Eigen::MatrixXd>
-                svd(
-                    H,
-                    Eigen::ComputeThinU |
-                    Eigen::ComputeThinV);
-
-
-            const Eigen::VectorXd singularValues =
-                svd.singularValues();
-
-
-            if (!singularValues.allFinite())
-            {
-                throw gcnew InvalidOperationException(
-                    "Reduced SVD returned NaN or infinity");
-            }
-
-
-            solution.setZero();
-
-
-            if (singularValues.size() > 0)
-            {
-                const double sigmaMax =
-                    singularValues(0);
-
-                if (!std::isfinite(sigmaMax) ||
-                    sigmaMax < 0.0)
-                {
-                    throw gcnew InvalidOperationException(
-                        "Largest singular value is invalid");
-                }
-
-
-                if (sigmaMax > 0.0)
-                {
-                    const double threshold =
-                        epsilon *
-                        sigmaMax;
-
-
-                    transformedRhs.noalias() =
-                        svd.matrixU().transpose() *
-                        g;
-
-
-                    for (Eigen::Index i = 0;
-                        i < singularValues.size();
-                        ++i)
-                    {
-                        const double sigma =
-                            singularValues(i);
-
-                        if (sigma > threshold)
-                        {
-                            transformedRhs(i) /=
-                                sigma;
-                        }
-                        else
-                        {
-                            transformedRhs(i) =
-                                0.0;
-                        }
-                    }
-
-
-                    solution.noalias() =
-                        svd.matrixV() *
-                        transformedRhs;
-                }
-            }
-
-
-            if (!solution.allFinite())
-            {
-                throw gcnew InvalidOperationException(
-                    "Reduced solution contains NaN or infinity");
-            }
-
-
-            // =====================================================
-            // Return the full-space direction
-            //
-            //     direction = P solution
-            // =====================================================
-
-            combinedRhs.noalias() =
-                P * solution;
-
-
-            if (!combinedRhs.allFinite())
-            {
-                throw gcnew InvalidOperationException(
-                    "Full-space direction contains NaN or infinity");
-            }
-
-            array<double>^ ret =
-                gcnew array<double>(n);
-
-            parameters =
-                gcnew array<double>(
-                    static_cast<int>(reducedSize));
-
-
-            for (int i = 0;
-                i < n;
+            for (Eigen::Index i = 0;
+                i < reducedSize;
                 ++i)
             {
-                ret[i] =
-                    combinedRhs(i);
+                hScale =
+                    std::max(
+                        hScale,
+                        std::abs(H0(i, i)));
             }
 
-            for (Eigen::Index j = 0;
-                j < reducedSize;
-                ++j)
+            if (!std::isfinite(hScale))
             {
-                parameters[
-                    static_cast<int>(j)] =
-                    solution(j);
+                throw gcnew InvalidOperationException(
+                    "Reduced matrix scale is not finite");
             }
 
+            const double gamma =
+                anchorRelativeWeight * hScale;
 
-            return ret;
-        }
-        static array<double>^ findSearchDirection2(
-            int n,
+            Eigen::MatrixXd HAnchor =
+                H0;
 
-            // =====================================================
-            // Matrix A
-            //
-            // CSC format
-            //
-            // If unavailable, coefficient a is forced to zero.
-            // =====================================================
+            HAnchor.diagonal().array() +=
+                gamma;
 
-            array<int>^ columnptr,
-            array<int>^ rowindices,
-            array<double>^ values,
+            HAnchor =
+                0.5 * (HAnchor + HAnchor.transpose());
 
-            // =====================================================
-            // Matrix B
-            //
-            // CSC format
-            //
-            // If unavailable, coefficient b is forced to zero.
-            // =====================================================
+            Eigen::VectorXd gAnchor =
+                g;
 
-            array<int>^ columnptr2,
-            array<int>^ rowindices2,
-            array<double>^ values2,
-
-            // =====================================================
-            // Basis vectors
-            //
-            //     P = [p0 p1 ...]
-            //
-            // Used exactly as supplied.
-            //
-            // No QR or orthonormalization is performed.
-            // Linear dependence is handled by the TSVD of
-            // the reduced matrix P^T M P.
-            // =====================================================
-
-            array<array<double>^>^ vecs,
-
-            // =====================================================
-            // RHS vectors
-            // =====================================================
-
-            array<double>^ rhs,
-            array<double>^ rhs2,
-
-            // =====================================================
-            // Mixing coefficients
-            //
-            //     M = a A + b B
-            //
-            //     R = c rhs + d rhs2
-            // =====================================================
-
-            double a,
-            double b,
-            double c,
-            double d,
-
-            // =====================================================
-            // Relative TSVD threshold
-            // =====================================================
-
-            double epsilon,
-
-            // =====================================================
-            // Output reduced coefficients used for this direction
-            // =====================================================
-
-            array<double>^% parameters)
-        {
-            using SparseMatrix64 =
-                Eigen::SparseMatrix<
-                double,
-                Eigen::ColMajor,
-                int64_t>;
-
-            using Triplet64 =
-                Eigen::Triplet<
-                double,
-                int64_t>;
-
-
-            // =====================================================
-            // Validate common parameters
-            // =====================================================
-
-            if (n <= 0)
-            {
-                throw gcnew ArgumentException(
-                    "n must be positive");
-            }
-
-            if (vecs == nullptr)
-            {
-                throw gcnew ArgumentNullException(
-                    "vecs");
-            }
-
-            if (!std::isfinite(a) ||
-                !std::isfinite(b) ||
-                !std::isfinite(c) ||
-                !std::isfinite(d))
-            {
-                throw gcnew ArgumentException(
-                    "a, b, c, and d must be finite");
-            }
-
-            if (!std::isfinite(epsilon) ||
-                epsilon < 0.0)
-            {
-                throw gcnew ArgumentException(
-                    "epsilon must be finite and non-negative");
-            }
-
-            parameters = nullptr;
-
-
-            // =====================================================
-            // Determine available inputs
-            // =====================================================
-
-            const bool hasA =
-                columnptr != nullptr &&
-                rowindices != nullptr &&
-                values != nullptr;
-
-            const bool hasB =
-                columnptr2 != nullptr &&
-                rowindices2 != nullptr &&
-                values2 != nullptr;
-
-            const bool hasRhs =
-                rhs != nullptr;
-
-            const bool hasRhs2 =
-                rhs2 != nullptr;
-
-
-            const double effectiveA =
-                hasA ? a : 0.0;
-
-            const double effectiveB =
-                hasB ? b : 0.0;
-
-            const double effectiveC =
-                hasRhs ? c : 0.0;
-
-            const double effectiveD =
-                hasRhs2 ? d : 0.0;
-
-
-            // =====================================================
-            // Convert managed basis vectors to Eigen vectors
-            // =====================================================
-
-            std::vector<Eigen::VectorXd> inputBasis;
-
-            inputBasis.reserve(
-                static_cast<std::size_t>(
-                    vecs->Length));
-
-            for (int j = 0;
-                j < vecs->Length;
-                ++j)
-            {
-                array<double>^ src =
-                    vecs[j];
-
-                if (src == nullptr)
-                {
-                    throw gcnew ArgumentException(
-                        "vecs contains a null vector");
-                }
-
-                if (src->Length != n)
-                {
-                    throw gcnew ArgumentException(
-                        "vecs contains a vector with incompatible size");
-                }
-
-                inputBasis.emplace_back(n);
-
-                Eigen::VectorXd& vector =
-                    inputBasis.back();
-
-                for (int i = 0;
-                    i < n;
-                    ++i)
-                {
-                    const double value =
-                        src[i];
-
-                    if (!std::isfinite(value))
-                    {
-                        throw gcnew ArgumentException(
-                            "vecs contains NaN or infinity");
-                    }
-
-                    vector(i) =
-                        value;
-                }
-            }
-
-
-            // =====================================================
-            // Keep the original basis exactly as supplied
-            // =====================================================
-
-            const Eigen::Index reducedSize =
+            gAnchor(
                 static_cast<Eigen::Index>(
-                    inputBasis.size());
+                    fullDirectionIndex)) +=
+                gamma;
 
-            if (reducedSize == 0)
+            if (!HAnchor.allFinite() ||
+                !gAnchor.allFinite())
             {
-                parameters = gcnew array<double>(0);
-                return gcnew array<double>(n);
+                throw gcnew InvalidOperationException(
+                    "Anchored reduced system contains NaN or infinity");
             }
 
 
             // =====================================================
-            // Number of nonzeros
-            // =====================================================
-
-            const int nnzA =
-                hasA
-                ? values->Length
-                : 0;
-
-            const int nnzB =
-                hasB
-                ? values2->Length
-                : 0;
-
-
-            // =====================================================
-            // Local working storage
+            // Coefficient-space ball trust-region solve
             //
-            // Every invocation owns all mutable buffers. Therefore,
-            // concurrent calls do not share Eigen matrices, vectors,
-            // sparse matrices, or triplet arrays.
+            //     minimize
+            //
+            //         0.5 alpha^T H0 alpha - g^T alpha
+            //       + 0.5 gamma ||alpha - e_full||^2
+            //
+            //     subject to
+            //
+            //         alpha^T alpha <= trustRadius^2
+            //
+            // Its KKT equation is
+            //
+            //     (H0 + (gamma + lambda) I) alpha
+            //         = g + gamma e_full,
+            //
+            // with lambda >= 0.  The unconstrained anchored system is
+            // solved first by a symmetric TSVD.  If that solution is
+            // inside the ball, lambda = 0.  Otherwise lambda is
+            // bracketed and found by bisection.
             // =====================================================
 
-            Eigen::MatrixXd P(
-                n,
+            const double radiusSquared =
+                trustRadius * trustRadius;
+
+            const double radiusTolerance =
+                1.0e-10;
+
+            Eigen::VectorXd alpha(
                 reducedSize);
 
-            Eigen::MatrixXd MP(
-                n,
+            alpha.setZero();
+
+            bool acceptedUnconstrained =
+                false;
+
+            // =====================================================
+            // Unconstrained anchored solution by symmetric TSVD
+            // =====================================================
+
+            Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd>
+                eigenSolver;
+
+            eigenSolver.compute(HAnchor);
+
+            if (eigenSolver.info() != Eigen::Success)
+            {
+                throw gcnew InvalidOperationException(
+                    "Eigenvalue decomposition of the reduced system failed");
+            }
+
+            const Eigen::VectorXd eigenvalues =
+                eigenSolver.eigenvalues();
+
+            const Eigen::MatrixXd eigenvectors =
+                eigenSolver.eigenvectors();
+
+            double maximumEigenvalue =
+                0.0;
+
+            for (Eigen::Index i = 0;
+                i < reducedSize;
+                ++i)
+            {
+                maximumEigenvalue =
+                    std::max(
+                        maximumEigenvalue,
+                        std::abs(eigenvalues(i)));
+            }
+
+            if (!std::isfinite(maximumEigenvalue))
+            {
+                throw gcnew InvalidOperationException(
+                    "Reduced eigenvalues contain NaN or infinity");
+            }
+
+            Eigen::VectorXd candidate(
                 reducedSize);
 
-            Eigen::MatrixXd H(
-                reducedSize,
-                reducedSize);
+            candidate.setZero();
 
-            Eigen::VectorXd g(
-                reducedSize);
-
-            Eigen::VectorXd combinedRhs(
-                n);
-
-            Eigen::VectorXd solution(
-                reducedSize);
-
-            Eigen::VectorXd transformedRhs(
-                reducedSize);
-
-            SparseMatrix64 matA(
-                n,
-                n);
-
-            SparseMatrix64 matB(
-                n,
-                n);
-
-            SparseMatrix64 matM(
-                n,
-                n);
-
-            std::vector<Triplet64> tripletsA;
-            std::vector<Triplet64> tripletsB;
-
-            tripletsA.reserve(
-                static_cast<std::size_t>(
-                    nnzA));
-
-            tripletsB.reserve(
-                static_cast<std::size_t>(
-                    nnzB));
-
-
-            // =====================================================
-            // Build dense basis matrix without QR
-            //
-            //     P = [p0 p1 ...]
-            //
-            // The original order, scale, zero columns, and linear
-            // dependence are preserved. Rank deficiency is handled
-            // later by the TSVD of H = P^T M P.
-            // =====================================================
-
-            for (Eigen::Index j = 0;
-                j < reducedSize;
-                ++j)
+            if (maximumEigenvalue > 0.0)
             {
-                P.col(j) =
-                    inputBasis[
-                        static_cast<std::size_t>(j)];
-            }
+                const double cutoff =
+                    tsvdThreshold * maximumEigenvalue;
 
+                const Eigen::VectorXd projectedRhs =
+                    eigenvectors.transpose() * gAnchor;
 
-            // =====================================================
-            // Build matrix A
-            //
-            // Triplet storage is local to this invocation.
-            // =====================================================
-
-            if (effectiveA != 0.0)
-            {
-                if (columnptr->Length != n + 1)
-                {
-                    throw gcnew ArgumentException(
-                        "columnptr must have length n + 1");
-                }
-
-                if (rowindices->Length !=
-                    values->Length)
-                {
-                    throw gcnew ArgumentException(
-                        "rowindices and values have incompatible sizes");
-                }
-
-                if (columnptr[0] != 0 ||
-                    columnptr[n] != values->Length)
-                {
-                    throw gcnew ArgumentException(
-                        "columnptr has invalid start or end");
-                }
-
-                tripletsA.clear();
-
-                for (int column = 0;
-                    column < n;
-                    ++column)
-                {
-                    const int start =
-                        columnptr[column];
-
-                    const int end =
-                        columnptr[column + 1];
-
-                    if (start < 0 ||
-                        end < start ||
-                        end > values->Length)
-                    {
-                        throw gcnew ArgumentException(
-                            "columnptr contains an invalid range");
-                    }
-
-                    for (int index = start;
-                        index < end;
-                        ++index)
-                    {
-                        const int row =
-                            rowindices[index];
-
-                        if (row < 0 ||
-                            row >= n)
-                        {
-                            throw gcnew ArgumentException(
-                                "rowindices contains an invalid row index");
-                        }
-
-                        const double value =
-                            values[index];
-
-                        if (!std::isfinite(value))
-                        {
-                            throw gcnew ArgumentException(
-                                "values contains NaN or infinity");
-                        }
-
-                        tripletsA.emplace_back(
-                            static_cast<int64_t>(
-                                row),
-
-                            static_cast<int64_t>(
-                                column),
-
-                            value);
-                    }
-                }
-
-                // -------------------------------------------------
-                // Rebuild numerical sparse matrix.
-                //
-                // Triplet buffer itself is reused.
-                // -------------------------------------------------
-
-                matA.setZero();
-
-                matA.setFromTriplets(
-                    tripletsA.begin(),
-                    tripletsA.end());
-
-                matA.makeCompressed();
-            }
-            else
-            {
-                matA.setZero();
-            }
-
-
-            // =====================================================
-            // Build matrix B
-            // =====================================================
-
-            if (effectiveB != 0.0)
-            {
-                if (columnptr2->Length != n + 1)
-                {
-                    throw gcnew ArgumentException(
-                        "columnptr2 must have length n + 1");
-                }
-
-                if (rowindices2->Length !=
-                    values2->Length)
-                {
-                    throw gcnew ArgumentException(
-                        "rowindices2 and values2 have incompatible sizes");
-                }
-
-                if (columnptr2[0] != 0 ||
-                    columnptr2[n] != values2->Length)
-                {
-                    throw gcnew ArgumentException(
-                        "columnptr2 has invalid start or end");
-                }
-
-                tripletsB.clear();
-
-                for (int column = 0;
-                    column < n;
-                    ++column)
-                {
-                    const int start =
-                        columnptr2[column];
-
-                    const int end =
-                        columnptr2[column + 1];
-
-                    if (start < 0 ||
-                        end < start ||
-                        end > values2->Length)
-                    {
-                        throw gcnew ArgumentException(
-                            "columnptr2 contains an invalid range");
-                    }
-
-                    for (int index = start;
-                        index < end;
-                        ++index)
-                    {
-                        const int row =
-                            rowindices2[index];
-
-                        if (row < 0 ||
-                            row >= n)
-                        {
-                            throw gcnew ArgumentException(
-                                "rowindices2 contains an invalid row index");
-                        }
-
-                        const double value =
-                            values2[index];
-
-                        if (!std::isfinite(value))
-                        {
-                            throw gcnew ArgumentException(
-                                "values2 contains NaN or infinity");
-                        }
-
-                        tripletsB.emplace_back(
-                            static_cast<int64_t>(
-                                row),
-
-                            static_cast<int64_t>(
-                                column),
-
-                            value);
-                    }
-                }
-
-                matB.setZero();
-
-                matB.setFromTriplets(
-                    tripletsB.begin(),
-                    tripletsB.end());
-
-                matB.makeCompressed();
-            }
-            else
-            {
-                matB.setZero();
-            }
-
-
-            // =====================================================
-            // Build mixed matrix
-            //
-            //     M = a A + b B
-            // =====================================================
-
-            if (effectiveA != 0.0 &&
-                effectiveB != 0.0)
-            {
-                matM =
-                    effectiveA * matA +
-                    effectiveB * matB;
-            }
-            else if (effectiveA != 0.0)
-            {
-                matM =
-                    effectiveA * matA;
-            }
-            else if (effectiveB != 0.0)
-            {
-                matM =
-                    effectiveB * matB;
-            }
-            else
-            {
-                matM.setZero();
-            }
-
-            matM.makeCompressed();
-
-
-            // =====================================================
-            // Build mixed RHS
-            //
-            //     R = c rhs + d rhs2
-            //
-            // combinedRhs is local to this invocation.
-            // =====================================================
-
-            combinedRhs.setZero();
-
-            if (effectiveC != 0.0)
-            {
-                if (rhs->Length != n)
-                {
-                    throw gcnew ArgumentException(
-                        "rhs has incompatible size");
-                }
-
-                double* dst =
-                    combinedRhs.data();
-
-                for (int i = 0;
-                    i < n;
+                for (Eigen::Index i = 0;
+                    i < reducedSize;
                     ++i)
                 {
-                    const double value =
-                        rhs[i];
+                    const double eigenvalue =
+                        eigenvalues(i);
 
-                    if (!std::isfinite(value))
+                    if (eigenvalue > cutoff)
                     {
-                        throw gcnew ArgumentException(
-                            "rhs contains NaN or infinity");
+                        candidate +=
+                            eigenvectors.col(i) *
+                            (projectedRhs(i) / eigenvalue);
+                    }
+                }
+            }
+
+            if (candidate.allFinite())
+            {
+                const double normSquared =
+                    candidate.squaredNorm();
+
+                if (std::isfinite(normSquared) &&
+                    normSquared <=
+                    radiusSquared *
+                    (1.0 + radiusTolerance))
+                {
+                    alpha =
+                        candidate;
+
+                    lambdaUsed =
+                        0.0;
+
+                    acceptedUnconstrained =
+                        true;
+                }
+            }
+
+            Eigen::LLT<Eigen::MatrixXd> cholesky;
+
+
+            if (!acceptedUnconstrained)
+            {
+                double lambdaLow =
+                    0.0;
+
+                double lambdaHigh =
+                    1.0e-12;
+
+                if (hScale > 0.0)
+                {
+                    lambdaHigh =
+                        1.0e-12 * hScale;
+                }
+
+                if (!std::isfinite(lambdaHigh) ||
+                    lambdaHigh <= 0.0)
+                {
+                    lambdaHigh =
+                        1.0e-12;
+                }
+
+                bool bracketed =
+                    false;
+
+                Eigen::VectorXd candidate(
+                    reducedSize);
+
+                for (int iteration = 0;
+                    iteration < 100;
+                    ++iteration)
+                {
+                    Eigen::MatrixXd H =
+                        HAnchor;
+
+                    H.diagonal().array() +=
+                        lambdaHigh;
+
+                    H =
+                        0.5 * (H + H.transpose());
+
+                    cholesky.compute(H);
+
+                    if (cholesky.info() == Eigen::Success)
+                    {
+                        candidate =
+                            cholesky.solve(gAnchor);
+
+                        if (cholesky.info() == Eigen::Success &&
+                            candidate.allFinite())
+                        {
+                            const double normSquared =
+                                candidate.squaredNorm();
+
+                            if (std::isfinite(normSquared) &&
+                                normSquared <= radiusSquared)
+                            {
+                                alpha =
+                                    candidate;
+
+                                bracketed =
+                                    true;
+
+                                break;
+                            }
+                        }
                     }
 
-                    dst[i] +=
-                        effectiveC *
-                        value;
-                }
-            }
+                    lambdaLow =
+                        lambdaHigh;
 
-            if (effectiveD != 0.0)
-            {
-                if (rhs2->Length != n)
-                {
-                    throw gcnew ArgumentException(
-                        "rhs2 has incompatible size");
-                }
+                    lambdaHigh *=
+                        10.0;
 
-                double* dst =
-                    combinedRhs.data();
-
-                for (int i = 0;
-                    i < n;
-                    ++i)
-                {
-                    const double value =
-                        rhs2[i];
-
-                    if (!std::isfinite(value))
+                    if (!std::isfinite(lambdaHigh))
                     {
-                        throw gcnew ArgumentException(
-                            "rhs2 contains NaN or infinity");
+                        break;
                     }
-
-                    dst[i] +=
-                        effectiveD *
-                        value;
                 }
-            }
 
-
-            // =====================================================
-            // FAST sparse-dense multiplication
-            //
-            //     MP = M P
-            //
-            // MP is local to this invocation.
-            // =====================================================
-
-            if (effectiveA == 0.0 &&
-                effectiveB == 0.0)
-            {
-                MP.setZero();
-            }
-            else
-            {
-                MP.noalias() =
-                    matM * P;
-            }
-
-
-            if (!MP.allFinite())
-            {
-                throw gcnew InvalidOperationException(
-                    "M * P contains NaN or infinity");
-            }
-
-
-            // =====================================================
-            // FAST reduced matrix
-            //
-            //     H = P^T M P
-            //
-            // This replaces reducedSize^2 explicit VectorXd::dot()
-            // operations with one dense matrix multiplication.
-            // =====================================================
-
-            H.noalias() =
-                P.transpose() *
-                MP;
-
-
-            // =====================================================
-            // Reduced RHS
-            //
-            //     g = P^T R
-            // =====================================================
-
-            g.noalias() =
-                P.transpose() *
-                combinedRhs;
-
-
-            if (!H.allFinite())
-            {
-                throw gcnew InvalidOperationException(
-                    "Reduced matrix contains NaN or infinity");
-            }
-
-            if (!g.allFinite())
-            {
-                throw gcnew InvalidOperationException(
-                    "Reduced rhs contains NaN or infinity");
-            }
-
-
-            // =====================================================
-            // TSVD
-            //
-            //     H = U S V^T
-            //
-            // Solve
-            //
-            //     H x = g
-            //
-            // with
-            //
-            //     sigma_i > epsilon * sigma_max
-            // =====================================================
-
-            Eigen::JacobiSVD<
-                Eigen::MatrixXd>
-                svd(
-                    H,
-                    Eigen::ComputeThinU |
-                    Eigen::ComputeThinV);
-
-
-            const Eigen::VectorXd singularValues =
-                svd.singularValues();
-
-
-            if (!singularValues.allFinite())
-            {
-                throw gcnew InvalidOperationException(
-                    "Reduced SVD returned NaN or infinity");
-            }
-
-
-            solution.setZero();
-
-
-            if (singularValues.size() > 0)
-            {
-                const double sigmaMax =
-                    singularValues(0);
-
-                if (!std::isfinite(sigmaMax) ||
-                    sigmaMax < 0.0)
+                if (!bracketed)
                 {
                     throw gcnew InvalidOperationException(
-                        "Largest singular value is invalid");
+                        "Failed to bracket the trust-region multiplier");
                 }
 
 
-                if (sigmaMax > 0.0)
+                // For lambda > 0, ||alpha(lambda)|| decreases
+                // monotonically.  Bisect until the boundary is reached.
+                for (int iteration = 0;
+                    iteration < 80;
+                    ++iteration)
                 {
-                    const double threshold =
-                        epsilon *
-                        sigmaMax;
+                    const double lambdaMiddle =
+                        0.5 * (lambdaLow + lambdaHigh);
 
+                    Eigen::MatrixXd H =
+                        HAnchor;
 
-                    transformedRhs.noalias() =
-                        svd.matrixU().transpose() *
-                        g;
+                    H.diagonal().array() +=
+                        lambdaMiddle;
 
+                    H =
+                        0.5 * (H + H.transpose());
 
-                    for (Eigen::Index i = 0;
-                        i < singularValues.size();
-                        ++i)
+                    cholesky.compute(H);
+
+                    if (cholesky.info() != Eigen::Success)
                     {
-                        const double sigma =
-                            singularValues(i);
+                        lambdaLow =
+                            lambdaMiddle;
 
-                        if (sigma > threshold)
-                        {
-                            transformedRhs(i) /=
-                                sigma;
-                        }
-                        else
-                        {
-                            transformedRhs(i) =
-                                0.0;
-                        }
+                        continue;
                     }
 
+                    candidate =
+                        cholesky.solve(gAnchor);
 
-                    solution.noalias() =
-                        svd.matrixV() *
-                        transformedRhs;
+                    if (cholesky.info() != Eigen::Success ||
+                        !candidate.allFinite())
+                    {
+                        lambdaLow =
+                            lambdaMiddle;
+
+                        continue;
+                    }
+
+                    const double normSquared =
+                        candidate.squaredNorm();
+
+                    if (!std::isfinite(normSquared) ||
+                        normSquared > radiusSquared)
+                    {
+                        lambdaLow =
+                            lambdaMiddle;
+                    }
+                    else
+                    {
+                        lambdaHigh =
+                            lambdaMiddle;
+
+                        alpha =
+                            candidate;
+                    }
+
+                    const double relativeRadiusError =
+                        std::abs(normSquared - radiusSquared) /
+                        radiusSquared;
+
+                    if (relativeRadiusError <=
+                        radiusTolerance)
+                    {
+                        break;
+                    }
                 }
+
+                lambdaUsed =
+                    lambdaHigh;
             }
 
 
-            if (!solution.allFinite())
+            if (!alpha.allFinite())
             {
                 throw gcnew InvalidOperationException(
                     "Reduced solution contains NaN or infinity");
@@ -4537,27 +4154,39 @@ else {
 
 
             // =====================================================
-            // Return the full-space direction
+            // Full-space direction
             //
-            //     direction = P solution
+            //     direction = P alpha
+            //
+            // Since P is the ORIGINAL basis,
+            // alpha is directly the coefficient vector that we want.
             // =====================================================
 
-            combinedRhs.noalias() =
-                P * solution;
+            Eigen::VectorXd direction(
+                n);
+
+            direction.noalias() =
+                P * alpha;
 
 
-            if (!combinedRhs.allFinite())
+            if (!direction.allFinite())
             {
                 throw gcnew InvalidOperationException(
                     "Full-space direction contains NaN or infinity");
             }
+
+
+            // =====================================================
+            // Return
+            // =====================================================
 
             array<double>^ ret =
                 gcnew array<double>(n);
 
             parameters =
                 gcnew array<double>(
-                    static_cast<int>(reducedSize));
+                    static_cast<int>(
+                        reducedSize));
 
 
             for (int i = 0;
@@ -4565,8 +4194,9 @@ else {
                 ++i)
             {
                 ret[i] =
-                    combinedRhs(i);
+                    direction(i);
             }
+
 
             for (Eigen::Index j = 0;
                 j < reducedSize;
@@ -4574,7 +4204,7 @@ else {
             {
                 parameters[
                     static_cast<int>(j)] =
-                    solution(j);
+                    alpha(j);
             }
 
 
@@ -4642,187 +4272,731 @@ else {
 
             return ret;
         }
-        
-       
-		static int solve_CHOLESKY(int n, array<int>^ columnptr, array<int>^ rowindices, array<double>^ values, array<double>^ rhs, array<double>^ ret,double scale,double salt,int numthreads)
-		{
-			
-
-			Eigen::SparseMatrix<double> mat;
-			Eigen::VectorXd b(n);
-			Eigen::VectorXd _r(n);
-			for (int i = 0; i < n; i++)
-			{
-				double v = rhs[i];
-				b(i) = v*scale;
-			}
-			std::vector<Eigen::Triplet<double, int64_t>> tripletList;
-			tripletList.reserve(values->Length+n);
-			for (int i = 0; i < n; i++)
-			{
-				int start = columnptr[i];
-				int end = columnptr[i + 1];
-				for (int j = start; j < end; j++)
-				{
-					int row = rowindices[j];
-					double val = values[j];
-					tripletList.push_back(Eigen::Triplet<double, int64_t>(row, i, val*scale));
-						//	if (row != i)
-					//	tripletList.push_back(Eigen::Triplet<double, int64_t>(i, row, val));
-				}
-			}
-			for (int i = 0; i < n; i++)
-			{
-				tripletList.push_back(Eigen::Triplet<double, int64_t>(i, i, salt));
-				
-			}
-			mat.resize(n, n);
-			mat.setFromTriplets(tripletList.begin(), tripletList.end());
-			mat.makeCompressed();
-
-			_r=_sparse_solver::solve_CHOLECKY(mat, b,numthreads);
-			for (int i = 0; i < n; i++)
-			{
-				ret[i]=_r(i);
-			}
-
-			return 1;
-		}
-        static int solve_CHOLESKY3(
+        static int countEigenvaluesBelow(
             int n,
             array<int>^ columnptr,
             array<int>^ rowindices,
             array<double>^ values,
-            array<int>^ columnptr2,
-            array<int>^ rowindices2,
-            array<double>^ values2,
+            double threshold)
+        {
+            using SparseMatrix64 =
+                Eigen::SparseMatrix<
+                double,
+                Eigen::ColMajor,
+                int64_t>;
+
+            using Triplet64 =
+                Eigen::Triplet<
+                double,
+                int64_t>;
+
+            std::vector<Triplet64> tripletList;
+            tripletList.reserve(values->Length + n);
+
+            for (int64_t i = 0; i < n; i++)
+            {
+                int start = columnptr[i];
+                int end = columnptr[i + 1];
+
+                for (int j = start; j < end; j++)
+                {
+                    int64_t row = rowindices[j];
+					double val = values[j];
+                    tripletList.push_back(Triplet64(
+                        row,
+                        i,
+                        val));
+                }
+            }
+
+            // B = A - threshold * I
+            for (int i = 0; i < n; i++)
+            {
+                tripletList.push_back(
+                    Triplet64(
+                        i,
+                        i,
+                        -threshold));
+            }
+
+            SparseMatrix64 mat(n, n);
+
+            mat.setFromTriplets(
+                tripletList.begin(),
+                tripletList.end());
+
+            mat.makeCompressed();
+
+            // IMPORTANT:
+            // symmetric indefinite factorization
+            Eigen::PardisoLDLT<SparseMatrix64> solver;
+
+            solver.compute(mat);
+
+            if (solver.info() != Eigen::Success)
+                return -1;
+
+            auto& iparm = solver.pardisoParameterArray();
+
+            // number of negative eigenvalues of A - threshold I
+            //
+            // = number of eigenvalues of A below threshold
+            return iparm[22];
+        }
+  
+        static int solve_CHOLESKY(
+            int n,
+            array<int>^ columnptr,
+            array<int>^ rowindices,
+            array<double>^ values,
             array<double>^ rhs,
-            array<double>^ rhs2,
             array<double>^ ret,
             double epsilon,
             int numthreads)
         {
-            const int totalSize = 2 * n;
+            using SparseMatrix64 =
+                Eigen::SparseMatrix<
+                double,
+                Eigen::ColMajor,
+                int64_t>;
 
-            Eigen::SparseMatrix<double, 0, int64_t> mat;
-            Eigen::VectorXd b(totalSize);
-            Eigen::VectorXd solution(totalSize);
-
+            using Triplet64 =
+                Eigen::Triplet<
+                double,
+                int64_t>;
+            SparseMatrix64 mat;
+            Eigen::VectorXd b(n);
+            Eigen::VectorXd _r(n);
 
             // =====================================================
             // RHS
-            //
-            // [ rhs            ]
-            // [ -epsilon rhs2  ]
             // =====================================================
 
             for (int i = 0; i < n; i++)
             {
-                b(i) =
-                    rhs[i];
-
-                b(n + i) =
-                    -epsilon * rhs2[i];
+                b(i) = rhs[i];
             }
 
 
             // =====================================================
-            // Matrix
+            // Build matrix A
             //
-            // [ I      A          ]
-            // [ A    -epsilon B   ]
+            // Also find
+            //
+            //     matrixScale = max_i |A_ii|
+            //
+            // so that epsilon is relative.
             // =====================================================
 
-            std::vector<Eigen::Triplet<double, int64_t>> tripletList;
+            std::vector<Triplet64> tripletList;
+            tripletList.reserve(values->Length + n);
 
-            tripletList.reserve(
-                n +
-                2 * values->Length +
-                values2->Length);
+            double matrixScale = 0.0;
+
+            for (int i = 0; i < n; i++)
+            {
+                int start = columnptr[i];
+                int end = columnptr[i + 1];
+
+                for (int j = start; j < end; j++)
+                {
+                    int row = rowindices[j];
+                    double val = values[j];
+
+                    tripletList.push_back(
+                        Triplet64(
+                            row,
+                            i,
+                            val));
+
+                    if (row == i)
+                    {
+                        double a = std::abs(val);
+
+                        if (a > matrixScale)
+                            matrixScale = a;
+                    }
+                }
+            }
 
 
             // =====================================================
-            // Upper-left: I
+            // Relative regularization
+            //
+            //     A + epsilon * matrixScale * I
+            //
+            // epsilon is therefore dimensionless.
             // =====================================================
+
+            if (matrixScale == 0.0)
+                matrixScale = 1.0;
+
+            double salt = epsilon *matrixScale;
 
             for (int i = 0; i < n; i++)
             {
                 tripletList.push_back(
-                    Eigen::Triplet<double, int64_t>(
+                    Triplet64(
                         i,
                         i,
-                        1.0));
+                        salt));
             }
 
 
             // =====================================================
-            // A blocks
+            // Solve
+            // =====================================================
+
+            mat.resize(n, n);
+
+            mat.setFromTriplets(
+                tripletList.begin(),
+                tripletList.end());
+
+            mat.makeCompressed();
+
+            
+            // =====================================================
+            Eigen::PardisoLU<SparseMatrix64> solver;
+
+            solver.compute(mat);
+            for (int i = 0; i < 50; i++)
+            {
+                if (solver.info() != Eigen::Success) {
+                    double _salt = salt * std::pow(10.0, i + 1);
+
+                    for (int j = 0; j < n; j++)
+                    {
+                        mat.coeffRef(j, j) += _salt;
+                    }
+                    solver.compute(mat);
+                }
+                else {
+                    break;
+                }
+
+            }
+			_r = solver.solve(b);
+            // =====================================================
+            // Return
+            // =====================================================
+
+            for (int i = 0; i < n; i++)
+            {
+                ret[i] = _r(i);
+            }
+
+            return 1;
+        }
+        static int solve_CHOLESKY_MULTI(
+            int n,
+            array<int>^ columnptr,
+            array<int>^ rowindices,
+            array<double>^ values,
+            array<array<double>^>^ rhs,
+            array<array<double>^>^ ret,
+            double epsilon,
+            int numthreads)
+        {
+            using SparseMatrix64 =
+                Eigen::SparseMatrix<
+                double,
+                Eigen::ColMajor,
+                int64_t>;
+
+            using Triplet64 =
+                Eigen::Triplet<
+                double,
+                int64_t>;
+
+            // =====================================================
+            // Check
+            // =====================================================
+
+            int nrhs = rhs->Length;
+
+            if (ret->Length != nrhs)
+                throw gcnew ArgumentException("rhs and ret must have same number of vectors.");
+
+            for (int k = 0; k < nrhs; k++)
+            {
+                if (rhs[k] == nullptr || rhs[k]->Length != n)
+                    throw gcnew ArgumentException("Each rhs vector must have length n.");
+
+                if (ret[k] == nullptr || ret[k]->Length != n)
+                    throw gcnew ArgumentException("Each ret vector must have length n.");
+            }
+
+
+            // =====================================================
+            // Build matrix A
+            // =====================================================
+
+            SparseMatrix64 mat;
+
+            std::vector<Triplet64> tripletList;
+            tripletList.reserve(values->Length + n);
+
+            double matrixScale = 0.0;
+
+            for (int i = 0; i < n; i++)
+            {
+                int start = columnptr[i];
+                int end = columnptr[i + 1];
+
+                for (int j = start; j < end; j++)
+                {
+                    int row = rowindices[j];
+                    double val = values[j];
+
+                    tripletList.push_back(
+                        Triplet64(
+                            static_cast<int64_t>(row),
+                            static_cast<int64_t>(i),
+                            val));
+
+                    if (row == i)
+                    {
+                        double a = std::abs(val);
+
+                        if (a > matrixScale)
+                            matrixScale = a;
+                    }
+                }
+            }
+
+
+            // =====================================================
+            // Relative regularization
             //
-            // Upper-right: A
-            // Lower-left : A
+            // A + epsilon * matrixScale * I
             // =====================================================
 
-            for (int col = 0; col < n; col++)
+            if (matrixScale == 0.0)
+                matrixScale = 1.0;
+
+            double salt = epsilon * matrixScale;
+
+            for (int i = 0; i < n; i++)
             {
-                int start =
-                    columnptr[col];
-
-                int end =
-                    columnptr[col + 1];
-
-                for (int j = start; j < end; j++)
-                {
-                    int row =
-                        rowindices[j];
-
-                    double val =
-                        values[j];
-
-
-                    // Upper-right: A
-                    tripletList.push_back(
-                        Eigen::Triplet<double, int64_t>(
-                            row,
-                            n + col,
-                            val));
-
-
-                    // Lower-left: A
-                    tripletList.push_back(
-                        Eigen::Triplet<double, int64_t>(
-                            n + row,
-                            col,
-                            val));
-                }
+                tripletList.push_back(
+                    Triplet64(
+                        static_cast<int64_t>(i),
+                        static_cast<int64_t>(i),
+                        salt));
             }
 
 
             // =====================================================
-            // Lower-right: -epsilon B
+            // Assemble sparse matrix
             // =====================================================
+
+            mat.resize(n, n);
+
+            mat.setFromTriplets(
+                tripletList.begin(),
+                tripletList.end());
+
+            mat.makeCompressed();
+
+
+            // =====================================================
+            // Factorize ONCE
+            // =====================================================
+
+            Eigen::PardisoLU<SparseMatrix64> solver;
+
+            solver.compute(mat);
+
+            // =====================================================
+            // If factorization fails, progressively add diagonal salt
+            // =====================================================
+
+            for (int i = 0; i < 50; i++)
+            {
+                if (solver.info() == Eigen::Success)
+                    break;
+
+                double _salt = salt * std::pow(10.0, i + 1);
+
+                for (int j = 0; j < n; j++)
+                {
+                    mat.coeffRef(j, j) += _salt;
+                }
+
+                mat.makeCompressed();
+
+                solver.compute(mat);
+            }
+
+
+            if (solver.info() != Eigen::Success)
+                return 0;
+
+
+            // =====================================================
+            // Reuse factorization for all RHS
+            // =====================================================
+
+            Eigen::VectorXd b(n);
+
+            for (int k = 0; k < nrhs; k++)
+            {
+                // ---------------------------------------------
+                // Copy RHS
+                // ---------------------------------------------
+
+                for (int i = 0; i < n; i++)
+                {
+                    b(i) = rhs[k][i];
+                }
+
+                // ---------------------------------------------
+                // Solve using SAME factorization
+                // ---------------------------------------------
+
+                Eigen::VectorXd x = solver.solve(b);
+
+                if (solver.info() != Eigen::Success)
+                    return 0;
+
+                // ---------------------------------------------
+                // Return
+                // ---------------------------------------------
+
+                for (int i = 0; i < n; i++)
+                {
+                    ret[k][i] = x(i);
+                }
+            }
+
+            return 1;
+        }
+        static int solve_LEAST_SQUARES(
+            int m,                              // rows of J
+            int n,                              // cols of J
+
+            array<int>^ columnptr,
+            array<int>^ rowindices,
+            array<double>^ values,
+
+            array<double>^ rhs,                 // size m
+            array<double>^ ret,                 // size n
+
+            double epsilon,
+            int numthreads)
+        {
+            using SparseMatrix64 =
+                Eigen::SparseMatrix<
+                double,
+                Eigen::ColMajor,
+                int64_t>;
+
+            using Triplet64 =
+                Eigen::Triplet<
+                double,
+                int64_t>;
+
+            // ============================================================
+            // Build J
+            // ============================================================
+
+            std::vector<Triplet64> tripletList;
+            tripletList.reserve(values->Length);
 
             for (int col = 0; col < n; col++)
             {
-                int start =
-                    columnptr2[col];
+                int start = columnptr[col];
+                int end = columnptr[col + 1];
 
-                int end =
-                    columnptr2[col + 1];
-
-                for (int j = start; j < end; j++)
+                for (int k = start; k < end; k++)
                 {
-                    int row =
-                        rowindices2[j];
-
-                    double val =
-                        values2[j];
-
+                    int row = rowindices[k];
+                    double val = values[k];
                     tripletList.push_back(
-                        Eigen::Triplet<double, int64_t>(
-                            n + row,
-                            n + col,
-                            -epsilon * val));
+                        Triplet64(
+                            static_cast<int64_t>(row),
+                            static_cast<int64_t>(col),
+                            val));
                 }
+            }
+
+            SparseMatrix64 J(m, n);
+
+            J.setFromTriplets(
+                tripletList.begin(),
+                tripletList.end());
+
+            J.makeCompressed();
+
+
+            // ============================================================
+            // b
+            // ============================================================
+
+            Eigen::VectorXd b(m);
+
+            for (int i = 0; i < m; i++)
+                b(i) = rhs[i];
+
+
+            Eigen::VectorXd x(n);
+
+
+            // ============================================================
+            // CASE 1:
+            //
+            // m >= n
+            //
+            // Least squares:
+            //
+            //   min ||J x - b||^2
+            //
+            // solve
+            //
+            //   (J^T J + lambda I)x = J^T b
+            //
+            // ============================================================
+
+            if (m >= n)
+            {
+                SparseMatrix64 JTJ =
+                    J.transpose() * J;
+
+                JTJ.makeCompressed();
+
+                Eigen::VectorXd JTb =
+                    J.transpose() * b;
+
+
+                // --------------------------------------------------------
+                // Relative LM scale
+                //
+                // max diag(J^T J)
+                // --------------------------------------------------------
+
+                double matrixScale = 0.0;
+
+                for (int i = 0; i < n; i++)
+                {
+                    double a =
+                        std::abs(JTJ.coeff(i, i));
+
+                    if (a > matrixScale)
+                        matrixScale = a;
+                }
+
+                if (matrixScale == 0.0)
+                    matrixScale = 1.0;
+
+
+                double salt =
+                    epsilon * matrixScale;
+
+
+                // ========================================================
+                // Try increasing LM regularization if factorization fails
+                // ========================================================
+
+                Eigen::PardisoLLT<SparseMatrix64> solver;
+
+                bool success = false;
+
+                for (int attempt = 0; attempt < 50; attempt++)
+                {
+                    double currentSalt =
+                        salt * std::pow(10.0, attempt);
+
+                    SparseMatrix64 A = JTJ;
+
+                    for (int i = 0; i < n; i++)
+                    {
+                        A.coeffRef(i, i) += currentSalt;
+                    }
+
+                    A.makeCompressed();
+
+                    solver.compute(A);
+
+                    if (solver.info() == Eigen::Success)
+                    {
+                        x = solver.solve(JTb);
+
+                        if (solver.info() == Eigen::Success)
+                        {
+                            success = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!success)
+                    return 0;
+            }
+
+
+            // ============================================================
+            // CASE 2:
+            //
+            // m < n
+            //
+            // Minimum-norm / damped minimum-norm solution:
+            //
+            //   (J J^T + lambda I)y = b
+            //
+            //   x = J^T y
+            //
+            //
+            // lambda -> 0 gives the Moore-Penrose
+            // minimum-norm solution.
+            //
+            // ============================================================
+
+            else
+            {
+                SparseMatrix64 JJT =
+                    J * J.transpose();
+
+                JJT.makeCompressed();
+
+
+                // --------------------------------------------------------
+                // Relative LM scale
+                //
+                // max diag(J J^T)
+                // --------------------------------------------------------
+
+                double matrixScale = 0.0;
+
+                for (int i = 0; i < m; i++)
+                {
+                    double a =
+                        std::abs(JJT.coeff(i, i));
+
+                    if (a > matrixScale)
+                        matrixScale = a;
+                }
+
+                if (matrixScale == 0.0)
+                    matrixScale = 1.0;
+
+
+                double salt =
+                    epsilon * matrixScale;
+
+
+                Eigen::PardisoLLT<SparseMatrix64> solver;
+
+                Eigen::VectorXd y(m);
+
+                bool success = false;
+
+                for (int attempt = 0; attempt < 50; attempt++)
+                {
+                    double currentSalt =
+                        salt * std::pow(10.0, attempt);
+
+                    SparseMatrix64 A = JJT;
+
+                    for (int i = 0; i < m; i++)
+                    {
+                        A.coeffRef(i, i) += currentSalt;
+                    }
+
+                    A.makeCompressed();
+
+                    solver.compute(A);
+
+                    if (solver.info() == Eigen::Success)
+                    {
+                        y = solver.solve(b);
+
+                        if (solver.info() == Eigen::Success)
+                        {
+                            x = J.transpose() * y;
+
+                            success = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!success)
+                    return 0;
+            }
+
+
+            // ============================================================
+            // Return
+            // ============================================================
+
+            for (int i = 0; i < n; i++)
+            {
+                ret[i] = x(i);
+            }
+
+            return 1;
+        }
+        static int solve_CHOLESKY2(
+            int n,
+
+            array<int>^ columnptr,
+            array<int>^ rowindices,
+            array<double>^ values,
+
+            array<int>^ columnptr2,
+            array<int>^ rowindices2,
+            array<double>^ values2,
+
+            array<double>^ rhs,
+            array<double>^ rhs2,
+
+            array<double>^ ret,
+
+            double matrixCoeff1,   // a : A
+            double matrixCoeff2,   // b : B
+            double rhsCoeff1,      // c : rhs
+            double rhsCoeff2,      // d : rhs2
+
+            double epsilon,
+            int numthreads)
+        {
+            using SparseMatrix64 =
+                Eigen::SparseMatrix<
+                double,
+                Eigen::ColMajor,
+                int64_t>;
+
+            using Triplet64 =
+                Eigen::Triplet<
+                double,
+                int64_t>;
+
+
+            // =====================================================
+            // System
+            //
+            //   (a A + b B + epsilon * matrixScale * I) x
+            //
+            //       = c rhs + d rhs2
+            //
+            // Primary / Secondary are NOT automatically rescaled.
+            //
+            // =====================================================
+
+
+            // =====================================================
+            // RHS
+            // =====================================================
+
+            Eigen::VectorXd b(n);
+
+            for (int i = 0; i < n; i++)
+            {
+                b(i) =
+                    rhsCoeff1 * rhs[i]
+                    +
+                    rhsCoeff2 * rhs2[i];
             }
 
 
@@ -4830,234 +5004,7 @@ else {
             // Build matrix
             // =====================================================
 
-            mat.resize(
-                totalSize,
-                totalSize);
-
-            mat.setFromTriplets(
-                tripletList.begin(),
-                tripletList.end());
-
-            mat.makeCompressed();
-
-
-            // =====================================================
-            // Solve using PardisoLU
-            //
-            // Matrix is symmetric indefinite.
-            // =====================================================
-
-            Eigen::PardisoLU<
-                Eigen::SparseMatrix<double,0,int64_t>>
-                solver;
-
-            solver.compute(mat);
-
-            if (solver.info() != Eigen::Success)
-            {
-                throw gcnew InvalidOperationException(
-                    "PardisoLU factorization failed");
-            }
-
-            solution =
-                solver.solve(b);
-
-            if (solver.info() != Eigen::Success)
-            {
-                throw gcnew InvalidOperationException(
-                    "PardisoLU solve failed");
-            }
-
-
-            // =====================================================
-            // solution =
-            //
-            // [ lambda ]
-            // [ x      ]
-            //
-            // Return lambda and x
-            // =====================================================
-
-            for (int i = 0; i < totalSize; i++)
-            {
-                ret[i] = solution(i);
-            }
-
-            // kept for compatibility
-            (void)numthreads;
-
-            return 1;
-        }
-        static int solve_CHOLESKY4(
-            int n,
-
-            array<int>^ columnptr,
-            array<int>^ rowindices,
-            array<double>^ values,
-
-            array<int>^ columnptr2,
-            array<int>^ rowindices2,
-            array<double>^ values2,
-
-            array<double>^ rhs,
-            array<double>^ rhs2,
-
-            // =====================================================
-            // q vector
-            //
-            // If nullptr:
-            //     ordinary solve
-            //
-            // If non-null and qDotWeight > 0:
-            //
-            //     q^T direction ~= q^T q
-            //
-            // is weakly imposed.
-            // =====================================================
-
-            array<double>^ orthogonalVector,
-
-            array<double>^ ret,
-
-            // =====================================================
-            // Base system
-            //
-            // M =
-            //     matrixCoeff1 A
-            //   + matrixCoeff2 B
-            //   + epsilon I
-            //
-            // b =
-            //     rhsCoeff1 rhs
-            //   + rhsCoeff2 rhs2
-            // =====================================================
-
-            double matrixCoeff1,
-            double matrixCoeff2,
-            double rhsCoeff1,
-            double rhsCoeff2,
-
-            // =====================================================
-            // Soft constraint weight
-            //
-            // rho / 2 *
-            //
-            //   (q^T direction / q^T q - 1)^2
-            //
-            // qDotWeight = 0:
-            //     ordinary solve
-            // =====================================================
-
-            double qDotWeight,
-
-            double epsilon,
-            int numthreads)
-        {
-            using SparseMatrix =
-                Eigen::SparseMatrix<
-                double,
-                Eigen::ColMajor,
-                int64_t>;
-
-            using Triplet =
-                Eigen::Triplet<
-                double,
-                int64_t>;
-
-
-            // =====================================================
-            // Validate
-            // =====================================================
-
-            if (n <= 0)
-            {
-                return 0;
-            }
-
-            if (columnptr == nullptr ||
-                rowindices == nullptr ||
-                values == nullptr)
-            {
-                return 0;
-            }
-
-            if (columnptr2 == nullptr ||
-                rowindices2 == nullptr ||
-                values2 == nullptr)
-            {
-                return 0;
-            }
-
-            if (rhs == nullptr ||
-                rhs2 == nullptr ||
-                ret == nullptr)
-            {
-                return 0;
-            }
-
-            if (rhs->Length != n ||
-                rhs2->Length != n ||
-                ret->Length != n)
-            {
-                return 0;
-            }
-
-            if (!std::isfinite(matrixCoeff1) ||
-                !std::isfinite(matrixCoeff2) ||
-                !std::isfinite(rhsCoeff1) ||
-                !std::isfinite(rhsCoeff2) ||
-                !std::isfinite(qDotWeight) ||
-                !std::isfinite(epsilon))
-            {
-                return 0;
-            }
-
-            if (qDotWeight < 0.0)
-            {
-                return 0;
-            }
-
-
-            // =====================================================
-            // Build base RHS
-            //
-            //     b =
-            //         rhsCoeff1 rhs
-            //       + rhsCoeff2 rhs2
-            // =====================================================
-
-            Eigen::VectorXd b(n);
-
-            for (int i = 0; i < n; ++i)
-            {
-                b(i) =
-                    rhsCoeff1 * rhs[i]
-                    + rhsCoeff2 * rhs2[i];
-            }
-
-
-            if (!b.allFinite())
-            {
-                return 0;
-            }
-
-
-            // =====================================================
-            // Build sparse base matrix
-            //
-            //     M =
-            //         matrixCoeff1 A
-            //       + matrixCoeff2 B
-            //       + epsilon I
-            //
-            // IMPORTANT:
-            //
-            // No q q^T term is added here.
-            // =====================================================
-
-            SparseMatrix mat(n, n);
-
-            std::vector<Triplet> tripletList;
+            std::vector<Triplet64> tripletList;
 
             tripletList.reserve(
                 values->Length
@@ -5065,461 +5012,11 @@ else {
                 + n);
 
 
-            // =====================================================
-            // matrixCoeff1 A
-            // =====================================================
-
-            if (matrixCoeff1 != 0.0)
-            {
-                for (int col = 0;
-                    col < n;
-                    ++col)
-                {
-                    const int start =
-                        columnptr[col];
-
-                    const int end =
-                        columnptr[col + 1];
-
-                    for (int j = start;
-                        j < end;
-                        ++j)
-                    {
-                        const int row =
-                            rowindices[j];
-
-                        const double val =
-                            matrixCoeff1 *
-                            values[j];
-
-                        tripletList.push_back(
-                            Triplet(
-                                row,
-                                col,
-                                val));
-                    }
-                }
-            }
+            double matrixScale = 0.0;
 
 
             // =====================================================
-            // matrixCoeff2 B
-            // =====================================================
-
-            if (matrixCoeff2 != 0.0)
-            {
-                for (int col = 0;
-                    col < n;
-                    ++col)
-                {
-                    const int start =
-                        columnptr2[col];
-
-                    const int end =
-                        columnptr2[col + 1];
-
-                    for (int j = start;
-                        j < end;
-                        ++j)
-                    {
-                        const int row =
-                            rowindices2[j];
-
-                        const double val =
-                            matrixCoeff2 *
-                            values2[j];
-
-                        tripletList.push_back(
-                            Triplet(
-                                row,
-                                col,
-                                val));
-                    }
-                }
-            }
-
-
-            // =====================================================
-            // epsilon I
-            // =====================================================
-
-            if (epsilon != 0.0)
-            {
-                for (int i = 0;
-                    i < n;
-                    ++i)
-                {
-                    tripletList.push_back(
-                        Triplet(
-                            i,
-                            i,
-                            epsilon));
-                }
-            }
-
-
-            mat.setFromTriplets(
-                tripletList.begin(),
-                tripletList.end());
-
-            mat.makeCompressed();
-
-
-            // =====================================================
-            // Factorize M only ONCE
-            //
-            // This is still the original sparse matrix.
-            //
-            // No dense rank-1 matrix is constructed.
-            // =====================================================
-
-            mkl_set_num_threads(
-                numthreads);
-
-            Eigen::PardisoLLT<
-                SparseMatrix> solver;
-
-
-            solver.analyzePattern(
-                mat);
-
-            if (solver.info() !=
-                Eigen::Success)
-            {
-                return 0;
-            }
-
-
-            solver.factorize(
-                mat);
-
-            if (solver.info() !=
-                Eigen::Success)
-            {
-                return 0;
-            }
-
-
-            // =====================================================
-            // No q constraint
-            //
-            // or
-            //
-            // qDotWeight = 0
-            //
-            // Ordinary:
-            //
-            //     M d = b
-            // =====================================================
-
-            if (orthogonalVector == nullptr ||
-                qDotWeight == 0.0)
-            {
-                Eigen::VectorXd solution =
-                    solver.solve(
-                        b);
-
-                if (solver.info() !=
-                    Eigen::Success)
-                {
-                    return 0;
-                }
-
-                if (!solution.allFinite())
-                {
-                    return 0;
-                }
-
-
-                for (int i = 0;
-                    i < n;
-                    ++i)
-                {
-                    ret[i] =
-                        solution(i);
-                }
-
-
-                return 1;
-            }
-
-
-            // =====================================================
-            // Read q
-            // =====================================================
-
-            if (orthogonalVector->Length != n)
-            {
-                return 0;
-            }
-
-
-            Eigen::VectorXd q(n);
-
-            for (int i = 0;
-                i < n;
-                ++i)
-            {
-                const double value =
-                    orthogonalVector[i];
-
-                if (!std::isfinite(value))
-                {
-                    return 0;
-                }
-
-                q(i) =
-                    value;
-            }
-
-
-            const double qNorm2 =
-                q.squaredNorm();
-
-
-            if (!std::isfinite(qNorm2) ||
-                qNorm2 <= 0.0)
-            {
-                return 0;
-            }
-
-
-            // =====================================================
-            // Normalized constraint vector
-            //
-            //     u = q / (q^T q)
-            //
-            //
-            // Then:
-            //
-            //     u^T d ~= 1
-            //
-            // means exactly
-            //
-            //     q^T d ~= q^T q
-            //
-            //
-            // Objective:
-            //
-            //     1/2 d^T M d
-            //     - b^T d
-            //
-            //   + rho/2 (u^T d - 1)^2
-            //
-            //
-            // Normal equation:
-            //
-            //     (M + rho u u^T)d
-            //         = b + rho u
-            //
-            //
-            // We DO NOT form u u^T.
-            // =====================================================
-
-            Eigen::VectorXd u(n);
-
-            u.noalias() =
-                q /
-                qNorm2;
-
-
-            // =====================================================
-            // Solve two RHS with ONE factorization
-            //
-            //     x = M^-1 b
-            //
-            //     z = M^-1 u
-            //
-            // We can solve them simultaneously.
-            // =====================================================
-
-            Eigen::MatrixXd RHS(
-                n,
-                2);
-
-            RHS.col(0) =
-                b;
-
-            RHS.col(1) =
-                u;
-
-
-            Eigen::MatrixXd X =
-                solver.solve(
-                    RHS);
-
-
-            if (solver.info() !=
-                Eigen::Success)
-            {
-                return 0;
-            }
-
-
-            if (!X.allFinite())
-            {
-                return 0;
-            }
-
-
-            const Eigen::VectorXd x =
-                X.col(0);
-
-            const Eigen::VectorXd z =
-                X.col(1);
-
-
-            // =====================================================
-            // Sherman-Morrison
-            //
-            // Need to solve:
-            //
-            //     (M + rho u u^T)d
-            //         = b + rho u
-            //
-            //
-            // with
-            //
-            //     x = M^-1 b
-            //     z = M^-1 u
-            //
-            //
-            // Exact result:
-            //
-            //               rho (1 - u^T x)
-            //     d = x + --------------------- z
-            //               1 + rho u^T z
-            //
-            // =====================================================
-
-            const double uTx =
-                u.dot(x);
-
-            const double uTz =
-                u.dot(z);
-
-
-            const double denominator =
-                1.0 +
-                qDotWeight *
-                uTz;
-
-
-            if (!std::isfinite(denominator) ||
-                denominator == 0.0)
-            {
-                return 0;
-            }
-
-
-            const double correctionCoeff =
-                qDotWeight *
-                (1.0 - uTx) /
-                denominator;
-
-
-            if (!std::isfinite(correctionCoeff))
-            {
-                return 0;
-            }
-
-
-            Eigen::VectorXd solution(n);
-
-            solution.noalias() =
-                x +
-                correctionCoeff *
-                z;
-
-
-            if (!solution.allFinite())
-            {
-                return 0;
-            }
-
-
-            // =====================================================
-            // Return
-            // =====================================================
-
-            for (int i = 0;
-                i < n;
-                ++i)
-            {
-                ret[i] =
-                    solution(i);
-            }
-
-
-            return 1;
-        }
-        static int solve_CHOLESKY2(
-            int n,
-            array<int>^ columnptr,
-            array<int>^ rowindices,
-            array<double>^ values,
-            array<int>^ columnptr2,
-            array<int>^ rowindices2,
-            array<double>^ values2,
-            array<double>^ rhs,
-            array<double>^ rhs2,
-            array<double>^ rhs3,
-            array<double>^ ret,
-            double mu,
-            double lambda,
-            double epsilon,
-            int numthreads)
-        {
-            const int totalSize = 2 * n;
-
-            Eigen::SparseMatrix<double> mat;
-            Eigen::VectorXd b(totalSize);
-            Eigen::VectorXd solution(totalSize);
-
-
-            // =====================================================
-            // RHS
-            //
-            // [ rhs       + lambda rhs3 ]
-            // [ mu rhs2   - lambda rhs3 ]
-            //
-            // rhs3 = current x - y
-            //
-            // update:
-            //
-            //     variable_new
-            //         = variable_old - step * direction
-            // =====================================================
-
-            for (int i = 0; i < n; i++)
-            {
-                b(i) =
-                    rhs[i]
-                    + lambda * rhs3[i];
-
-                b(n + i) =
-                    mu * rhs2[i]
-                    - lambda * rhs3[i];
-            }
-
-
-            // =====================================================
-            // Matrix
-            //
-            // [ A + (lambda+epsilon) I      -lambda I ]
-            // [ -lambda I      mu B + (lambda+epsilon) I ]
-            // =====================================================
-
-            std::vector<Eigen::Triplet<double, int64_t>> tripletList;
-
-            tripletList.reserve(
-                values->Length +
-                values2->Length +
-                6 * n);
-
-
-            // =====================================================
-            // Upper-left: A
+            // Primary : matrixCoeff1 * A
             // =====================================================
 
             for (int col = 0; col < n; col++)
@@ -5530,19 +5027,29 @@ else {
                 for (int j = start; j < end; j++)
                 {
                     int row = rowindices[j];
-                    double val = values[j];
+
+                    double val =
+                        matrixCoeff1 * values[j];
 
                     tripletList.push_back(
-                        Eigen::Triplet<double, int64_t>(
-                            row,
-                            col,
+                        Triplet64(
+                            static_cast<int64_t>(row),
+                            static_cast<int64_t>(col),
                             val));
+
+                    if (row == col)
+                    {
+                        matrixScale =
+                            std::max(
+                                matrixScale,
+                                std::abs(val));
+                    }
                 }
             }
 
 
             // =====================================================
-            // Lower-right: mu B
+            // Secondary : matrixCoeff2 * B
             // =====================================================
 
             for (int col = 0; col < n; col++)
@@ -5553,88 +5060,56 @@ else {
                 for (int j = start; j < end; j++)
                 {
                     int row = rowindices2[j];
-                    double val = values2[j];
+
+                    double val =
+                        matrixCoeff2 * values2[j];
 
                     tripletList.push_back(
-                        Eigen::Triplet<double, int64_t>(
-                            n + row,
-                            n + col,
-                            mu * val));
+                        Triplet64(
+                            static_cast<int64_t>(row),
+                            static_cast<int64_t>(col),
+                            val));
+
+                    if (row == col)
+                    {
+                        matrixScale =
+                            std::max(
+                                matrixScale,
+                                std::abs(val));
+                    }
                 }
             }
 
 
             // =====================================================
-            // lambda ||x-y||^2 coupling
+            // Relative epsilon
             //
-            // lambda *
+            //   salt = epsilon * max |diagonal(aA + bB)|
             //
-            // [ +I  -I ]
-            // [ -I  +I ]
             // =====================================================
 
-            for (int i = 0; i < n; i++)
-            {
-                // Upper-left: +lambda I
-                tripletList.push_back(
-                    Eigen::Triplet<double, int64_t>(
-                        i,
-                        i,
-                        lambda));
+            if (!(matrixScale > 0.0))
+                matrixScale = 1.0;
 
-                // Lower-right: +lambda I
-                tripletList.push_back(
-                    Eigen::Triplet<double, int64_t>(
-                        n + i,
-                        n + i,
-                        lambda));
+            const double salt =
+                epsilon;// *matrixScale;
 
-                // Upper-right: -lambda I
-                tripletList.push_back(
-                    Eigen::Triplet<double, int64_t>(
-                        i,
-                        n + i,
-                        -lambda));
-
-                // Lower-left: -lambda I
-                tripletList.push_back(
-                    Eigen::Triplet<double, int64_t>(
-                        n + i,
-                        i,
-                        -lambda));
-            }
-
-
-            // =====================================================
-            // Numerical regularization
-            //
-            // epsilon I on both diagonal blocks.
-            // Does NOT couple x and y.
-            // =====================================================
 
             for (int i = 0; i < n; i++)
             {
                 tripletList.push_back(
-                    Eigen::Triplet<double, int64_t>(
-                        i,
-                        i,
-                        epsilon));
-
-                tripletList.push_back(
-                    Eigen::Triplet<double, int64_t>(
-                        n + i,
-                        n + i,
-                        epsilon));
+                    Triplet64(
+                        static_cast<int64_t>(i),
+                        static_cast<int64_t>(i),
+                        salt));
             }
 
 
             // =====================================================
-            // Build matrix
+            // Sparse matrix
             // =====================================================
 
-            mat.resize(
-                totalSize,
-                totalSize);
+            SparseMatrix64 mat(n, n);
 
             mat.setFromTriplets(
                 tripletList.begin(),
@@ -5646,23 +5121,320 @@ else {
             // =====================================================
             // Solve
             // =====================================================
+			Eigen::PardisoLLT<SparseMatrix64> solver;
+            solver.compute(mat);
+			for (int i = 0; i < 40; i++)
+			{
+                if (solver.info() != Eigen::Success) {
+                    double _salt = salt*std::pow(10.0, i + 1);
+					
+					for (int j = 0; j < n; j++)
+					{
+						mat.coeffRef(j, j) += _salt;
+					}
+                    solver.compute(mat);
+                }
+                else {
+                    break;
+                }
 
-            solution =
-                _sparse_solver::solve_CHOLECKY(
-                    mat,
-                    b,
-                    numthreads);
+            }
+            Eigen::VectorXd solution = solver.solve(b);
 
 
             // =====================================================
-            // Return [dx; dy]
-            // ret must have length 2*n
+            // Return
             // =====================================================
 
-            for (int i = 0; i < totalSize; i++)
+            for (int i = 0; i < n; i++)
             {
                 ret[i] = solution(i);
             }
+
+            return 1;
+        }
+        static array<double>^ solve_dense(
+            array<double, 2>^ A,
+            array<double, 1>^ b)
+        {
+            int n0 = A->GetLength(0);
+            int n1 = A->GetLength(1);
+
+            if (n0 != n1)
+                throw gcnew ArgumentException("A must be square.");
+
+            if (b->Length != n0)
+                throw gcnew ArgumentException("b size must match A.");
+
+            int n = n0;
+
+            // =====================================================
+            // Copy managed arrays -> Eigen
+            // =====================================================
+
+            Eigen::MatrixXd mat(n, n);
+            Eigen::VectorXd rhs(n);
+
+            for (int i = 0; i < n; i++)
+            {
+                rhs(i) = b[i];
+
+                for (int j = 0; j < n; j++)
+                {
+                    mat(i, j) = A[i, j];
+                }
+            }
+
+            // =====================================================
+            // Solve
+            //
+            //     A x = b
+            // =====================================================
+
+            Eigen::PartialPivLU<Eigen::MatrixXd> solver(mat);
+
+            Eigen::VectorXd x = solver.solve(rhs);
+
+            // =====================================================
+            // Copy Eigen -> managed array
+            // =====================================================
+
+            array<double>^ ret = gcnew array<double>(n);
+
+            for (int i = 0; i < n; i++)
+            {
+                ret[i] = x(i);
+            }
+
+            return ret;
+        }        static int solve_NULLSPACE(
+            int n,
+
+            array<int>^ columnptr,
+            array<int>^ rowindices,
+            array<double>^ values,       // A
+
+            array<int>^ columnptr2,
+            array<int>^ rowindices2,
+            array<double>^ values2,      // B
+
+            array<double>^ rhs2,
+
+            array<double>^ ret,
+
+            double mu,
+            double epsilon,
+            int numIterations,
+            int numthreads)
+        {
+            using SparseMatrix64 =
+                Eigen::SparseMatrix<
+                double,
+                Eigen::ColMajor,
+                int64_t>;
+
+            using Triplet64 =
+                Eigen::Triplet<
+                double,
+                int64_t>;
+
+
+            // ============================================================
+            // We repeatedly apply
+            //
+            //   x0      = (A + mu B + epsilon I)^(-1) mu rhs2
+            //
+            //   x_{k+1} = (A + mu B + epsilon I)^(-1) mu B x_k
+            //
+            // No normalization.
+            // ============================================================
+
+
+            // ============================================================
+            // Build A + mu B + epsilon I
+            // ============================================================
+
+            std::vector<Triplet64> tripletList;
+
+            tripletList.reserve(
+                values->Length
+                + values2->Length
+                + n);
+
+
+            // A
+            for (int col = 0; col < n; col++)
+            {
+                int start = columnptr[col];
+                int end = columnptr[col + 1];
+
+                for (int j = start; j < end; j++)
+                {
+                    int row = rowindices[j];
+                    double val = values[j];
+                    tripletList.push_back(
+                        Triplet64(
+                            static_cast<int64_t>(row),
+                            static_cast<int64_t>(col),
+                             val));
+                }
+            }
+
+
+            // mu B
+            for (int col = 0; col < n; col++)
+            {
+                int start = columnptr2[col];
+                int end = columnptr2[col + 1];
+
+                for (int j = start; j < end; j++)
+                {
+                    int row = rowindices2[j];
+
+                    tripletList.push_back(
+                        Triplet64(
+                            static_cast<int64_t>(row),
+                            static_cast<int64_t>(col),
+                            mu * values2[j]));
+                }
+            }
+
+
+            // epsilon I
+            for (int i = 0; i < n; i++)
+            {
+                tripletList.push_back(
+                    Triplet64(
+                        static_cast<int64_t>(i),
+                        static_cast<int64_t>(i),
+                        epsilon));
+            }
+
+
+            SparseMatrix64 mat(n, n);
+
+            mat.setFromTriplets(
+                tripletList.begin(),
+                tripletList.end());
+
+            mat.makeCompressed();
+
+
+            // ============================================================
+            // B itself
+            // ============================================================
+
+            std::vector<Triplet64> tripletListB;
+
+            tripletListB.reserve(values2->Length);
+
+            for (int col = 0; col < n; col++)
+            {
+                int start = columnptr2[col];
+                int end = columnptr2[col + 1];
+
+                for (int j = start; j < end; j++)
+                {
+                    int row = rowindices2[j];
+					double val = values2[j];
+                    tripletListB.push_back(
+                        Triplet64(
+                            static_cast<int64_t>(row),
+                            static_cast<int64_t>(col),
+                            val));
+                }
+            }
+
+
+            SparseMatrix64 matB(n, n);
+
+            matB.setFromTriplets(
+                tripletListB.begin(),
+                tripletListB.end());
+
+            matB.makeCompressed();
+
+
+            // ============================================================
+            // Factorization
+            // ============================================================
+
+            Eigen::PardisoLLT<SparseMatrix64> solver;
+
+            solver.compute(mat);
+
+
+            // Same kind of fallback as solve_CHOLESKY2
+            double addedSalt = epsilon;
+
+            for (int k = 0; k < 10; k++)
+            {
+                if (solver.info() == Eigen::Success)
+                    break;
+
+                addedSalt *= 10.0;
+
+                for (int i = 0; i < n; i++)
+                {
+                    mat.coeffRef(i, i) += addedSalt;
+                }
+
+                mat.makeCompressed();
+
+                solver.compute(mat);
+            }
+
+
+            if (solver.info() != Eigen::Success)
+                return 0;
+
+
+            // ============================================================
+            // Initial solve
+            //
+            // x = M^{-1} mu rhs2
+            // ============================================================
+
+            Eigen::VectorXd b(n);
+
+            for (int i = 0; i < n; i++)
+            {
+                b(i) = mu * rhs2[i];
+            }
+
+
+            Eigen::VectorXd x = solver.solve(b);
+
+            if (solver.info() != Eigen::Success)
+                return 0;
+
+
+            // ============================================================
+            // Null-space filtering iteration
+            //
+            // x <- M^{-1} mu B x
+            // ============================================================
+
+            for (int iter = 0; iter < numIterations; iter++)
+            {
+                b.noalias() = mu * (matB * x);
+
+                x = solver.solve(b);
+
+                if (solver.info() != Eigen::Success)
+                    return 0;
+            }
+
+
+            // ============================================================
+            // Return
+            // ============================================================
+
+            for (int i = 0; i < n; i++)
+            {
+                ret[i] = x(i);
+            }
+
 
             return 1;
         }
