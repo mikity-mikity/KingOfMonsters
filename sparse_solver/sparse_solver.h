@@ -14,6 +14,7 @@ namespace sparse_solver {
     public ref class sparse_solver abstract sealed
     {
     public:
+
         static array<double>^ findSearchDirection(
             int n,
             array<int>^ columnptr,
@@ -22,6 +23,7 @@ namespace sparse_solver {
             array<array<double>^>^ vecs,
             array<double>^ rhs,
             double epsilon,
+            [System::Runtime::InteropServices::Out]
             array<double>^% parameters)
         {
             using SparseMatrix64 = Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t>;
